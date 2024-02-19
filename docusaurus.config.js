@@ -36,12 +36,12 @@ const config = {
         docs: {
           sidebarPath: './sidebars.js',
           editUrl:
-            'https://github.com/coronasafe/docs/tree/main',
+            'https://github.com/coronasafe/docs/tree/master',
         },
         blog: {
           showReadingTime: true,
           editUrl:
-            'https://github.com/coronasafe/docs/tree/main',
+            'https://github.com/coronasafe/docs/tree/master',
         },
         theme: {
           customCss: './src/css/custom.css',
