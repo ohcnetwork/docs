@@ -5,4 +5,4 @@ Although Care supports most features of an EMR, it is capable of much more.
 
 ## Sections
 
-[Care Enhancement Project (CEP)](/care/CEP)
+[Care Enhancement Project (CEP)](/docs/care/CEP/)
