@@ -83,6 +83,7 @@ const config = {
           width: 60,
           height: 50,
         },
+        copyright: "Made with Docusaurus and ♡"
       },
       prism: {
         theme: prismThemes.github,
