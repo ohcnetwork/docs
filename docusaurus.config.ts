@@ -82,7 +82,7 @@ const config: Config = {
         width: 60,
         height: 50,
       },
-      copyright: `Copyright © ${new Date().getFullYear()} Open Healthcare Network. Built with Docusaurus.`,
+      copyright: `Made with Docusaurus and <3`,
     },
     prism: {
       theme: prismThemes.github,
