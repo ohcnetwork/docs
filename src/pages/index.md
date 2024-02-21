@@ -2,9 +2,6 @@
 title: Home
 ---
 
-
-![image](/img/ohc-network-hero.png)
-
 # Open Healthcare Network
 
 **Open Healthcare Network (OHC)**, originally established as *Coronasafe Network*, is a pioneering open-source organization dedicated to enhancing healthcare delivery and management. At the core of OHC's innovation is its flagship Electronic Medical Record (EMR) system, recognized as the [50th Digital Public Good by the United Nations](https://digitalpublicgoods.net/). This system transcends being merely a digital repository of patient records, evolving into a platform that supports advanced TeleICU capabilities.
