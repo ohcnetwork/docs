@@ -23,10 +23,10 @@ Today, beyond the 10BedICU Project, CARE is being adopted for various healthcare
 [FAQs](https://ohc.network/faqs) | 
 [Connect](https://slack.ohc.network)
 
-# Our Mission
+## Our Mission
 Engineering free and open-source tools to maximize human efficiency in compassionate healthcare delivery
 
-# Care 
+## Care 
 CARE is a centralized capacity management and patient management system which is a conglomerate of Patients, doctors, hospitals, labs, specialized treatment centres, hospital administrators, shifting control cells etc. Each hospital would have to login and update the information regarding their Assets including bed capacity, health care personnels, current patient count, status etc so that it would be easy for the district administration to get a birds eye view of the entire healthcare system as well as the patients through the smart and intuitive dashboards. 
 
 The journey of the Open Healthcare Network is a testament to the power of community collaboration and open-source development for public good. What began as a response to the COVID-19 pandemic has evolved into a comprehensive hospital management system operational across 11 Indian states, directly benefiting over 186.8 million people. The system, seamlessly integrated across 581 hospitals, has facilitated medical attention to 362,349 patients and enabled over half a million consultations via 1,884 dedicated health workers.
