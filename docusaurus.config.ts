@@ -5,7 +5,7 @@ import type * as Preset from "@docusaurus/preset-classic";
 const config: Config = {
   title: "OHC Docs",
   tagline: "Dinosaurs are cool",
-  favicon: "img/favicon.ico",
+  favicon: "favicon.ico",
 
   url: "https://docs.ohc.network",
   baseUrl: "/",
