@@ -24,7 +24,7 @@ Today, beyond the 10BedICU Project, CARE is being adopted for various healthcare
 [Go Live](https://ohc.network/go-live) |
 [Modes](https://ohc.network/modes) |
 [FAQs](https://ohc.network/faqs) | 
-[Connect with us](https://slack.ohc.network)
+[Connect](https://slack.ohc.network)
 
 # Our Mission
 Engineering free and open-source tools to maximize human efficiency in compassionate healthcare delivery
