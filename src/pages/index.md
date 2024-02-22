@@ -1,5 +1,6 @@
 ---
 title: Home
+hide_table_of_contents: true
 ---
 
 # Open Healthcare Network
