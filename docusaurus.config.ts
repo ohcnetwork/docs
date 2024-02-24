@@ -50,7 +50,12 @@ const config: Config = {
         language: ["en"],
       },
     ],
+    '@docusaurus/theme-mermaid'
   ] satisfies PluginConfig[],
+
+  markdown: {
+    mermaid: true,
+  },
 
   themeConfig: {
     image: "img/docusaurus-social-card.jpg",
