@@ -110,7 +110,7 @@ Note the portMappings; this is crucial as it allows the Service Connect proxy to
 
 Then, create a new service called redis-stack using the Redis Stack task definition. Expand the Service Connect group and select **Turn on Service Connect**. For **Service Connect configuration**, select **Client and server**, then choose the namespace we created earlier. Add port mappings with the port alias `redis`, set the discovery name to `redis`, DNS to `redis.care-ns`, and port to `6379`. Now, click on Create Service.
 
-Similarly, enable Service Connect for Care and Celery services, but select **Client side only** only for **Service Connect configuration**, and choose the same `care-ns` namespace.
+Similarly, enable Service Connect for Care and Celery services, but select **Client side only** for **Service Connect configuration**, and choose the same `care-ns` namespace.
 
 After setting the `REDIS_URL` environment variable to `redis://redis.care-ns:6379`, redeploy the Care and Celery services, and we are done.
 
