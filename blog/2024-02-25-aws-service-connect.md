@@ -5,7 +5,7 @@ authors: aakash
 tags: [aws, ecs, service-connect, redis, redis-stack]
 ---
 
-Dive into our journey of enhancing ECS inter-service communication with AWS Service Connect. We'll share our experience of moving from Elasticache to managing our own Redis instance, offering tips and insights along the way. Perfect for developers and architects, this post provides a hands-on guide to streamlining your ECS setup for better security and efficiency.
+Dive into our journey of enhancing ECS inter-service communication with AWS Service Connect. We'll share our experience of moving from Elasticache to managing our own Redis instance, offering tips and insights along the way.
 
 ## Introduction
 
