@@ -26,7 +26,7 @@ graph TD
         end
         RDS[(PostgreSQL)]
         ElasticCache[ElasticCache]
-        S3[S3]
+        S3[(S3 Buckets)]
     end
     WWW --> ALB
     ALB --> CareService
@@ -61,7 +61,7 @@ ECS Service Connect, Service Connect streamlines the process of service-to-servi
 We started researching how to use it for our services. Service Connect, being a recent addition to AWS, had limited resources available, but the [launch video](https://www.youtube.com/watch?v=n6ghmEEjpNQ) of Service Connect was very helpful. It explains the feature and includes a demo on how to use it with ECS.
 
 
-## The Implementation
+## Implementation
 
 The implementation of Service Connect is straightforward. First, we create a CloudMap namespace named `care-ns`. Then, we create a new task definition for Redis Stack:
 
@@ -133,7 +133,7 @@ graph TD
             end
         end
         RDS[(PostgreSQL)]
-        S3[S3]
+        S3[(S3 Buckets)]
     end
     WWW --> ALB
     ALB --> CareService
