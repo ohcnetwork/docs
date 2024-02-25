@@ -81,17 +81,9 @@ The implementation of Service Connect is straightforward. First, we create a Clo
                 }
             ],
             "essential": true,
-            "logConfiguration": {
-                "logDriver": "awslogs",
-                "options": {
-                    "awslogs-create-group": "true",
-                    "awslogs-group": "/ecs/redis-stack",
-                    "awslogs-region": "ap-south-1",
-                    "awslogs-stream-prefix": "ecs"
-                }
-            }
         }
     ],
+    "volumes": [],
     "networkMode": "awsvpc",
     "requiresCompatibilities": [
         "FARGATE"
