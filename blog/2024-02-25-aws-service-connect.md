@@ -1,6 +1,6 @@
 ---
 slug: aws-service-connect
-title: Using AWS Service Connect for inter service communication in ECS
+title: Streamlining ECS Inter-Service Communication with AWS Service Connect
 authors: aakash
 tags: [aws, ecs, service-connect, redis, redis-stack]
 ---
