@@ -5,6 +5,8 @@ authors: aakash
 tags: [aws, ecs, service-connect, redis, redis-stack]
 ---
 
+Dive into our journey of enhancing ECS inter-service communication with AWS Service Connect. We'll share our experience of moving from Elasticache to managing our own Redis instance, offering tips and insights along the way. Perfect for developers and architects, this post provides a hands-on guide to streamlining your ECS setup for better security and efficiency.
+
 ## Introduction
 
 We use AWS ECS to run our staging instance of Care. The configuration of the deployment was straightforward: the ECS cluster hosts two services, Care and Celery (which runs both Beat and Worker), RDS for PostgreSQL as the database, and ElasticCache for Redis. We chose ECS to reduce costs and offload the management of services to AWS.
