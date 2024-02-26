@@ -1,5 +1,6 @@
 ---
 title: Home
+hide_table_of_contents: true
 ---
 
 # Open Healthcare Network
@@ -40,4 +41,4 @@ Main Repositories: [Backend](https://github.com/coronasafe/care) |
 
 Deploy Docs: [AWS](https://deploydocs.coronasafe.network/cloud-deployment-overview/aws) | [Azure](https://deploydocs.coronasafe.network/cloud-deployment-overview/azure) | [GCP](https://deploydocs.coronasafe.network/cloud-deployment-overview/gcp)
 
-Our Student Contributors: [Students](https://contributors.coronasafe.network/) | [Leaderboard](https://contributors.coronasafe.network/leaderboard)
+Our Student Contributors: [Students](https://contributors.ohc.network/) | [Leaderboard](https://contributors.ohc.network/leaderboard)
