@@ -6,4 +6,5 @@ Although Care supports most features of an EMR, it is capable of much more.
 ## Sections
 
 [Care Enhancement Project (CEP)](/docs/care/CEP/)
+
 [Care Scribe - Voice-Assisted Form Filling](/docs/care/Scribe/)
