@@ -230,7 +230,6 @@ The flowchart outlines the step-by-step process of the Care Scribe feature. Belo
 - **Store Form Data**: Saves the mapped form data.
 - **Update Status to Completed**: Sets the AIFormFill object's status to 'Completed' after a successful operation.
 - **Celery Worker**: An asynchronous Celery worker performs tasks such as polling the status and updating the form data.
-- **Ayushma Integration (STT and GPT4)**: Integrates with Ayushma for additional Speech-to-Text and language processing capabilities, if necessary.
 
 Each of these steps represents a critical point in the operational flow of the Care Scribe feature, ensuring a seamless and efficient form-filling experience for the user.
 
