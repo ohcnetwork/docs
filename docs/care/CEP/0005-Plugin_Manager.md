@@ -1,4 +1,4 @@
-# Plugins Support ( Care Apps ) - CEP-5
+# CEP-5: Care Apps
 
 ## Requirements/Motive 
 
@@ -54,7 +54,7 @@ plugs = [my_plugin]
 manager = PlugManager(plugs)
 ```
 
-the plugs variable is defined as a list of plugs, the developer can add plugins as needed here to compose a deployment. The configs dict 
+The plugs variable is defined as a list of plugs, the developer can add plugins as needed here to compose a deployment. The configs dict 
 can be used to override variables that the plug uses, this can also hold functions if needed to get fine grain control over the deployment.
 
 
