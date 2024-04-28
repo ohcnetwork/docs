@@ -1,13 +1,15 @@
 # Plugins Support ( Care Apps ) - CEP-5
 
-Since care is being used in different environments for different use-cases, there must be some way to configure the application to work
-in different environments.
+## Requirements/Motive 
+
+Since Care is being used in different environments for different use-cases, there must exist some method to efficiently create modifications which does not
+impact unrelated deployments.
 
 Some type of plugin system is required to achieve this.
 
-Plugins can be abstracted standalone features, they should be capable of being maintained as separate packages, this allows east 3rd party integrations
+Plugins can be abstracted standalone features, they should be capable of being maintained as separate packages, this allows easy 3rd party integrations as well.
 
-Plugins should be easily configurable and should use some sort of custom made package manager as well.
+Care must be modified to allow plugins to be easily created and configured.
 
 ## Implementation
 
