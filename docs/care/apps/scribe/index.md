@@ -43,7 +43,6 @@
    1. [References](#references)
    2. [Acknowledgements](#acknowledgements)
 8. [Changelog](#changelog)
-9. [Contact and Support](#contact-and-support)
 
 ## Introduction
 
