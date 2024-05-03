@@ -2,7 +2,7 @@
 
 The chat interface is the core of the user experience in Ayushma, where users interact with the AI assistant through text or voice input and receive responses in either text or audio format.
 
-<figure><img src="../assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../assets/image.png" alt="" /><figcaption></figcaption></figure>
 
 ### Chat Components
 

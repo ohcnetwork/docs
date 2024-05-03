@@ -2,7 +2,7 @@
 
 The settings section in Ayushma allows users to customize their experience and preferences for interacting with the AI assistant.
 
-<figure><img src="../assets/image (15).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../assets/image (15).png" alt="" /><figcaption></figcaption></figure>
 
 #### Accessing Settings
 

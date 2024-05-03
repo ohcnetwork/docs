@@ -2,7 +2,7 @@
 
 Ayushma's architecture follows a modular design, separating the frontend and backend components while ensuring seamless communication and integration between them.
 
-<figure><img src="../../assets/image (14).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../assets/image (14).png" alt="" /><figcaption></figcaption></figure>
 
 ## Module Descriptions:
 

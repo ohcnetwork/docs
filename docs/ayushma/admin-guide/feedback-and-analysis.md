@@ -2,7 +2,7 @@
 
 Feedback and analysis play a crucial role in the continuous improvement of Ayushma's AI assistant. By gathering feedback from admins and reviewers and analyzing test run results, Ayushma can identify areas for enhancement, refine its responses, and ensure the delivery of accurate and reliable medical information.
 
-<figure><img src="../assets/image (12).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../assets/image (12).png" alt="" /><figcaption></figcaption></figure>
 
 ### Providing Feedback on Test Cases
 

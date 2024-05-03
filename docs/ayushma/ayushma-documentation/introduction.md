@@ -1,6 +1,6 @@
 # Introduction
 
-<figure><img src="../assets/image (13).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../assets/image (13).png" alt="" /><figcaption></figcaption></figure>
 
 Ayushma is an AI-powered digital health and nursing assistant designed to support healthcare professionals, particularly nurses and doctors, working in remote areas with limited resources. It aims to bridge the healthcare gap by providing tools for diagnosis, information retrieval, and decision-making support. As part of the Open Health Care Network, Ayushma is committed to open-source principles and accessibility.
 

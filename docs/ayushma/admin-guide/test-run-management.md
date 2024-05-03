@@ -2,7 +2,7 @@
 
 Test run management involves overseeing and analyzing the results of test suites executed against the AI assistant. Admins can use this functionality to gain insights into the AI's performance, identify areas for improvement, and ensure the quality and reliability of Ayushma's responses.
 
-<figure><img src="../assets/image (11).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../assets/image (11).png" alt="" /><figcaption></figcaption></figure>
 
 ### Accessing Test Run Results
 

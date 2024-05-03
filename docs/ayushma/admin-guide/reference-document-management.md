@@ -2,7 +2,7 @@
 
 Reference document management is a crucial aspect of project administration in Ayushma. It involves adding, organizing, and maintaining the collection of documents that serve as the knowledge base for the AI assistant within each project.
 
-<figure><img src="../assets/image (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../assets/image (4).png" alt="" /><figcaption></figcaption></figure>
 
 ## Adding Reference Documents
 
@@ -17,7 +17,7 @@ Reference document management is a crucial aspect of project administration in A
    * **Description (Optional)**: Provide an optional description to offer additional context or information about the document's content.
 5. **Save Document**: Click the "Save" or "Create" button to add the document to the project's knowledge base.
 
-<figure><img src="../assets/image (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../assets/image (5).png" alt="" /><figcaption></figcaption></figure>
 
 ### Organizing and Maintaining Documents
 

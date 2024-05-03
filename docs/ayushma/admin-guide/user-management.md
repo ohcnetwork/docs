@@ -2,7 +2,7 @@
 
 User management in Ayushma provides admins with tools to oversee user accounts, control access levels, and ensure the security and integrity of the platform.
 
-<figure><img src="../assets/image (7).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../assets/image (7).png" alt="" /><figcaption></figcaption></figure>
 
 ### User Account Overview
 
@@ -17,7 +17,7 @@ The user management interface typically displays a list of registered users alon
 
 ### Managing User Accounts
 
-<figure><img src="../assets/image (8).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../assets/image (8).png" alt="" /><figcaption></figcaption></figure>
 
 * **Creating Users**: Admins can create new user accounts, assigning usernames, email addresses, and initial passwords.
 * **Editing User Details**: Admins can modify user details, such as full names and email addresses.

@@ -2,7 +2,7 @@
 
 Test suite management in Ayushma enables admins to evaluate and fine-tune the AI assistant's performance through the creation and execution of test suites. These suites consist of sets of questions and their corresponding expected answers, allowing for systematic evaluation of the AI's accuracy, relevance, and overall effectiveness.
 
-<figure><img src="../assets/image (9).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../assets/image (9).png" alt="" /><figcaption></figcaption></figure>
 
 ### What is a Test Suite?
 
@@ -14,7 +14,7 @@ A test suite is a collection of test cases designed to assess specific aspects o
 
 ### Creating a Test Suite
 
-<figure><img src="../assets/image (10).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../assets/image (10).png" alt="" /><figcaption></figcaption></figure>
 
 1. **Access Test Suites**: Navigate to the "Test Suites" section within the admin dashboard.
 2. **Initiate Suite Creation**: Click the "New Test Suite" or a similar option to start the process.

@@ -2,7 +2,7 @@
 
 The Ayushma Testing Framework is a custom-built, web-based framework designed for automated testing of AI responses to predefined questions. Operating with Python and Celery workers, this precision-engineered framework enables admins to post predefined question sets. Built with precision, the testing framework allows admins to post predefined sets of questions. These questions, when run through the AI, enable the assessment of the accuracy and relevance of the generated responses.
 
-<figure><img src="../assets/image (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../assets/image (6).png" alt="" /><figcaption></figcaption></figure>
 
 ### Purpose of the Testing Framework
 

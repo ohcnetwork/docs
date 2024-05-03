@@ -2,7 +2,7 @@
 
 Ayushma's conversation history allows users to revisit past interactions with the AI assistant and provides valuable insights into previous queries and responses.
 
-<figure><img src="../assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../assets/image (1).png" alt="" /><figcaption></figcaption></figure>
 
 ### Managing Conversations
 

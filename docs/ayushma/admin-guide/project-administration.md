@@ -2,7 +2,7 @@
 
 Project administration in Ayushma empowers authorized personnel (admins) with the ability to create, configure, and manage projects that serve as the foundation for AI-assisted medical conversations.
 
-<figure><img src="../assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../assets/image (3).png" alt="" /><figcaption></figcaption></figure>
 
 ### Creating a New Project
 

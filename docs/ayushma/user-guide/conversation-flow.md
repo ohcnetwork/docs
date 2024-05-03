@@ -2,7 +2,7 @@
 
 The following diagram illustrates the flow of a conversation in Ayushma, including API endpoints, database models, and integrations with external services.
 
-<figure><img src="../assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../assets/image (2).png" alt="" /><figcaption></figcaption></figure>
 
 **Explanation:**
 
