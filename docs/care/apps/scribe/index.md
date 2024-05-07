@@ -6,8 +6,8 @@
 |-------------------|----------------------------------------------------------|
 | **Title**         | Care Scribe Feature Overview, Integration, and Operation |
 | **App Namespace** | `care_scribe`                                            |
-| **Last-Modified** | 2024-04-15                                               |
-| **Github-Repo**   | github.com/coronasafe/care_scribe                        |
+| **Last-Modified** | 2024-05-07                                               |
+| **Github-Repo**   | https://github.com/coronasafe/care_scribe                        |
 | **Created**       | 2024-04-15                                               |
 
 # Table of Contents
@@ -272,7 +272,7 @@ On the backend, a task is triggered to process the uploaded audio files. This in
 
 1. **Fetching Audio Files**: Retrieving the audio files from S3.
 2. **Transcription**: Using OpenAI's Whisper to convert speech to text.
-3. **Data Extraction**: Applying GPT-4 to interpret the transcript and extract structured form data.
+3. **Data Extraction**: Applying GPT-4 Turbo to interpret the transcript and extract structured form data.
 4. **Task Completion**: Updating the `Scribe` object's status to 'Completed' and storing the extracted form data.
 
 These steps are handled by a background worker task that ensures the process is asynchronous and does not block other operations.
@@ -331,18 +331,31 @@ To process the audio recordings asynchronously and update the form data with AI-
 
 These tasks are queued up when a `Scribe` object's status is set to 'Ready' and are processed in the background without blocking the main application flow.
 
-#### Example Celery Task
+#### Pseudocode of Celery Task
 
-Here's an example of a Celery task that orchestrates the AI form filling process:
+Here's a simplified pseudocode representation of the Celery task for processing AI form fillings:
 
-```python
-@shared_task
-def process_ai_form_fill(external_id):
-    # Fetch the Scribe object and associated audio files
-    # Generate transcript using AI service
-    # Process transcript with AI to fill form
-    # Update Scribe object with the AI response and set status to 'Completed'
-```
+1. Import necessary libraries and modules.
+2. Define global variable `OpenAIClient`.
+3. Define function `get_openai_client` to initialize `OpenAIClient` if it's not already initialized.
+4. Define two prompts for the AI model.
+5. Define a shared task function `process_ai_form_fill` that takes an `external_id` as input.
+    1. Filter `Scribe` objects based on `external_id` and status.
+    2. Loop over each form in the filtered `Scribe` objects.
+        1. If the form doesn't have any audio files, log a warning and continue to the next form.
+        2. Log the start of processing for the current form.
+        3. Initialize an empty list for audio file URLs and an empty string for transcript.
+        4. Loop over each audio file ID in the form's audio file IDs.
+            1. Get the `ScribeFile` object for the current audio file ID.
+            2. Append the signed URL of the audio file to the list of audio file URLs.
+            3. Log the audio file URL.
+        5. Try the following steps, and if any exception occurs, log the error and set the form status to 'FAILED'.
+            1. Log the start of transcript generation for the current form and set the form status to 'GENERATING_TRANSCRIPT'.
+            2. If the form doesn't have a transcript, generate a transcript using the OpenAI client and save it to the form.
+            3. Log the start of AI response generation for the current form and set the form status to 'GENERATING_AI_RESPONSE'.
+            4. Process the transcript with the OpenAI client to generate an AI response.
+            5. Log the AI response.
+            6. Save the AI response to the form and set the form status to 'COMPLETED'.
 
 The task is designed to handle various steps in the AI form filling process, including error handling to update the `Scribe` status to 'Failed' if any step encounters an issue.
 
@@ -354,7 +367,7 @@ Integrating the Care Scribe feature into the frontend involves updating the Reac
 
 ### Frontend Architecture Overview
 
-The frontend architecture is built on React, utilizing functional components and hooks for state management. The integration of Care Scribe adds new components related to voice recording and form handling, which interact with the existing Redux store and backend API.
+The frontend architecture is built on React, utilizing functional components and hooks for state management. The integration of Care Scribe adds new components related to voice recording and form handling, which interact with the backend API.
 
 ### Components and State Management
 
@@ -364,7 +377,7 @@ New components and hooks have been introduced to manage the state of voice recor
 * `formDetails.ts`: Contains the metadata and schema of form fields that can be auto-filled using the Scribe feature.
 * `useSegmentedRecorder.ts`: A custom hook that manages voice recording, including starting, stopping, and segmenting the audio as it's recorded.
 
-The state of the Scribe component is managed using local state hooks like `useState` and external state management using Redux for asynchronous actions and API interactions.
+The state of the Scribe component is managed using local state hooks like `useState` and external state management with API interactions.
 
 ### Event Handlers
 
@@ -381,22 +394,15 @@ UI updates include:
 * Visual feedback during recording, processing, and transcription phases.
 * Modals and progress indicators to enhance user feedback during the operation of the Scribe feature.
 
-### Accessibility Features
-
-The Scribe component is designed with accessibility in mind:
-
-* Keyboard navigable controls for starting and stopping recordings.
-* ARIA labels and roles to ensure screen readers correctly interpret the purpose of the Scribe components and provide appropriate feedback to users with visual impairments.
-
 #### Code Snippets
 
 The following snippets from the patch files demonstrate key aspects of the Scribe feature integration:
 
 ```jsx
 // src/Components/Scribe/Scribe.tsx
-// Example of the Scribe component initialization
+// Example of the Scribe component initialization for the daily round form in CARE
 <Scribe
-  fields={DAILY_ROUND_FORM_SCRIBE_DATA}
+  fields={DAILY_ROUND_FORM_SCRIBE_DATA} // Form field metadata
   onFormUpdate={(fields) => {
     // Update form state with new fields
   }}
@@ -406,11 +412,13 @@ The following snippets from the patch files demonstrate key aspects of the Scrib
 // Metadata for daily round form fields utilized by Scribe
 export const DAILY_ROUND_FORM_SCRIBE_DATA: Field[] = [
   {
-    friendlyName: "Temperature",
-    id: "temperature",
-    type: "number",
-    example: "98.6",
-    // Other field attributes...
+    friendlyName: "Temperature", // Field name
+    id: "temperature", // Field ID
+    type: "number", // Field type
+    example: "98.6", // Example value for the field
+    default: "", // Default value for the field
+    description: "Enter the patient's temperature", // Field description
+    options: [], // Optional: for dropdowns, checkboxes, etc.
   },
   // Additional fields...
 ];
@@ -447,12 +455,6 @@ Here's  a  list  of  potential  problems  users  might  encounter  while  using 
 -   Check  the  performance  of  the  AI  service  and  ensure  it  is  responding  within  acceptable  timeframes.
 -   Consider  optimizing  the  AI  prompts  and  data  structures  to  improve  the  response  time.
 
-**Issue:**  The  Scribe  feature  is  not  accessible  to  users  with  disabilities.
-**Solution:**
--   Ensure  that  all  UI  elements,  including  buttons  and  modals,  are  keyboard  navigable.
--   Implement  appropriate  ARIA  labels  and  roles  for  all  components  to  enable  screen  reader  compatibility.
--   Test  the  accessibility  features  with  assistive  technologies  to  identify  and  address  any  issues.
-
 #### Logging and Error Tracking
 
 Care  Scribe  utilizes  logging  mechanisms  to  record  events  and  errors  during  the  operation  of  the  feature:
@@ -462,7 +464,7 @@ Care  Scribe  utilizes  logging  mechanisms  to  record  events  and  errors  du
 -   **Backend  Logging:**  The  Django  application  logs  events  and  errors  to  the  server  logs  using  the  Python  logging  module.
     
 
-Additionally,  error  tracking  tools  can  be  integrated  to  monitor  and  report  errors  in  real-time,  providing  insights  into  potential  issues  and  areas  for  improvement.
+Sentry.io is utilized for error tracking and capturing errors from both the frontend and the backend loggers, offering real-time monitoring and reporting of errors. This provides valuable insights into potential issues and areas that require improvement.
 
 ### Appendix
 
@@ -516,9 +518,9 @@ These snippets provide a glimpse into the inner workings of the Care Scribe feat
 
 - OpenAI Whisper: https://openai.com/blog/whisper/
 - GPT-4: https://openai.com/research/gpt-4
+- GPT-4 Turbo: https://platform.openai.com/docs/models/gpt-4-turbo-and-gpt-4
 - Django: https://www.djangoproject.com/
 - React: https://reactjs.org/
-- Redux: https://redux.js.org/
 - Celery: https://docs.celeryproject.org/en/stable/
 
 #### Acknowledgements
@@ -530,3 +532,4 @@ These snippets provide a glimpse into the inner workings of the Care Scribe feat
 ### Changelog
 
 - **2024-04-15**: Initial draft of the Care Scribe Technical Documentation.
+- **2024-05-07**: Fixes to the flowchart, Add details on Celery task, and revise Accessibility and Dependencies.
