@@ -6,8 +6,8 @@
 | **Title**       | AI-Powered Patient Discharge Summary Generation and Integration        |
 | **Last-Modified** | 2024-05-06                                                         |
 | **Type**        | Technical Documentation                                              |
-| **Created**     | 2023-05-06                                                      |
-| **Review Period** | * 2023-05-06 - 2023-05-13                                            |
+| **Created**     | 2024-05-06                                                      |
+| **Review Period** | * 2024-05-06 - 2024-05-13                                            |
 | **References**  | - Based on the community's best practices for technical documentation |
 
 # Table of Contents
@@ -381,7 +381,7 @@ After installing the Discharge Summary plugin, perform the following initial set
      ```
    - Configure additional plugin settings such as the API key for external services:
      ```python
-     DISCHARGE_SUMMARY_API_KEY = 'your_api_key_here'
+     SERVICE_PROVIDER_API_KEY = 'your_api_key_here'
      ```
 
 2. **Start the Development Server**:
@@ -412,16 +412,16 @@ The Discharge Summary plugin operates through a series of steps that integrate c
    - The collected data is then processed and formatted appropriately to ensure compatibility with the AI model. This step may include anonymizing patient data to protect privacy.
 
 3. **AI Summary Generation**:
-   - The processed data is fed into the AI model. The AI uses natural language processing (NLP) technologies to generate a structured and concise discharge summary.
+   - The processed data is fed into the AI model. The AI uses GPT (Generative Pretrained Transformer) models to generate a structured and concise discharge summary.
 
 4. **Review and Edit**:
    - Once the AI generates the initial summary, it can be reviewed and edited by medical staff to ensure accuracy and completeness.
 
 5. **Final Approval and Dissemination**:
-   - After final approval, the discharge summary is automatically entered into the patient’s electronic health record (EHR) and can be printed or electronically sent to the patient and relevant healthcare providers.
+   - After final approval, the discharge summary is automatically entered into the discharge record and can be printed or electronically sent to the patient and relevant healthcare providers.
 
 6. **Feedback Loop**:
-   - Medical staff provide feedback on the AI-generated summaries, which is used to continuously improve the AI model for better accuracy in future summaries.
+   - Medical staff provide valuable feedback on the AI-generated summaries. This feedback, currently shared with us manually, is instrumental in continuously refining and improving the accuracy of our AI model for future summaries.
 
 ### Detailed Flowchart Explanation 
 
@@ -459,7 +459,7 @@ The process of data extraction and anonymization is crucial for maintaining pati
 Selecting and training the AI model are pivotal steps that determine the effectiveness of the Discharge Summary plugin. Here’s a breakdown of these processes:
 
 1. **Model Selection**:
-   - The plugin uses a pre-trained Natural Language Processing (NLP) model, specifically designed for medical summarization tasks. GPT (Generative Pre-trained Transformer) models are commonly used due to their effectiveness in understanding and generating human-like text.
+   - The plugin uses a pre-trained GPT (Generative Pre-trained Transformer) model, specifically designed for medical summarization tasks. GPT (Generative Pre-trained Transformer) models are commonly used due to their effectiveness in understanding and generating human-like text.
    - The selection of the model is based on factors like accuracy, efficiency, and ease of integration with existing systems.
 
 2. **Model Training**:
@@ -484,56 +484,25 @@ For facilities that require a digital PDF of the discharge summary, the plugin p
 
 1. **Template Design**:
    - A PDF template is designed to accommodate the typical structure of a discharge summary. This includes sections for patient information, hospital stay details, treatment description, and discharge instructions.
-   
+
 2. **PDF Conversion**:
-   - The finalized text summary is converted into a PDF document using a report generation library compatible with the system, such as ReportLab or JasperReports.
+   - The finalized text summary is converted into a PDF document.
    - This step involves formatting the summary into the predefined template, ensuring that the document is presentation-ready and aligns with the hospital’s branding and legal requirements.
 
 3. **Distribution**:
    - Once generated, the PDF can be printed for physical distribution or saved electronically for email or portal-based distribution to patients and other healthcare providers.
-
-## Integration with Healthcare Management Application
-
-Integrating the Discharge Summary plugin with existing Healthcare Management Applications (HMA) is crucial for seamless operation and user acceptance. Here’s how this integration can be effectively achieved:
-
-1. **API Connectivity**:
-   - The plugin integrates through secure APIs that allow it to fetch data from and send data to the HMA. This might involve RESTful APIs for data exchange in JSON or XML format, ensuring interoperability and compatibility.
-   - Proper authentication and authorization protocols, such as OAuth2, are implemented to secure the data and ensure that only authorized applications and users can access sensitive information.
-
-2. **Data Mapping and Transformation**:
-   - Data extracted from the HMA needs to be mapped to the data model used by the Discharge Summary plugin. This involves transforming the data into a format that the AI model can process.
-   - This step also includes validation checks to ensure that the data meets the expected quality standards for accurate summary generation.
-
-3. **Event Triggers and Real-Time Integration**:
-   - The plugin can be set up to respond to specific triggers within the HMA, such as a patient's discharge event.
-   - Real-time integration ensures that the discharge summary is generated promptly, facilitating a swift discharge process and improving the overall efficiency of hospital operations.
-
-4. **Feedback Loop Integration**:
-   - Integrating a feedback mechanism where healthcare professionals can provide input about the accuracy and quality of the summaries directly influences the continuous improvement of the AI model.
-   - This integration often involves UI components within the HMA where users can easily provide their feedback.
 
 ## User Interface and Interaction
 
 
 ![ui](assets/ui.png)
 
-The user interface (UI) and interaction design of the Discharge Summary plugin play a vital role in its usability and adoption. Here are the key components:
+The user interface (UI) and interaction design of the Discharge Summary plugin play a vital role in its usability and adoption.
 
-1. **Dashboard**:
-   - A user-friendly dashboard that provides a quick overview of pending and completed discharge summaries.
-   - Features such as search, filter, and sort to help users easily locate specific patient summaries.
-
-2. **Edit and Review Tools**:
-   - The interface includes tools for editing and reviewing summaries before finalization, accommodating necessary medical and clerical amendments.
-   - Highlighting and annotation tools can be included to allow users to mark sections that need revisions or additional information.
-
-3. **Notification System**:
-   - An integrated notification system to alert healthcare providers when a summary is ready for review or when input is required, ensuring timely processing.
-   - Notifications can also alert staff about anomalies or missing information based on predefined rules.
-
-4. **Accessibility and Mobile Support**:
-   - Ensuring the UI is accessible according to ADA standards, with support for screen readers and other assistive technologies.
-   - Responsive design to allow users to interact with the application effectively across various devices including tablets and smartphones.
+The user interface provides a categorized list of all available fields, which can be populated with patient details and additional information.
+This data is then sent to the AI for processing. Users have the flexibility to select or deselect any fields based on their requirements.
+Once the selection is made, a request is sent to the AI to generate the discharge summary.
+The interface also provides the functionality to send the generated summary via email, ensuring easy and efficient distribution of information.
 
 ## Evaluation and Performance Metrics
 
