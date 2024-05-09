@@ -37,6 +37,7 @@ Care Scribe is an innovative feature that integrates with the Care application t
    3. [API Endpoints](#api-endpoints)
    4. [Background Jobs and Scheduling](#background-jobs-and-scheduling)
    5. [Modules](#modules)
+   6. [Configuring Care Scribe with AI Services](#configuring-care-scribe-with-ai-services)
 5. [Frontend Integration](#frontend-integration)
    1. [Frontend Architecture Overview](#frontend-architecture-overview)
    2. [Components and State Management](#components-and-state-management)
@@ -358,6 +359,56 @@ Here's a simplified pseudocode representation of the Celery task for processing 
             6. Save the AI response to the form and set the form status to 'COMPLETED'.
 
 The task is designed to handle various steps in the AI form filling process, including error handling to update the `Scribe` status to 'Failed' if any step encounters an issue.
+
+## Configuring Care Scribe with AI Services
+
+Care Scribe supports integration with both OpenAI and Azure AI services. This section provides detailed instructions on configuring the service with these providers, the differences between the configurations, and the environment variables that need to be set.
+
+### Differences Between OpenAI and Azure AI Integration
+
+- **API Provider**: The service can be configured to use either `OpenAI` or `Azure` as the AI backend.
+- **API Endpoint**: Azure requires an additional endpoint setting (`AZURE_ENDPOINT`), whereas OpenAI uses a default endpoint set within the library.
+- **API Version**: Azure integration allows specifying an API version (`AZURE_API_VERSION`), which is not required for OpenAI.
+- **Model Naming**: For Azure, the model or custom deployment name is used, while OpenAI directly uses the model name provided by OpenAI.
+
+### Required Settings Variables
+
+The following environment variables need to be configured depending on your choice of AI service provider:
+
+- `API_PROVIDER`: Set to either `"openai"` or `"azure"` to choose the AI service provider.
+- `TRANSCRIBE_SERVICE_PROVIDER_API_KEY`: The API key for accessing transcription services from the chosen provider.
+- `AZURE_API_VERSION` (only for Azure): Specifies the version of the Azure API to use.
+- `AZURE_ENDPOINT` (only for Azure): Specifies the endpoint URL for Azure services.
+- `AUDIO_MODEL_NAME`: The model name for audio transcription services (OpenAI) or the custom deployment name for Azure.
+- `CHAT_MODEL_NAME`: The model name for chat services (OpenAI) or the custom deployment name for Azure.
+
+### Configuration Steps
+
+1. **Set Environment Variables**: Based on the chosen provider, set the appropriate environment variables in `plugin_settings`.
+
+   For OpenAI:
+   ```python
+   plugin_settings.API_PROVIDER = 'openai'
+   plugin_settings.TRANSCRIBE_SERVICE_PROVIDER_API_KEY = '<your_openai_api_key>'
+   plugin_settings.AUDIO_MODEL_NAME = '<openai_audio_model_name>'
+   plugin_settings.CHAT_MODEL_NAME = '<openai_chat_model_name>'
+   ```
+
+   For Azure:
+   ```python
+   plugin_settings.API_PROVIDER = 'azure'
+   plugin_settings.TRANSCRIBE_SERVICE_PROVIDER_API_KEY = '<your_azure_api_key>'
+   plugin_settings.AZURE_API_VERSION = '<api_version>'
+   plugin_settings.AZURE_ENDPOINT = '<azure_endpoint>'
+   plugin_settings.AUDIO_MODEL_NAME = '<azure_custom_deployment_name_for_audio>'
+   plugin_settings.CHAT_MODEL_NAME = '<azure_custom_deployment_name_for_chat>'
+   ```
+
+2. **Initialize AI Client**: The AI client initialization is handled within the `get_openai_client` function, which now dynamically selects the AI service based on the `API_PROVIDER` setting.
+
+3. **Usage in Tasks**: Use the configured AI client in your tasks to perform AI-related operations like audio transcription and chat completions, ensuring you set the model or deployment names correctly.
+
+By following these configuration steps and setting the appropriate variables, Care Scribe will be able to interact with the chosen AI service provider efficiently and securely.
 
 ## Frontend Integration
 
