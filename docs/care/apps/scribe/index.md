@@ -10,6 +10,14 @@
 | **Github-Repo**   | https://github.com/coronasafe/care_scribe                        |
 | **Created**       | 2024-04-15                                               |
 
+## Introduction
+
+The Care Scribe feature represents a substantial advancement in enhancing the accessibility and efficiency of form-filling applications. This introduction section will delve into the core functionalities of Care Scribe, highlighting the significant benefits it offers to users, particularly in terms of streamlining administrative processes and improving user experience. We will also explore the technology behind Care Scribe, how it integrates with existing systems, and its user interface features. Additionally, the scope of this documentation will be outlined, detailing what readers can expect to learn about the feature, including step-by-step guides, best use cases, and troubleshooting tips. This comprehensive overview aims to provide a thorough understanding of Care Scribe and its potential impact in various professional settings.
+
+### Overview of Care Scribe
+
+Care Scribe is an innovative feature that integrates with the Care application to enable voice-assisted form filling. Utilizing advanced speech recognition technology, Care Scribe allows users to fill out forms using voice commands. This seamless interaction aims to enhance the user experience by making form-filling faster, more accurate, and accessible.
+
 # Table of Contents
 
 1. [Introduction](#introduction)
@@ -43,14 +51,6 @@
    1. [References](#references)
    2. [Acknowledgements](#acknowledgements)
 8. [Changelog](#changelog)
-
-## Introduction
-
-The Care Scribe feature represents a significant advancement in the accessibility and efficiency of form-filling applications. This section provides an introduction to the feature, outlining its core functionality, the benefits it offers, and the scope of this documentation.
-
-### Overview of Care Scribe
-
-Care Scribe is an innovative feature that integrates with the Care application to enable voice-assisted form filling. Utilizing advanced speech recognition technology, Care Scribe allows users to fill out forms using voice commands. This seamless interaction aims to enhance the user experience by making form-filling faster, more accurate, and accessible.
 
 ### Purpose and Benefits
 
