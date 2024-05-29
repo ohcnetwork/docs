@@ -42,49 +42,11 @@ However, this did not have it's desired result on the field. Consents were not e
 The new requirement was to have a seperate page for consents, accessible from the patient consultation page.
 In the consent page, files should be managed in a single file manager, and consents should be grouped by type.
 
-Although the UI reason was logical, our current handling of consents did not fit with this. Hacks and workarounds were used to ship the new page, but it is clear that the current implementation is not sustainable.
+The new UI requirement sounded more logical than the one I previously made, but the way I was handling consents in the backend were not compatible with this, thus hacks and workarounds were used to ship the new page, but it is clear that the current implementation is not sustainable.
 
 ![New UI](./assets/0006/new-ui.png)
 
 ## Proposal
-
-I have two proposals for restructuring the way we handle consents
-
-### P1. **Playing by files** (personal choice)
-
-We don't create a new table for consents, but instead update the `FileUpload` model to include a schema'd `meta` field. This field would store the consent data. The file upload model already stores info on creator and archiver. Files would be linked to the current consultation through `associating_id`. This would not require defining a new API view and only one `GET` call will be made from the client. Our goal will be achieved in the least amount of time and effort, and would make the least amount of API calls. The meta field can be utilized for other future requirements as well.
-
-```ts
-type FileUploadMeta = {
-  consent?: {
-    type: ConsentType;
-    patient_code_status?: PatientCodeStatus;
-  };
-};
-```
-
-```
-/files/?file_type=CONSENT_RECORDS&associating_id=consultation-12345
-```
-
-We can update the file upload serializer to allow edits to the meta field.
-
-In the case of archiving a whole consent type (e.g. when a new patient code status is needed), we add a new endpoint to archive multiple files. The endpoint checks for permissions and then archives the files.
-
-```
-POST /files/archive
-
-{
-  "reason" : "Patient has a new code status",
-  "files" :
-    [
-      "file-12345",
-      "file-12346"
-    ]
-}
-```
-
-### P2. **New Model**
 
 We create a new model `PatientConsent`
 
@@ -92,14 +54,16 @@ We create a new model `PatientConsent`
 class PatientConsent(BaseModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     type = models.IntegerField(choices=ConsentType.choices)
-    patient_code_status = models.IntegerField(choices=PatientCodeStatus.choices)
+    patient_code_status = models.IntegerField(choices=PatientCodeStatus.choices, null=True, blank=True)
     archived = models.BooleanField(default=False)
     files = models.ManyToManyField(FileUpload, related_name="consents")
 ```
 
-`BaseModel` handles creator, editor and time stamps.
+Alongside this, a constraint that does not allow a consent of `type` patient code status to have a null `patient_code_status`. We enforce this through the serializer as well.
 
-No changes made to the file upload model.
+Incase a new patient code status is added, the previous consent is automatically archived. A consent archive will also archive all files associated with it.
+
+`BaseModel` handles creator, editor and time stamps.
 
 New APIs for CRUD operations on `PatientConsent`
 
