@@ -4,13 +4,13 @@ import type * as Preset from "@docusaurus/preset-classic";
 
 const config: Config = {
   title: "OHC Docs",
-  tagline: "Dinosaurs are cool",
+  tagline: "Building open source healthcare goodness.",
   favicon: "favicon.ico",
 
   url: "https://docs.ohc.network",
   baseUrl: "/",
 
-  organizationName: "coronasafe",
+  organizationName: "Open Healthcare Network",
   projectName: "docs",
 
   onBrokenLinks: "throw",
@@ -68,6 +68,7 @@ const config: Config = {
       },
       items: [
         { to: "/docs/care", label: "Care", position: "left" },
+        { to: "/docs/ayushma/", label: "Ayushma", position: "left" },
         { to: "/blog", label: "Blog", position: "left" },
         {
           href: 'https://github.com/coronasafe/docs',
