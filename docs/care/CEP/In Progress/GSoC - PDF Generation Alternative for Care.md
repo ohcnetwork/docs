@@ -143,9 +143,14 @@ def generate_discharge_summary_pdf(data, file):
     )
 ```
 
-### Step 3: Create Static Template for Reports [`Working`]
+### Step 3: Create Static Template for Reports
 
-Currently working on it.
-Progress can be seen here - [Report Template](https://typst.app/project/rBahq8CbsixUHYwri4KtmO)
+Completed it. Progress can be seen here - [Report Template](https://typst.app/project/rBahq8CbsixUHYwri4KtmO)
+Now this document just cointains different components that I've used in my template.
+
+### Step 4: Integrate Typst with Django Templates in Our Project
+Updated the previous template using HTML/CSS with `Typst`. Template can be found [here]([url](https://github.com/coronasafe/care/blob/5d5ca4630cebd168f3ca8a75ca2dae9bdc6110fd/care/templates/reports/patient_discharge_summary_pdf_template.typ))
+
+### Step 5: Create Tests [`Working on it`]
 
 
