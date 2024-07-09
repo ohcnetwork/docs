@@ -232,7 +232,7 @@ We need to come up with an efficient solution so that we do not store redundant 
   - [ ] Add tests for the APIs.
 
 ### 15th June - 19th June
- - [x] WebSockets Using Django Channels
+- [x] WebSockets Using Django Channels
   - [x] Specify the approach for implementing WebSockets. 
   - [x] Implement WebSockets.
   - [x] calling necessary functions on app startup 
