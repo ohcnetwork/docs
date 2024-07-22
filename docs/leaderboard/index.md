@@ -117,7 +117,6 @@ The codebase is organized into the following directories:
 - **Milestones**: 
 1. Completed the refactoring of the GitHub scraper.
 2. Integrated GitHub Discussions using GraphQL.
-- **Screenshots and Demos**: 
 
 ## Discussions UI
 
