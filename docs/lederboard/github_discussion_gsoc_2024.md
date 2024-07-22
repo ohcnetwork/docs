@@ -1,73 +1,134 @@
-# Integrate GitHub Discussion in Leaderboard
+# Project Overview
 
-## Update Observations
+## Title
+**Refactor Scraper and Integration of GitHub Discussions in Leaderboard**
 
-### Task 1: Refactor Python Scraper into TypeScript
+## Objective
+The project is divided into two main parts:
 
-#### Problems with the Current Scraper:
+### 1. Refactoring the GitHub Scraper
 
-1. The current scraper uses the GitHub REST API, which is not the most efficient.
-2. It lacks type safety.
-3. Python does not support GitHub GraphQL for fetching GitHub discussions.
-4. The codebase is monolithic, reducing readability.
+#### Problems with the Python Scraper
+1. **Rate Limits and Type Safety**: The current scraper directly uses the GitHub REST API, leading to frequent rate limit issues and a lack of type safety.
+2. **GraphQL Support**: Python does not natively support GitHub GraphQL for fetching GitHub discussions.
+3. **Code Organization**: The entire scraper is encapsulated in a single file, resulting in reduced readability and maintainability.
 
-#### Solution Implementation:
+#### Solution
+The objective is to enhance the GitHub scraper by:
+- **Type Safety**: Utilizing the Octokit library to make GitHub Discussion interactions type-safe.
+- **GraphQL Integration**: Implementing GraphQL for more efficient and meaningful queries.
+- **Improved Code Structure**: Refactoring the code to improve readability and maintainability.
 
-1. Analyzed the current scraper to identify requirements.
-2. Defined TypeScript types for the scraper.
-3. Implemented type-safe fetching using Octokit and GraphQL.
-4. Modularized the scraper into nine different files for improved readability.
-5. Conducted individual and integration testing for each functionality.
-6. Updated `tsconfig.json` for TypeScript configuration.
+### 2. Integrating the GitHub Discussions Feature into the Leaderboard
+To enhance the leaderboard with the GitHub Discussions feature:
+1. Scrape GitHub Discussions.
+2. Create a UI to display GitHub Discussions.
 
-### Task 2: Workflow Update and Testing
+## Installation and Setup
 
-#### Update GitHub Workflow (`scraper-dry-run.yaml`):
+### Prerequisites
+- Octokit library (^4.0.2) - [Octokit on npm](https://www.npmjs.com/package/octokit)
 
-- Configured Node.js environment setup.
-- Installed dependencies using PNPM.
-- Built the TypeScript scraper with `pnpm build`.
-- Generated Markdown files for new contributors.
-- Added dependencies for running tests.
+### Installation Instructions
+To enable the GitHub Discussion feature in the Leaderboard:
+1. Add `Discussions` to `NEXT_PUBLIC_FEATURES` in the `.env` file.
 
-#### Implementation Testing:
+## Usage Guide
 
-- Created GitHub activity data schema.
-- Ran tests for user activity data based on the GitHub schema.
+### Basic Usage
+Run the following command inside the scraper directory:
+```sh
+pnpm dev org_name data_dir [date] [num_days]
+```
+**Example :** 
+1. pnpm dev coronasafe data-repo/github 
+2. pnpm dev coronasafe data-repo/github 2024-07-21 30
 
-### Task 3: Integrate GitHub Discussion with TypeScript Scraper
+## Implementation Details
 
-#### Scraping GitHub Discussion:
+### Code Structure
+The codebase is organized into the following directories:
 
-1. Utilized GraphQL API to scrape GitHub discussions.
-2. Declared necessary types in `types.ts`.
+- **`scraper/src/github-scraper`**: Contains all files related to the GitHub scraper.
+- **`app/discussions`**: Contains the main page for Discussions.
+- **`components/discussions`**: Contains all required components to display discussions.
+- **`lib/discussions.ts`**: Contains all necessary functions to fetch and filter discussions.
 
-#### Parsing and Storing GitHub Discussion:
+### Modules and Functions
 
-1. Analyzed UI requirements and Point Calculation logic.
-2. Parsed required data from fetched GitHub discussions.
-3. Stored GitHub discussion data in `data/github/discussion/discussion.json`.
+#### 1. Scraper
 
-#### Testing GitHub Discussion Data:
+**`index.ts`**: Main module for running the scraper
+- **`main()`**: Initiates the scraping process.
+- **`scrapeGitHub()`**: Scrapes GitHub data.
+- **`scrapeDiscussions()`**: Scrapes GitHub Discussions and stores them in the discussions directory.
 
-1. Created a discussion schema for testing purposes.
-2. Implemented testing logic for GitHub discussion data.
+**`fetchEvents.ts`**: Fetches GitHub events
+- **`fetchEvents()`**: Fetches all GitHub events using the Octokit library.
 
-### Task 4: Create Discussion UI to Display GitHub Discussions
+**`parseEvents.ts`**: Parses GitHub events
+- **`parseEvents()`**: Parses GitHub events for the event types `IssueCommentEvent`, `IssuesEvent`, `PullRequestEvent`, and `PullRequestReviewEvent`.
+- **`appendEvent()`**: Collects scraper data for users during scraping.
+- **`addCollaborations()`**: Fetches collaborators for closed `PullRequestEvent`.
 
-1. Designed GitHub discussion route.
-2. Implemented discussion card UI for displaying GitHub discussions.
-3. Added filter feature based on GitHub activity and date range.
-4. Displayed GitHub discussions on the homepage with a "show more" button.
-5. Integrated GitHub discussions with contributor activity data.
+**`fetchUserData.ts`**: Fetches user data
+- **`fetchMergeEvents()`**: Fetches details of merged pull requests for contributors.
+- **`fetchOpenPulls()`**: Fetches currently open pull requests for contributors.
 
-### Task 5: Implement Point Mechanism for GitHub Discussion
+**`saveData.ts`**: Saves data
+- **`mergedData()`**: Merges data with the existing contributor data.
 
-1. Implemented a point mechanism based on GitHub discussion interactions:
-   - Answered GitHub Discussion: 7 Points.
+**`discussion.ts`**: Manages discussion scraping
+- **`scrapeDiscussions()`**: Fetches, parses, and saves GitHub Discussions.
+- **`fetchGitHubDiscussions()`**: Fetches all GitHub discussions using Octokit GraphQL.
+- **`parseDiscussionData()`**: Parses GitHub discussions.
+
+#### 2. Discussions UI
+
+**`lib/discussion.ts`**: Manages fetching and filtering discussions
+- **`fetchGithubDiscussion()`**: Fetches GitHub Discussions from the data repository and can filter by the number of days or user, or return all discussions.
+- **`getGithubDiscussions()`**: Returns discussions in the form of `Activity` for the user profile.
+- **`checkAnsweredByUser()`**: Checks if the user has answered a particular discussion.
+- **`fetchParticipants()`**: Fetches participants using Octokit GraphQL.
+
+#### 3. Layout Page and UI Components
+
+- **`app/discussion`**: Contains layout and discussion page.
+- **`components/discussions`**:
+  1. `GithubDiscussions.tsx`
+  2. `GithubDiscussion.tsx`
+  3. `FilterDiscussions.tsx`
+  4. `DiscussionLeaderboard.tsx`
+
+#### 4. Modify point mechanism and enable Empath badge
+   - Answered GitHub Discussion: 5 Points.
    - Created GitHub Discussion: 2 Points.
    - Commented on Discussion: 1 Point (applies once per discussion).
+   - Enable an **empathy badge** based on GitHub Discussions that are answered.
 
-2. Based on Disucssion Points Display Top 10 Contributor's for at discussion route
-   - In Progress
+## Testing
+- **Test Cases**: Test the github scraping data .
+- **Running Tests**: `pnpm test`
+- **Test Coverage**: It covers github-data schema and discussion-data
 
+
+
+## Results and Achievements
+- **Milestones**: 
+1. Completed the refactoring of the GitHub scraper.
+2. Integrated GitHub Discussions using GraphQL.
+- **Screenshots and Demos**: 
+
+## Discussions UI
+
+### Desktop View
+https://github.com/user-attachments/assets/eb713544-19d5-41b4-9411-a6f9f49d3e5f
+
+### Mobile View
+https://github.com/user-attachments/assets/bc48833b-f216-4ec3-9d5c-2248e3577004
+
+## References and Acknowledgments
+#### **References**: 
+  - [GitHub GraphQL API](https://docs.github.com/en/graphql/guides/using-the-graphql-api-for-discussions)
+  - [Octokit](https://github.com/octokit)
+- **Acknowledgments**: Thanks to my mentors for their guidance and support.
