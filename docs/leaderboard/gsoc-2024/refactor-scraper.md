@@ -1,28 +1,7 @@
-# Project Overview
+# Refactor Scraper
 
 ## Title
-**Refactor Scraper and Integration of GitHub Discussions in Leaderboard**
-
-## Objective
-The project is divided into two main parts:
-
-### 1. Refactoring the GitHub Scraper
-
-#### Problems with the Python Scraper
-1. **Rate Limits and Type Safety**: The current scraper directly uses the GitHub REST API, leading to frequent rate limit issues and a lack of type safety.
-2. **GraphQL Support**: Python does not natively support GitHub GraphQL for fetching GitHub discussions.
-3. **Code Organization**: The entire scraper is encapsulated in a single file, resulting in reduced readability and maintainability.
-
-#### Solution
-The objective is to enhance the GitHub scraper by:
-- **Type Safety**: Utilizing the Octokit library to make GitHub Discussion interactions type-safe.
-- **GraphQL Integration**: Implementing GraphQL for more efficient and meaningful queries.
-- **Improved Code Structure**: Refactoring the code to improve readability and maintainability.
-
-### 2. Integrating the GitHub Discussions Feature into the Leaderboard
-To enhance the leaderboard with the GitHub Discussions feature:
-1. Scrape GitHub Discussions.
-2. Create a UI to display GitHub Discussions.
+**Refactor Python Scraper To Typescript**
 
 ## Installation and Setup
 
@@ -117,7 +96,6 @@ The codebase is organized into the following directories:
 - **Milestones**: 
 1. Completed the refactoring of the GitHub scraper.
 2. Integrated GitHub Discussions using GraphQL.
-- **Screenshots and Demos**: 
 
 ## Discussions UI
 
