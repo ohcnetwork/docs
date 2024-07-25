@@ -1,5 +1,4 @@
-
-# GitHub-Discussion
+# GitHub Discussions
 
 ## Title
 **Refactor Scraper and Integration of GitHub Discussions in Leaderboard**
@@ -7,6 +6,7 @@
 ## Objective
 
 Google Summer Of Code 2024 Project of Leaderboard is to add a new feature of GitHub Disucssion in the leaderboard. So, to enable this feature there is need to scrape github discussions from github api but current python scraper is using rest api and github discussions can only be fetch by using GraphQL API and [python is not supporting it](https://github.com/orgs/community/discussions/4327).
+
 
 ### 1. Refactoring the GitHub Scraper
 
