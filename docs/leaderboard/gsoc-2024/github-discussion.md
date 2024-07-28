@@ -1,135 +1,110 @@
 # GitHub Discussions
 
 ## Title
-**Refactor Scraper and Integration of GitHub Discussions in Leaderboard**
+### **Integration of GitHub Discussions in Leaderboard**
 
-## Objective
-
-Google Summer Of Code 2024 Project of Leaderboard is to add a new feature of GitHub Disucssion in the leaderboard. So, to enable this feature there is need to scrape github discussions from github api but current python scraper is using rest api and github discussions can only be fetch by using GraphQL API and [python is not supporting it](https://github.com/orgs/community/discussions/4327).
-
-
-### 1. Refactoring the GitHub Scraper
-
-#### Problems with the Python Scraper
-1. **Type Safety**: The current scraper directly uses the GitHub REST API, leading to a lack of type safety.
-2. **GraphQL Support**: Python does not natively support GitHub GraphQL for fetching GitHub discussions.
-3. **Code Organization**: The entire scraper is encapsulated in a single file, resulting in reduced readability and maintainability.
-
-#### Solution
-The objective is to enhance the GitHub scraper by:
-- **Type Safety**: Utilizing the Octokit library to make GitHub Discussion interactions type-safe.
-- **GraphQL Integration**: Implementing GraphQL for more efficient and meaningful queries.
-- **Improved Code Structure**: Refactoring the code to improve readability and maintainability.
-
-### 2. Integrating the GitHub Discussions Feature into the Leaderboard
-To enhance the leaderboard with the GitHub Discussions feature:
-1. Scrape GitHub Discussions.
-2. Create a UI to display GitHub Discussions.
-
-## Installation and Setup
-
-### Prerequisites
-- Octokit library (^4.0.2) - [Octokit on npm](https://www.npmjs.com/package/octokit)
-
-### Installation Instructions
-To enable the GitHub Discussion feature in the Leaderboard:
-1. Add `Discussions` to `NEXT_PUBLIC_FEATURES` in the `.env` file.
-
-## Usage Guide
-
-### Basic Usage
-Run the following command inside the scraper directory:
-```sh
-pnpm dev org_name data_dir [date] [num_days]
-```
-**Example :** 
-1. pnpm dev coronasafe data-repo/github 
-2. pnpm dev coronasafe data-repo/github 2024-07-21 30
+---
 
 ## Implementation Details
 
 ### Code Structure
-The codebase is organized into the following directories:
+- Pull Request Link : [Link](https://github.com/coronasafe/leaderboard/pull/463)
+- The codebase is organized into the following files:
 
-- **`scraper/src/github-scraper`**: Contains all files related to the GitHub scraper.
+### Files
+
 - **`app/discussions`**: Contains the main page for Discussions.
 - **`components/discussions`**: Contains all required components to display discussions.
 - **`lib/discussions.ts`**: Contains all necessary functions to fetch and filter discussions.
 
-### Modules and Functions
+#### 1. Discussion Page
 
-#### 1. Scraper
+- **`app/discussion`**: Contains `layout.tsx` and discussion `page.tsx`.
+  - Displays fetched data using the `GitHubDiscussions.tsx` component by passing GitHub Discussions.
+  - Here is the view of how the discussions page looks:
+    ![Discussion Page](../../../static/img/leaderboard/discussions/discussion_page.png)
 
-**`index.ts`**: Main module for running the scraper
-- **`main()`**: Initiates the scraping process.
-- **`scrapeGitHub()`**: Scrapes GitHub data.
-- **`scrapeDiscussions()`**: Scrapes GitHub Discussions and stores them in the discussions directory.
+#### 2. UI Components
 
-**`fetchEvents.ts`**: Fetches GitHub events
-- **`fetchEvents()`**: Fetches all GitHub events using the Octokit library.
-
-**`parseEvents.ts`**: Parses GitHub events
-- **`parseEvents()`**: Parses GitHub events for the event types `IssueCommentEvent`, `IssuesEvent`, `PullRequestEvent`, and `PullRequestReviewEvent`.
-- **`appendEvent()`**: Collects scraper data for users during scraping.
-- **`addCollaborations()`**: Fetches collaborators for closed `PullRequestEvent`.
-
-**`fetchUserData.ts`**: Fetches user data
-- **`fetchMergeEvents()`**: Fetches details of merged pull requests for contributors.
-- **`fetchOpenPulls()`**: Fetches currently open pull requests for contributors.
-
-**`saveData.ts`**: Saves data
-- **`mergedData()`**: Merges data with the existing contributor data.
-
-**`discussion.ts`**: Manages discussion scraping
-- **`scrapeDiscussions()`**: Fetches, parses, and saves GitHub Discussions.
-- **`fetchGitHubDiscussions()`**: Fetches all GitHub discussions using Octokit GraphQL.
-- **`parseDiscussionData()`**: Parses GitHub discussions.
-
-#### 2. Discussions UI
-
-**`lib/discussion.ts`**: Manages fetching and filtering discussions
-- **`fetchGithubDiscussion()`**: Fetches GitHub Discussions from the data repository and can filter by the number of days or user, or return all discussions.
-- **`getGithubDiscussions()`**: Returns discussions in the form of `Activity` for the user profile.
-- **`checkAnsweredByUser()`**: Checks if the user has answered a particular discussion.
-- **`fetchParticipants()`**: Fetches participants using Octokit GraphQL.
-
-#### 3. Layout Page and UI Components
-
-- **`app/discussion`**: Contains layout and discussion page.
 - **`components/discussions`**:
-  1. `GithubDiscussions.tsx`
-  2. `GithubDiscussion.tsx`
-  3. `FilterDiscussions.tsx`
-  4. `DiscussionLeaderboard.tsx`
+  
+  1. `GithubDiscussions.tsx` & `GithubDiscussion.tsx`
+     - Both components are used to display GitHub discussions in the project.
+     - These are reusable components, so they are used on the Home Page, Discussion Page, and contributor's Profile Page.
+     - Here is an image of the Discussions card:
+       ![Discussion Card](../../../static/img/leaderboard/discussions/discussion_card.png)
+    
+  2. `FilterDiscussions.tsx`:
+     - This component contains two types of filters:
+       - Category Filter
+       - Date Range Filter (Reused)
+     - Both filters are used to filter GitHub Discussions.
+     - The UI is the same as shown in the GitHub Discussions route.
+   
+  3. `DiscussionLeaderboard.tsx`:
+     - This function ranks the contributors based on the number of answers or comments created, or discussions started.
+     - It shows the top 3 contributors based on discussion points.
+     - The UI for this is also shown on the discussions page.
 
-#### 4. Modify point mechanism and enable Empath badge
-   - Answered GitHub Discussion: 5 Points.
-   - Created GitHub Discussion: 2 Points.
-   - Commented on Discussion: 1 Point (applies once per discussion).
-   - Enable an **empathy badge** based on GitHub Discussions that are answered.
+#### 3. Modify Point Mechanism and Enable Empathy Badge
+- Answered GitHub Discussion: 5 Points.
+- Created GitHub Discussion: 2 Points.
+- Commented on Discussion: 1 Point (applies once per discussion).
+- Enable an **empathy badge** based on GitHub Discussions that are answered.
 
-## Testing
-- **Test Cases**: Test the github scraping data .
-- **Running Tests**: `pnpm test`
-- **Test Coverage**: It covers github-data schema and discussion-data
+#### 4. Library Functions for GitHub Discussions
+- **`lib/discussion.ts`**: Manages fetching and filtering discussions from the data directory. The functions inside are listed below:
+  - `fetchGithubDiscussion()`
+  - `getGithubDiscussions()`
+  - `fetchParticipants()`
 
+**Functions and Their Responsibilities:**
 
+- **`fetchGithubDiscussion()`**:
+  - Fetches GitHub Discussions from the data repository and can filter by the number of days or user, or return all discussions.
+  - Parameters: `Number of Discussions` and `User Name`
+  - Based on parameter values, this function will return a discussion array. If no parameters are given, it simply returns all discussions present in the data directory.
+  - This function also generates the category array, which is used to show a list of categories available during filtering.
+
+- **`getGithubDiscussions()`**: 
+  - Returns discussions in the form of `Activity` for the user profile.
+  - Parameter: GitHub Handle of User
+  - By username, it checks if the discussion was created by the user or not.
+  - If created by the user, it gives:
+    - Type: `discussion_created` and Title: `Started a Discussion`
+  - If the user created a comment, then:
+    - Type: `discussion_comment_created` and Title: `Commented on discussion`
+  - If the user answered discussions, then:
+    - Type: `discussion_answered` and Title: `Discussion Answered`
+  - Return type:
+    ```typescript
+    type: activityType,
+    title: title,
+    time: discussion.time,
+    link: discussion.link,
+    discussion: discussion,
+    ```
+
+- **`checkAnsweredByUser()`**: 
+  - Checks if the user has answered a particular discussion or not.
+  - This function makes a query using Octokit and GraphQL with the help of the discussion number.
+  - Fetches information related to whether the GitHub discussion is answered or not.
+  - Here's the GraphQL Query:
+    ```typescript
+    query {
+        repository(owner: "${org}", name: "${repository}") {
+          discussion (number: ${number}) {
+            answer {
+              author {
+                login
+              }
+            }
+          }
+        }
+      }
+    ```
+---
 
 ## Results and Achievements
 - **Milestones**: 
-1. Completed the refactoring of the GitHub scraper.
-2. Integrated GitHub Discussions using GraphQL.
-
-## Discussions UI
-
-### Desktop View
-https://github.com/user-attachments/assets/eb713544-19d5-41b4-9411-a6f9f49d3e5f
-
-### Mobile View
-https://github.com/user-attachments/assets/bc48833b-f216-4ec3-9d5c-2248e3577004
-
-## References and Acknowledgments
-#### **References**: 
-  - [GitHub GraphQL API](https://docs.github.com/en/graphql/guides/using-the-graphql-api-for-discussions)
-  - [Octokit](https://github.com/octokit)
-- **Acknowledgments**: Thanks to my mentors for their guidance and support.
+  1. Integrated GitHub Discussions UI in the leaderboard.

@@ -1,7 +1,8 @@
 # Refactor Scraper
 
 ## Title
-**Refactor Scraper From Python To Typescript**
+### **Refactor Scraper From Python To Typescript**
+
 ---
 ## Description
 
@@ -29,8 +30,8 @@ pnpm dev org_name data_dir [date] [num_days]
 ## Implementation Details
 
 ### Code Structure
-
-The scraper code is divided into nine different files, which are stored inside `scraper/src/github-scraper`.
+- Pull Request Link : [Link](https://github.com/coronasafe/leaderboard/pull/458)
+- The scraper code is divided into nine different files, which are stored inside `scraper/src/github-scraper`.
 
 ### Files
 1. [index.ts](#1-indexts)
