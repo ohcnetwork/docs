@@ -1,9 +1,4 @@
-# GitHub Discussions
-
-## Title
-### **Integration of GitHub Discussions in Leaderboard**
-
----
+# GitHub Discussions Integration
 
 ## Implementation Details
 

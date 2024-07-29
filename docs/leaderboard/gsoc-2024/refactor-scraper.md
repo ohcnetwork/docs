@@ -1,9 +1,4 @@
-# Refactor Scraper
-
-## Title
-### **Refactor Scraper From Python To Typescript**
-
----
+# Refactor GitHub scraper from Python To TypeScript
 ## Description
 
 Refactoring scraper from Python to the TypeScript we have some advantages like 
