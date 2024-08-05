@@ -151,6 +151,62 @@ Now this document just cointains different components that I've used in my templ
 ### Step 4: Integrate Typst with Django Templates in Our Project
 Updated the previous template using HTML/CSS with `Typst`. Template can be found [here](https://github.com/coronasafe/care/blob/5d5ca4630cebd168f3ca8a75ca2dae9bdc6110fd/care/templates/reports/patient_discharge_summary_pdf_template.typ)
 
-### Step 5: Create Tests [`Working on it`]
+### Step 5: Create Tests
+Generating `PNG` of the pdf using typst and comparing using `Pillow` library. It involves have sample png images of the pdf in util folder which are to be compared with the newly generated pdf pngs , if identical tghe test cases passes, else throws error.
+
+### Step 6: Remove All Previous Dependencies and Remove Chromium and django-hardcopy
+Updated all the functions utilising the older dependecies with the newer versions and removed `django-hardcopy` from pipfile and `chromium` from docker file.
+
+### Step 7:  Update production files for the changes
+Updated prod.Dockerfile to remove older dependencies and added newer dependecies.
+
+
+<br>
+<br>
+
+# Updates in the template are listed below
+
+### Patient Detail section
+
+- Remove `Date of Birth` field
+
+
+### Admission Details Section
+
+- Removed `Decision After Consultation` field
+- Removed `Date Of Admission` field
+- Removed `Examination details and Clinical conditions` field
+- Removed `From` field
+- Added `Duration of Admission` field , which shows the time span the patient was admitted (discharge date - encounter date)
+- Added `Admitted to` field , which shows the bed and it's type
+- Added `Diagnosis at admission` field which shows List the ICD-11 in the following order - confirmed,provisional, unconfirmed, differential
+- Added `Reported Allergies` field, which shows the list of allergies
+- Added `Symptoms at admission` field ,which show list of all active symptoms at the time of admission
+
+
+### Health Insurance Details
+
+- kept the table as the last item below discharge details
+
+### Treatment Summary Section
+
+- Combined `Prescriptions` medication details into a single table with updated format
+- Removed `Treatment Plan`
+- Removed `General Instructions`
+- Removed `Special Instructions`
+
+
+### Discharge Summary Section
+
+- updated `Discharge Notes` to `Discharge Advice`
+- Added `Discharge Prescription` table
+
+### Others
+
+> #### Removed `Symptoms` and `Diagnosis (ICD-11)` tables and `Health Status at admission` section
+> #### Created two new `templatetags` , one to `format prescription` and one to `handle empty data`
+
+
+  
 
 
