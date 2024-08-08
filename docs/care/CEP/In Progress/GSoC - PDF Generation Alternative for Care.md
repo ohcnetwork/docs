@@ -203,6 +203,7 @@ Updated prod.Dockerfile to remove older dependencies and added newer dependecies
 
 ### Others
 
+> #### Removed `Daily Round` section
 > #### Removed `Symptoms` and `Diagnosis (ICD-11)` tables and `Health Status at admission` section
 > #### Created two new `templatetags` , one to `format prescription` and one to `handle empty data`
 
