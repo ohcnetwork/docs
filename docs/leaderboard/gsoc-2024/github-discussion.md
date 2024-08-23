@@ -3,7 +3,7 @@
 ## Implementation Details
 
 ### Code Structure
-- Pull Request Link : [Link](https://github.com/coronasafe/leaderboard/pull/463)
+- Pull Request Link : [Link](https://github.com/ohcnetwork/leaderboard/pull/463)
 - The codebase is organized into the following files:
 
 ### Files

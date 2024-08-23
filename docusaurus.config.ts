@@ -27,11 +27,11 @@ const config: Config = {
       {
         docs: {
           sidebarPath: "./sidebars.ts",
-          editUrl: "https://github.com/coronasafe/docs/tree/master/",
+          editUrl: "https://github.com/ohcnetwork/docs/tree/master/",
         },
         blog: {
           showReadingTime: true,
-          editUrl: "https://github.com/coronasafe/docs/tree/master/",
+          editUrl: "https://github.com/ohcnetwork/docs/tree/master/",
         },
         theme: {
           customCss: "./src/css/custom.css",
@@ -72,7 +72,7 @@ const config: Config = {
         { to: "/docs/leaderboard/", label: "Leaderboard", position: "left" },
         { to: "/blog", label: "Blog", position: "left" },
         {
-          href: 'https://github.com/coronasafe/docs',
+          href: 'https://github.com/ohcnetwork/docs',
           position: 'right',
           className: 'header-github-link',
           'aria-label': 'GitHub repository',

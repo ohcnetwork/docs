@@ -14,7 +14,7 @@ This section outlines the installation process for both the Ayushma front-end an
 1. **Clone the Repository:** Open a terminal or command prompt and navigate to the directory where you want to install Ayushma. Then, clone the repository using the following command:
 
 ```
-git clone https://github.com/coronasafe/ayushma_fe.git
+git clone https://github.com/ohcnetwork/ayushma_fe.git
 ```
 
 1. **Navigate to the Project Directory:**
