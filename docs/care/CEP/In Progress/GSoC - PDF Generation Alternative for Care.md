@@ -58,12 +58,9 @@ By adopting Typst for our PDF generation needs, we can significantly improve the
 
 ### Step 1: Update Docker Files to Add Typst Dependencies
 
-Since we don't have an apt installation for Typst, we can instead import it directly from its official image, which is reliable. Here is how we can update our Dockerfile:
+Since we don't have an apt installation for Typst, we can download it from the official releases according to the build we are working on. Here is how we can update our Dockerfile:
 
 ```docker
-# Importing Typst official Image
-FROM ghcr.io/typst/typst:v0.11.0 as typstOfficialImage
-
 FROM python:3.11-slim-bullseye
 
 ENV PYTHONUNBUFFERED 1
@@ -71,15 +68,29 @@ ENV PYTHONDONTWRITEBYTECODE 1
 
 ENV PATH /venv/bin:$PATH
 
+ARG TYPST_VERSION=0.11.0
 
 RUN apt-get update && apt-get install --no-install-recommends -y \
   build-essential libjpeg-dev zlib1g-dev \
-  libpq-dev gettext wget curl gnupg chromium git \
+  libpq-dev gettext wget curl gnupg git \
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*
 
-# Copy typst binary from official docker image
-COPY --from=typstOfficialImage /bin/typst /bin/typst
+# Download and install Typst for the correct architecture
+RUN ARCH=$(dpkg --print-architecture) && \
+    if [ "$ARCH" = "amd64" ]; then \
+        TYPST_ARCH="x86_64-unknown-linux-musl"; \
+    elif [ "$ARCH" = "arm64" ]; then \
+        TYPST_ARCH="aarch64-unknown-linux-musl"; \
+    else \
+        echo "Unsupported architecture: $ARCH"; \
+        exit 1; \
+    fi && \
+    wget -O typst.tar.xz https://github.com/typst/typst/releases/download/v${TYPST_VERSION}/typst-${TYPST_ARCH}.tar.xz && \
+    tar -xf typst.tar.xz && \
+    mv typst-${TYPST_ARCH}/typst /usr/local/bin/typst && \
+    chmod +x /usr/local/bin/typst && \
+    rm -rf typst.tar.xz typst-${TYPST_ARCH}
 
 # use pipenv to manage virtualenv
 RUN python -m venv /venv
@@ -87,6 +98,7 @@ RUN pip install pipenv
 
 COPY Pipfile Pipfile.lock ./
 RUN pipenv install --system --categories "packages dev-packages"
+
 
 COPY . /app
 
@@ -100,6 +112,7 @@ HEALTHCHECK \
   CMD ["/app/scripts/healthcheck.sh"]
 
 WORKDIR /app
+
 ```
 
 ### Step 2: Update Helper Functions and Create Typst Wrapper
@@ -152,8 +165,21 @@ Now this document just cointains different components that I've used in my templ
 Updated the previous template using HTML/CSS with `Typst`. Template can be found [here](https://github.com/coronasafe/care/blob/5d5ca4630cebd168f3ca8a75ca2dae9bdc6110fd/care/templates/reports/patient_discharge_summary_pdf_template.typ)
 
 ### Step 5: Create Tests
-Generating `PNG` of the pdf using typst and comparing using `Pillow` library. It involves have sample png images of the pdf in util folder which are to be compared with the newly generated pdf pngs , if identical tghe test cases passes, else throws error.
-
+Generating `PNG` of the pdf using typst and comparing using `Pillow` library. It involves have sample png images of the pdf in `care/facility/tests/sample_reports` folder which are to be compared with the newly generated pdf pngs , if identical the test cases passes, else throws error.
+<br>
+To Update the sample `PNG` files, we can update the [test_compile_typ() function](https://github.com/ohcnetwork/care/blob/develop/care/facility/tests/test_pdf_generation.py#L41-L100) by adding the below code to test function below line 59.
+```python
+subprocess.run(
+    ["typst", "compile", "-", sample_file_path, "--format", "png"],
+    input=content.encode("utf-8"),
+    capture_output=True,
+    check=True,
+    cwd="/",
+)
+```
+To investigate any errors, we can remove the [finally block](https://github.com/ohcnetwork/care/blob/develop/care/facility/tests/test_pdf_generation.py#L89-L100) from our [test_compile_typ() function](https://github.com/ohcnetwork/care/blob/develop/care/facility/tests/test_pdf_generation.py#L41-L100). It'll generate the `test_output{n}.png` files in `care/facility/tests/sample_reports` folder, from where you can use a image diff checker to investigate the differences.  
+<br>
+if in future if we decide to add more data to the test function and the number of pages increases, then one should also update the [number_of_pngs_generated](https://github.com/ohcnetwork/care/blob/develop/care/facility/tests/test_pdf_generation.py#L68) number to the number of pages of pdf generated.
 ### Step 6: Remove All Previous Dependencies and Remove Chromium and django-hardcopy
 Updated all the functions utilising the older dependecies with the newer versions and removed `django-hardcopy` from pipfile and `chromium` from docker file.
 
@@ -174,7 +200,6 @@ Updated prod.Dockerfile to remove older dependencies and added newer dependecies
 ### Admission Details Section
 
 - Removed `Decision After Consultation` field
-- Removed `Date Of Admission` field
 - Removed `Examination details and Clinical conditions` field
 - Removed `From` field
 - Added `Duration of Admission` field , which shows the time span the patient was admitted (discharge date - encounter date)
@@ -194,6 +219,7 @@ Updated prod.Dockerfile to remove older dependencies and added newer dependecies
 - Removed `Treatment Plan`
 - Removed `General Instructions`
 - Removed `Special Instructions`
+- Removed `Prescription notes` it is not relevant for discharge summary
 
 
 ### Discharge Summary Section
@@ -203,11 +229,16 @@ Updated prod.Dockerfile to remove older dependencies and added newer dependecies
 
 ### Others
 
-> #### Removed `Daily Round` section
-> #### Removed `Symptoms` and `Diagnosis (ICD-11)` tables and `Health Status at admission` section
-> #### Created two new `templatetags` , one to `format prescription` and one to `handle empty data`
-
+>  - Removed `Symptoms` and `Diagnosis (ICD-11)` tables and `Health Status at admission` section
+>  - Removed `Daily Round` section
+>  - Created three new `templatetags` , one to `format prescription`, one to `format_to_sentence_case` and one to `handle empty data`
+>  - Added conditions to update fields name according to admission status 
 
   
 
 
+# Results
+- Typst is 8-15 times faster in generating PDFs
+- Container size decreased by 30%
+- Typst is 10-15% more memory efficient
+- We eliminate the overhead associated with browser-based rendering, resulting in a more efficient and scalable process.
