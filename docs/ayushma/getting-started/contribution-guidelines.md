@@ -25,7 +25,7 @@ Ayushma is an open-source project and welcomes contributions from the community 
 
 ### Additional Resources
 
-* [Ayushma GitHub Repository](https://github.com/coronasafe/ayushma\_fe)
+* [Ayushma GitHub Repository](https://github.com/ohcnetwork/ayushma\_fe)
 * [Open Health Care Network](https://ohc.network/)
 
 We appreciate your contributions to making Ayushma a valuable tool for improving healthcare accessibility!

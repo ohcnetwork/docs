@@ -19,13 +19,13 @@ Run the following command inside the `scraper` directory:
 pnpm dev org_name data_dir [date] [num_days]
 ```
 **Example :** 
-1. pnpm dev coronasafe data-repo/github 
-2. pnpm dev coronasafe data-repo/github 2024-07-21 30
+1. pnpm dev ohcnetwork data-repo/github 
+2. pnpm dev ohcnetwork data-repo/github 2024-07-21 30
 ---
 ## Implementation Details
 
 ### Code Structure
-- Pull Request Link : [Link](https://github.com/coronasafe/leaderboard/pull/458)
+- Pull Request Link : [Link](https://github.com/ohcnetwork/leaderboard/pull/458)
 - The scraper code is divided into nine different files, which are stored inside `scraper/src/github-scraper`.
 
 ### Files

@@ -5,7 +5,7 @@
 | **Title**         | Care Scribe Feature Overview, Integration, and Operation |
 | **App Namespace** | `care_scribe`                                            |
 | **Last-Modified** | 2024-08-19                                               |
-| **Github-Repo**   | https://github.com/coronasafe/care_scribe                |
+| **Github-Repo**   | https://github.com/ohcnetwork/care_scribe                |
 | **Created**       | 2024-04-15                                               |
 
 ## Introduction
