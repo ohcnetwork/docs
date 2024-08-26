@@ -1,4 +1,4 @@
-# GSoC: Exploring Alternatives for PDF Generation in Care
+# CEP-6: PDF Generation in Care
 
 # Proposal Preface
 
@@ -14,7 +14,6 @@ Currently, this function is responsible for generating PDFs, and the following i
 - **Higher Memory Usage**: Requires higher memory usage during PDF generation, potentially affecting performance and responsiveness.
 - **Lack of Recent Maintenance**: The absence of recent maintenance and updates for `django-hardcopy`, last seen in July 2018, has raised concerns regarding possible security vulnerabilities.
 
-<br>
 
 # Proposed Solution
 
@@ -36,7 +35,6 @@ I engaged with the Typst community and moderators on Discord, where I received p
 
 By adopting Typst for our PDF generation needs, we can significantly improve the efficiency and scalability of our discharge report generation process, ensuring lower resource consumption and enhanced performance.
 
-<br>
 
 # Implementation Plan
 
@@ -54,7 +52,6 @@ By adopting Typst for our PDF generation needs, we can significantly improve the
 
 - **Step 7:** Update production files for the changes 
 
-<br>
 
 ### Step 1: Update Docker Files to Add Typst Dependencies
 
@@ -166,7 +163,8 @@ Updated the previous template using HTML/CSS with `Typst`. Template can be found
 
 ### Step 5: Create Tests
 Generating `PNG` of the pdf using typst and comparing using `Pillow` library. It involves have sample png images of the pdf in `care/facility/tests/sample_reports` folder which are to be compared with the newly generated pdf pngs , if identical the test cases passes, else throws error.
-<br>
+
+
 To Update the sample `PNG` files, we can update the [test_compile_typ() function](https://github.com/ohcnetwork/care/blob/develop/care/facility/tests/test_pdf_generation.py#L41-L100) by adding the below code to test function below line 59.
 ```python
 subprocess.run(
@@ -178,7 +176,7 @@ subprocess.run(
 )
 ```
 To investigate any errors, we can remove the [finally block](https://github.com/ohcnetwork/care/blob/develop/care/facility/tests/test_pdf_generation.py#L89-L100) from our [test_compile_typ() function](https://github.com/ohcnetwork/care/blob/develop/care/facility/tests/test_pdf_generation.py#L41-L100). It'll generate the `test_output{n}.png` files in `care/facility/tests/sample_reports` folder, from where you can use a image diff checker to investigate the differences.  
-<br>
+
 if in future if we decide to add more data to the test function and the number of pages increases, then one should also update the [number_of_pngs_generated](https://github.com/ohcnetwork/care/blob/develop/care/facility/tests/test_pdf_generation.py#L68) number to the number of pages of pdf generated.
 ### Step 6: Remove All Previous Dependencies and Remove Chromium and django-hardcopy
 Updated all the functions utilising the older dependecies with the newer versions and removed `django-hardcopy` from pipfile and `chromium` from docker file.
@@ -186,9 +184,6 @@ Updated all the functions utilising the older dependecies with the newer version
 ### Step 7:  Update production files for the changes
 Updated prod.Dockerfile to remove older dependencies and added newer dependecies.
 
-
-<br>
-<br>
 
 # Updates in the template are listed below
 
