@@ -1,5 +1,17 @@
 # Rewriting Middleware Server in Django
+  The Django project involved a comprehensive rewrite of the existing TeleICU middleware. However, rather than a direct one-to-one translation, certain components were optimized and refactored to enhance maintainability and readability. The key modules that underwent significant improvements include:
 
+    Update Observations
+    Cameras
+    Device/Camera Status Endpoints
+    Authentication
+
+  1) Update Observations
+  2) Cameras
+  3) Device / Camera status endpoints 
+  4) Authentication
+
+  **GitHub Link:** [Middleware Server PR](https://github.com/ohcnetwork/teleicu_middleware_backend/pull/1)
 ## Update Observations
 
 #### Requirements/Motive 
@@ -332,90 +344,3 @@ We solved this problem with the help of a class `RedisManager`
 
 
         
-## Schedule
-
-### 27th May - 1st June
-- [x] Creating Model
-  - [x] Implementation strategy for database changes 
-  - [x] Ensuring data consistency and integrity.
-  - [x] Discuss approach with mentor.
-  - [x] Create Django migrations to modify existing database tables to align with Django model.
-
-
-### 1st June - 10th June
-- [ ] Rewriting existing controllers in Django
-  - [x] Rewrite update_observations api end to end.
-  - [x] test update_observations from care_fe
-  - [x] Rewrite automated daily_rounds function
-  - [x] Rewrite retrieve assets_config function
-  - [x] Rewrite camera endpoints  
-  
-  
-### 11th June - 14th June
-- [x] Rewriting existing routers in Django
-  - [x] Test controllers.
-  - [x] Write tests for controllers.
-  - [x] Create APIs for the controllers.
-  - [x] Add tests for the APIs.
-
-### 15th June - 19th June
-- [x] WebSockets Using Django Channels
-  - [x] Specify the approach for implementing WebSockets. 
-  - [x] Implement WebSockets.
-  - [x] calling necessary functions on app startup 
-  - [x] Improve directory structure
- 
-### 20th June - 27th June
-- Authentication for websocket and requests
-  - [x] Authentication for Requests 
-  - [x] Specify the approach for implementing authentication.
-  - [x] Finalize approach for authentication.
-  - [x] authenticate request from care to middleware
-  - [x] authenticate request from middleware to care
-  - [x] Ensure authentication works for connections from the CARE and CARE_FE applications.
-  - [x] Manually test authentication with tools like Postman.
-  - [x]  Authentication for Websocket
-
-### 28th June - 5th July
-- [x] Rewriting exceptions and rewriting remaining components
-  - [x] Implement celery and celery Beat (basic structure)
-  - [x] Store observation in redis
-  - [x] Cron job for retrieving asset configs
-  - [x] Cron job for automated daily rounds
-  - [x] Handle exceptions and write custom exceptions for better exception handling.
-  - [x] Write tests related to exceptions.
-  - [x] Rewrite remaining parts from TypeScript to the new Django project. 
-  - [x] Create Dockerfile for middleware
-
-### 6th July - 14th July
-- [x] Rewriting utils and automation in Django
-  - [x] Discuss various approaches to optimize update observations
-  - [x] Optimize update observations
-  - [x] Replacing serializers with pydantic models
-  - [x] write new util functions for generating static observations
-  - [x] Rewrite utility functions like camera utils.
-  - [x] Rewrite existing automation (uploading observations of Medical Equipment Data on AWS S3).
-
-### 15th July - 22nd July
-- [x] Rewriting validators and ensuring typing
-  - [x] Implement type annotations throughout the Django middleware codebase.
-  - [x] Implement commit hooks to ensure maintainability.
-  - [x] Add validators to validate data wherever necessary.
-
-### 23rd July - 31st July
-- [x] Connecting CARE (backend) to the new middleware
-  - [x] Test the middleware with the existing backend.
-  - [x] Thoroughly test the changes.
-  - [x] Ensure results are as expected.
-
-### 1st Aug - 14th Aug
-- [x] Writing e2e tests
-  - [x] Write tests for happy flows.
-  - [x] Write tests for edge cases.
-  - [x] Ensure everything works as expected.
-
-### 15th Aug - 18th Aug
-- [x] Final Testing
-
-### 19th Aug - 26th Aug
-- [x] Submit final work product
