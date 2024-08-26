@@ -1,4 +1,4 @@
-# CEP-6: PDF Generation in Care
+# CEP-8: PDF Generation in Care
 
 # Proposal Preface
 
