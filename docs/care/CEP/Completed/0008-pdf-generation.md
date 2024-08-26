@@ -17,7 +17,7 @@ Currently, this function is responsible for generating PDFs, and the following i
 
 # Proposed Solution
 
-### Initial Solution Approach
+## Initial Solution Approach
 
 Initially, I considered utilizing a Python library like `WeasyPrint` or `xhtml2pdf`. Both libraries offer Django-friendly code. Here are the respective documentation links for further reference:
 - [Xhtml2pdf](https://xhtml2pdf.readthedocs.io/)
@@ -25,7 +25,7 @@ Initially, I considered utilizing a Python library like `WeasyPrint` or `xhtml2p
 
 After conducting further research and receiving feedback, I came across a recent [article](https://zerodha.tech/blog/1-5-million-pdfs-in-25-minutes/) by Zerodha that discussed PDF generation. This is where I discovered Typst.
 
-### Final Solution (Using Typst)
+## Final Solution (Using Typst)
 
 Initially, PDFs were generated from HTML using Puppeteer, which involved spawning headless instances of Chrome. According to the Zerodha article, their earlier tech stack, similar to ours, relied on headless Chrome for PDF rendering, which proved inefficient at scale. However, they transitioned to Typst, noting its efficiency and scalability benefits. This sparked my interest, leading to extensive research validating Typst's effectiveness and credibility through various references.
 
@@ -36,7 +36,7 @@ I engaged with the Typst community and moderators on Discord, where I received p
 By adopting Typst for our PDF generation needs, we can significantly improve the efficiency and scalability of our discharge report generation process, ensuring lower resource consumption and enhanced performance.
 
 
-# Implementation Plan
+## Implementation Plan
 
 - **Step 1:** Update Docker Files to Add Typst Dependencies
 
@@ -141,7 +141,7 @@ def compile_typ(output_file, data):
         )
         return False
 ```
-After creating a wrpper we can update our helper functions like :
+After creating a wrapper we can update our helper functions like :
 ```py
 def generate_discharge_summary_pdf(data, file):
     logger.info(
@@ -155,11 +155,12 @@ def generate_discharge_summary_pdf(data, file):
 
 ### Step 3: Create Static Template for Reports
 
-Completed it. Progress can be seen here - [Report Template](https://typst.app/project/rBahq8CbsixUHYwri4KtmO)
-Now this document just cointains different components that I've used in my template.
+Static Report Template progress could be seen here - [Report Template](https://typst.app/project/rBahq8CbsixUHYwri4KtmO).
+
+Now this document just contains different components that I've used in the template.
 
 ### Step 4: Integrate Typst with Django Templates in Our Project
-Updated the previous template using HTML/CSS with `Typst`. Template can be found [here](https://github.com/coronasafe/care/blob/5d5ca4630cebd168f3ca8a75ca2dae9bdc6110fd/care/templates/reports/patient_discharge_summary_pdf_template.typ)
+Updated the previous template using HTML/CSS with `Typst`. Template can be found [here](https://github.com/ohcnetwork/care/blob/develop/care/templates/reports/patient_discharge_summary_pdf_template.typ)
 
 ### Step 5: Create Tests
 Generating `PNG` of the pdf using typst and comparing using `Pillow` library. It involves have sample png images of the pdf in `care/facility/tests/sample_reports` folder which are to be compared with the newly generated pdf pngs , if identical the test cases passes, else throws error.
@@ -224,16 +225,17 @@ Updated prod.Dockerfile to remove older dependencies and added newer dependecies
 
 ### Others
 
->  - Removed `Symptoms` and `Diagnosis (ICD-11)` tables and `Health Status at admission` section
->  - Removed `Daily Round` section
->  - Created three new `templatetags` , one to `format prescription`, one to `format_to_sentence_case` and one to `handle empty data`
->  - Added conditions to update fields name according to admission status 
+- Removed `Symptoms` and `Diagnosis (ICD-11)` tables and `Health Status at admission` section
+- Removed `Daily Round` section
+- Created three new `templatetags` , one to `format prescription`, one to `format_to_sentence_case` and one to `handle empty data`
+- Added conditions to update fields name according to admission status 
 
-  
-
-
-# Results
+## Results
 - Typst is 8-15 times faster in generating PDFs
 - Container size decreased by 30%
 - Typst is 10-15% more memory efficient
 - We eliminate the overhead associated with browser-based rendering, resulting in a more efficient and scalable process.
+
+## Links 
+- **Link to PR** - https://github.com/ohcnetwork/care/pull/2132 
+- **Link to Care repo** - https://github.com/ohcnetwork/care
