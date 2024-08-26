@@ -1,3 +1,3 @@
-# Offline Support : CEP-3
+# CEP-3: Offline Support
 
 Offline Support
