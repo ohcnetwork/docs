@@ -71,6 +71,7 @@ const config: Config = {
         { to: "/docs/ayushma/", label: "Ayushma", position: "left" },
         { to: "/docs/leaderboard/", label: "Leaderboard", position: "left" },
         { to: "/blog", label: "Blog", position: "left" },
+        { to: "/docs/contributing", label: "Contribute", position: "left" },
         {
           href: 'https://github.com/ohcnetwork/docs',
           position: 'right',
