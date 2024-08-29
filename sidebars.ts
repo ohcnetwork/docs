@@ -13,7 +13,7 @@ const sidebars: SidebarsConfig = {
         },
         {
           type: 'link',
-          label: 'Contributer's Guide',
+          label: 'Contributer\'s Guide',
           href: '/docs/contributing',
         }
       ],
