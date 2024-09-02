@@ -14,8 +14,8 @@ If you have never coded before, we recommend taking the [WD101 Course](https://w
 
 ## Learning Django and React
 To get familiar with our tech stack, you can follow these courses:
-- [DjangoForAll](https://example.com) for Django and DRF
-- [ReactForAll](https://example.com) for React TypeScript
+- [DjangoForAll](https://school.ohc.network/courses/1844) for Django and DRF
+- [ReactForAll](https://school.ohc.network/courses/1843) for React TypeScript
 
 ## Setting Up Your Environment
 1. **Clone the Repositories**:
