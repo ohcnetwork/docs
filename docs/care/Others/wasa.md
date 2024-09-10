@@ -1,7 +1,7 @@
 # ABDM WASA Documentation
 
 ## Postman Collection
-[ABDM WASA Postman Collection](../../../static/files/ABDM_V3.postman_collection.json)
+[ABDM WASA Postman Collection](../../../static/files/ABDM_V3.postman_collection.json)  
 [ABDM WASA Environment](../../../static/files/ABDM_V3.postman_environment.json)
 
 ## Pre-requisite
@@ -49,7 +49,7 @@ There are two ways to perform this flow:
 
 A real Aadhaar number or phone number linked with an ABHA number is required for testing. For the last API, `link_abha_number_and_patient`, you need a patient ID, which can be obtained from `get_patient` or `create_patient` from the Support folder.
 
-## Abha Number
+### Abha Number
 ABHA Number is an entity in CARE that stores the ABHA Profile. The following APIs are available:
 
 1. **get** - Fetch the ABHA Number.
