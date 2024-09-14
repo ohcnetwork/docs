@@ -1,0 +1,126 @@
+
+# CARE Contributor's Guide
+
+## Introduction to CARE
+CARE is an open-source EMR system developed using Django Rest Framework for the backend and React TypeScript for the frontend. It aims to provide cost-effective, adaptable, and sustainable healthcare solutions.
+
+## Prerequisites
+Before you start contributing, it is recommended that you have a basic understanding of:
+- Git and GitHub
+- Web development (HTML, CSS, JavaScript)
+
+## Getting Started with Web Development
+If you have never coded before, we recommend taking the [WD101 Course](https://www.pupilfirst.school/courses/1802/curriculum) by pupilfirst.school, which covers the basics of web development.
+
+## Learning Django and React
+To get familiar with our tech stack, you can follow these courses:
+- [DjangoForAll](https://school.ohc.network/courses/1844) for Django and DRF
+- [ReactForAll](https://school.ohc.network/courses/1843) for React TypeScript
+
+## Setting Up Your Environment
+1. **Clone the Repositories**:
+   ```sh
+   git clone https://github.com/coronasafe/care.git
+   git clone https://github.com/coronasafe/care_fe.git
+   ```
+2. **Install Dependencies**:
+   - Follow the setup instructions in the `README.md` files for backend and frontend repositories.
+
+## Understanding the Codebase
+- **Backend (Django)**:
+  - `care/` - Main application directory
+  - `api/` - API endpoints
+  - `models/` - Database models
+- **Frontend (React)**:
+  - `src/` - Source files
+  - `components/` - Reusable components
+  - `pages/` - Page components
+
+## Coding Standards and Guidelines
+- Follow PEP 8 for Python code.
+- Use ESLint and Prettier for JavaScript and TypeScript.
+- Write clear and concise commit messages.
+
+## How to Contribute
+1. **Find an Issue**:
+   - Browse issues on [care](https://github.com/coronasafe/care/issues) and [care_fe](https://github.com/coronasafe/care_fe/issues).
+   - Look for issues labeled `good-first-issue`.
+
+2. **Claim the Issue**:
+   - Comment on the issue explaining your approach and request to assign it to you.
+
+3. **Work on the Issue**:
+   - Fork the repository and create a new branch.
+   - Start coding and commit your changes.
+   - Write tests to ensure your changes work as expected.
+
+4. **Submit a Pull Request (PR)**:
+   - Open a draft PR as soon as you make some progress.
+   - Request a review once your PR is ready.
+   - Address feedback promptly.
+
+## Communication
+- Join our Slack at [slack.ohc.network](https://slack.ohc.network) for discussions and help.
+- Be proactive in your communication and keep the community updated on your progress.
+
+## Learning Resources
+- [Django Documentation](https://docs.djangoproject.com/)
+- [DRF Documentation](https://www.django-rest-framework.org/)
+- [React Documentation](https://reactjs.org/)
+- [TypeScript Documentation](https://www.typescriptlang.org/)
+
+## Support
+If you need help, you can:
+- Check the project's documentation.
+- Ask questions in the relevant Slack channels.
+- Look for help in the community forums.
+
+## Code of Conduct
+We expect all contributors to adhere to our [Code of Conduct](https://github.com/coronasafe/care/blob/develop/CODE_OF_CONDUCT.md).
+
+Thank you for contributing to CARE!
+
+
+### Reference Index
+
+1. **Introduction to CARE**:
+   - Brief overview of what CARE is and its impact.
+   - Purpose of the contributor's guide.
+
+2. **Prerequisites**:
+   - Mention the basic prerequisites such as familiarity with Git, GitHub, and a basic understanding of web development.
+
+3. **Setting Up Your Environment**:
+   - Detailed instructions on setting up the development environment for both frontend and backend.
+   - Links to installation guides for required software (Node.js, Python, Docker, etc.).
+   - Cloning the repository and initial setup commands.
+
+4. **Understanding the Codebase**:
+   - Overview of the project structure for both frontend and backend.
+   - Key files and directories explained.
+
+5. **Coding Standards and Guidelines**:
+   - Coding conventions and best practices.
+   - Linting and formatting tools used.
+   - Commit message guidelines.
+
+6. **How to Contribute**:
+   - Step-by-step process on how to find and claim issues.
+   - Creating and working on branches.
+   - Writing and running tests.
+   - Submitting pull requests.
+   - Reviewing and addressing feedback.
+
+7. **Communication**:
+   - How to use Slack and other communication channels effectively.
+   - Etiquette and expectations for community interactions.
+
+8. **Learning Resources**:
+   - Additional resources for learning Django, DRF, React, and TypeScript.
+   - Open-source contribution tutorials and best practices.
+
+9. **Support**:
+   - Where to find help if you get stuck (documentation, forums, Slack channels).
+
+10. **Code of Conduct**:
+    - Link to the project's Code of Conduct and expectations for all contributors.

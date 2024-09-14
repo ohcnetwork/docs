@@ -32,13 +32,13 @@ CARE is a centralized capacity management and patient management system which is
 
 The journey of the Open Healthcare Network is a testament to the power of community collaboration and open-source development for public good. What began as a response to the COVID-19 pandemic has evolved into a comprehensive hospital management system operational across 11 Indian states, directly benefiting over 186.8 million people. The system, seamlessly integrated across 581 hospitals, has facilitated medical attention to 362,349 patients and enabled over half a million consultations via 1,884 dedicated health workers.
 
-Main Repositories: [Backend](https://github.com/coronasafe/care) |
-[Frontend](https://github.com/coronasafe/care_fe) |
-[Dashboard](https://github.com/coronasafe/care_dashboard) |
-[Middleware for Device Integration](https://github.com/coronasafe/teleicu_middleware) |
-[Image Processing](https://github.com/coronasafe/care_ocr) |
-[Contributors](https://github.com/coronasafe/leaderboard)
+Main Repositories: [Backend](https://github.com/ohcnetwork/care) |
+[Frontend](https://github.com/ohcnetwork/care_fe) |
+[Dashboard](https://github.com/ohcnetwork/care_dashboard) |
+[Middleware for Device Integration](https://github.com/ohcnetwork/teleicu_middleware) |
+[Image Processing](https://github.com/ohcnetwork/care_ocr) |
+[Contributors](https://github.com/ohcnetwork/leaderboard)
 
-Deploy Docs: [AWS](https://deploydocs.coronasafe.network/cloud-deployment-overview/aws) | [Azure](https://deploydocs.coronasafe.network/cloud-deployment-overview/azure) | [GCP](https://deploydocs.coronasafe.network/cloud-deployment-overview/gcp)
+Deploy Docs: [AWS](https://deploydocs.ohc.network/cloud-deployment-overview/aws) | [Azure](https://deploydocs.ohc.network/cloud-deployment-overview/azure) | [GCP](https://deploydocs.ohc.network/cloud-deployment-overview/gcp)
 
 Our Student Contributors: [Students](https://contributors.ohc.network/) | [Leaderboard](https://contributors.ohc.network/leaderboard)
