@@ -4,13 +4,13 @@ import type * as Preset from "@docusaurus/preset-classic";
 
 const config: Config = {
   title: "OHC Docs",
-  tagline: "Dinosaurs are cool",
+  tagline: "Building open source healthcare goodness.",
   favicon: "favicon.ico",
 
   url: "https://docs.ohc.network",
   baseUrl: "/",
 
-  organizationName: "coronasafe",
+  organizationName: "Open Healthcare Network",
   projectName: "docs",
 
   onBrokenLinks: "throw",
@@ -27,11 +27,11 @@ const config: Config = {
       {
         docs: {
           sidebarPath: "./sidebars.ts",
-          editUrl: "https://github.com/coronasafe/docs/tree/master/",
+          editUrl: "https://github.com/ohcnetwork/docs/tree/master/",
         },
         blog: {
           showReadingTime: true,
-          editUrl: "https://github.com/coronasafe/docs/tree/master/",
+          editUrl: "https://github.com/ohcnetwork/docs/tree/master/",
         },
         theme: {
           customCss: "./src/css/custom.css",
@@ -68,9 +68,12 @@ const config: Config = {
       },
       items: [
         { to: "/docs/care", label: "Care", position: "left" },
+        { to: "/docs/ayushma/", label: "Ayushma", position: "left" },
+        { to: "/docs/leaderboard/", label: "Leaderboard", position: "left" },
         { to: "/blog", label: "Blog", position: "left" },
+        { to: "/docs/contributing", label: "Contribute", position: "left" },
         {
-          href: 'https://github.com/coronasafe/docs',
+          href: 'https://github.com/ohcnetwork/docs',
           position: 'right',
           className: 'header-github-link',
           'aria-label': 'GitHub repository',
