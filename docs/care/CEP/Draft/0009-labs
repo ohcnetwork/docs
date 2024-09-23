@@ -1,0 +1,114 @@
+### CARE Enhancement Proposal No. 9: Lab Management Module
+
+#### 1. **Introduction**
+The document outlines the requirements for creating a comprehensive Lab Management module in CARE, extending the existing functionality of sample tests. The primary goal is to rename sample tests to **Lab Orders** and introduce a robust system for managing lab orders, associated samples, investigations, and results. Lab Orders will be integrated within the existing consultation flow but may extend across consultations for follow-ups and delayed investigations.
+
+#### 2. **Scope**
+- **Renaming**: The current "Sample Tests" will be renamed as **Lab Orders**.
+- **Lab Orders** can be issued from:
+  - An active consultation of a patient.
+  - Direct association with a patient, where necessary.
+- **Consultation Linking**: A lab order is always created under a consultation, but it can be satisfied after the consultation or during a follow-up consultation.
+  
+#### 3. **Key Functionalities**
+
+##### 3.1 **Lab Orders**
+- A Lab Order contains a set of **Investigations** that need to be conducted.
+- Each Lab Order may require multiple **Samples** (e.g., blood, urine, stool).
+- There would be Templates of a Group of Investigations to be conducted like "Biochemistry Test"
+- A Lab Order can span multiple investigations and sample types.
+  
+##### 3.2 **Sample Collection and Association**
+- Multiple **Sample Types** (e.g., urine, blood, stool) can be associated with a single Lab Order.
+- Each **Sample** collected for a Lab Order may be associated with **n number of Investigations**.
+  - Example: A blood sample may be used for multiple tests like CBC, Blood Sugar, etc.
+  
+##### 3.3 **Investigation Results**
+- **Investigation Results** may be of varying types:
+  - **Standard Clinical Lab Results** with values measured against a reference range.
+    - Each result will have a **Base Min-Max Range** and a **Unit** defined at the investigation level.
+    - The **Min-Max Range** and **Unit** may be overwritten for specific tests if a different reagent or testing procedure is used.
+  - **Positive/Negative** Tests like Pregnancy Test, STD Tests etc can be Positive/Negative
+  - **Reports** Some tests might have a result as a report, as a set of Paragraphs of plain text
+  - For **Microbiology**  tests, the results typically classify the response of microorganisms to various antibiotics or the outcome of culture tests. Here are the common types of results:
+
+1. **Sensitive (S)**: Indicates that the microorganism is susceptible to the antibiotic or treatment being tested, meaning the drug will likely be effective in treating the infection.
+
+2. **Resistant (R)**: Suggests that the microorganism is resistant to the antibiotic or treatment, meaning the drug will likely not be effective.
+
+3. **Intermediate (I)**: Implies that the microorganism's response to the antibiotic is borderline, meaning the drug might be effective at higher doses or in specific conditions but not at standard doses.
+
+4. **No Growth**: Indicates that no microbial growth was observed in the culture test, suggesting the absence of infection or that the sample did not contain viable microorganisms.
+
+5. **Moderate Growth**: Refers to a moderate amount of microbial growth detected in the culture, signifying an infection but of a relatively manageable level.
+
+6. **Heavy Growth**: Indicates significant microbial growth, usually pointing to a more severe infection.
+
+7. **Contaminated**: Suggests that the sample has been contaminated by external microorganisms, making it invalid for testing.
+
+8. **Negative**: The test found no pathogens or the specific microorganism being tested for was absent.
+
+9. **Positive**: The test detected the presence of the microorganism or pathogen being tested for.
+
+10. **Inconclusive**: Results are unclear, and the test does not provide definitive information, usually requiring further testing.
+
+These results are primarily used in culture and sensitivity testing for diagnosing bacterial or fungal infections and guiding antibiotic therapy decisions.
+
+- At the time of investigation, the clinician should be able to overwrite the **Min-Max** based on the unique circumstances of the test.
+
+#### 4. **Workflow and Stages**
+
+##### 4.1 **Lab Order Workflow**
+The following stages define the flow of a Lab Order:
+- **Lab Order Creation**: Created during or after a consultation.
+- **Sample Collection**: Multiple samples may be collected based on the investigation needs.
+- **Sample Processing**: Samples move through various stages of testing.
+- **Results Entry**: Results are entered against each investigation, and the system checks if values are within the defined ranges.
+- **Lab Order Closure**: After all investigations and results are completed, the Lab Order is closed.
+
+##### 4.2 **Sample Stages (Modification of Existing Stages)**
+Current sample test stages will be modified to better align with the Lab Order system:
+- **Sample Collected**: When samples have been collected for testing.
+- **Sample in Transit**: Sample sent to the lab for processing.
+- **Sample Received**: Lab confirms receipt of the sample.
+- **Sample Processing**: Lab begins processing the sample.
+- **Sample Tested**: Investigations have been completed for the sample.
+- **Result Available**: Results are recorded and available for review.
+
+#### 5. **User Interface and Views**
+
+##### 5.1 **Lab Order View**
+A new Lab Order view will allow healthcare providers to:
+- View all lab orders associated with a patient.
+- Track the status of each sample and investigation within the Lab Order.
+- Review results against the expected reference range.
+
+##### 5.2 **Sample and Investigation Views**
+- The UI will show multiple investigations under a single sample and allow tracking of each investigation's result.
+- A separate **Results View** will display investigations and highlight values outside the expected range.
+
+#### 6. **Data Management**
+
+##### 6.1 **Sample Types and Investigations**
+- A **master data** structure will manage sample types and investigations.
+  - Each sample type (blood, urine, stool) will have predefined **investigations** linked to it.
+  
+##### 6.2 **Customizable Reference Ranges**
+- Each investigation will have a base **Min-Max Range** and **Unit**.
+- The ability to **override ranges** at the investigation level will be provided for cases where testing methods vary.
+
+#### 7. **Integration with Existing Modules**
+
+##### 7.1 **Consultation Module**
+- Lab Orders will be linked to **Consultations** and can span across consultations for follow-up tests.
+
+##### 7.2 **Notifications**
+- Notifications for pending Lab Orders and overdue investigations will be integrated into the system.
+
+#### 8. **Future Considerations**
+- Support for **custom lab investigations** created by hospitals or clinics.
+- Enhanced analytics and reporting on lab results to track trends or abnormal patterns in lab results across patient populations.
+
+#### 9. **Conclusion**
+This enhancement aims to introduce a comprehensive lab management system to CARE, building on the existing sample test model. The Lab Orders will provide better tracking of samples and investigations, facilitate improved lab workflows, and enhance the overall quality of patient care.
+
