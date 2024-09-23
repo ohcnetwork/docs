@@ -1,4 +1,4 @@
-### CEP 9: Lab Management Module
+### CEP 10: Lab Management Module
 # Motive
 
 The goal of this enhancement proposal is to create a comprehensive Lab Management module in CARE by extending the current functionality of sample tests. The primary changes involve renaming sample tests to Lab Orders and building a robust system to manage lab orders, samples, investigations, and results. The Lab Orders will be integrated within the existing consultation flow and can span multiple consultations, improving the handling of follow-up investigations and lab processes.
