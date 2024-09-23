@@ -27,6 +27,7 @@ CARE already includes prescription management and doctor prescription creation. 
 - Support medicine take-back procedures and tracking
 - Automatically choose the first-to-expire batch for each product to dispense from (FEFO)
 - Ability to view the current stock levels by product
+- Implement a notification system for drugs that need refrigeration (e.g., vaccines and some IV antibiotics)
 
 ### 3. Batch Management
 
@@ -56,6 +57,7 @@ CARE already includes prescription management and doctor prescription creation. 
 - Create secure, time-limited public links for prescription access
 - Clearly mark medicines on prescriptions that are not available in-store and add note to buy from outside
 - Let staff in pharmacy with specific permission to update medicine and count
+- Implement allergy and drug interaction warnings
 
 ### 7. Dispensing
 
@@ -64,11 +66,13 @@ CARE already includes prescription management and doctor prescription creation. 
 - Update prescription states and inventory upon dispensing
 - Support barcode scanning for medication identification
 - Automatic reduction in stock of product batch quantities when patient pays for the invoice consisting of products (via the billing function)
+- Display allergy and drug interaction warnings during the dispensing process
 
 ### 8. Billing and Payments
 
 - Integrate with the planned billing system for medication charges
 - Process returns and refunds, updating inventory accordingly
+- Apply GST (Goods and Services Tax) to billing as required
 
 ### 9. Reporting and Analytics
 
@@ -77,6 +81,8 @@ CARE already includes prescription management and doctor prescription creation. 
   b. Purchases
   c. Stock movement
   d. Inventory status
+  f. Fast-moving and slow-moving medicines
+- Provide financial reports including sales, claims, and profit margins
 - Track and report on batch utilization and expiry
 - Implement metrics on rate of usage across medicines
 
@@ -84,3 +90,13 @@ CARE already includes prescription management and doctor prescription creation. 
 
 - Extend existing user roles to include pharmacy-specific permissions
 - Implement audit trails for all pharmacy-related actions
+
+### 11. Environmental Controls
+
+- Implement a system to track and manage medications requiring special storage conditions (e.g., refrigeration)
+- Set up alerts and notifications for temperature-sensitive medications
+
+## Reviewed By
+
+- Dr. Athul Joseph Manuel
+- Dr. George Tukalan
