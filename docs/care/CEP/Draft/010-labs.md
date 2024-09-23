@@ -1,58 +1,69 @@
-### CEP 10: Lab Management Module
-# Motive
+# CEP 10: Lab Management Module
+
+## Motive
 
 The goal of this enhancement proposal is to create a comprehensive Lab Management module in CARE by extending the current functionality of sample tests. The primary changes involve renaming sample tests to Lab Orders and building a robust system to manage lab orders, samples, investigations, and results. The Lab Orders will be integrated within the existing consultation flow and can span multiple consultations, improving the handling of follow-up investigations and lab processes.
 
-# Requirements
+## Requirements
 
-1. **Lab Orders**
-   - A Lab Order will contain multiple investigations.
-   - Each Lab Order may require various sample types (e.g., blood, urine).
-   - Templates of investigation groups (e.g., Biochemistry Test) should be available.
+### 1. Lab Orders
 
-2. **Sample Collection and Association**
-   - Multiple sample types (e.g., urine, blood) can be associated with a single Lab Order.
-   - Samples collected may be associated with several investigations (e.g., a blood sample for CBC and Blood Sugar).
+- A Lab Order will contain multiple investigations.
+- Each Lab Order may require various sample types (e.g., blood, urine).
+- Templates of investigation groups (e.g., Biochemistry Test) should be available.
 
-3. **Investigation Results**
-   - Results will include:
-     - Standard Clinical Lab Results with values measured against reference ranges.
-     - Positive/Negative tests for certain conditions (e.g., pregnancy).
-     - Reports in plain text for certain tests.
-     - Microbiology test results with classifications like Sensitive (S), Resistant (R), and others.
-   - The system should allow the clinician to overwrite the Min-Max range for tests when necessary.
+### 2. Sample Collection and Association
 
-4. **Lab Order Workflow**
-   - Stages of Lab Order:
-     - Creation during or after a consultation.
-     - Sample collection.
-     - Sample processing.
-     - Results entry and review.
-     - Lab Order closure.
+- Multiple sample types (e.g., urine, blood) can be associated with a single Lab Order.
+- Samples collected may be associated with several investigations (e.g., a blood sample for CBC and Blood Sugar).
 
-5. **Sample Stages**
-   - Sample stages will be modified to include:
-     - Sample Collected, Sample in Transit, Sample Received, Sample Processing, Sample Tested, and Result Available.
+### 3. Investigation Results
 
-6. **User Interface**
-   - Lab Order view to track lab orders, samples, investigations, and results.
-   - Sample and Investigation views to show multiple investigations per sample.
-   - Results view to highlight values outside reference ranges.
+- Results will include:
+  - Standard Clinical Lab Results with values measured against reference ranges.
+  - Positive/Negative tests for certain conditions (e.g., pregnancy).
+  - Reports in plain text for certain tests.
+  - Microbiology test results with classifications like Sensitive (S), Resistant (R), and others.
+- The system should allow the clinician to overwrite the Min-Max range for tests when necessary.
 
-7. **Data Management**
-   - A master data structure will manage sample types and investigations.
-   - Customizable reference ranges for each investigation, with the ability to override based on test methods.
+### 4. Lab Order Workflow
 
-8. **Integration with Existing Modules**
-   - Lab Orders will link to consultations and extend across multiple consultations for follow-up.
-   - Notifications for pending or overdue Lab Orders and investigations.
+- Stages of Lab Order:
+  - Creation during or after a consultation.
+  - Sample collection.
+  - Sample processing.
+  - Results entry and review.
+  - Lab Order closure.
 
-9. **Extensibility: Integration with External LIMS**
-   - Initially, the system will operate manually within CARE, with Lab Orders, samples, and results managed directly through the UI.
-   - A plugin will later be developed to integrate CARE with external Laboratory Information Management Systems (LIMS).
-     - The plugin will handle CRUD events for Lab Orders and automatically update external LIMS.
-     - Webhooks will be used to receive test results from LIMS and update CARE in real-time.
+### 5. Sample Stages
 
-10. **Future Considerations**
-   - Support for custom lab investigations.
-   - Advanced analytics and reporting on lab trends.
+- Sample stages will be modified to include:
+  - Sample Collected, Sample in Transit, Sample Received, Sample Processing, Sample Tested, and Result Available.
+
+### 6. User Interface
+
+- Lab Order view to track lab orders, samples, investigations, and results.
+- Sample and Investigation views to show multiple investigations per sample.
+- Results view to highlight values outside reference ranges.
+
+### 7. Data Management
+
+- A master data structure will manage sample types and investigations.
+- Customizable reference ranges for each investigation, with the ability to override based on test methods.
+
+### 8. Integration with Existing Modules
+
+- Lab Orders will link to consultations and extend across multiple consultations for follow-up.
+- Notifications for pending or overdue Lab Orders and investigations.
+
+### 9. Extensibility: Integration with External LIMS
+
+- Initially, the system will operate manually within CARE, with Lab Orders, samples, and results managed directly through the UI.
+- A plugin will later be developed to integrate CARE with external Laboratory Information Management Systems (LIMS).
+  - The plugin will handle CRUD events for Lab Orders and automatically update external LIMS.
+  - Webhooks will be used to receive test results from LIMS and update CARE in real-time.
+
+### 10. Future Considerations
+
+- Support for custom lab investigations.
+- Advanced analytics and reporting on lab trends.
