@@ -1,176 +1,96 @@
-# Scheduling in CARE
+# CEP-7: Scheduling in CARE
 
-## Context
+### Motive
 
-CARE is a Health Information Management System (HMIS) structured to manage various aspects of healthcare facilities, patient information, consultations, daily rounds, and user details. The core models include:
+Care is being used in different healthcare environments for various use-cases, including consultation scheduling, OT scheduling, vaccination appointment scheduling, and other appointment management needs. A robust and flexible scheduling system is essential for efficient healthcare delivery and resource management.
 
-- **Facility**: Stores information about medical facilities.
-- **Patient**: Stores patient details, including basic information and non-changing health information such as allergies and blood type. Patients belong to a facility and can be transferred to another facility if needed.
-- **Consultation**: Stores details of a patient’s visit, including diagnosis, symptoms, and vitals taken. A patient can have multiple consultations, one for each hospital visit.
-- **DailyRound**: Stores details of a patient’s vitals and progress over time. Each consultation can have multiple daily rounds.
-- **User**: Stores details of hospital staff, including their login information. Users include nurses, doctors, admin staff, etc.
+### Requirements
 
-There are many more models, but at the core, these are the important ones.
+### 1. Appointment Booking
 
-## Requirements
+- The system shall allow staff members to book appointments for patients.
+- Appointments can be scheduled for future dates or as walk-ins for the current day.
+- The system shall support different appointment types, including:
+  - New patient appointments
+  - Follow-up appointments
+- The system shall allow doctors to specify days for specific appointment types (e.g., follow-ups only on certain days).
+- Appointments may include multiple participants or be linked to other objects. For example, a procedure could be an object with a team associated with it, and the team would consist of the participants involved in the appointment.
+- Future Scope: The system shall provide a public-facing webpage where users can book their own appointments.
 
-- To schedule consultation within CARE (In this requirement, when a patient reaches the hospital, at the front desk, an attendant schedules a consultation for the patient).
-- To schedule user activities (In this requirement, should be able to schedule user (doctor and nurse) availability and events (operation, patient check) assigned or associated with them).
-- To merge sample tests and investigations (should understand this requirement further).
-- To schedule visits for palliative care (similar to requirement 1 but additionally patient’s location has to be tracked).
-- To schedule one-time consultation (similar to requirement 1 and see no difference wrt scheduling).
+### 2. Resource Management
 
-## Features Needed
+- Doctors shall be considered as schedulable resources within the system.
+- Doctors shall have the ability to manage their own schedules.
+- The system shall allow authorized staff members to manage doctors' schedules on their behalf.
+- The system shall support flexible scheduling options, including:
+  - Fixed slot durations (e.g., 15-minute intervals)
+  - Daily patient limits (e.g., maximum of 20 patients per day)
 
-- Ability to schedule one-time appointment or recurring appointment.
-- Ability to attach all the resources needed for the schedule request.
-- Ability to simulate a queue.
-- Ability to allow overlaps (shall be decided when to be used by the users).
+### 3. Availability Management
 
-## Initial Idea
+- The system shall have the capability to show availability of resources (doctors, rooms, equipment, etc.).
+- Doctors shall be able to set their available days and times.
+- Doctors shall have the option to mark certain periods as unavailable.
+- Doctors shall be able to specify which days in the future they can be booked.
+- The system shall respect all availability settings when allowing appointments to be booked.
+- The system shall support recurring availability patterns (e.g., available every Monday and Wednesday, 9 AM to 5 PM).
+- Authorized staff members shall be able to view and modify availability settings on behalf of doctors, subject to appropriate permissions.
 
-To have 2 models, Booking & Slot, which should be generic enough to handle the requirements and should be easy to expand and scale.
+### 4. Check-in and Encounter Management
 
-## Modeling
+- The system shall provide a check-in function for when patients arrive at the facility.
+- An encounter shall only be created in the system upon patient check-in.
+- The system shall automatically manage a token system for patient queuing. (mix of appointments + walk-ins) [Logic is an open challenge to be tackled with Roopak]
+- The system shall implement a check-in based priority system that automatically manages appointments and walk-ins.
+- The check-in process shall update the patient's queue position based on their appointment time and arrival time.
 
-### Schedule
+### 5. Priority Management
 
-- Title
-- Description (optional)
-- Start time
-- End time (optional)
-- Recurrence (optional)
-- Type (User_Availability | Palliative_Visit | Consultation | Daily Round | Investigation | Event)
-- Allows overlap
+- The system shall support different levels of patient priority.
+- Staff shall have the ability to prioritize a VIP patient in the queue.
+- The system shall provide clear visibility of the current queue order to staff members.
+- The priority management system shall be flexible enough to accommodate emergency situations.
 
-### ScheduleParticipant
+### 6. Appointment Statuses
 
-- Schedule id
-- Participant id
-- Participant type (User | Patient)
+- The system shall support multiple statuses for scheduled visits, including but not limited to:
+  - Scheduled
+  - Checked In
+  - In Progress
+  - Completed
+  - Cancelled
+  - No Show
+- The system shall allow for status updates throughout the appointment lifecycle.
 
-### ScheduleResource
+### 7. Location-based Scheduling
 
-- Schedule id
-- Resource id
-- Resource type (Consultation | Daily Round | Investigation | Location | Facility)
+- The system shall support the registration and booking of various locations, including but not limited to Operating Theaters.
+- This implementation shall be generic, allowing extension to support other types of location-based scheduling (e.g., vaccination appointment scheduling).
+- Users with appropriate access rights shall be able to book locations.
+- Location schedules shall be manageable by designated managers (can be the owner of the location schedule).
+- The system shall support the handling of emergency cases that may affect location schedules.
 
-## Explanation of Modeling
+### 8. User Permissions
 
-The `Schedule` model will be the main entity used to block time, where `start time`, `end time`, and `recurrence` are used to track the timing of the schedule. The `title`, `description`, and `type` fields are used to capture the purpose of the schedule. The `title` and `description` help users understand and differentiate between schedules, while the `type` field is used by the application to enforce participant and resource requirements. The `allows overlap` field is used to determine if time block overlaps are permitted.
+- The system shall implement role-based access control for scheduling functions.
+- Specific permissions shall be required for managing doctors' schedules on their behalf.
+- Location booking shall be restricted to authorized doctors and staff members.
 
-`ScheduleParticipant` and `ScheduleResource` are used to add one or more resources and participants involved or needed for the schedule. Recurring schedules can be achieved using the `recurrence` field in `Schedule`. Additional resources can be added using `ScheduleParticipant` and `ScheduleResource`. Queue simulation can be done on the frontend without changing the models. Overlaps can be managed using the `allows overlap` field in `Schedule`.
+### 9. Flexibility and Customization
 
-## Implementation wrt Requirements
+- The system shall allow for customization of appointment durations based on doctor or appointment type preferences.
+- The system shall support different scheduling rules for different departments or specialties.
 
-### 1. Schedule Consultation
+### 10. Notifications
 
-#### Schedule
+- The system shall send notifications to relevant staff members for schedule changes, new bookings, and cancellations.
+- Future: Allow SMS and whatsapp confirmations for patients
 
-- **Title**: Patient Consultation: [Patient Name]
-- **Description**: Brief context of the consultation (e.g., issue description, follow-up).
-- **Start Time**: Today’s date and time.
-- **End Time**: None (simulated as a queue).
-- **Recurrence**: None.
-- **Type**: Consultation.
-- **Allows Overlap**: True.
+### 11. Audit Trail
 
-#### ScheduleParticipant
+- The system shall maintain a comprehensive audit trail of all scheduling actions, including creations, modifications, and cancellations.
+- It shall support comments that can be added by users with access to the object.
 
-- **Participant**: Patient requesting consultation (create a patient if new).
-- **User**: Doctor in duty (optional and decided on demand).
+### 12. Future Beckn Integration
 
-#### ScheduleResource
-
-- **Resource**: Facility.
-
-### 2. Schedule User Activities (Availability)
-
-#### Schedule
-
-- **Title**: Doctor Availability: [Doctor Name]
-- **Start Time**: 9:00 AM.
-- **End Time**: 5:00 PM.
-- **Recurrence**: Monday to Friday.
-- **Type**: User_Availability.
-- **Allows Overlap**: True.
-
-#### ScheduleParticipant
-
-- **Participant**: Respective user.
-
-#### ScheduleResource
-
-- **Resource**: Facility (if specific to one facility).
-
-### Handling User Leave
-
-When a user (doctor, nurse, etc.) takes leave, a separate `Schedule` record can be created to block their availability during the leave period.
-
-#### Schedule
-
-- **Title**: Leave: [User Name]
-- **Description**: Reason for the leave (optional).
-- **Start Time**: Start date and time of the leave.
-- **End Time**: End date and time of the leave.
-- **Recurrence**: None (unless the leave is recurring, such as for a specific pattern).
-- **Type**: User_Availability.
-- **Allows Overlap**: False.
-
-#### ScheduleParticipant
-
-- **Participant**: User on leave.
-
-#### ScheduleResource
-
-- **Resource**: Facility (if leave is specific to one facility).
-
-### 3. Schedule User Activities (Events)
-
-#### Schedule
-
-- **Title**: Heart Operation: [Patient Name] - [Doctor Name]
-- **Start Time**: 10:30 AM.
-- **End Time**: 3:30 PM.
-- **Recurrence**: None.
-- **Type**: Event.
-- **Allows Overlap**: False.
-
-#### ScheduleParticipant
-
-- **Participant**: Patient having the operation.
-- **User**: Doctor performing the operation (multiple if necessary).
-- **User**: Nurse assisting in the operation (multiple if necessary).
-
-#### ScheduleResource
-
-- **Resource**: Facility.
-- **Resource**: Location (operation room).
-- **Resource**: Consultation.
-
-### 4. Schedule Palliative Care Visits
-
-Same as scheduling a consultation, with an additional consideration for patient location.
-
-#### Schedule
-
-- **Title**: Palliative Visit: [Patient Name]
-- **Start Time**: Scheduled visit time.
-- **End Time**: Expected end time (optional).
-- **Recurrence**: As required.
-- **Type**: Palliative_Visit.
-- **Allows Overlap**: True.
-
-#### ScheduleParticipant
-
-- **Participant**: Patient.
-- **User**: Assigned caregiver or healthcare professional.
-
-#### ScheduleResource
-
-- **Resource**: Facility.
-- **Resource**: Location (patient’s address or coordinates from the patient model).
-
----
-
-This scheduling module for CARE ensures flexibility, scalability, and ease of expansion to meet the diverse requirements of a Health Information Management System. The detailed implementation and examples provide a comprehensive guide to utilizing the scheduling module effectively.
+- The architecture shall be flexible enough to accommodate Beckn protocols and standards for interoperable scheduling.
