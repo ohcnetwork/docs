@@ -5,14 +5,13 @@ version of RBAC implemented but this is not enough for the evolving requirements
 increasing authorization scopes.  
 A new updated version of RBAC is essential to ensure that care remains secure, stable and scalable.  
 
-Requirements for new version : 
-    - Adding permission for each action, this could be anything from `edit_patient` to `edit_patient_dob` ( Some relation can be maintained for this hierarchy )
-    - New implementation of a role which would be a combination of permissions
-    - A new library to perform authZ related actions, ie, this library can abstract permission checks like `can user X access resource Y`
-    - Creating new users with combined permissions on the fly, ie create a new user with roles A and B
+Requirements for new version :  
+    - Adding permission for each action, this could be anything from `edit_patient` to `edit_patient_dob` ( Some relation can be maintained for this hierarchy )  
+    - New implementation of roles which would be a combination of permissions and can be created on the fly and modifiable as necessary
+    - A new library to perform authZ related actions, ie, this library can abstract permission checks like `can user X access resource Y`  
 
 There should be some capability to override permissions based on attributes, like a DistAdmin type user would have access to X if the district attribute of X is the same as the users. 
-This needs to be abstracted somehow.
+This needs to be abstracted somehow. ( Even thou its not required, having a permission management system capable of this would be essential )
 
 To allow AuthZ in listing, For resources that are unbounded like patient listing, there can be permissions that allow patient searches within a facility 
 and if the user requesting the search passes the criteria they are allowed to search.
@@ -35,8 +34,14 @@ logic to determine if a doctor is assigned to a patient will still remain in the
 
 Since some permission logic deals with queryset based filtering, the permission class would also be responsible to create filtered querysets based on requirements, 
 ie, given a user x, build a queryset to access all facilities.  
-A secondary application builder might override this logic to create his own logic to determine querysets.  
+A plug with a custom permission manager can override this logic to create his own logic to determine querysets.  
 
 All permissions are to be abstracted to a class outside care's default `facilitiy` app, this class would be tasked with checking if a user has access to resource y with a given scope.
 
-Different classes can exist to manage querysets.
+A single Permission manager class can encompass all permissions, it is also possible to create 
+
+Permissions can either be abstract or be applied on a given facility, ie `view patients` can be applied on a facility X and only that facility. 
+
+All views would invoke the permission manager to check if a user has permission to do a certain action, custom serializer logic can also call the permission manager to confirm authZ.
+
+A repository of permissions to be maintained to manage permissions
