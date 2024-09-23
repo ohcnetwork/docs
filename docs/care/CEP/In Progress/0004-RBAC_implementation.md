@@ -23,14 +23,17 @@ Open searches without any contexts applied should be discouraged, Searching pati
 
 Permissions can be cached at any level, given that they are invalidated periodically or on a change in permission.
 
+Superadmins may sometimes required to give access to resources to other users for a temporary duration, like a doctor viewing an old patient data without actually creating a consultation.
+This needs to be accounted for in the system.
+
 ## Proposed Design:
 
 ### Approach 1 (Proposed): Abstract all Permissions to a separate app
 
 A new app will be created to manage permissions, This app would abstract away every bit of logic that deals with permissions in general.
     
-Object level permission control will not be included in this design, this will be left towards the application logic, ie,
-logic to determine if a doctor is assigned to a patient will still remain in the application logic, the permission management will control if that user can access that patient
+Application logic would still control all aspects of the resource, The permission module will use metadata of a resource to identify if a user has access to a resource.
+ie. Application logic would record that a patient has an assigned doctor for a consultation, the permission controller would use that metadata to confirm access for the doctor.
 
 Since some permission logic deals with queryset based filtering, the permission class would also be responsible to create filtered querysets based on requirements, 
 ie, given a user x, build a queryset to access all facilities.  
