@@ -9,7 +9,8 @@ CARE already includes prescription management and doctor prescription creation. 
 ### 1. Store Management
 
 - Support multiple main stores (warehouses) and multiple substores (stocking points) within a facility
-- Implement hierarchical structure for stores (warehouses -> stocking points)
+- Implement hierarchical structure for stores (warehouses -> substores)
+- Allow each store (main store or substore) to have a specific location associated with it
 - Enable inventory tracking across all stores and substores
 - Allow stock transfers between stores with logging
 - Support identifiers to track where medicine is stored within a store (e.g., shelf number, bin location)
