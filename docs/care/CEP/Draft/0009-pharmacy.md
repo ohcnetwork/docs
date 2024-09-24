@@ -1,5 +1,3 @@
-# CEP 9: Pharmacy Management
-
 ## Motive
 
 CARE already includes prescription management and doctor prescription creation. This enhancement aims to extend the existing functionality to include robust pharmacy-specific features, improving medication dispensing, inventory control, and overall pharmacy operations.
@@ -13,6 +11,9 @@ CARE already includes prescription management and doctor prescription creation. 
 - Enable inventory tracking across all stores and substores
 - Allow stock transfers between stores with logging
 - Support identifiers to track where medicine is stored within a store (e.g., shelf number, bin location)
+- Implement stock transfers from main store to substores based on intents/requests from substores
+- Support inventory management for all hospital consumables (e.g., detergents, chairs, bins, bed sheets) in the main store
+- Enable transfer of non-medical items to corresponding departments and track in their inventory
 
 ### 2. Inventory Management
 
@@ -28,6 +29,10 @@ CARE already includes prescription management and doctor prescription creation. 
 - Automatically choose the first-to-expire batch for each product to dispense from (FEFO)
 - Ability to view the current stock levels by product
 - Implement a notification system for drugs that need refrigeration (e.g., vaccines and some IV antibiotics)
+- Capture and track the quantity of each medication in corresponding units (e.g., 30ml or 100ml for syrup bottles)
+- Implement data analysis for each substore and main store to suggest optimum inventory levels
+- Track and analyze high-value inventory consumption rates and areas
+- Support real-time consumption tracking for items not directly charged to patients (e.g., cotton)
 
 ### 3. Batch Management
 
@@ -41,12 +46,14 @@ CARE already includes prescription management and doctor prescription creation. 
 - Track order status (placed, in transit, received, etc.)
 - Support partial order receipts and backorders
 - Future: Allow creation of intent for purchase orders based on usage trends and stock levels
+- Implement a two-level approval system for high-value item purchases
 
 ### 5. Supplier Management
 
 - Maintain a database of approved suppliers
 - Suppliers are facility level
 - Manage vendor/supplier information
+- Implement a vendor addition process that captures product information and source of vendor introduction
 
 ### 6. Prescription Management
 
@@ -58,6 +65,7 @@ CARE already includes prescription management and doctor prescription creation. 
 - Clearly mark medicines on prescriptions that are not available in-store and add note to buy from outside
 - Let staff in pharmacy with specific permission to update medicine and count
 - Implement allergy and drug interaction warnings
+- Implement a token system for dispensing
 
 ### 7. Dispensing
 
@@ -67,12 +75,15 @@ CARE already includes prescription management and doctor prescription creation. 
 - Support barcode scanning for medication identification
 - Automatic reduction in stock of product batch quantities when patient pays for the invoice consisting of products (via the billing function)
 - Display allergy and drug interaction warnings during the dispensing process
+- Implement alerts for similar sounding/looking medicines
 
 ### 8. Billing and Payments
 
 - Integrate with the planned billing system for medication charges
 - Process returns and refunds, updating inventory accordingly
 - Apply GST (Goods and Services Tax) to billing as required
+- Implement controls to prevent unauthorized discounting of bills
+- Flag unusual billing patterns or discrepancies for review
 
 ### 9. Reporting and Analytics
 
@@ -81,15 +92,18 @@ CARE already includes prescription management and doctor prescription creation. 
   b. Purchases
   c. Stock movement
   d. Inventory status
-  f. Fast-moving and slow-moving medicines
+  e. Fast-moving and slow-moving medicines
 - Provide financial reports including sales, claims, and profit margins
 - Track and report on batch utilization and expiry
 - Implement metrics on rate of usage across medicines
+- Implement red flagging or alerts for abnormal consumption rates or low/high billing values
+- Generate reports on real-time consumption of items not directly charged to patients
 
 ### 10. User Management and Security
 
 - Extend existing user roles to include pharmacy-specific permissions
 - Implement audit trails for all pharmacy-related actions
+- Implement strict controls on discount application, limiting it to admin-level users
 
 ### 11. Environmental Controls
 
@@ -100,3 +114,4 @@ CARE already includes prescription management and doctor prescription creation. 
 
 - Dr. Athul Joseph Manuel
 - Dr. George Tukalan
+- Dr. Sachin Suresh
