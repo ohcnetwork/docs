@@ -1,3 +1,5 @@
+# CEP 9: Pharmacy Management
+
 ## Motive
 
 CARE already includes prescription management and doctor prescription creation. This enhancement aims to extend the existing functionality to include robust pharmacy-specific features, improving medication dispensing, inventory control, and overall pharmacy operations.
