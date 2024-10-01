@@ -6,29 +6,27 @@ increasing authorization scopes.
 A new updated version of RBAC is essential to ensure that care remains secure, stable and scalable.  
 
 Requirements for new version :  
-    - Adding permission for each action, this could be anything from `edit_patient` to `edit_patient_dob` ( Some relation can be maintained for this hierarchy )  
+    - Adding permission for each action, this could be anything from `edit_patient` to `edit_patient_dob` 
     - New implementation of roles which would be a combination of permissions and can be created on the fly and modifiable as necessary
     - A new library to perform authZ related actions, ie, this library can abstract permission checks like `can user X access resource Y`  
 
-There should be some capability to override permissions based on attributes, like a DistAdmin type user would have access to X if the district attribute of X is the same as the users. 
+There should be some capability to override permissions in general, like a DistAdmin type user would have access to X if the district attribute of X is the same as the users. 
 This needs to be abstracted somehow. ( Even thou its not required, having a permission management system capable of this would be essential )
 
 To allow AuthZ in listing, For resources that are unbounded like patient listing, there can be permissions that allow patient searches within a facility 
 and if the user requesting the search passes the criteria they are allowed to search.
 
-A user can also be given explicit permission over a resource, this needs to be handled separately. Since the permissions in care do not explicitly deny any user from an action, 
-The most open permission can be used first.
+A user can also be given explicit permission over a resource, this needs to be handled separately. ex : Even if you have the permission to view patients in a facility, 
+you may not access the patient unless the patient is explicitly assigned to your location or you are the assigned doctor.
 
-Open searches without any contexts applied should be discouraged, Searching patients across without a facility limit for instance should be discouraged.
+Open searches without any contexts applied should be discouraged, Searching patients cross facilities for instance should be discouraged.
 
 Permissions can be cached at any level, given that they are invalidated periodically or on a change in permission.
 
 Superadmins may sometimes required to give access to resources to other users for a temporary duration, like a doctor viewing an old patient data without actually creating a consultation.
 This needs to be accounted for in the system.
 
-## Proposed Design:
-
-### Approach 1 (Proposed): Abstract all Permissions to a separate app
+## Proposed Implementation:
 
 A new app will be created to manage permissions, This app would abstract away every bit of logic that deals with permissions in general.
     
@@ -41,10 +39,23 @@ A plug with a custom permission manager can override this logic to create his ow
 
 All permissions are to be abstracted to a class outside care's default `facilitiy` app, this class would be tasked with checking if a user has access to resource y with a given scope.
 
-A single Permission manager class can encompass all permissions, it is also possible to create 
+### Permission Controller
+    
+This is a new idea introduced in care to abstract permission management, All available permissions in the app would be defined here.
+A set of pre-defined roles along with their permission is also managed. 
 
-Permissions can either be abstract or be applied on a given facility, ie `view patients` can be applied on a facility X and only that facility. 
+The permission controller handles only permission management, it maintains a list of permission each user. 
 
-All views would invoke the permission manager to check if a user has permission to do a certain action, custom serializer logic can also call the permission manager to confirm authZ.
+Permissions are always applied at a context, Contexts can be at a location level, facility level or extended as per application requirements.
 
-A repository of permissions to be maintained to manage permissions
+Permission Controller allows the permissions to be defined in different files and allows permissions to be defined by plugs as well.
+
+### Authorization Controller
+
+The is another concept introduced into care, the authorization controller is responsible for checking if a user has access to a resource.
+Internally it can use the permission controller to check, it also uses the requested objects's metadata to detemine if the user has access to the resource. 
+
+For ex, For the action `view_patient` ie Viewing a patients data ( Patient id already known )
+The Authorization controller for this action will take a user obj and a patient obj, it will check if the user has access to the patient obj through various mechanisms.
+
+Views will invoke the Authorization controller to check if a user can continue with the action. Authorization Controller can also cache the access for a user to a resource.
