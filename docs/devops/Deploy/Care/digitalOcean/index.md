@@ -5,23 +5,35 @@
 - Navigate to the Networking tab in the DigitalOcean Console.
 - Click on the VPC section.
 - Click on the Create VPC button.
-- Choose suitable options for the VPC and click on Create VPC.
+- Choose Datacenter region.
+- Select Generate an IP range for me option.
+- click on Create VPC.
 
 ## Setting up the Database
 
 - Navigate to the Databases tab in the DigitalOcean Console.
 - Click on the `Create Database` button.
+- Select the required datacenter region.
+- Select the VPC for the database (make sure the datacenter is same as the one of the VPC created above)
 - Choose the PostgreSQL database engine.
-- Set the VPN to the one created in the previous step.
-- Choose ideal options for the database and click on Create Database.
+- Select the CPU, plan and storage based on the requirements.
+- choose a unique database name.
+- Add tags for access control.
+- click on the `Create Database Cluster` button.
 
 ## Setting up Spaces
 
 - Navigate to the Spaces Objects Storage tab in the DigitalOcean Console.
+- Click on the `Create a Space` button.
+- Choose the datacenter region.
 - Enable CDN for faster content delivery.
-- Set bucket name and set the suitable options to create the bucket.
+- Set bucket name and press on the `Create a Spaces Bucket`.
 
 ## Setting up the App Platform
+
+- Decide the domain name for the app.
+  - Care FE App: `care.example.com`
+  - Care BE App: `care-api.example.com`
 
 ### 1. Deploy Care FE App
   - Fork the [care_fe](https://github.com/ohcnetwork/care_fe) repository from [ohcnetwork](https://github.com/ohcnetwork)
@@ -31,7 +43,7 @@
 
   - Set the environment variables.
     ```
-    REACT_APP_API_URL: <care-api-url>
+    REACT_APP_API_URL: <care-api-url> // URL of the care backend, e.g. https://care-api.example.com
     ```
   - Set the build command as `npm run build`
   - Set output directory as **Auto**
@@ -115,7 +127,7 @@ Care requires a few more components to function and they can be setup in the sam
 - Navigate to the `Settings` tab.
 - Click on the `Domains` section edit option.
 - add the domain name and click on the `Add Domain` button.
-- add cname records to the domain provider.
+- add cname records to the DNS dashboard.
 2. Setting up CORS for storage bucket
 - Navigate to the Spaces Objects Storage tab in the DigitalOcean Console.
 - Click on the bucket created for the care app.
