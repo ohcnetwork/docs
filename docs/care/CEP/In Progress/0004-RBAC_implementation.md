@@ -1,4 +1,4 @@
-# RBAC support - CEP-4
+# CEP-4: RBAC support
 
 RBAC (Role Based Access Control) allows fine-grained control of objects within care. Currently, care has some rudimentary 
 version of RBAC implemented but this is not enough for the evolving requirements and its increasingly hard to keep track of 
