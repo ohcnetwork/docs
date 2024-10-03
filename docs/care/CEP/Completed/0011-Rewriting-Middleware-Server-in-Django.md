@@ -1,4 +1,6 @@
-# Rewriting Middleware Server in Django
+# CEP-11: Rewriting Middleware Server in Django
+  The current middleware system was designed in node with express, to ensure that our tech stack aligns with dev resources and for ease of management, it was decided to re-write middleware in Django.  
+
   The Django project involved a comprehensive rewrite of the existing TeleICU middleware. However, rather than a direct one-to-one translation, certain components were optimized and refactored to enhance maintainability and readability. The key modules that underwent significant improvements include:
 
     Update Observations
@@ -11,7 +13,6 @@
   3) Device / Camera status endpoints 
   4) Authentication
 
-  **GitHub Link:** [Middleware Server PR](https://github.com/ohcnetwork/teleicu_middleware_backend/pull/1)
 ## Update Observations
 
 #### Requirements/Motive 
