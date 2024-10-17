@@ -113,74 +113,78 @@ Each resource - be it doctor, OT, any other facility, including consultation roo
 
 ### Availability
 All resources which can be scheduled shall have an entry into the `SchedulableResource` model. It will be linked back to the original object as well
-```py
-class SchedulableResource: 
-	id: int
-	type: enum - "doctor" | "ot" | "lab" | "consultation_room"
-
-    object_id: int # use actual id of the object. 
-```
 
 The availability of a resource will be stored using 3 models - `Schedule`, `Availability` and `AvailabilityException`.
 
 The `Schedule` will be created each time a new configuration is added. When a new configuration is setup, the old one is invalidated by setting the `valid_till` and creating a new configuration.
 
-```py
-class Schedule:
-	resource_id: int # foreign key to SchedulableResource
-	valid_from: datetime
-	valid_till: datetime
-	slot_size_in_minutes: int # number of minutes in a slot
-	tokens_per_slot: int # for OT, Rooms, it will be 1, but for doctors, it can be 10 tokens per 30 minutes, etc.
+```mermaid
+erDiagram
+  Schedule }|--|{ Schedulable-Resource : "of a"
+  Schedule ||--|{ Availability: contains
+  Schedulable-Resource ||--|{ AvailabilityException: contains
 
-class Availability:
-	schedule_id: int # fk to Schedule
-	# can have more than one entry for the same day to support 10-12 and 2-4
-	day_of_the_week: int # 0 - 6; Monday is 0 and Sunday is 6. As per Python documentation https://docs.python.org/3/library/datetime.html#datetime.datetime.weekday
-	start_time: time
-	end_time
-	
-class AvailabilityException:
-	resource_id: int 
-	
-	is_avaiable: bool 
-    # exception can be being available on a non-configured day, 
-	# as well as being not-available on a configured day
-	
-	start_datetime
-	end_datetime
-	reason # [optional] national holiday, doctor on leave, etc.
+  Schedule {
+     int resource_id
+     datetime valid_from
+     datetime valid_till
+  }
+
+  Availability {
+    enum type "tokens / open"
+    int slot_size_in_minutes "0 for open"
+    int tokens_per_slot "0 for open"
+    int day_of_the_week "# 0 - 6; Monday is 0 and Sunday is 6. As per Python docs"
+    datetime start_time
+    datetime end_time
+  }
+
+  AvailabilityException {
+    enum type "tokens / open"
+    bool is_available "allows to be absent in a configuration, or be available outside a configuration"
+    datetime start_datetime
+    datetime end_datetime
+  }
+
 ```
+
+
+
+
 
 :::warning[Availability as a separate service]
 Availability shall be written as a separate service, and all data access should be driven through the service alone. Direct calls to the models should not be allowed. We can achieve this through reviews and try using pre-commit hooks.
 :::
 
 ### Booking
-```py
-class Booking:
-	patient_id
-	start_datetime
-	end_datetime
-	booked_by
-	status: enum "requested" | "approved" | "denied" | "canceled"
-	status_message: str #  to be used in case requested bookings were denied, or canceled.
-	
-	# resources_used: list[BookingResource] # one to many relation with BookingResource
-
-class BookingResource:
-	booking_id
-	resource_id
-	
-	# separate datetime allows for the provision of some doctors 
-	# being available only for the first few minutes / hours. 
-	start_datetime
-	end_datetime
-```
 
 :::warning DB level constraints to avoid overbooking
 DB level constraint shall be added to `BookingResource` table, which will check if the resource is being used in another `Booking`
 :::
+
+```mermaid
+erDiagram
+  Staff ||--o{ Booking: books
+  Patient ||--o{ Booking: "for a"
+  Booking ||--|{ BookingResource: "contains"
+  Booking ||--o| Availability: "part of"
+  Booking ||--o| AvailabilityException: "part of"
+
+  Booking {
+    int patient FK
+    int booked_by FK
+    enum status "requested | approved | denied | canceled"
+    datetime start_datetime
+    datetime end_datetime
+  }
+
+  BookingResource {
+    int resource FK
+    datetime start_datetime "allows for some resources being partially available during a booking"
+    datetime end_datetime 
+  }
+
+```
 
 ### Dynamic booking vs Slot based booking
 
@@ -216,22 +220,30 @@ flowchart TD
 ### Token Booking
 Token booking and Booking needs to be handled seperately as Booking of resources needs to override the tokens booked. 
 
-```py
-class TokenSlot:
-    resource_id
-    tokens_remaining
-    start_datetime
-	end_datetime
+```mermaid
+erDiagram
+  TokenSlot }o--o| Availability: "can be part of a"
+  TokenSlot }o--o| AvailabilityException: "can be part of a"
+  Patient ||--o{ TokenBooking: "can book"
+  TokenSlot ||--o{ TokenBooking: "has multiple"
 
-class TokenBooking:
-    slot_id # FK to Slot
-    patient_id
-	start_datetime
-	end_datetime
-	booked_by
-	status: enum "requested" | "approved" | "denied" | "canceled"
-	status_message: str #  to be used in case requested bookings were denied, or canceled.
+  TokenSlot { 
+    int availability FK "nullable; created for availability type token"
+    int availabilty_exception FK "nullable; created for availability type token"
+    datetime start_datetime
+    datetime end_datetime
+    int tokens_remaining 
+  }
+
+  TokenBooking {
+    int patient FK
+    int token_slot FK
+    int booked_by FK
+    enum status "requested | approved | denied | canceled"
+  }
+
 ```
+
 
 **Sample Algorithm**
 ```mermaid
@@ -266,3 +278,96 @@ Following are the operations allowed on the Availability Service
   - Either approve a request or create a new one. 
 - Approval, Creating an approved schedule to be handled based on permissions.
 
+
+## Example
+
+:::info Example
+Dr. Roopak is available in weekdays Mon-Fri 
+in the hospital from 10 am to 5 pm, and a lunch break from 1 pm to 2 pm.
+He is open for OP during 10 am to 12 pm.
+On Oct 25, Friday he is unavailable. He will compensate for that on Oct 28.
+:::
+
+```py
+Schedule:
+  resource: Doctor Roopak
+  valid_from: Oct 1, 2024
+  valid_till: Oct 31, 2024
+
+Availability / 1
+  type: "tokens"
+  slot_size_in_minutes: 30
+  tokens_per_slot: 10
+  day_of_the_week: Mon
+  start_time: 10 am
+  end_time: 12 pm
+
+Availability / 2
+  type: "open"
+  slot_size_in_minutes: None
+  tokens_per_slot: None
+  day_of_the_week: Mon
+  start_time: 12 pm
+  end_time: 1 pm
+
+Availability / 3
+  type: "open"
+  day_of_the_week: Mon
+  start_time: 2 pm
+  end_time: 5 pm
+
+AvailabilityException / 1
+  type: "open"
+  is_available: false
+  start_datetime: Oct 25, 2024 10 am 
+  end_datetime: Oct 26, 2024 9 pm
+
+AvailabilityException / 2
+  type: "token"
+  is_available: true
+  start_datetime: Oct 28, 2024 10 am 
+  end_datetime: Oct 28, 2024 12 pm
+
+AvailabilityException / 3
+  type: "open"
+  is_available: true
+  start_datetime: Oct 28, 2024 2 am 
+  end_datetime: Oct 28, 2024 5 pm
+```
+
+**He is operating on a patient on Oct 11 2 pm to 4 pm.**
+
+```py
+Booking:
+  patient
+  start_datetime: Oct 11 2 pm
+  end_datetime: Oct 11 4 pm
+  booked_by: Staff ID
+  status: approved
+
+BookingResource:
+  resource: Dr. Roopak
+  start_datetime: Oct 11 2 pm
+  end_datetime: Oct 11 4 pm
+```
+
+**2 people need tokens for his OP on 20 Oct 10 - 10:30**
+```
+TokenSlot
+  availabilty_id
+  start_datetime 20 Oct 10 am
+  end_datetime 20 Oct 10:30 am
+  tokens_remaining 8
+
+TokenBooking
+  patient: Patient 1
+  token_slot_id
+  booked_by: FK to Object - Patient, Staff
+  status: approved
+
+TokenBooking
+  patient: Patient 2
+  token_slot_id
+  booked_by: FK to Object - Patient, Staff
+  status: approved
+```
