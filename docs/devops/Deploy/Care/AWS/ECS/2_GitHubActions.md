@@ -187,8 +187,8 @@ jobs:
 - `ECS_SERVICE_BACKEND` = ECS service name for the backend service, e.g. `care-backend`
 - `ECS_SERVICE_CELERY` = ECS service name for the celery service, e.g. `care-celery`
 - `ECS_CLUSTER` = ECS cluster name, e.g. `care-cluster`
-- `ECS_TASK_DEFINITION_BACKEND` = specify the task definition inside a json file eg. `./ecs/backend.json` refer to (https://github.com/ohcnetwork/care/blob/develop/aws/backend.json)[backend.json]
-- `ECS_TASK_DEFINITION_CELERY` = specify the task definition inside a json file eg. `./ecs/celery.json` refer to (https://github.com/ohcnetwork/care/blob/develop/aws/celery.json)[backend.json]
+- `ECS_TASK_DEFINITION_BACKEND` = specify the task definition inside a json file eg. `./ecs/backend.json` refer to [backend.json](https://github.com/ohcnetwork/care/blob/develop/aws/backend.json)
+- `ECS_TASK_DEFINITION_CELERY` = specify the task definition inside a json file eg. `./ecs/celery.json` refer to [celery.json](https://github.com/ohcnetwork/care/blob/develop/aws/celery.json)
 - `CONTAINER_NAME_BACKEND` = Name of the container for the backend service, e.g. `care-backend`
 - `CONTAINER_NAME_WORKER` = Name of the container for the celery worker service, e.g. `care-worker`
 - `CONTAINER_NAME_CRON` = Name of the container for the celery cron service, e.g. `care-cron`

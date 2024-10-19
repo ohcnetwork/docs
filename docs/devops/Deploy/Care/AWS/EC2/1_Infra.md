@@ -35,6 +35,7 @@
 5. Configure the security group to allow inbound traffic on ports `22` `80` and `443` from all sources.
 6. Assign a key pair to the instance to facilitate SSH access.
 7. Configure the storage settings as required.
+
 | Resource       | Instance Type | Region      | Monthly Cost (INR) | Cost Estimation Methodology                          |
 |----------------|---------------|-------------|--------------------|-----------------------------------------------------|
 | EC2 Instance   | t3a.medium    | ap-south-1  | ~₹1080.00          | Based on 24/7 usage with default pricing            |
