@@ -30,8 +30,17 @@
 
 1. Access the **EC2** service via the **AWS Console**.
 2. Launch a new instance and select the `Ubuntu` image.
-3. Choose the `t2.micro` instance type to remain within the free tier. (You can adjust this based on your requirements.)
+3. Choose the `t3a.medium` instance type. (You can adjust this based on your requirements.)
 4. Choose the VPC and subnet that were created earlier.
 5. Configure the security group to allow inbound traffic on ports `22` `80` and `443` from all sources.
 6. Assign a key pair to the instance to facilitate SSH access.
 7. Configure the storage settings as required.
+| Resource       | Instance Type | Region      | Monthly Cost (INR) | Cost Estimation Methodology                          |
+|----------------|---------------|-------------|--------------------|-----------------------------------------------------|
+| EC2 Instance   | t3a.medium    | ap-south-1  | ~₹1080.00          | Based on 24/7 usage with default pricing            |
+| RDS Instance   | db.t2.micro   | ap-south-1  | ~₹1245.00          | Estimated for a single instance with minimal usage  |
+| S3 Bucket      | 10 GB Storage | ap-south-1  | ~₹19.00            | Calculated for 10 GB of standard storage            |
+| Data Transfer  | 4 GB Outbound | ap-south-1  | ~₹29.60            | Estimated for 4 GB of outbound data transfer        |
+| **Total**      |               |             | ~₹2373.60          |                                                     |
+
+NB: Additional Including taxes, ec2 related costs etc. will be added to the total cost.
