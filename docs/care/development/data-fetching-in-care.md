@@ -2,7 +2,7 @@
 
 ## Introduction to `useQuery`
 
-CARE uses a custom built hook ([`useQuery`](https://github.com/ohcnetwork/care_fe/blob/develop/src/Utils/request/useQuery.ts#L12)) and a function ([`request`](https://github.com/ohcnetwork/care_fe/blob/develop/src/Utils/request/request.ts#L19)) to fetch data from and communicate with the backend. These are built on top of [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch).
+CARE uses a custom built hook ([`useQuery`](https://github.com/ohcnetwork/care_fe/blob/develop/src/Utils/request/useQuery.ts)) and a function ([`request`](https://github.com/ohcnetwork/care_fe/blob/develop/src/Utils/request/request.ts)) to fetch data from and communicate with the backend. These are built on top of [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch).
 
 ### Basic Usage
 
