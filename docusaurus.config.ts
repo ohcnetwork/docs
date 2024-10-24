@@ -50,7 +50,7 @@ const config: Config = {
         language: ["en"],
       },
     ],
-    '@docusaurus/theme-mermaid'
+    "@docusaurus/theme-mermaid",
   ] satisfies PluginConfig[],
 
   markdown: {
@@ -73,10 +73,10 @@ const config: Config = {
         { to: "/blog", label: "Blog", position: "left" },
         { to: "/docs/contributing", label: "Contribute", position: "left" },
         {
-          href: 'https://github.com/ohcnetwork/docs',
-          position: 'right',
-          className: 'header-github-link',
-          'aria-label': 'GitHub repository',
+          href: "https://github.com/ohcnetwork/docs",
+          position: "right",
+          className: "header-github-link",
+          "aria-label": "GitHub repository",
         },
       ],
     },
@@ -95,6 +95,7 @@ const config: Config = {
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
+      additionalLanguages: ["bash"],
     },
   } satisfies Preset.ThemeConfig,
 };
