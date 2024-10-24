@@ -44,7 +44,7 @@ To get familiar with our tech stack, you can follow these courses:
 ## How to Contribute
 1. **Find an Issue**:
    - Browse issues on [care](https://github.com/coronasafe/care/issues) and [care_fe](https://github.com/coronasafe/care_fe/issues).
-   - Look for issues labeled `good-first-issue`.
+   - Look for issues labeled `good first issue`.
 
 2. **Claim the Issue**:
    - Comment on the issue explaining your approach and request to assign it to you.
@@ -71,9 +71,56 @@ To get familiar with our tech stack, you can follow these courses:
 
 ## Support
 If you need help, you can:
-- Check the project's documentation.
+- Check the project's documentation and [FAQ](#frequently-asked-questions).
 - Ask questions in the relevant Slack channels.
 - Look for help in the community forums.
+
+## Frequently Asked Questions
+
+### How to resolve merge conflicts?
+
+Often, when you are working on a feature branch and the base branch gets updated in the original repository, conflicts may arise if both you and the base branch modified the same file or lines.
+
+Follow these steps to resolve merge conflicts when syncing your feature branch with the latest changes from the develop branch in the org’s repository:
+
+1. Ensure you have the latest develop branch from the org’s repository:
+
+```bash
+# First, verify that you have the org’s repository added as a remote. You can check by running:
+git remote -v
+
+# If it’s not added, you can add it using the following command:
+git remote add upstream https://github.com/ohcnetwork/care_fe.git
+git fetch upstream
+
+# Merge the latest `develop` branch into your working branch
+git merge upstream/develop
+```
+
+2. Resolve conflicts if any
+
+- If there are merge conflicts, git will pause and show the files with conflicts.
+- Open those files in your editor and look for lines like:
+
+```text
+ <<<<<<< HEAD
+ // Your changes
+ =======
+ // Changes from upstream
+ >>>>>>> upstream/develop
+```
+
+- Resolve the conflicts by choosing which changes to keep or combining them as needed. You can use VS Code Editor to resolve these conflicts. [See how](https://code.visualstudio.com/docs/sourcecontrol/overview#_merge-conflicts).
+
+3. After resolving the conflicts, mark them as resolved and commit the merge:
+
+```bash
+git add .
+git commit
+```
+
+That's it! Now you can push your changes.
+
 
 ## Code of Conduct
 We expect all contributors to adhere to our [Code of Conduct](https://github.com/coronasafe/care/blob/develop/CODE_OF_CONDUCT.md).
