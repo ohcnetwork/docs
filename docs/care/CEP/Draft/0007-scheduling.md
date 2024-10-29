@@ -207,7 +207,7 @@ title: Scheduling logic
 flowchart TD
     start(((Start))) --> sReq["Schedule Request"]
     sReq --> vReqdata["Validate Basic Request Data"]
-    vReqdata --> vAvailability["Validate Basic Request Data"]
+    vReqdata --> vAvailability["Validate Availability"]
     vAvailability --> lockCheck{"Can acquire all locks?"}
     lockCheck --> |Yes| sc["Schedule"]
     sc --> rel["Release all acquired locks"]
