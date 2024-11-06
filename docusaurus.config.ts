@@ -68,6 +68,7 @@ const config: Config = {
       },
       items: [
         { to: "/docs/care", label: "Care", position: "left" },
+        { to: "/docs/devops/", label: "DevOps", position: "left" },
         { to: "/docs/ayushma/", label: "Ayushma", position: "left" },
         { to: "/docs/leaderboard/", label: "Leaderboard", position: "left" },
         { to: "/blog", label: "Blog", position: "left" },
