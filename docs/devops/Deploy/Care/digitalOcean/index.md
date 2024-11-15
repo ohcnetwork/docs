@@ -1,203 +1,225 @@
-# DigitalOcean
+### **Deploying Care on DigitalOcean**
 
-## Setting up the Database
+In this guide, we’ll walk you through deploying **Care**, on **DigitalOcean**. We’ll keep things simple & you can simply follow along to get your instance up and running. Expect the process to take about **an hour**, depending on your familiarity with the tools.
 
-- Navigate to the Databases tab in the DigitalOcean Console.
-- Click on the `Create Database` button.
-- Select the required datacenter region.
-- Choose the default VPC network.
-- Choose the PostgreSQL database engine V16.
-- Select the CPU, plan, and storage based on the requirements.
-- Choose a unique database name.
-- Add tags for access control.
-- Click on the `Create Database Cluster` button.
+---
 
-## Setting up Spaces
+### **Prerequisites**
+- A DigitalOcean account ([Sign up here](https://www.digitalocean.com)).
+- A fork of the Care backend and frontend repositories.
+- A registered domain name (optional but recommended).
+- Basic familiarity with DigitalOcean's App Platform and Spaces.
 
-- Navigate to the Spaces Objects Storage tab in the DigitalOcean Console.
-- Click on the `Create a Space` button.
-- Choose the datacenter region.
-- Enable CDN for faster content delivery.
-- Select your project.
-- Set the bucket name and press on the `Create a Spaces Bucket`.
-- Go to the API's tab and select the `Spaces Keys`.
-- Generate a new key by giving it a name.
-- Note down the generated key and secret for later use.
+---
 
-## Setting up the App Platform
+### **What You’ll Be Doing**
 
-- Decide the domain name for the app.
-  - Care FE App: `care.example.com`
-  - Care BE App: `care-api.example.com`
+We’ll guide you step by step to:
+- Set up a **PostgreSQL database** for secure data storage.
+- Configure **DigitalOcean Spaces** for handling files and media.
+- Deploy the **Care backend** with Redis and Celery for task management.
+- Set up the **Care frontend** for users to access.
+- Secure the setup with custom domains, API keys, and SSL.
+- Setup a CI/CD Pipeline for Continuous Deployment
 
-### Deploy Care BE App
+---
 
-#### Redis
-- Redis Stack Server is used to store the Celery queue and must be set up as a prerequisite for the Care backend.
-- Click `Create App`.
-- Set the Service Provider to Docker Hub.
-- Set the repository to `redis/redis-stack-server`.
-- Set the Image tag to `6.2.6-v10`.
-- Use the edit option to name the component `redis`.
-- Add internal ports for private networking.
-- Expose port 6379 as an internal port.
-- Save and return to the Resources section.
-- Click `Next`.
-- Specify the App name and Project.
-- Review and create the resource.
+### **Ready to Start?**
 
-#### Care
-- Set up the Care Django backend.
-- Fork the [care](https://github.com/ohcnetwork/care) repository from [ohcnetwork](https://github.com/ohcnetwork) (ensure to clone the production branch to your repo).
-- Click `Create App` and then `Create Resource From Source Code`.
-- Set the Service Provider to GitHub.
-- Choose the repository `https://github.com/accountname/care` and branch `production`.
-- In the Resources tab, edit the `care` component.
-- Enable the autodeploy option and choose `/` as the `Source Directory`.
-- Use the edit option to specify the resource type as `Web Service`.
-- Choose resource size based on the scale.
-- Edit the Build Phase and set the `Build Command` to:
-  ```
-  python install_plugins.py && python manage.py collectstatic --noinput && python manage.py compilemessages
-  ```
-- Set the `Run Command` to:
-  ```
-  gunicorn config.wsgi:application --workers 2 --bind :9000
-  ```
-- Expose the Public HTTP Port `9000`.
-- Return from the edit menu and click `Next`.
-- Set the **global environment variables** (use the Bulk editor to copy-paste the template and configure):
-  ```
-  DJANGO_SETTINGS_MODULE=config.settings.production
-  SNS_ACCESS_KEY=
-  SNS_SECRET_KEY=
-  CORS_ALLOWED_ORIGINS=["https://example.com"]
-  DATABASE_URL=<db-url>
-  SENTRY_ENVIRONMENT=
-  SENTRY_TRACES_SAMPLE_RATE=
-  SENTRY_PROFILES_SAMPLE_RATE=
-  SENTRY_DSN=
-  CELERY_BROKER_URL=redis://redis:6379
-  REDIS_URL=redis://redis:6379
-  BUCKET_PROVIDER=
-  BUCKET_REGION=
-  BUCKET_KEY=
-  BUCKET_SECRET=
-  BUCKET_HAS_FINE_ACL=True
-  FILE_UPLOAD_BUCKET=care-data
-  FILE_UPLOAD_BUCKET_ENDPOINT=
-  FACILITY_S3_BUCKET=care-data
-  FACILITY_S3_BUCKET_ENDPOINT=
-  HCX_AUTH_BASE_PATH=
-  HCX_ENCRYPTION_PRIVATE_KEY_URL=
-  HCX_IG_URL=
-  HCX_PARTICIPANT_CODE=
-  HCX_PASSWORD=
-  HCX_PROTOCOL_BASE_PATH=
-  HCX_USERNAME=
-  HCX_CERT_URL=
-  JWKS_BASE64=
-  ADDITIONAL_PLUGS=[{"name": "example_plugin", "package_name": "git+https://github.com/ohcnetwork/channgeme.git", "version": "@v0.0.0"}]
-  ```
-- Expose the port as 9000.
-- Set the run command to `gunicorn config.wsgi:application --workers 2 --bind :9000`.
-- Review and create the resource.
+Grab a coffee and prepare to bring your Care application to life on DigitalOcean. Let’s dive in! 🌟
 
-#### Adding Domain for care-api
-- Once the care-backend app is set up, go to the settings tab and find the domains section.
-- Click the edit option to add your domain.
-- Select "I'll manage my domain" and enter `care-api.example.com`.
-- Copy the provided link and paste it in your DNS dashboard as a CNAME entry.
+---
 
-#### Care Celery Worker
-- Use the `Create Resource From Source Code` option to add a new component.
-- Set the Service Provider to GitHub.
-- Select the repository `care` and branch `production` (similar to the above step).
-- Set the resource type to Worker instead of Web Service.
-- Set the build command to:
-  ```
-  python install_plugins.py && python manage.py collectstatic --noinput && python manage.py compilemessages
-  ```
-- Set the run command to:
-  ```
-  celery --app=config.celery_app worker --max-tasks-per-child=6 -B --loglevel=info
-  ```
-- Deploy the app.
+## **Step 1: Create the Database**
 
-#### Care Celery Beat
-- Use the `Create Resource From Source Code` option to add a new component.
-- Set the Service Provider to GitHub.
-- Select the repository `care` and branch `production`.
-- Set the resource type to Job instead of Web Service.
-- Set the Job Trigger to run after every successful deployment.
-- Set the build command to:
-  ```
-  python install_plugins.py && python manage.py collectstatic --noinput && python manage.py compilemessages
-  ```
-- Set the run command to:
-  ```
-  python manage.py migrate && python manage.py load_redis_index
-  ```
+1. **Navigate to Databases:**
+   - Log in to DigitalOcean and go to the **Databases** section.
 
-### Deploy Care FE App
-- Navigate to the App Platform option.
-- Click `Create App`.
-- Select GitHub as the Service Provider.
-- Configure repository access by logging into your GitHub account.
-- Fork the GitHub repository [care_fe](https://github.com/ohcnetwork/care_fe).
-- The default branch of ohcnetwork/care_fe is `develop`; ensure to use the `production` branch for production usage.
-- On the next page, delete the Dockerfile-based web service.
-- Click the edit option on the remaining web service and change it to a static site.
-- Use the default Build Phase steps and set the Build Command to `npm run build`.
-- Set `REACT_CARE_API_URL` to `care-api.example.com`.
-- Specify App Info such as name and Project.
-- Review and create the resource.
-- Set the environment variables:
-  ```
-  REACT_APP_API_URL: <care-api-url> // URL of the care backend, e.g. https://care-api.example.com
-  ```
-- Set the build command to `npm run build`.
-- Set the output directory to **Auto**.
-- Set custom pages as `index.html` for Catchall.
-- Click the `Deploy` button.
+2. **Create a PostgreSQL Database:**
+   - Click **Create Database**.
+   - Choose the following:
+     - **Region**: Select the nearest data center.
+     - **Engine**: PostgreSQL (Version 16).
+     - **Resources**: Select a plan based on your requirements.
+     - **Name**: Give your database a unique name.
+     - **Tags**: Add tags for organization.
 
-## Secure the Database Cluster
+3. **Save Connection Details:**
+   - Once the database is created, note the connection URL for later use.
 
-Make sure to restrict the Database access to the created backend app for security. You can do this by:
-- Navigating to the Databases section.
-- Selecting your Postgres DB.
-- Add Care app as a trusted source.
+📌 **Screenshot Placeholder:** *Example of DigitalOcean database creation.*
 
-## Setting up the Domain and CORS
+---
 
-1. Setting up the Domain
-- Select the `care-fe` app.
-- Navigate to the `Settings` tab.
-- Click on the `Domains` section edit option.
-- Add the domain name and click on the `Add Domain` button.
-- Add CNAME records to the DNS dashboard.
+## **Step 2: Set Up Object Storage (Spaces)**
 
-2. Setting up CORS for storage bucket
-- Navigate to the Spaces Objects Storage tab in the DigitalOcean Console.
-- Click on the bucket created for the care app.
-- Click on the settings tab.
-- Add CORS configuration as below.
-  ```json
-  [
-    {
-      "AllowedHeaders": [
-        "*"
-      ],
-      "AllowedMethods": [
-        "GET",
-        "POST",
-        "PUT",
-        "DELETE"
-      ],
-      "AllowedOrigins": [
-        "https://example.com"
-      ],
-      "ExposeHeaders": []
-    }
-  ]
-  ```
+1. **Navigate to Spaces:**
+   - Go to the **Spaces** section in DigitalOcean.
+
+2. **Create a New Space:**
+   - Click **Create a Space**.
+   - Choose:
+     - **Region**: Select the same region as your database.
+     - **Enable CDN**: For faster file delivery.
+     - **Bucket Name**: Enter a unique name.
+
+3. **Generate API Keys:**
+   - Go to the **API** tab and click **Spaces Keys**.
+   - Create a new key pair and save the **Key** and **Secret**.
+
+📌 **Screenshot Placeholder:** *Creating Spaces and generating API keys.*
+
+---
+
+## **Step 3: Deploy the Care Backend (BE)**
+
+### **Step 3.1: Deploy Redis**
+1. **Set Up Redis:**
+   - Go to the App Platform and click **Create App**.
+   - Choose **Docker Hub** as the source and use:
+     - **Repository**: `redis/redis-stack-server`.
+     - **Tag**: `6.2.6-v10`.
+     - **Port**: Expose `6379` as an internal port.
+
+2. **Name and Deploy:**
+   - Name the component `redis` and deploy it.
+
+📌 **Screenshot Placeholder:** *Configuring Redis in DigitalOcean.*
+
+---
+
+### **Step 3.2: Deploy the Care Backend**
+1. **Fork and Clone the Repository:**
+   - Fork the [Care Backend Repository](https://github.com/ohcnetwork/care).
+   - Use the `production` branch for deployment.
+
+2. **Set Up the App:**
+   - Click **Create App** and choose **From Source Code**.
+   - Select your forked repo and branch.
+   - Set the build and run commands:
+     - **Build Command:**
+       ```bash
+       python install_plugins.py && python manage.py collectstatic --noinput && python manage.py compilemessages
+       ```
+     - **Run Command:**
+       ```bash
+       gunicorn config.wsgi:application --workers 2 --bind :9000
+       ```
+
+3. **Environment Variables:**
+   - Add the following:
+     ```bash
+     DJANGO_SETTINGS_MODULE=config.settings.production
+     DATABASE_URL=<db-url>
+     REDIS_URL=redis://redis:6379
+     ...
+     ```
+
+4. **Expose Ports:**
+   - Expose `9000` for public HTTP access.
+
+📌 **Screenshot Placeholder:** *Setting up the Care backend app.*
+
+---
+
+### **Step 3.3: Add a Domain for the Backend**
+1. **Configure Domain:**
+   - Go to the app settings and add your domain (e.g., `care-api.example.com`).
+   - Update your DNS provider with the CNAME record.
+
+📌 **Screenshot Placeholder:** *Domain configuration example.*
+
+---
+
+### **Step 3.4: Set Up Celery Worker and Beat**
+1. **Celery Worker:**
+   - Create a new component in the app.
+   - Use:
+     - **Run Command:**
+       ```bash
+       celery --app=config.celery_app worker --max-tasks-per-child=6 -B --loglevel=info
+       ```
+
+2. **Celery Beat:**
+   - Create another component with:
+     - **Run Command:**
+       ```bash
+       python manage.py migrate && python manage.py load_redis_index
+       ```
+
+📌 **Screenshot Placeholder:** *Setting up Celery Worker and Beat.*
+
+---
+
+## **Step 4: Deploy the Care Frontend (FE)**
+
+1. **Fork the Frontend Repo:**
+   - Fork the [Care Frontend Repository](https://github.com/ohcnetwork/care_fe).
+   - Use the `production` branch.
+
+2. **Set Up the App:**
+   - Click **Create App** and configure:
+     - **Type**: Static Site.
+     - **Build Command:** `npm run build`.
+     - **Environment Variable:**
+       ```bash
+       REACT_APP_API_URL=https://care-api.example.com
+       ```
+     - **Output Directory:** Auto.
+
+3. **Add Domain:**
+   - Go to app settings and add the frontend domain (e.g., `care.example.com`).
+
+📌 **Screenshot Placeholder:** *Frontend app setup.*
+
+---
+
+## **Step 5: Secure Database Access**
+
+1. **Restrict Access:**
+   - Navigate to the Database settings.
+   - Add the Care backend app as a trusted source.
+
+📌 **Screenshot Placeholder:** *Restricting database access.*
+
+---
+
+## **Step 6: Configure CORS for Spaces**
+
+1. **Go to Bucket Settings:**
+   - Open your bucket in Spaces.
+   - Add the following CORS configuration:
+     ```json
+     [
+       {
+         "AllowedHeaders": ["*"],
+         "AllowedMethods": ["GET", "POST", "PUT", "DELETE"],
+         "AllowedOrigins": ["https://example.com"],
+         "ExposeHeaders": []
+       }
+     ]
+     ```
+
+📌 **Screenshot Placeholder:** *CORS configuration example.*
+
+---
+
+## **Final Steps**
+
+- **Verify Deployment:**
+  - Test the backend and frontend by accessing the respective domains.
+  - Ensure all components (Redis, Celery Worker, Beat) are running.
+
+- **Optimize Security:**
+  - Use SSL certificates (e.g., Let’s Encrypt) to enable HTTPS.
+  - Configure firewall rules to restrict access.
+
+📌 **Diagram Placeholder:** *Overall architecture diagram.*
+
+---
+
+## **Conclusion**
+
+You’ve successfully deployed the Care application on DigitalOcean! With the database, object storage, backend, and frontend configured, your application is ready for use. 🚀
+
+For troubleshooting, feel free to join our Community on Slack at [slack.ohc.network](https://slack.ohc.network); You may also refer to the official [DigitalOcean Documentation](https://www.digitalocean.com/docs) for anything question about Digital Ocean
