@@ -60,6 +60,7 @@ class Goal(BaseModel):
     targets = JSONfield([
         # will hold array of objects of the parameters of the patient we want to achieve, and what type of achievement it will be ("ratio", "range", "exact", etc.)
     ])
+    permitted_groups = ArrayField(choices=PermissionGroups) # to specify if certian groups (like nurses) can update the goal or not.
 
 ```
 
@@ -82,10 +83,38 @@ These models will help us better visualize and form a base understanding of how 
 
 ## User Stories
 
-A care plan would be manageable from the patient dashboard. The user can see all the current active care plans listed here. Additionally, the user can filter and see completed/expired plans. The page would have a “Create” button as well, taking them to the care plan form.
+### Patient Dashboard Management
 
-The form would contain basic details of the CarePlan model, followed by a form to add goals. Once done, the user would be able to create a new care plan with new goals.
+A care plan is manageable from the patient dashboard, which serves as the central hub for all patient-related activities. On this dashboard, users can view a comprehensive list of all current active care plans.
 
-Clicking on a care plan would take you to the Plan Dashboard. It will contain notes and other details. It will also include time series graphs of the goal updates to help determine progress for the goals. The user will be able to add new goals, update previous goals, and add goal updates through the plan dashboard. There will be options to create new tasks, medication requests, and service requests associated with the plan. These and their progress will also be tracked through the Care Plan dashboard.
+### Filtering and Retrospective Analysis
 
-Once a goal or plan is nearing its due date, alerts will be issued. If the due date is crossed before reaching targets, the plan and goals’ statuses will change to “not-reached.”
+In addition to viewing active care plans, users can filter and view completed or expired plans. This filtering capability allows healthcare providers to efficiently manage and review past care plans, facilitating better continuity of care and enabling retrospective analysis of patient outcomes.
+
+### Creating a New Care Plan
+
+The patient dashboard features a prominent “Create” button, designed to streamline the process of initiating a new care plan. Upon clicking this button, users are directed to a dedicated care plan form. This form is intuitively organized to first capture the basic details of the CarePlan model, such as the plan's title, description, and relevant dates. Following this, users are prompted to add specific goals, which are essential components of the care plan. These goals are clearly defined and measurable, providing a structured framework for patient care.
+
+### Integration and Monitoring
+
+Once the form is completed, users have the capability to create a new care plan, complete with its associated goals. This new care plan is then integrated into the patient dashboard, where it can be actively managed and monitored.
+
+### Plan Dashboard Overview
+
+Clicking on a specific care plan navigates the user to the Plan Dashboard. This specialized dashboard provides a detailed overview of the selected care plan, including comprehensive notes and other pertinent details. It also features time series graphs of the goal updates, offering a visual representation of progress over time. These graphs are instrumental in helping healthcare providers assess the effectiveness of the care plan and make informed decisions about any necessary adjustments.
+
+### Dynamic Goal Management
+
+Within the Plan Dashboard, users have the flexibility to add new goals, update existing goals, and record goal updates. This functionality ensures that care plans remain dynamic and responsive to the evolving needs of the patient. Additionally, there are options to create new tasks, medication requests, and service requests associated with the care plan. The progress of these tasks and requests is meticulously tracked through the Care Plan dashboard, providing a holistic view of the patient's care journey.
+
+### Printing and Alerts
+
+There is a "Print Report" option that allows users to directly print the report from the dashboard. As a goal or care plan approaches its due date, the system automatically issues alerts to notify healthcare providers. These alerts serve as reminders to review the plan's progress and take any necessary actions. If the due date is surpassed without achieving the set targets, the statuses of the plan and its goals are updated to “not-reached.” This status change prompts a re-evaluation of the care plan, ensuring that patient care remains proactive and goal-oriented.
+
+## Optional features
+
+### Goal Chat
+
+In the Plan Dashboard, healthcare providers, including nurses and doctors, will have access to a dedicated chat feature associated with each goal. This Goal Chat will facilitate real-time communication and collaboration among the care team members, ensuring that everyone involved in the patient's care is aligned and informed.
+
+The Goal Chat will also serve as a record of communication, allowing team members to review past discussions and decisions. This historical context will be valuable for understanding the evolution of the care plan and for making informed adjustments as needed.
