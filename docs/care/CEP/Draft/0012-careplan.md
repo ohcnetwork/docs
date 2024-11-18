@@ -81,40 +81,163 @@ The goal update will smartly update the goal’s status depending on the measure
 
 These models will help us better visualize and form a base understanding of how this will be integrated into CARE.
 
-## User Stories
+# User Story: Managing a Patient's Care Plan for Fever
 
-### Patient Dashboard Management
+**As a** doctor,  
+**I want to** create and manage a comprehensive care plan for a patient with fever,  
+**so that** the patient's condition can be effectively monitored, treated, and resolved.
 
-A care plan is manageable from the patient dashboard, which serves as the central hub for all patient-related activities. On this dashboard, users can view a comprehensive list of all current active care plans.
+### 1. Care Plan Creation
 
-### Filtering and Retrospective Analysis
+- The doctor creates a "Fever Management Plan" to address the patient's condition.
+- The care plan includes:
+  - Prescription for medication.
+  - Regular monitoring of vital signs (e.g., temperature).
+  - Ordering necessary lab tests.
+  - Establishing a goal for recovery.
 
-In addition to viewing active care plans, users can filter and view completed or expired plans. This filtering capability allows healthcare providers to efficiently manage and review past care plans, facilitating better continuity of care and enabling retrospective analysis of patient outcomes.
+### 2. Setting a Goal
 
-### Creating a New Care Plan
+- The doctor sets a goal for the care plan, such as:
+  - "Reduce patient temperature to below 37°C within 48 hours."
+- The goal is added to the care plan and linked to relevant activities.
 
-The patient dashboard features a prominent “Create” button, designed to streamline the process of initiating a new care plan. Upon clicking this button, users are directed to a dedicated care plan form. This form is intuitively organized to first capture the basic details of the CarePlan model, such as the plan's title, description, and relevant dates. Following this, users are prompted to add specific goals, which are essential components of the care plan. These goals are clearly defined and measurable, providing a structured framework for patient care.
+### 3. Goal Updates
 
-### Integration and Monitoring
+- The doctor tracks progress toward the goal by recording updates based on patient metrics (e.g., temperature readings).
+- Each update includes:
+  - Date and time.
+  - Current value of the metric (e.g., "Temperature: 38.5°C").
+  - Comments, if necessary.
+- The goal's progress is automatically visualized.
 
-Once the form is completed, users have the capability to create a new care plan, complete with its associated goals. This new care plan is then integrated into the patient dashboard, where it can be actively managed and monitored.
+### 4. Visualizing Goal Progress
 
-### Plan Dashboard Overview
+- The doctor views a time-series graph showing the patient's progress toward the goal:
+  - X-axis: Time (e.g., hours since care plan creation).
+  - Y-axis: Goal metric (e.g., temperature in °C).
+- The graph provides a clear view of whether the goal is being achieved.
 
-Clicking on a specific care plan navigates the user to the Plan Dashboard. This specialized dashboard provides a detailed overview of the selected care plan, including comprehensive notes and other pertinent details. It also features time series graphs of the goal updates, offering a visual representation of progress over time. These graphs are instrumental in helping healthcare providers assess the effectiveness of the care plan and make informed decisions about any necessary adjustments.
+### 5. Medication Prescription
 
-### Dynamic Goal Management
+- The doctor prescribes Paracetamol for fever management.
+- The care plan records this as a planned activity under `MedicationRequest`.
 
-Within the Plan Dashboard, users have the flexibility to add new goals, update existing goals, and record goal updates. This functionality ensures that care plans remain dynamic and responsive to the evolving needs of the patient. Additionally, there are options to create new tasks, medication requests, and service requests associated with the care plan. The progress of these tasks and requests is meticulously tracked through the Care Plan dashboard, providing a holistic view of the patient's care journey.
+### 6. Vitals Monitoring Task
 
-### Printing and Alerts
+- The doctor initiates a task for temperature monitoring.
+- This is added to the care plan as a planned activity under `Task`.
 
-There is a "Print Report" option that allows users to directly print the report from the dashboard. As a goal or care plan approaches its due date, the system automatically issues alerts to notify healthcare providers. These alerts serve as reminders to review the plan's progress and take any necessary actions. If the due date is surpassed without achieving the set targets, the statuses of the plan and its goals are updated to “not-reached.” This status change prompts a re-evaluation of the care plan, ensuring that patient care remains proactive and goal-oriented.
+### 7. Lab Test Request
 
-## Optional features
+- The doctor orders a blood test to investigate underlying causes.
+- This is recorded as a planned activity under `ServiceRequest` in the care plan.
 
-### Goal Chat
+### 8. Executing Activities
 
-In the Plan Dashboard, healthcare providers, including nurses and doctors, will have access to a dedicated chat feature associated with each goal. This Goal Chat will facilitate real-time communication and collaboration among the care team members, ensuring that everyone involved in the patient's care is aligned and informed.
+- **Medication Administration:**
+  - The doctor starts the prescribed medication regimen.
+  - The `MedicationRequest` status is updated to `active`.
+  - Administration details, such as dosage and frequency, are recorded in the patient's progress.
+- **Temperature Monitoring:**
+  - The doctor begins temperature monitoring.
+  - The `Task` status is updated to `in-progress`.
+  - Recorded temperature readings are added to the patient's progress.
+- **Lab Test:**
+  - The doctor ensures the blood test is performed.
+  - The `ServiceRequest` status is updated to `in-progress`.
+  - Completion of the test (e.g., blood sample collection) is recorded in the patient's progress.
 
-The Goal Chat will also serve as a record of communication, allowing team members to review past discussions and decisions. This historical context will be valuable for understanding the evolution of the care plan and for making informed adjustments as needed.
+### 9. Completing Activities
+
+- The doctor marks the medication course as completed in the care plan.
+- Temperature monitoring is concluded, and the `Task` status is updated.
+- Lab test results are received, and the `ServiceRequest` is marked as completed.
+
+### 10. Printing the Care Plan
+
+- The doctor can generate a print-friendly version of the care plan.
+- The printed care plan includes:
+  - The list of activities.
+  - The patient's progress.
+  - Goals and goal updates.
+  - Final status of the care plan.
+
+### 11. Finalizing the Care Plan
+
+- The doctor reviews all activities to ensure they have been executed successfully.
+- The care plan's overall status is updated to `completed`, reflecting the resolution of the patient's condition.
+
+### Outcome
+
+- The care plan effectively coordinates medication, monitoring, and diagnostic activities to ensure comprehensive treatment of the fever.
+- Goals and progress tracking provide clear milestones and insights into the patient's recovery.
+- The doctor has access to a visualized timeline of progress and a print-ready document for recordkeeping or sharing with the patient.
+
+## Nurse Flow
+
+**As a** nurse,  
+**I want to** view the care plan's goals and update progress toward them, as well as update the status of assigned tasks,  
+**so that** I can ensure accurate tracking of the patient’s recovery and contribute to effective care delivery.
+
+### 1. Viewing Goals
+
+- The nurse can access the care plan to view all created goals.
+- Each goal displays:
+  - Goal description (e.g., "Reduce patient temperature to below 37°C within 48 hours").
+  - Current progress (e.g., "Temperature: 38.2°C").
+  - Visualization of progress (time-series graph).
+  - Status (e.g., `on track`, `at risk`, or `achieved`).
+
+### 2. Adding Goal Updates
+
+- The nurse can add updates to goals based on patient assessments.
+- Each update includes:
+  - Date and time of the update.
+  - Updated metric value (e.g., "Temperature: 37.8°C").
+  - Optional comments (e.g., "Patient responded well to medication").
+- The update automatically:
+  - Updates the goal's progress tracking.
+  - Refreshes the time-series graph with the new data point.
+- The system validates updates to ensure they align with the goal's metrics.
+
+### 3. Viewing Assigned Tasks
+
+- The nurse can view all tasks associated with the care plan.
+- Each task displays:
+  - Task name (e.g., "Temperature Monitoring").
+  - Current status (e.g., `not started`, `in progress`, `completed`).
+  - Task details, such as:
+    - Scheduled start and end times.
+    - Instructions or steps for completion.
+
+### 4. Adding Task Updates
+
+- The nurse can update the status of a task as work progresses:
+  - Update options include:
+    - `Start Task` (changes status to `in progress`).
+    - `Complete Task` (changes status to `completed`).
+    - Add a comment or observation related to the task (e.g., "Temperature reading recorded").
+- For tasks requiring data entry (e.g., temperature monitoring):
+  - The nurse records the relevant data (e.g., "Temperature: 37.5°C").
+  - Data is automatically linked to both the task and the relevant goal.
+
+### 5. Reviewing Progress
+
+- The nurse can view a summary of:
+  - Recent goal updates.
+  - Recent task updates.
+- This provides a quick overview of the patient’s current status.
+
+### 6. Communication with the Doctor
+
+- The nurse can flag specific updates or issues for the doctor to review, such as:
+  - Metrics not improving as expected.
+  - Challenges in completing assigned tasks.
+- Notifications are sent to the doctor for flagged items.
+
+### Outcome
+
+- The nurse can efficiently track and update patient goals and tasks, ensuring accurate and timely information is available in the care plan.
+- Goal updates and task statuses contribute to a complete picture of the patient’s recovery progress.
+- Clear communication and data sharing between the nurse and doctor enhance the quality of care.
