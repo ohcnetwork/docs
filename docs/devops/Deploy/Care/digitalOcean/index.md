@@ -1,3 +1,5 @@
+import JwksGenerator from '@site/src/components/JwksGenerator';
+
 # Deploying Care on DigitalOcean
 
 In this guide, we’ll walk you through deploying **Care**, on **DigitalOcean**. We’ll keep things simple & you can simply follow along to get your instance up and running. Expect the process to take about **an hour**, depending on your familiarity with the tools.
@@ -41,15 +43,15 @@ Grab a coffee and prepare to bring your Care application to life on DigitalOcean
      - **Region**: Select the nearest data center.
      - **Engine**: PostgreSQL (Version 16).
      - **Resources**: Select a plan based on your requirements.
-        ![Navigate to Databases](../../../../../static/img/devops/do-db-1.png)
+        ![Navigate to Databases](../../../../../static/img/devops/Deploy/Care/digitalOcean/do-db-1.png)
      - **Name**: Give your database a unique name.
      - **Tags**: Add tags for organization.
-        ![Navigate to Databases](../../../../../static/img/devops/do-db-2.png)
+        ![Navigate to Databases](../../../../../static/img/devops/Deploy/Care/digitalOcean/do-db-2.png)
 
 3. **Save Connection Details:**
    - Once the database is created, note the connection URL for later use.
 
-![Save Connection Details](../../../../../static/img/devops/do-db-3.png)
+![Save Connection Details](../../../../../static/img/devops/Deploy/Care/digitalOcean/do-db-3.png)
 
 ---
 
@@ -70,7 +72,7 @@ Grab a coffee and prepare to bring your Care application to life on DigitalOcean
    - Create a new key pair and save the **Key** and **Secret**.
 
 
-![Generate Keys](../../../../../static/img/devops/do-spaces-1.png)
+![Generate Keys](../../../../../static/img/devops/Deploy/Care/digitalOcean/do-spaces-1.png)
 
 ---
 
@@ -84,11 +86,11 @@ Grab a coffee and prepare to bring your Care application to life on DigitalOcean
      - **Tag**: `6.2.6-v10`.
      - **Port**: Expose `6379` as an internal port.
    - Name the component `redis`. 
-     ![Select App Platform](../../../../../static/img/devops/redis-1.png)
-     ![Edit these fields](../../../../../static/img/devops/redis-2.png)
+     ![Select App Platform](../../../../../static/img/devops/Deploy/Care/digitalOcean/redis-1.png)
+     ![Edit these fields](../../../../../static/img/devops/Deploy/Care/digitalOcean/redis-2.png)
 2. **Name and Deploy:**
    - Name the App `care-backend` and deploy it.
-     ![Name and Deploy](../../../../../static/img/devops/redis-3.png)
+     ![Name and Deploy](../../../../../static/img/devops/Deploy/Care/digitalOcean/redis-3.png)
 
 ---
 
@@ -101,8 +103,8 @@ Grab a coffee and prepare to bring your Care application to life on DigitalOcean
    - Click **Create App** and choose **From Source Code**.
    - Select your forked repo and branch.
    - Set the build and run commands:
-     ![Create Resource from Source Code](../../../../../static/img/devops/care-django-1.png)
-     ![Select GitHub Repository](../../../../../static/img/devops/care-django-2.png)
+     ![Create Resource from Source Code](../../../../../static/img/devops/Deploy/Care/digitalOcean/care-django-1.png)
+     ![Select GitHub Repository](../../../../../static/img/devops/Deploy/Care/digitalOcean/care-django-2.png)
      - **Build Command:**
        ```bash
        python install_plugins.py && python manage.py collectstatic --noinput && python manage.py compilemessages
@@ -111,7 +113,7 @@ Grab a coffee and prepare to bring your Care application to life on DigitalOcean
        ```bash
        gunicorn config.wsgi:application --workers 2 --bind :9000
        ```
-     ![Select GitHub Repository](../../../../../static/img/devops/care-django-3.png)
+     ![Select GitHub Repository](../../../../../static/img/devops/Deploy/Care/digitalOcean/care-django-3.png)
 3. **Environment Variables:**
    - Add the following as global environment variables:
      ```bash
@@ -134,9 +136,12 @@ Grab a coffee and prepare to bring your Care application to life on DigitalOcean
      DISABLE_COLLECTSTATIC=1
      ```
 
+#### Generate JWKS Key
+<JwksGenerator />
+
+     
 4. **Expose Ports:**
    - Expose `9000` for public HTTP access.
-
 
 ---
 
@@ -145,7 +150,7 @@ Grab a coffee and prepare to bring your Care application to life on DigitalOcean
    - Go to the app settings and add your domain (e.g., `care-api.example.com`).
    - Update your DNS provider with the CNAME record.
 
-     ![Add Domain](../../../../../static/img/devops/domain.png)
+     ![Add Domain](../../../../../static/img/devops/Deploy/Care/digitalOcean/domain.png)
 
 ---
 
@@ -157,8 +162,8 @@ Grab a coffee and prepare to bring your Care application to life on DigitalOcean
        ```bash
        celery --app=config.celery_app worker --max-tasks-per-child=6 -B --loglevel=info
        ```
-     ![Celery Worker](../../../../../static/img/devops/worker-1.png)
-     ![Celery Worker](../../../../../static/img/devops/worker-2.png)
+     ![Celery Worker](../../../../../static/img/devops/Deploy/Care/digitalOcean/worker-1.png)
+     ![Celery Worker](../../../../../static/img/devops/Deploy/Care/digitalOcean/worker-2.png)
     
 2. **Celery Beat:**
    - Create another component with:
@@ -166,8 +171,8 @@ Grab a coffee and prepare to bring your Care application to life on DigitalOcean
        ```bash
        python manage.py migrate && python manage.py load_redis_index
        ```
-     ![Celery Job](../../../../../static/img/devops/job-1.png)
-     ![Celery Job](../../../../../static/img/devops/job-2.png)
+     ![Celery Job](../../../../../static/img/devops/Deploy/Care/digitalOcean/job-1.png)
+     ![Celery Job](../../../../../static/img/devops/Deploy/Care/digitalOcean/job-2.png)
 ---
 
 ## **Step 4: Deploy the Care Frontend (FE)**
@@ -190,9 +195,9 @@ Grab a coffee and prepare to bring your Care application to life on DigitalOcean
    - Go to app settings and add the frontend domain (e.g., `care.example.com`).
 
 
-     ![Frontend Setup](../../../../../static/img/devops/care-fe-1.png)
-     ![Celery Job](../../../../../static/img/devops/care-fe-2.png)
-     ![Celery Job](../../../../../static/img/devops/care-fe-3.png)
+     ![Frontend Setup](../../../../../static/img/devops/Deploy/Care/digitalOcean/care-fe-1.png)
+     ![Celery Job](../../../../../static/img/devops/Deploy/Care/digitalOcean/care-fe-2.png)
+     ![Celery Job](../../../../../static/img/devops/Deploy/Care/digitalOcean/care-fe-3.png)
 
 ---
 
@@ -202,7 +207,7 @@ Grab a coffee and prepare to bring your Care application to life on DigitalOcean
    - Navigate to the Database settings.
    - Add the Care backend app as a trusted source.
 
-     ![Secure Database](../../../../../static/img/devops/secure-db.png)
+     ![Secure Database](../../../../../static/img/devops/Deploy/Care/digitalOcean/secure-db.png)
 
 ---
 
@@ -222,7 +227,7 @@ Grab a coffee and prepare to bring your Care application to life on DigitalOcean
      ]
      ```
 
-     ![CORS](../../../../../static/img/devops/cors.png)
+     ![CORS](../../../../../static/img/devops/Deploy/Care/digitalOcean/cors.png)
 
 ---
 
@@ -237,7 +242,7 @@ Grab a coffee and prepare to bring your Care application to life on DigitalOcean
   - Configure firewall rules to restrict access.
 
 
-     ![Care Infra](../../../../../static/img/devops/care-infra-do.png)
+     ![Care Infra](../../../../../static/img/devops/Deploy/Care/digitalOcean/care-infra-do.png)
      
 ---
 
