@@ -47,11 +47,11 @@ Grab a coffee and prepare to bring your Care application to life on DigitalOcean
      - **Name**: Give your database a unique name.
      - **Tags**: Add tags for organization.
         ![Navigate to Databases](../../../../../static/img/devops/Deploy/Care/digitalOcean/do-db-2.png)
+![Create Database](../../../../../static/img/devops/Deploy/Care/digitalOcean/do-db-3.png)
 
 3. **Save Connection Details:**
    - Once the database is created, note the connection URL for later use.
-
-![Save Connection Details](../../../../../static/img/devops/Deploy/Care/digitalOcean/do-db-3.png)
+![Connection String](../../../../../static/img/devops/Deploy/Care/digitalOcean/do-db-4.png)
 
 ---
 
@@ -62,17 +62,20 @@ Grab a coffee and prepare to bring your Care application to life on DigitalOcean
 
 2. **Create a New Space:**
    - Click **Create a Space**.
+![Create Space](../../../../../static/img/devops/Deploy/Care/digitalOcean/do-spaces-1.png)
    - Choose:
      - **Region**: Select the same region as your database.
      - **Enable CDN**: For faster file delivery.
      - **Bucket Name**: Enter a unique name.
+     - **Project**: Select the default project. 
+     - **Create**: Click to `Create a Spaces Bucket` create the space.
+![Create Space](../../../../../static/img/devops/Deploy/Care/digitalOcean/do-spaces-3.png)
 
 3. **Generate API Keys:**
    - Go to the **API** tab and click **Spaces Keys**.
    - Create a new key pair and save the **Key** and **Secret**.
 
-
-![Generate Keys](../../../../../static/img/devops/Deploy/Care/digitalOcean/do-spaces-1.png)
+![Generate Keys](../../../../../static/img/devops/Deploy/Care/digitalOcean/do-spaces-2.png)
 
 ---
 
@@ -81,6 +84,7 @@ Grab a coffee and prepare to bring your Care application to life on DigitalOcean
 ### **Step 3.1: Deploy Redis**
 1. **Set Up Redis:**
    - Go to the App Platform and click **Create App**.
+     ![Select App Platform](../../../../../static/img/devops/Deploy/Care/digitalOcean/do-app-1.png)
    - Choose **Docker Hub** as the source and use:
      - **Repository**: `redis/redis-stack-server`.
      - **Tag**: `6.2.6-v10`.
@@ -132,7 +136,7 @@ Grab a coffee and prepare to bring your Care application to life on DigitalOcean
      FILE_UPLOAD_BUCKET_ENDPOINT=https://example-space-ohc.nyc3.digitaloceanspaces.com
      FACILITY_S3_BUCKET=example-space-ohc # Use the name of your Space.
      FACILITY_S3_BUCKET_ENDPOINT=https://example-space-ohc.nyc3.digitaloceanspaces.com
-     JWKS_BASE64= # Add your JWKS key. (Can be generated using this script.)
+     JWKS_BASE64= # Add your JWKS key. (Refer to the next section to create one.)
      DISABLE_COLLECTSTATIC=1
      ```
 
