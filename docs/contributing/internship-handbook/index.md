@@ -8,7 +8,7 @@ Open Healthcare Network is an innovative, open-source initiative powered by a di
 
 Currently, CARE's tele ICU system supports the 10BedICU project, active in 9 states, impacting over 40,000 lives.
 
-Read more about Open Healthcare Network & 10BedICU
+Read more about [Open Healthcare Network](https://ohc.network/) & [10BedICU](https://10bedicu.org/)
 
 ## 3. Onboarding & Training
 Interns onboarded will receive access to:
@@ -19,8 +19,8 @@ Interns onboarded will receive access to:
 Our internship emphasizes on-the-go training, allowing interns to dive into real-world projects immediately. Based on their selection, interns are expected to have sufficient knowledge to contribute from day one.
 
 **Training Modules:**
-* **Django for all** - This module will equip interns with essential Django concepts which are critical for building and maintaining the backend systems for CARE.
-* **CARE 101** - deals in detail with all the different functions and uses of the CARE which allows interns to get familiar with the tool.
+* **[Django for all](https://school.ohc.network/courses/1844)** - This module will equip interns with essential Django concepts which are critical for building and maintaining the backend systems for CARE.
+* **[CARE 101](https://docs.google.com/document/d/1NMD3-ZAd3GEyu99CvL0-lAobnaeOdV48dsmyIeugmAw/edit?tab=t.0#heading=h.mgff47kvlsi9)** - deals in detail with all the different functions and uses of the CARE which allows interns to get familiar with the tool.
 
 The community support system, mentors, and review calls serve as platforms for interns to ask questions, seek clarification, and receive guidance as they work on issues.
 
@@ -40,12 +40,12 @@ Open Healthcare Network community operates over slack and interns will have acce
 
 The Community Manager will serve as the first point of contact for any general issues or concerns. Will be overseeing students' performance weekly and support struggling students as required.
 
-Join slack community by visiting https://slack.ohc.network
+Join slack community by visiting [https://slack.ohc.network](https://slack.ohc.network)
 
 ## 4. How to get started
 Interns are responsible for picking up issues to stay active and get stipend.
 
-Refer to the contributors guide to get started with the internship journey.
+Refer to the [contributors guide](https://docs.ohc.network/docs/contributing) to get started with the internship journey.
 
 ## 5. Review 
 During the internship period, interns will have regular reviews to ensure quality outcome and guidance:
