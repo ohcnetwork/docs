@@ -110,7 +110,7 @@ Interns are onboarded with either a fixed or variable stipend structure. Please 
 * Performance multipliers apply to base pay
 
 #### Performance Multiplier
-Your multiplier is determined by your best performance from either the current month OR the previous month.
+Your multiplier is determined by your best performance over the past 2 months.
 
 | Story Points Achievement | Multiplier | Maximum Potential Pay |
 |-------------------------|------------|---------------------|
