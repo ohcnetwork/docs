@@ -65,6 +65,7 @@ The internship is fully remote, offering interns the flexibility to work accordi
 ### Work Expectations and Monitoring
 * Interns can go through the training modules while picking up issues and working on the same
 * Interns will be responsible for selecting issues and working on them to meet their monthly story point requirements. They should not wait for mentors to assign tasks
+* When selecting an issue to work on, review its scope, complexity, and effort required, and suggest an appropriate story point value in your request to the core team. The core team will review and approve or adjust the story points before assigning the issue. Upon completion, the approved story points will be awarded and contribute toward your monthly stipend.
 * Only merged Pull Requests (PRs) will be considered for story point and stipend payouts
 * All interns are expected to submit fully functional PRs. The review process should not be relied upon to correct incomplete or low-quality work
 * Any doubts must be clarified with team members before submitting the PR to ensure it meets the required standards
