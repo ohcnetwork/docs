@@ -5,6 +5,10 @@
 - [https://ohcnetwork.notion.site/Care-Plan-12ae6e667ece80e8b1abfdc82b3450f2](https://ohcnetwork.notion.site/Care-Plan-12ae6e667ece80e8b1abfdc82b3450f2)
 - [https://www.hl7.org/fhir/careplan.html](https://www.hl7.org/fhir/careplan.html)
 
+## Wireframes
+
+- [https://www.figma.com/design/wE4aB7XELuASk2dKBUKToZ/Care-Plan-Wireframe?node-id=0-1&t=Av3ebeUiCTmRoAan-1](https://www.figma.com/design/wE4aB7XELuASk2dKBUKToZ/Care-Plan-Wireframe?node-id=0-1&t=Av3ebeUiCTmRoAan-1)
+
 ## Implementation Overview
 
 > A Care Plan is a coordinated map of healthcare activities designed to address specific patient health concerns. At its core, it's an organized collection of intended activities that healthcare providers plan to perform, are performing, or have performed for a patient.
