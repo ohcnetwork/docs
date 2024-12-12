@@ -26,20 +26,20 @@ const routes = {
 
 ```tsx
 import { useQuery } from "@tanstack/react-query";
-import request from "@/Utils/request/request";
+import api from "@/Utils/request/api-request";
 
 export default function UserProfile() {
   const { data, isLoading } = useQuery({
     queryKey: [routes.users.current.path],
-    queryFn: () => request(routes.users.current),
+    queryFn: api.query(routes.users.current)
   });
 
   if (isLoading) return <Loading />;
 
   return (
     <div>
-      <h1>{data?.data?.name}</h1>
-      <p>{data?.data?.email}</p>
+      <h1>{data?.name}</h1>
+      <p>{data?.email}</p>
     </div>
   );
 }
@@ -55,13 +55,13 @@ For URLs like `/api/v1/medicine/search/?search=Paracetamol`:
 function SearchMedicines() {
   const { data } = useQuery({
     queryKey: [routes.medicine.search.path, "Paracetamol"],
-    queryFn: () => request(routes.medicine.search, {
-      query: { search: "Paracetamol" }
+    queryFn: api.query(routes.medicine.search, {
+      queryParams: { search: "Paracetamol" }
     }),
-    enabled: true, // Only run when needed
+    enabled: true,
   });
 
-  return <MedicinesList medicines={data?.data?.results} />;
+  return <MedicinesList medicines={data?.results} />;
 }
 ```
 
@@ -73,14 +73,15 @@ For URLs like `/api/v1/consultation/123/prescriptions/`:
 
 ```tsx
 function PrescriptionsList({ consultationId }: { consultationId: string }) {
-  const { data } = useQuery({
+  const { data: response } = useQuery({
     queryKey: [routes.prescriptions.list.path, consultationId],
-    queryFn: () => request(routes.prescriptions.list, {
+    queryFn: api.query(routes.prescriptions.list, {
       pathParams: { consultation_id: consultationId }
-    }),
+    })
   });
 
-  return <List items={data?.data?.results} />;
+  const prescriptions = response?.data?.results;
+  return <List items={prescriptions} />;
 }
 ```
 
@@ -124,23 +125,59 @@ When one query depends on another:
 ```tsx
 function PatientDetails({ patientId }: { patientId: string }) {
   // Get patient data first
-  const { data: patient } = useQuery({
+  const { data } = useQuery({
     queryKey: ['patient', patientId],
-    queryFn: () => request(routes.patient.get, { 
+    queryFn: api.query(routes.patient.get, { 
       pathParams: { id: patientId } 
     }),
   });
 
   // Then get prescriptions using patient data
   const { data: prescriptions } = useQuery({
-    queryKey: ['prescriptions', patient?.data?.id],
-    queryFn: () => request(routes.prescriptions.list, {
-      pathParams: { patient_id: patient?.data?.id }
+    queryKey: ['prescriptions', data?.data?.id],
+    queryFn: api.query(routes.prescriptions.list, {
+      pathParams: { patient_id: data?.data?.id }
     }),
-    enabled: Boolean(patient?.data?.id), // Only run if we have patient
+    enabled: Boolean(data?.data?.id), // Only run if we have patient
   });
 
   return (/* ... */);
+}
+```
+
+### Error Handling
+
+When you need to handle errors or check response status, use `data: response`:
+
+```tsx
+function FacilityDetails({ facilityId }: { facilityId: string }) {
+  const { data: response, isLoading } = useQuery({
+    queryKey: ['facility', facilityId],
+    queryFn: api.query(routes.getPermittedFacility, {
+      pathParams: { id: facilityId }
+    })
+  });
+
+  // Need response for error handling
+  if (response?.res && !response.res.ok) {
+    navigate("/not-found");
+  }
+
+  const facilityData = response?.data;
+  return <FacilityView facility={facilityData} />;
+}
+```
+
+For simple queries without error handling, use data directly:
+
+```tsx
+function MedicineList() {
+  const { data, isLoading } = useQuery({
+    queryKey: ['medicines'],
+    queryFn: api.query(routes.medicine.list)
+  });
+
+  return <List items={data?.results} />;
 }
 ```
 
