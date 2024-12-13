@@ -26,12 +26,12 @@ const routes = {
 
 ```tsx
 import { useQuery } from "@tanstack/react-query";
-import api from "@/Utils/request/api-request";
+import query from "@/Utils/request/query";
 
 export default function UserProfile() {
   const { data, isLoading } = useQuery({
     queryKey: [routes.users.current.path],
-    queryFn: api.query(routes.users.current)
+    queryFn: query(routes.users.current)
   });
 
   if (isLoading) return <Loading />;
@@ -55,7 +55,7 @@ For URLs like `/api/v1/medicine/search/?search=Paracetamol`:
 function SearchMedicines() {
   const { data } = useQuery({
     queryKey: [routes.medicine.search.path, "Paracetamol"],
-    queryFn: api.query(routes.medicine.search, {
+    queryFn: query(routes.medicine.search, {
       queryParams: { search: "Paracetamol" }
     }),
     enabled: true,
@@ -73,17 +73,42 @@ For URLs like `/api/v1/consultation/123/prescriptions/`:
 
 ```tsx
 function PrescriptionsList({ consultationId }: { consultationId: string }) {
-  const { data: response } = useQuery({
+  const { data } = useQuery({
     queryKey: [routes.prescriptions.list.path, consultationId],
-    queryFn: api.query(routes.prescriptions.list, {
+    queryFn: query(routes.prescriptions.list, {
       pathParams: { consultation_id: consultationId }
     })
   });
 
-  const prescriptions = response?.data?.results;
-  return <List items={prescriptions} />;
+  return <List items={data?.results} />;
 }
 ```
+
+### Using Request Body
+
+While `useQuery` is typically used for GET requests, it can also handle POST requests that are semantically queries (like search operations):
+
+```tsx
+function SearchPatients() {
+  const { data } = useQuery({
+    queryKey: ['patients', 'search', searchTerm],
+    queryFn: query(routes.patients.search, {
+      body: {
+        search_text: searchTerm,
+        filters: {
+          district: selectedDistrict,
+          status: "Active"
+        }
+      }
+    }),
+    enabled: Boolean(searchTerm)
+  });
+
+  return <PatientsList patients={data?.results} />;
+}
+```
+
+Note: For mutations (creating, updating, or deleting data), use `useMutation` instead.
 
 ## Mutations
 
@@ -111,73 +136,6 @@ function CreatePrescription() {
       isSubmitting={mutation.isPending}
     />
   );
-}
-```
-
-## Common Patterns
-
-### Dependent Queries
-
-[→ TanStack Docs: Dependent Queries](https://tanstack.com/query/latest/docs/react/guides/dependent-queries)
-
-When one query depends on another:
-
-```tsx
-function PatientDetails({ patientId }: { patientId: string }) {
-  // Get patient data first
-  const { data } = useQuery({
-    queryKey: ['patient', patientId],
-    queryFn: api.query(routes.patient.get, { 
-      pathParams: { id: patientId } 
-    }),
-  });
-
-  // Then get prescriptions using patient data
-  const { data: prescriptions } = useQuery({
-    queryKey: ['prescriptions', data?.data?.id],
-    queryFn: api.query(routes.prescriptions.list, {
-      pathParams: { patient_id: data?.data?.id }
-    }),
-    enabled: Boolean(data?.data?.id), // Only run if we have patient
-  });
-
-  return (/* ... */);
-}
-```
-
-### Error Handling
-
-When you need to handle errors or check response status, use `data: response`:
-
-```tsx
-function FacilityDetails({ facilityId }: { facilityId: string }) {
-  const { data: response, isLoading } = useQuery({
-    queryKey: ['facility', facilityId],
-    queryFn: api.query(routes.getPermittedFacility, {
-      pathParams: { id: facilityId }
-    })
-  });
-
-  // Need response for error handling
-  if (response?.res && !response.res.ok) {
-    navigate("/not-found");
-  }
-
-  const facilityData = response?.data;
-  return <FacilityView facility={facilityData} />;
-}
-```
-
-For simple queries without error handling, use data directly:
-
-```tsx
-function MedicineList() {
-  const { data, isLoading } = useQuery({
-    queryKey: ['medicines'],
-    queryFn: api.query(routes.medicine.list)
-  });
-
-  return <List items={data?.results} />;
 }
 ```
 
