@@ -1,127 +1,160 @@
 # Data fetching in CARE
 
-## Introduction to `useQuery`
+## Introduction
 
-CARE uses a custom built hook ([`useQuery`](https://github.com/ohcnetwork/care_fe/blob/develop/src/Utils/request/useQuery.ts)) and a function ([`request`](https://github.com/ohcnetwork/care_fe/blob/develop/src/Utils/request/request.ts)) to fetch data from and communicate with the backend. These are built on top of [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch).
+CARE uses [TanStack Query](https://tanstack.com/query/latest) for data fetching and state management.
 
-### Basic Usage
+### API Route Definitions
 
-Let's see some examples to get to know how to use `useQuery`.
+Routes are defined with their path, method, and types:
 
-```jsx
-export default function Page() {
-  const { data, loading } = useQuery(routes.users.current);
-
-  // `loading` is true if `useQuery` has made a request and is awaiting for response.
-  if (loading) {
-    return <Loading />;
-  }
-
-  // `data` is type-safe, inferred from the type provided in the route definition.
-  return (
-    <>
-      <span>Name: {data.name}</span>
-      <span>Email: {data.email}</span>
-    </>
-  );
-}
-```
-
-The first argument for `useQuery` is the route definition, which contains the resource path, HTTP method, request and response body type.
-
-```jsx
-// example:
+```tsx
 const routes = {
   users: {
     current: {
       path: "/api/v1/users/getcurrentuser/",
       method: "GET",
-      TRes: Type<UserModel>(),
+      TRes: Type<UserModel>(), // Response type
     }
   },
 }
 ```
 
-### Passing query parameters
+### Basic Usage with useQuery
 
-Now lets say we want to pass some query parameters too maybe (example: `GET /example/?name=...`).
+[→ TanStack Docs: useQuery Overview](https://tanstack.com/query/latest/docs/react/guides/queries)
 
-```jsx
-export default function Component() {
-  const { data } = useQuery(MedicineRoutes.search, {
-    query: {
-      search: "Hello world!",
-      type: "GENERIC",
-    },
+```tsx
+import { useQuery } from "@tanstack/react-query";
+import query from "@/Utils/request/query";
+
+export default function UserProfile() {
+  const { data, isLoading } = useQuery({
+    queryKey: [routes.users.current.path],
+    queryFn: query(routes.users.current)
   });
 
-  return <MedicinesList items={data.results} />;
-}
-```
-
-### Replacing path parameters with a value
-
-Now let's say an API endpoint has a variable in the URL (example: `GET /example/{id}/items/`).
-
-```jsx
-export default function Component(props: { consultationId: string }) {
-  const { data } = useQuery(MedicineRoutes.prescriptions.list, {
-    pathParams: { 
-      consultation_external_id: props.consultationId,
-    }
-  });
-
-  return <PrescriptionsList items={data.results} />;
-}
-```
-
-Here `useQuery` will attempt to replace the `{consultation_external_id}` present in the route definition's path with the specified values in the `pathParams`.
-
-```jsx
-// route definition example
-const MedicineRoutes = {
-  prescriptions: {
-    list: {
-      path: "/api/v1/consultation/{consultation_external_id}/prescriptions/",
-      method: "GET",
-      TRes: Type<PaginatedResponse<Prescription>>(),
-    }
-  },
-}
-```
-
-## Performing non-GET requests
-
-Let's say we want to submit a form, here we can make use of `request`.
-
-```jsx
-export default function Component(props: { patientId: string }) {
-  const [data, setData] = useState(...);
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  const handleSubmit = async () => {
-    if (validate(data)) {
-      return;
-    }
-    
-    setIsProcessing(true);
-    const { res, errors } = await request(routes.consultation.create, {
-      pathParams: { patient_id: props.patientId },
-      body: data,
-    });
-    setIsProcessing(false);
-  }
+  if (isLoading) return <Loading />;
 
   return (
-    <form 
-      onSubmit={(e) => {
-        e.preventDefault();
-        handleSubmit();
-      }}
-      disabled={isProcessing}
-    >
-      ...
-    </form>
+    <div>
+      <h1>{data?.name}</h1>
+      <p>{data?.email}</p>
+    </div>
   );
 }
 ```
+
+### Passing Query Parameters
+
+[→ TanStack Docs: Query Keys](https://tanstack.com/query/latest/docs/react/guides/query-keys)
+
+For URLs like `/api/v1/medicine/search/?search=Paracetamol`:
+
+```tsx
+function SearchMedicines() {
+  const { data } = useQuery({
+    queryKey: [routes.medicine.search.path, "Paracetamol"],
+    queryFn: query(routes.medicine.search, {
+      queryParams: { search: "Paracetamol" }
+    }),
+    enabled: true,
+  });
+
+  return <MedicinesList medicines={data?.results} />;
+}
+```
+
+### Using Path Parameters 
+
+[→ TanStack Docs: Dynamic Query Keys](https://tanstack.com/query/latest/docs/react/guides/query-keys#if-your-query-function-depends-on-a-variable-include-it-in-your-query-key)
+
+For URLs like `/api/v1/consultation/123/prescriptions/`:
+
+```tsx
+function PrescriptionsList({ consultationId }: { consultationId: string }) {
+  const { data } = useQuery({
+    queryKey: [routes.prescriptions.list.path, consultationId],
+    queryFn: query(routes.prescriptions.list, {
+      pathParams: { consultation_id: consultationId }
+    })
+  });
+
+  return <List items={data?.results} />;
+}
+```
+
+### Using Request Body
+
+While `useQuery` is typically used for GET requests, it can also handle POST requests that are semantically queries (like search operations):
+
+```tsx
+function SearchPatients() {
+  const { data } = useQuery({
+    queryKey: ['patients', 'search', searchTerm],
+    queryFn: query(routes.patients.search, {
+      body: {
+        search_text: searchTerm,
+        filters: {
+          district: selectedDistrict,
+          status: "Active"
+        }
+      }
+    }),
+    enabled: Boolean(searchTerm)
+  });
+
+  return <PatientsList patients={data?.results} />;
+}
+```
+
+Note: For mutations (creating, updating, or deleting data), use `useMutation` instead.
+
+## Mutations
+
+[→ TanStack Docs: Mutations](https://tanstack.com/query/latest/docs/react/guides/mutations)
+
+For creating, updating or deleting data:
+
+```tsx
+function CreatePrescription() {
+  const mutation = useMutation({
+    mutationFn: (data: PrescriptionData) => 
+      request(routes.prescriptions.create, { body: data }),
+  });
+
+  async function handleSubmit(data: PrescriptionData) {
+    const result = await mutation.mutateAsync(data);
+    if (result.res?.ok) {
+      toast.success("Prescription created");
+    }
+  }
+
+  return (
+    <PrescriptionForm 
+      onSubmit={handleSubmit}
+      isSubmitting={mutation.isPending}
+    />
+  );
+}
+```
+
+## Further Reading
+
+For advanced features like:
+- [Caching strategies](https://tanstack.com/query/latest/docs/react/guides/caching)
+- [Optimistic updates](https://tanstack.com/query/latest/docs/react/guides/optimistic-updates)
+- [Infinite queries](https://tanstack.com/query/latest/docs/react/guides/infinite-queries)
+- [Prefetching](https://tanstack.com/query/latest/docs/react/guides/prefetching)
+- [Parallel queries](https://tanstack.com/query/latest/docs/react/guides/parallel-queries)
+- [Suspense mode](https://tanstack.com/query/latest/docs/react/guides/suspense)
+
+See the [TanStack Query docs](https://tanstack.com/query/latest/docs/react/overview) for complete documentation.
+
+## Legacy Hooks (Deprecated)
+
+> **Note**: The following hooks are deprecated:
+> - Use `useQuery` instead of `useTanStackQueryInstead`
+> - Use `useMutation` instead of `useDeprecatedMutation`
+
+These exist only for backward compatibility and will be removed in future versions.
