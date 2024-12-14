@@ -1,229 +1,216 @@
 # Data fetching in CARE
 
-## Introduction to `useQuery`
+## Introduction
 
-CARE uses a custom built hook ([`useQuery`](https://github.com/ohcnetwork/care_fe/blob/develop/src/Utils/request/useQuery.ts)) and a function ([`request`](https://github.com/ohcnetwork/care_fe/blob/develop/src/Utils/request/request.ts)) to fetch data from and communicate with the backend. These are built on top of [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch).
+CARE uses [TanStack Query](https://tanstack.com/query/latest) for data fetching and state management.
 
-### Basic Usage
+### API Route Definitions
 
-Let's see some examples to get to know how to use `useQuery`.
+Routes are defined with their path, method, and types:
 
-```jsx
-export default function Page() {
-  const { data, loading } = useQuery(routes.users.current);
-
-  // `loading` is true if `useQuery` has made a request and is awaiting for response.
-  if (loading) {
-    return <Loading />;
-  }
-
-  // `data` is type-safe, inferred from the type provided in the route definition.
-  return (
-    <>
-      <span>Name: {data.name}</span>
-      <span>Email: {data.email}</span>
-    </>
-  );
-}
-```
-
-The first argument for `useQuery` is the route definition, which contains the resource path, HTTP method, request and response body type.
-
-```jsx
-// example:
+```tsx
 const routes = {
   users: {
     current: {
       path: "/api/v1/users/getcurrentuser/",
       method: "GET",
-      TRes: Type<UserModel>(),
-    }
+      TRes: Type<UserModel>(), // Response type
+    },
   },
-}
+};
 ```
 
-### Passing query parameters
+### Basic Usage with useQuery
 
-Now lets say we want to pass some query parameters too maybe (example: `GET /example/?name=...`).
+[→ TanStack Docs: useQuery Overview](https://tanstack.com/query/latest/docs/react/guides/queries)
 
-```jsx
-export default function Component() {
-  const { data } = useQuery(MedicineRoutes.search, {
-    query: {
-      search: "Hello world!",
-      type: "GENERIC",
-    },
+```tsx
+import { useQuery } from "@tanstack/react-query";
+import query from "@/Utils/request/query";
+
+export default function UserProfile() {
+  const { data, isLoading } = useQuery({
+    queryKey: [routes.users.current.path],
+    queryFn: query(routes.users.current),
   });
 
-  return <MedicinesList items={data.results} />;
-}
-```
+  if (isLoading) return <Loading />;
 
-### Replacing path parameters with a value
-
-Now let's say an API endpoint has a variable in the URL (example: `GET /example/{id}/items/`).
-
-```jsx
-export default function Component(props: { consultationId: string }) {
-  const { data } = useQuery(MedicineRoutes.prescriptions.list, {
-    pathParams: {
-      consultation_external_id: props.consultationId,
-    },
-  });
-
-  return <PrescriptionsList items={data.results} />;
-}
-```
-
-Here `useQuery` will attempt to replace the `{consultation_external_id}` present in the route definition's path with the specified values in the `pathParams`.
-
-```jsx
-// route definition example
-const MedicineRoutes = {
-  prescriptions: {
-    list: {
-      path: "/api/v1/consultation/{consultation_external_id}/prescriptions/",
-      method: "GET",
-      TRes: Type<PaginatedResponse<Prescription>>(),
-    }
-  },
-}
-```
-
-## Introduction to `useInfiniteQuery`
-
-`useInfiniteQuery` is a custom hook built on top of `useQuery` for handling paginated API requests that support infinite scrolling or loading more data as needed. It facilitates fetching paginated data, managing the state of items, and ensuring that duplicate items are removed when fetching new pages of results.
-
-### Basic Usage
-
-Here’s an example of how to use `useInfiniteQuery` to fetch paginated data and load additional pages:
-
-```jsx
-export default function Page() {
-  const { items, loading, fetchNextPage, hasMore } = useInfiniteQuery(
-    MedicineRoutes.prescriptions.list,
-    {
-      deduplicateBy: (item) => item.id, // Deduplicate based on a unique identifier
-    }
-  );
-
-  // Display a loading indicator while data is being fetched
-  if (loading) {
-    return <Loading />;
-  }
-
-  // Render the list of items
   return (
-    <>
-      <MedicinesList items={items} />
-
-      {/* Button to load more data if there are more items to fetch */}
-      {hasMore && <button onClick={fetchNextPage}>Load More</button>}
-    </>
+    <div>
+      <h1>{data?.name}</h1>
+      <p>{data?.email}</p>
+    </div>
   );
 }
 ```
 
-In the example above:
+### Passing Query Parameters
 
-- `items` is the list of fetched items that is updated as new pages of data are loaded.
-- `loading` indicates whether a request is currently in progress.
-- `fetchNextPage` is the function that triggers the loading of the next page.
-- `hasMore` tells you if there are more items to load based on the total count of items and the length of the fetched items.
+[→ TanStack Docs: Query Keys](https://tanstack.com/query/latest/docs/react/guides/query-keys)
 
-### Arguments
+For URLs like `/api/v1/medicine/search/?search=Paracetamol`:
 
-`useInfiniteQuery` accepts the following arguments:
+```tsx
+function SearchMedicines() {
+  const { data } = useQuery({
+    queryKey: [routes.medicine.search.path, "Paracetamol"],
+    queryFn: query(routes.medicine.search, {
+      queryParams: { search: "Paracetamol" },
+    }),
+    enabled: true,
+  });
 
-1. **`route`** (required): A route definition that describes the API endpoint, HTTP method, and response structure, just like with `useQuery`. The route should expect a paginated response with the `PaginatedResponse<TItem>` structure.
-
-   Example route definition:
-
-   ```ts
-   const MedicineRoutes = {
-     prescriptions: {
-       list: {
-         path: "/api/v1/consultation/{consultation_external_id}/prescriptions/",
-         method: "GET",
-         TRes: Type<PaginatedResponse<Prescription>>(),
-       },
-     },
-   };
-   ```
-
-2. **`options`**: An object that allows customization of the query. It includes the following properties:
-
-   - **`deduplicateBy`**: **Required**. A function that extracts a unique identifier from each item to prevent duplicate items when new pages are loaded. This function ensures that items are only shown once, even if the same data appears in multiple pages.
-
-   Example of passing options:
-
-   ```ts
-   const options = {
-     deduplicateBy: (item) => item.id, // Deduplicate based on a unique identifier
-   };
-   ```
-
-### Key Return Values
-
-The `useInfiniteQuery` hook returns an object containing the following properties:
-
-- **`items`**: An array of items fetched so far (combined from multiple pages). The array is updated as more data is loaded.
-- **`loading`**: A boolean indicating if the request is in progress.
-- **`fetchNextPage`**: A function to load the next page of results.
-- **`refetch`**: A function to refetch the data (same as `useQuery`).
-- **`totalCount`**: The total count of items available (e.g., in a paginated result).
-- **`hasMore`**: A boolean indicating whether there are more items to load based on the total count and the current number of fetched items.
-
-### Example of Paginated API Route
-
-A typical paginated response from the API might look like this:
-
-```json
-{
-  "results": [
-    { "id": 1, "name": "Prescription 1" },
-    { "id": 2, "name": "Prescription 2" }
-  ],
-  "count": 100
+  return <MedicinesList medicines={data?.results} />;
 }
 ```
 
-### Handling Pagination
+### Using Path Parameters
 
-`useInfiniteQuery` handles pagination by keeping track of the `offset` (the number of items already loaded) and appending new items as additional pages are fetched. The `fetchNextPage` function increments the offset to load the next set of results.
+[→ TanStack Docs: Dynamic Query Keys](https://tanstack.com/query/latest/docs/react/guides/query-keys#if-your-query-function-depends-on-a-variable-include-it-in-your-query-key)
 
-## Performing non-GET requests
+For URLs like `/api/v1/consultation/123/prescriptions/`:
 
-Let's say we want to submit a form, here we can make use of `request`.
+```tsx
+function PrescriptionsList({ consultationId }: { consultationId: string }) {
+  const { data } = useQuery({
+    queryKey: [routes.prescriptions.list.path, consultationId],
+    queryFn: query(routes.prescriptions.list, {
+      pathParams: { consultation_id: consultationId },
+    }),
+  });
 
-```jsx
-export default function Component(props: { patientId: string }) {
-  const [data, setData] = useState(...);
-  const [isProcessing, setIsProcessing] = useState(false);
+  return <List items={data?.results} />;
+}
+```
 
-  const handleSubmit = async () => {
-    if (validate(data)) {
-      return;
-    }
+### Using Request Body
 
-    setIsProcessing(true);
-    const { res, errors } = await request(routes.consultation.create, {
-      pathParams: { patient_id: props.patientId },
-      body: data,
+While `useQuery` is typically used for GET requests, it can also handle POST requests that are semantically queries (like search operations):
+
+```tsx
+function SearchPatients() {
+  const { data } = useQuery({
+    queryKey: ["patients", "search", searchTerm],
+    queryFn: query(routes.patients.search, {
+      body: {
+        search_text: searchTerm,
+        filters: {
+          district: selectedDistrict,
+          status: "Active",
+        },
+      },
+    }),
+    enabled: Boolean(searchTerm),
+  });
+
+  return <PatientsList patients={data?.results} />;
+}
+```
+
+Note: For mutations (creating, updating, or deleting data), use `useMutation` instead.
+
+## Using useInfiniteQuery
+
+[→ TanStack Docs: useInfiniteQuery](https://tanstack.com/query/latest/docs/react/guides/infinite-queries)
+
+For paginated data fetching, use `useInfiniteQuery`. It supports loading additional data as the user scrolls or interacts.
+
+### Example:
+
+```tsx
+import { useInfiniteQuery } from "@tanstack/react-query";
+import query from "@/Utils/request/query";
+
+function PaginatedList() {
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey: [routes.items.list.path],
+      queryFn: ({ pageParam = 1 }) =>
+        query(routes.items.list, {
+          queryParams: { page: pageParam },
+        }),
+      getNextPageParam: (lastPage) => lastPage.nextPage ?? undefined,
     });
-    setIsProcessing(false);
-  }
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        handleSubmit();
-      }}
-      disabled={isProcessing}
-    >
-      ...
-    </form>
+    <div>
+      {data?.pages.map((page, index) => (
+        <Fragment key={index}>
+          {page.results.map((item) => (
+            <ItemCard key={item.id} item={item} />
+          ))}
+        </Fragment>
+      ))}
+      <button
+        onClick={() => fetchNextPage()}
+        disabled={!hasNextPage || isFetchingNextPage}
+      >
+        {isFetchingNextPage
+          ? "Loading..."
+          : hasNextPage
+          ? "Load More"
+          : "No More Items"}
+      </button>
+    </div>
   );
 }
 ```
+
+### Key Points:
+
+- queryFn: Fetches data based on the current page.
+- getNextPageParam: Determines the next page number from the response.
+- fetchNextPage: Loads the next page when called.
+- Pagination Support: Handles infinite scrolling or user interactions seamlessly.
+
+## Mutations
+
+[→ TanStack Docs: Mutations](https://tanstack.com/query/latest/docs/react/guides/mutations)
+
+For creating, updating or deleting data:
+
+```tsx
+function CreatePrescription() {
+  const mutation = useMutation({
+    mutationFn: (data: PrescriptionData) =>
+      request(routes.prescriptions.create, { body: data }),
+  });
+
+  async function handleSubmit(data: PrescriptionData) {
+    const result = await mutation.mutateAsync(data);
+    if (result.res?.ok) {
+      toast.success("Prescription created");
+    }
+  }
+
+  return (
+    <PrescriptionForm
+      onSubmit={handleSubmit}
+      isSubmitting={mutation.isPending}
+    />
+  );
+}
+```
+
+## Further Reading
+
+For advanced features like:
+
+- [Caching strategies](https://tanstack.com/query/latest/docs/react/guides/caching)
+- [Optimistic updates](https://tanstack.com/query/latest/docs/react/guides/optimistic-updates)
+- [Infinite queries](https://tanstack.com/query/latest/docs/react/guides/infinite-queries)
+- [Prefetching](https://tanstack.com/query/latest/docs/react/guides/prefetching)
+- [Parallel queries](https://tanstack.com/query/latest/docs/react/guides/parallel-queries)
+- [Suspense mode](https://tanstack.com/query/latest/docs/react/guides/suspense)
+
+See the [TanStack Query docs](https://tanstack.com/query/latest/docs/react/overview) for complete documentation.
+
+## Legacy Hooks (Deprecated)
+
+> **Note**: The following hooks are deprecated:
+>
+> - Use `useQuery` instead of `useTanStackQueryInstead`
+> - Use `useMutation` instead of `useDeprecatedMutation`
+
+These exist only for backward compatibility and will be removed in future versions.
