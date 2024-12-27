@@ -168,30 +168,66 @@ function PaginatedList() {
 
 [→ TanStack Docs: Mutations](https://tanstack.com/query/latest/docs/react/guides/mutations)
 
-For creating, updating or deleting data:
+CARE provides a `mutate` utility function that works seamlessly with TanStack Query's `useMutation` hook for creating, updating, or deleting data:
 
 ```tsx
-function CreatePrescription() {
-  const mutation = useMutation({
-    mutationFn: (data: PrescriptionData) =>
-      request(routes.prescriptions.create, { body: data }),
-  });
+import { useMutation } from "@tanstack/react-query";
+import mutate from "@/Utils/request/mutate";
 
-  async function handleSubmit(data: PrescriptionData) {
-    const result = await mutation.mutateAsync(data);
-    if (result.res?.ok) {
-      toast.success("Prescription created");
-    }
-  }
+function CreatePrescription({ consultationId }: { consultationId: string }) {
+  const { mutate: createPrescription, isPending } = useMutation({
+    mutationFn: mutate(routes.prescriptions.create, {
+      pathParams: { consultationId },
+    }),
+    onSuccess: () => {
+      toast.success("Prescription created successfully");
+    },
+  });
 
   return (
     <PrescriptionForm
       onSubmit={handleSubmit}
       isSubmitting={mutation.isPending}
     />
+    <Button 
+      onClick={() => createPrescription({ 
+        medicineId: "123", 
+        dosage: "1x daily" 
+      })}
+      disabled={isPending}
+    >
+      Create Prescription
+    </Button>
   );
 }
 ```
+
+### Using Path Parameters with Mutations
+
+For URLs that require path parameters, like `/api/v1/patients/123/update/`:
+
+```tsx
+function UpdatePatient({ patientId }: { patientId: string }) {
+  const { mutate: updatePatient } = useMutation({
+    mutationFn: mutate(routes.patients.update, {
+      pathParams: { id: patientId },
+      silent: true // Optional: suppress error notifications
+    })
+  });
+
+  const handleSubmit = (data: PatientData) => {
+    updatePatient(data);
+  };
+
+  return <PatientForm onSubmit={handleSubmit} />;
+}
+```
+
+The `mutate` utility accepts configuration options similar to the `query` utility:
+- `pathParams`: For URL parameters
+- `queryParams`: For query string parameters
+- `silent`: Optional boolean to suppress error notifications
+- Additional request options as needed
 
 ## Further Reading
 
