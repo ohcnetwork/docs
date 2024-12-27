@@ -15,9 +15,9 @@ const routes = {
       path: "/api/v1/users/getcurrentuser/",
       method: "GET",
       TRes: Type<UserModel>(), // Response type
-    }
+    },
   },
-}
+};
 ```
 
 ### Basic Usage with useQuery
@@ -31,7 +31,7 @@ import query from "@/Utils/request/query";
 export default function UserProfile() {
   const { data, isLoading } = useQuery({
     queryKey: [routes.users.current.path],
-    queryFn: query(routes.users.current)
+    queryFn: query(routes.users.current),
   });
 
   if (isLoading) return <Loading />;
@@ -56,7 +56,7 @@ function SearchMedicines() {
   const { data } = useQuery({
     queryKey: [routes.medicine.search.path, "Paracetamol"],
     queryFn: query(routes.medicine.search, {
-      queryParams: { search: "Paracetamol" }
+      queryParams: { search: "Paracetamol" },
     }),
     enabled: true,
   });
@@ -65,7 +65,7 @@ function SearchMedicines() {
 }
 ```
 
-### Using Path Parameters 
+### Using Path Parameters
 
 [→ TanStack Docs: Dynamic Query Keys](https://tanstack.com/query/latest/docs/react/guides/query-keys#if-your-query-function-depends-on-a-variable-include-it-in-your-query-key)
 
@@ -76,8 +76,8 @@ function PrescriptionsList({ consultationId }: { consultationId: string }) {
   const { data } = useQuery({
     queryKey: [routes.prescriptions.list.path, consultationId],
     queryFn: query(routes.prescriptions.list, {
-      pathParams: { consultation_id: consultationId }
-    })
+      pathParams: { consultation_id: consultationId },
+    }),
   });
 
   return <List items={data?.results} />;
@@ -91,17 +91,17 @@ While `useQuery` is typically used for GET requests, it can also handle POST req
 ```tsx
 function SearchPatients() {
   const { data } = useQuery({
-    queryKey: ['patients', 'search', searchTerm],
+    queryKey: ["patients", "search", searchTerm],
     queryFn: query(routes.patients.search, {
       body: {
         search_text: searchTerm,
         filters: {
           district: selectedDistrict,
-          status: "Active"
-        }
-      }
+          status: "Active",
+        },
+      },
     }),
-    enabled: Boolean(searchTerm)
+    enabled: Boolean(searchTerm),
   });
 
   return <PatientsList patients={data?.results} />;
@@ -109,6 +109,60 @@ function SearchPatients() {
 ```
 
 Note: For mutations (creating, updating, or deleting data), use `useMutation` instead.
+
+## Using useInfiniteQuery
+
+[→ TanStack Docs: useInfiniteQuery](https://tanstack.com/query/latest/docs/react/guides/infinite-queries)
+
+For paginated data fetching, use `useInfiniteQuery`. It supports loading additional data as the user scrolls or interacts.
+
+### Example:
+
+```tsx
+import { useInfiniteQuery } from "@tanstack/react-query";
+import query from "@/Utils/request/query";
+
+function PaginatedList() {
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey: [routes.items.list.path],
+      queryFn: ({ pageParam = 1 }) =>
+        query(routes.items.list, {
+          queryParams: { page: pageParam },
+        }),
+      getNextPageParam: (lastPage) => lastPage.nextPage ?? undefined,
+    });
+
+  return (
+    <div>
+      {data?.pages.map((page, index) => (
+        <Fragment key={index}>
+          {page.results.map((item) => (
+            <ItemCard key={item.id} item={item} />
+          ))}
+        </Fragment>
+      ))}
+      <button
+        onClick={() => fetchNextPage()}
+        disabled={!hasNextPage || isFetchingNextPage}
+      >
+        {isFetchingNextPage
+          ? "Loading..."
+          : hasNextPage
+          ? "Load More"
+          : "No More Items"}
+      </button>
+    </div>
+  );
+}
+```
+
+### Key Points:
+
+- queryFn: Fetches data based on the current page.
+- getNextPageParam: Determines the next page number from the response.
+- fetchNextPage: Loads the next page when called.
+- Pagination Support: Handles infinite scrolling or user interactions seamlessly.
 
 ## Mutations
 
@@ -131,6 +185,10 @@ function CreatePrescription({ consultationId }: { consultationId: string }) {
   });
 
   return (
+    <PrescriptionForm
+      onSubmit={handleSubmit}
+      isSubmitting={mutation.isPending}
+    />
     <Button 
       onClick={() => createPrescription({ 
         medicineId: "123", 
@@ -174,6 +232,7 @@ The `mutate` utility accepts configuration options similar to the `query` utilit
 ## Further Reading
 
 For advanced features like:
+
 - [Caching strategies](https://tanstack.com/query/latest/docs/react/guides/caching)
 - [Optimistic updates](https://tanstack.com/query/latest/docs/react/guides/optimistic-updates)
 - [Infinite queries](https://tanstack.com/query/latest/docs/react/guides/infinite-queries)
@@ -186,6 +245,7 @@ See the [TanStack Query docs](https://tanstack.com/query/latest/docs/react/overv
 ## Legacy Hooks (Deprecated)
 
 > **Note**: The following hooks are deprecated:
+>
 > - Use `useQuery` instead of `useTanStackQueryInstead`
 > - Use `useMutation` instead of `useDeprecatedMutation`
 
