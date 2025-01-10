@@ -110,6 +110,57 @@ function SearchPatients() {
 
 Note: For mutations (creating, updating, or deleting data), use `useMutation` instead.
 
+### Debounced Queries
+
+For scenarios requiring debounced API calls (like search inputs), use `query.debounced`. This helps reduce unnecessary API calls during rapid user input:
+
+```tsx
+function SearchComponent() {
+  const [search, setSearch] = useState("");
+  
+  const { data } = useQuery({
+    queryKey: ['search', search],
+    queryFn: query.debounced(routes.search, {
+      queryParams: { q: search },
+      debounceInterval: 500 // Optional: defaults to 500ms
+    }),
+    enabled: search.length > 0
+  });
+
+  return (
+    <Input 
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+      placeholder="Search..."
+    />
+  );
+}
+```
+
+The debounced query will wait for the specified interval after the last call before executing the request. This is particularly useful for:
+
+- Search inputs
+- Auto-complete fields
+- Any UI element where the user might trigger rapid successive updates
+
+#### How Debounced Queries Work
+
+[→ TanStack Docs: Query Cancellation](https://tanstack.com/query/latest/docs/framework/react/guides/query-cancellation)
+
+The implementation leverages TanStack Query's built-in cancellation through `AbortSignal`:
+
+1. When a new query is triggered, TanStack Query automatically creates an `AbortSignal`
+2. If a new query starts before the debounce delay finishes:
+   - The previous signal is aborted automatically by TanStack Query
+   - The previous `sleep` promise is cancelled
+   - A new debounce timer starts
+
+No explicit cleanup is needed because:
+
+- The `AbortSignal` is passed through to the underlying `fetch` call
+- When aborted, both the `sleep` promise and the fetch request are cancelled automatically
+- TanStack Query handles the abortion and cleanup of previous in-flight requests
+
 ## Mutations
 
 [→ TanStack Docs: Mutations](https://tanstack.com/query/latest/docs/react/guides/mutations)
