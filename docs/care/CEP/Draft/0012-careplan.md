@@ -16,33 +16,32 @@
 To visualize better, lets create a django model for care plan
 
 ```py
-class CarePlan(BaseModel):
+class CarePlan(EMRBaseModel):
     status = Int(choices) # draft|active|completed|on-hold|cancelled|entered-in-error|unknown
     intent = Int(choices) # proposal|plan|order|option|directive
     title = CharField()
     description = TextField()
     start_date = DateField()
     end_date = DateField()
-    subject/patient = FK(Patient) # wont use if we use encounter
-    encounter = FK(Consultation) # not sure if consultations will stay.
-    custodian/faciliy = FK(Facility) # wont use if we use encounter
-    addresses = FK(ICD11Diagnoses) #or SNOMED going forward
-    notes = TextField()
+    patient = FK(Patient)
+    encounter = FK(Encounter)
+    custodian = FK(FacilityOrganization) # wont use if we use encounter
+    addresses = JSONField() # (many) seeing we are storing snomed codes as json everywhere else
+    notes? = TextField()
 ```
-
-SNOMED-CT is not yet implemented with care, so we would default to using ICD 11 diagnosis until SNOMED is configured.
 
 The care plan will have activities associated with it. These will be done to accomplish the goals in a care plan.
 
 ```py
-class CarePlanActivity(BaseModel): # or just Activity if it is generic
+class Activity(EMRBaseModel):
     performed = BooleanField()
+    # only one of the following FKs will be filled
     activity_task = FK(Task)
     activity_medication_request = FK(MedicationRequest)
     activity_service_request = FK(ServiceRequest)
 ```
 
-I am not very sure about how the Task, MedicationRequest and ServiceRequest would look like. We can directly connect these models to the care plan instead of having the Activity model if it is more feasible.
+I am not very sure about how the Task and ServiceRequest would look like. We can directly connect these models to the care plan instead of having the Activity model if it is more feasible.
 
 A goal will be used to track the targets that must be achieved for the duration of the care plan.
 
@@ -64,7 +63,7 @@ class Goal(BaseModel):
     targets = JSONfield([
         # will hold array of objects of the parameters of the patient we want to achieve, and what type of achievement it will be ("ratio", "range", "exact", etc.)
     ])
-    permitted_groups = ArrayField(choices=PermissionGroups) # to specify if certian groups (like nurses) can update the goal or not.
+    permitted_groups = oneToMany(Organizations) # to specify if an organization can update the goal or not.
 
 ```
 
