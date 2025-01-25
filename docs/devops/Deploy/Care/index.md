@@ -3,7 +3,7 @@
 ## Overview
 Care can be deployed on any cloud provider provided at different scale. The generic requirements for deploying Care are:
 
-![Deployment Diagram](../../../../static/img/devops/Care-Infra.png)
+![Deployment Diagram](../../../../static/img/devops/Deploy/Care/Care-Infra.png)
 
 1. **Compute Resources**
    - High Availability Kubernetes Cluster
