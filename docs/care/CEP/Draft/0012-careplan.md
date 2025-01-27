@@ -34,6 +34,7 @@ The care plan will have activities associated with it. These will be done to acc
 
 ```py
 class Activity(EMRBaseModel):
+    care_plan = FK(CarePlan)
     performed = BooleanField()
     # only one of the following FKs will be filled
     activity_task = FK(Task)
@@ -244,3 +245,252 @@ These models will help us better visualize and form a base understanding of how 
 - The nurse can efficiently track and update patient goals and tasks, ensuring accurate and timely information is available in the care plan.
 - Goal updates and task statuses contribute to a complete picture of the patient’s recovery progress.
 - Clear communication and data sharing between the nurse and doctor enhance the quality of care.
+
+## Sample Data
+
+### Care Plan
+
+```json
+{
+  status: "active",
+  intent: "plan",
+  title: "Care Plan",
+  description: "Patient had c/o. General weakness. Patient is conscious , oriented and bed ridden(peg tube (+). Patient is obeying commands .Vitals checked ( BP:130/80 mmhg , Pulse:84/mint, Spo2:98% on Room air).  When communicating with a patient , face patient , & maintain eye contact
+& speak slowly.
+- Attempt to anticipate patients' needs - it helps to prevent frustration &
+anxiety
+- Prevent repeated asking of same questions ,patient feels angry when we
+cannot understand what he is saying and try to distract him with easy or familiar
+questions.
+- When communicating with a patient , face patient , & maintain eye contact
+& speak slowly.
+- Attempt to anticipate patients' needs - it helps to prevent frustration &
+anxiety
+- Prevent repeated asking of same questions ,patient feels angry when we
+cannot understand what he is saying and try to distract him with easy or familiar
+questions .
+● Monitor Vital Signs :-
+- Blood pressure to be monitored monthly or biweekly .
+- Position with head slightly elevated & in neutral position helps to reduce
+arterial pressure by promoting venous drainage & may improve cerebral
+perfusion
+- Maintain bedrest , provide a quiet & relaxing environment , restrict visitors
+& activities (continue stimulation /activity can increase intracranial
+pressure)
+",
+  start_date: "2022-10-10",
+  end_date: "2022-10-20",
+  patient: "... from patient model",
+  encounter: "... from encounter model",
+  custodian: "... from facility model",
+  addresses: [
+    {
+      code: "code",
+      display: "Advanced Parkinson's Plus Syndrome",
+      system: "snomed",
+    },
+    {
+      code: "code",
+      display: "Progressive Supranuclear palsy",
+      system: "snomed",
+    },
+    {
+      code: "code",
+      display: "Probable aspiration pneumonia",
+      system: "snomed",
+    },
+    {
+      code: "code",
+      display: "Diabetes mellitus",
+      system: "snomed",
+    },
+    {
+      code: "code",
+      display: "Hypothyroidism",
+      system: "snomed",
+    },
+    {
+      code: "code",
+      display: "Hypertension",
+      system: "snomed",
+    },
+    {
+      code: "code",
+      display: "CAD- s/p.CABG(2012)",
+      system: "snomed",
+    },
+    {
+      code: "code",
+      display: "H/O Tubular adenoma with high grade dysplasia s/p Polypectomy(2014)",
+      system: "snomed",
+    }
+  ],
+  notes: "",
+}
+```
+
+### Activities
+
+```json
+[
+  {
+    "care_plan": "... from care plan model",
+    "performed": true,
+    "activity_task": "Check Vitals (From task model)"
+  },
+  {
+    "care_plan": "... from care plan model",
+    "performed": true,
+    "activity_task": "head to foot assessment"
+  },
+  {
+    "care_plan": "... from care plan model",
+    "performed": true,
+    "activity_task": "give psychological support"
+  },
+  {
+    "care_plan": "... from care plan model",
+    "performed": true,
+    "activity_task": "Explain condition to wife"
+  },
+  {
+    "care_plan": "... from care plan model",
+    "performed": false,
+    "activity_task": "Provide good personal hygiene"
+  },
+  {
+    "care_plan": "... from care plan model",
+    "performed": false,
+    "activity_task": "Provide comfortable positions with the help of pillows"
+  },
+  {
+    "care_plan": "... from care plan model",
+    "performed": false,
+    "activity_task": "Proper PEG tube Feed & Care"
+  }
+]
+```
+
+### Goals
+
+```json
+[
+  {
+    "care_plan": "... from care plan model",
+    "created_by": "... from user model",
+    "lifecycle_status": "active",
+    "achievement_status": "improving",
+    "is_continuous": true,
+    "priority": "low",
+    "description": "provide total care to the patient",
+    "start_date": "2022-10-10",
+    "requested_by_patient": false,
+    "targets": [],
+    "permitted_groups": ["... from organization model"]
+  },
+  {
+    "care_plan": "... from care plan model",
+    "created_by": "... from user model",
+    "lifecycle_status": "active",
+    "achievement_status": "in-progress",
+    "is_continuous": true,
+    "priority": "low",
+    "description": "maintain the patient's comfort and dignity throughout their illness",
+    "start_date": "2022-10-10",
+    "requested_by_patient": false,
+    "targets": [],
+    "permitted_groups": ["... from organization model"]
+  },
+  {
+    "care_plan": "... from care plan model",
+    "created_by": "... from user model",
+    "lifecycle_status": "active",
+    "achievement_status": "in-progress",
+    "is_continuous": true,
+    "priority": "low",
+    "description": "provide emotional and spiritual support to the patient and their family",
+    "start_date": "2022-10-10",
+    "requested_by_patient": false,
+    "targets": [],
+    "permitted_groups": ["... from organization model"]
+  },
+  {
+    "care_plan": "... from care plan model",
+    "created_by": "... from user model",
+    "lifecycle_status": "proposed",
+    "achievement_status": "no-change",
+    "is_continuous": true,
+    "priority": "low",
+    "description": "respect the caregivers preferences for end-of-life care",
+    "start_date": "2022-10-10",
+    "requested_by_patient": false,
+    "targets": [],
+    "permitted_groups": ["... from organization model"]
+  },
+  {
+    "care_plan": "... from care plan model",
+    "created_by": "... from user model",
+    "lifecycle_status": "active",
+    "achievement_status": "no-change",
+    "is_continuous": true,
+    "priority": "medium",
+    "description": "daily oral care twice a day",
+    "start_date": "2022-10-10",
+    "requested_by_patient": false,
+    "targets": [],
+    "permitted_groups": ["... from organization model"]
+  },
+  {
+    "care_plan": "... from care plan model",
+    "created_by": "... from user model",
+    "lifecycle_status": "active",
+    "achievement_status": "no-change",
+    "is_continuous": true,
+    "priority": "medium",
+    "description": "Vaselin application lips for drying lips",
+    "start_date": "2022-10-10",
+    "requested_by_patient": true,
+    "targets": [],
+    "permitted_groups": ["... from organization model"]
+  },
+  {
+    "care_plan": "... from care plan model",
+    "created_by": "... from user model",
+    "lifecycle_status": "active",
+    "achievement_status": "no-change",
+    "is_continuous": true,
+    "priority": "medium",
+    "description": "Daily sponge baths needed twice",
+    "start_date": "2022-10-10",
+    "requested_by_patient": false,
+    "targets": [],
+    "permitted_groups": ["... from organization model"]
+  },
+  {
+    "care_plan": "... from care plan model",
+    "created_by": "... from user model",
+    "lifecycle_status": "proposed",
+    "achievement_status": "no-change",
+    "is_continuous": false,
+    "priority": "high",
+    "description": "Patient on Airbed to prevent Pressure sore",
+    "start_date": "2022-10-10",
+    "requested_by_patient": false,
+    "targets": [],
+    "permitted_groups": ["... from organization model"]
+  },
+  {
+    "care_plan": "... from care plan model",
+    "created_by": "... from user model",
+    "lifecycle_status": "proposed",
+    "achievement_status": "no-change",
+    "is_continuous": false,
+    "priority": "high",
+    "description": "Provide Side rails for bed (risk of trauma)",
+    "start_date": "2022-10-10",
+    "requested_by_patient": false,
+    "targets": [],
+    "permitted_groups": ["... from organization model"]
+  }
+]
+```
