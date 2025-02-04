@@ -124,14 +124,14 @@ Grab a coffee and prepare to bring your Care application to life on DigitalOcean
      DJANGO_SETTINGS_MODULE=config.settings.production
      DATABASE_URL=<db-url> # Use the connection URL from Step 1.
      REDIS_URL=redis://redis:6379
-     CORS_ALLOWED_ORIGINS=["https://care.example.com","http://localhost:4000"","http://127.0.0.1:4000"]
+     CORS_ALLOWED_ORIGINS=["https://care.example.com","http://localhost:4000","http://127.0.0.1:4000"]
      CELERY_BROKER_URL=redis://redis:6379
      REDIS_URL=redis://redis:6379
      BUCKET_PROVIDER=DIGITAL_OCEAN
      BUCKET_REGION=nyc3 # Use the region of your Spaces.
-     BUCKET_KEY=  # Use the Spaces key.
+     BUCKET_KEY= # Use the Spaces key.
      BUCKET_SECRET= # Use the Spaces secret.
-     BUCKET_HAS_FINE_ACL=True
+     BUCKET_HAS_FINE_ACL=true
      FILE_UPLOAD_BUCKET=example-space-ohc # Use the name of your Space.
      FILE_UPLOAD_BUCKET_ENDPOINT=https://example-space-ohc.nyc3.digitaloceanspaces.com
      FACILITY_S3_BUCKET=example-space-ohc # Use the name of your Space.
@@ -164,7 +164,7 @@ Grab a coffee and prepare to bring your Care application to life on DigitalOcean
    - Use:
      - **Run Command:**
        ```bash
-       celery --app=config.celery_app worker --max-tasks-per-child=6 -B --loglevel=info
+       celery --app=config.celery_app worker --max-tasks-per-child=2 --concurrency=2 --loglevel=DEBUG --logfile stdout
        ```
      ![Celery Worker](../../../../../static/img/devops/Deploy/Care/digitalOcean/worker-1.png)
      ![Celery Worker](../../../../../static/img/devops/Deploy/Care/digitalOcean/worker-2.png)
@@ -173,7 +173,7 @@ Grab a coffee and prepare to bring your Care application to life on DigitalOcean
    - Create another component with:
      - **Run Command:**
        ```bash
-       python manage.py migrate && python manage.py load_redis_index
+       python manage.py migrate
        ```
      ![Celery Job](../../../../../static/img/devops/Deploy/Care/digitalOcean/job-1.png)
      ![Celery Job](../../../../../static/img/devops/Deploy/Care/digitalOcean/job-2.png)
@@ -191,7 +191,7 @@ Grab a coffee and prepare to bring your Care application to life on DigitalOcean
      - **Build Command:** `npm run build`.
      - **Environment Variable:**
        ```bash
-       REACT_APP_API_URL=https://care-api.example.com
+       REACT_CARE_API_URL=https://care-api.example.com
        ```
      - **Output Directory:** Auto.
 
