@@ -132,8 +132,14 @@ Actions that lead to drop off from the internship program:
 * No contributions for a month without prior approval
 * Repeated poor-quality PR submissions after warnings
 
-## 9. Updates
-This document was last updated on December 02, 2024.
+## 9. Certificate
+An Internship Certificate will be issued only if the intern successfully completes a minimum of six months of the internship.
 
-## 10. Contact
+## 10. Reapplication Policy
+If an intern is offboarded or discontinues the internship for any reason, they may reapply only after a cooling period of six months from their last working day.
+
+## 11. Updates
+This document was last updated on February 18, 2024.
+
+## 12. Contact
 If you have any questions or concerns, please write to the community manager Aravind Mahadevan (aravind@pupilfirst.org).
