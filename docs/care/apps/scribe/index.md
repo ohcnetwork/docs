@@ -1,12 +1,12 @@
 # Scribe
 
-| Document          | Care Scribe Feature Documentation (`care_scribe`)        |
-| ----------------- | -------------------------------------------------------- |
-| **Title**         | Care Scribe Feature Overview, Integration, and Operation |
-| **App Namespace** | `care_scribe`                                            |
-| **Last-Modified** | 2024-08-19                                               |
-| **Github-Repo**   | https://github.com/ohcnetwork/care_scribe                |
-| **Created**       | 2024-04-15                                               |
+| Document          | Care Scribe Feature Documentation (`care_scribe`)                                       |
+| ----------------- | --------------------------------------------------------------------------------------- |
+| **Title**         | Care Scribe Feature Overview, Integration, and Operation                                |
+| **App Namespace** | `care_scribe`                                                                           |
+| **Last-Modified** | 2025-03-08                                                                              |
+| **Github-Repo**   | https://github.com/ohcnetwork/care_scribe, https://github.com/ohcnetwork/care_scribe_fe |
+| **Created**       | 2024-04-15                                                                              |
 
 ## Introduction
 
@@ -690,3 +690,4 @@ These snippets provide a glimpse into the inner workings of the Care Scribe feat
 - **2024-04-15**: Initial draft of the Care Scribe Technical Documentation. ~ Ashesh
 - **2024-05-07**: Fixes to the flowchart, Add details on Celery task, and revise Accessibility and Dependencies. ~ Ashesh
 - **2024-08-19**: Updates to Scribe regarding handling dynamic data, and shift to `SCRIBE_FORMS` as scribe schema definition. ~ Shivank
+- **2025-03-08**: Rewriting documentation to include new plugin architecture and OCR integration. ~ Shivank
