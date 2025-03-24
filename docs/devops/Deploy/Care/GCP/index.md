@@ -1,10 +1,66 @@
 # GCP
-## Deploying Care on GCP using Cloud Console
 
-This is a step-by-step guide to deploying the **Care** application on **GCP** using the **Cloud Console**. The deployment process involves the following steps:
+This section covers deployment options for the Care application on Google Cloud Platform.
 
-  - [**Setting up the Infrastructure**](./Infra): This guide walks you through the steps required to set up the main infrastructure components in **GCP**.
+## Available Deployment Options
 
-  - [**Configuring the Deployment Pipeline**](./CICD): This section assists you in setting up the `Cloud Build` setup necessary for building the frontend images with a customised `react.env` and backend images with the required plugins specified in `plug_config.py`.
+### 1. [Google Cloud Storage (GCS)](./GCS/index.md)
 
-  - [**Triggering the Build Process**](./Trigger): This guide provides the steps required to trigger the build process, push the images to **Artifact Registry**, apply changes to the CRD's and update the Deplyments . It also demonstrates how to set up **GitHub Actions** for triggering the build process across multiple projects.
+Static website hosting with three-step deployment process:
+
+1. Infrastructure Setup
+2. Deployment Process
+3. Monitoring & Operations
+
+### 2. [Google Kubernetes Engine (GKE)](./GKE/index.md)
+
+Container orchestration with three-step deployment process:
+
+1. Infrastructure Setup
+2. CI/CD Configuration
+3. Trigger Setup
+
+## Choosing a Deployment Option
+
+Choose based on your requirements:
+
+- **Use GCS if you need:**
+
+  - Static website hosting
+  - Global content delivery
+  - Simple deployment process
+  - Cost-effective solution
+
+- **Use GKE if you need:**
+  - Container orchestration
+  - Microservices architecture
+  - Advanced scaling capabilities
+  - Complex deployment scenarios
+
+## Prerequisites
+
+- Google Cloud SDK installed
+- GCP project with billing enabled
+- Appropriate IAM permissions
+- Domain name (if using custom domain)
+
+## Common Configuration
+
+Before deploying, ensure you have:
+
+1. Domain name configured in GCP DNS
+2. SSL certificate (managed by GCP)
+3. Appropriate IAM permissions
+4. Billing enabled on the project
+
+## Deployment Selection Guide
+
+Choose your deployment method based on:
+
+- **GKE**: For containerized applications, microservices, or when you need Kubernetes features
+- **GCS**: For static websites, single-page applications (SPAs), or when you need simple, cost-effective hosting
+
+## Cost Considerations
+
+- GKE: Higher cost but more flexible and scalable
+- GCS: Lower cost, pay-per-use model, ideal for static content
