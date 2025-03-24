@@ -1,4 +1,4 @@
-# Setting Up Build Pipelines
+# Deployment Pipeline
 
 ## Setting Up the Artifact Registry
 
@@ -83,15 +83,16 @@ manager = PlugManager(plugs)
 steps:
   - name: ubuntu
     args:
-      - "-c"
+      - '-c'
       - |
         echo "be $_BE_TAG" \
         && echo "fe $_FE_TAG" \
         && echo "metabase $_METABASE_TAG"
     entrypoint: bash
-  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
     args:
-      - "-c"
+      - '-c'
       - |
         gcloud source repos clone $_INFRA_REPO infra
         cd infra
@@ -100,25 +101,185 @@ steps:
     dir: /workspace
     id: clone-infra
     entrypoint: bash
-  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
+
+  - name: gcr.io/cloud-builders/gsutil
     args:
-      - "-c"
+      - '-c'
+      - |
+        if [[ -n "$_BE_TAG" ]]; then
+          curl -L https://github.com/ohcnetwork/care/archive/$_BE_TAG.zip -o care.zip
+          unzip care.zip
+          mv care-$_BE_TAG care
+        else
+          echo "Skipping..."
+        fi
+    dir: /workspace
+    id: download-care
+    entrypoint: bash
+
+  - name: ubuntu
+    args:
+      - '-c'
+      - |
+        if [[ -n "$_BE_TAG" ]]; then
+          cp -r /workspace/infra/build/. /workspace/care
+        else
+          echo "Skipping..."
+        fi
+    id: copy-build-files
+    entrypoint: bash
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - '-c'
+      - |
+        if [[ -n "$_BE_TAG" ]]; then
+          DOCKER_BUILDKIT=1 docker build -f ./care/docker/prod.Dockerfile \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/care/care:$_BE_TAG \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/care/care:latest \
+            ./care
+          docker push \
+            asia-south1-docker.pkg.dev/$PROJECT_ID/care/care:$_BE_TAG
+          docker push \
+            asia-south1-docker.pkg.dev/$PROJECT_ID/care/care:latest
+        else
+          echo "Skipping..."
+        fi
+    dir: /workspace
+    id: build-care
+    entrypoint: bash
+
+  - name: gcr.io/cloud-builders/git
+    args:
+      - '-c'
+      - |
+        if [[ -n "$_BE_TAG" ]]; then
+          cd infra
+          sed -i -e 's|\(image: .*care:\).*|\1$_BE_TAG|' deployments/*
+          sed -i -e "/name: deployment-version/{n;s/value: .*/value: \"$BUILD_ID\"/;}" deployments/care-backend.yaml
+          sed -i -e "/name: deployment-version/{n;s/value: .*/value: \"$BUILD_ID\"/;}" deployments/care-celery-worker.yaml
+          sed -i -e "/name: deployment-version/{n;s/value: .*/value: \"$BUILD_ID\"/;}" deployments/care-celery-beat.yaml
+          git add .
+          git commit -m "update backend crds to $_BE_TAG" || true
+        else
+          echo "Skipping..."
+        fi
+    dir: /workspace
+    id: update-care-crd
+    entrypoint: bash
+
+  - name: gcr.io/cloud-builders/gsutil
+    args:
+      - '-c'
+      - |
+        if [[ -n "$_FE_TAG" ]]; then
+          curl -L https://github.com/ohcnetwork/care_fe/archive/$_FE_TAG.zip -o /workspace/care_fe.zip
+          unzip /workspace/care_fe.zip -d /workspace
+          mv /workspace/care_fe-$_FE_TAG /workspace/care_fe
+          cp /workspace/infra/build/react.env /workspace/care_fe/.env.local
+          cd /workspace/care_fe
+        else
+          echo "Skipping..."
+        fi
+    dir: /workspace
+    id: download-care-fe
+    entrypoint: bash
+
+  - name: ubuntu
+    args:
+      - '-c'
+      - |
+        if [[ -n "$_FE_TAG" ]]; then
+          cp /workspace/infra/build/react.env /workspace/care_fe/.env.local
+        else
+          echo "Skipping..."
+        fi
+    id: copy-fe-build-files
+    entrypoint: bash
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - '-c'
+      - |
+        if [[ -n "$_FE_TAG" ]]; then
+          DOCKER_BUILDKIT=1 docker build -f ./care_fe/Dockerfile \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/care/care_fe:$_FE_TAG \
+            -t asia-south1-docker.pkg.dev/$PROJECT_ID/care/care_fe:latest \
+            ./care_fe
+          docker push \
+            asia-south1-docker.pkg.dev/$PROJECT_ID/care/care_fe:$_FE_TAG
+          docker push \
+            asia-south1-docker.pkg.dev/$PROJECT_ID/care/care_fe:latest
+        else
+          echo "Skipping..."
+        fi
+    dir: /workspace
+    id: build-care-fe
+    entrypoint: bash
+
+  - name: gcr.io/cloud-builders/git
+    args:
+      - '-c'
+      - |
+        if [[ -n "$_FE_TAG" ]]; then
+          cd infra
+          sed -i -e 's|\(image: .*care_fe:\).*|\1$_FE_TAG|' deployments/care-fe.yaml
+          sed -i -e "/name: deployment-version/{n;s/value: .*/value: \"$BUILD_ID\"/;}" deployments/care-fe.yaml
+          git add .
+          git commit -m "update frontend crds to $_FE_TAG" || true
+        else
+          echo "Skipping..."
+        fi
+    dir: /workspace
+    id: update-care-fe-crd
+    entrypoint: bash
+
+  - name: gcr.io/cloud-builders/git
+    args:
+      - '-c'
+      - |
+        if [[ -n "$_METABASE_TAG" ]]; then
+          cd infra
+          sed -i -e 's|\(image: metabase/metabase:\).*|\1$_METABASE_TAG|' deployments/metabase.yaml
+          git add .
+          git commit -m "update frontend crds" || true
+        else
+          echo "Skipping..."
+        fi
+    dir: /workspace
+    id: update-metabase-crd
+    entrypoint: bash
+
+  - name: gcr.io/cloud-builders/gke-deploy
+    args:
+      - '-c'
+      - |
+        gke-deploy apply \
+          --location=${_CARE_GKE_ZONE} \
+          --cluster=${_CARE_GKE_CLUSTER} \
+          --filename=infra/deployments
+    dir: /workspace
+    id: deploy-to-gke
+    entrypoint: bash
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    args:
+      - '-c'
       - |
         cd infra
-        git pull origin main
-        ./deploy.sh $_CARE_GKE_ZONE $_CARE_GKE_CLUSTER
+        git pull --rebase
+        git push
     dir: /workspace
-    id: deploy-infra
+    id: push-crds
     entrypoint: bash
+
 options:
   logging: CLOUD_LOGGING_ONLY
+
 substitutions:
   _FE_TAG: $(body.substitutions.care_fe_tag)
   _METABASE_TAG: $(body.substitutions.metabase_tag)
   _BE_TAG: $(body.substitutions.care_be_tag)
-  _CARE_GKE_ZONE: $(body.substitutions.care_gke_zone)
-  _CARE_GKE_CLUSTER: $(body.substitutions.care_gke_cluster)
-  _INFRA_REPO: $(body.substitutions.infra_repo)
 ```
 
 8. Save the file and exit the editor.

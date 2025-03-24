@@ -1,4 +1,4 @@
-# Infrastructure Configuration
+# Infrastructure Setup
 
 ## Setting Up the Network and Creating a VPC
 
