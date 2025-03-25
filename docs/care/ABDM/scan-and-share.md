@@ -32,13 +32,13 @@ There are two ways to generate the Scan and Share QR code for a facility:
 
 - **Step 1:** Obtain the facility’s Health Facility ID (HF_ID).
   
-- **Step 2:** Create a URL by replacing the placeholders in the following link: https://phrsbx.abdm.gov.in/share-profile?hip-id=<HF_ID>&counter-id=<COUNTER_ID>
+- **Step 2:** Create a URL by replacing the placeholders in the following link: https://phr.abdm.gov.in/share-profile?hip-id=HF_ID&counter-id=COUNTER_ID
 
-    - Replace `<HF_ID>` with the facility's Health Facility ID.
+    - Replace `HF_ID` with the facility's Health Facility ID.
 
-    - Replace `<COUNTER_ID>` with the counter number or name (use dashes or underscores instead of spaces; if not applicable, simply use `1`).
+    - Replace `COUNTER_ID` with the counter number or name (use dashes or underscores instead of spaces; if not applicable, simply use `1`).
 
-    - **Example URL:** https://phrsbx.abdm.gov.in/share-profile?hip-id=IN3210000018&counter-id=1
+    - **Example URL:** https://phr.abdm.gov.in/share-profile?hip-id=IN3210000018&counter-id=1
 
 - **Step 3:** Use an online QR code generator, such as [The QR Code Generator](https://www.the-qrcode-generator.com/), to create and download the QR code by pasting the URL.
 
