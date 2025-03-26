@@ -28,34 +28,17 @@ There are two ways to generate the Scan and Share QR code for a facility:
 - **Reference Document:**  
   Follow the Software Linkage section in the [User Manual](https://sandboxcms.abdm.gov.in/uploads/User_Manual_New_58c71f13dc.pdf).
 
-### 2. Creating the QR Code Manually
-
-- **Step 1:** Obtain the facility’s Health Facility ID (HF_ID).
-  
-- **Step 2:** Create a URL by replacing the placeholders in the following link: https://phr.abdm.gov.in/share-profile?hip-id=HF_ID&counter-id=COUNTER_ID
-
-    - Replace `HF_ID` with the facility's Health Facility ID.
-
-    - Replace `COUNTER_ID` with the counter number or name (use dashes or underscores instead of spaces; if not applicable, simply use `1`).
-
-    - **Example URL:** https://phr.abdm.gov.in/share-profile?hip-id=IN3210000018&counter-id=1
-
-- **Step 3:** Use an online QR code generator, such as [The QR Code Generator](https://www.the-qrcode-generator.com/), to create and download the QR code by pasting the URL.
-
-- **Step 4:** Place the generated QR code within the facility premises for patients to scan.
-
----
-
-## Prerequisite Configuration in CARE
-
-For the Scan and Share feature to work properly, ensure the Health Facility ID is configured in CARE:
+### 2. Using CARE
 
 1. Open CARE and navigate to the facility settings page.
-2. Click on **Configure Health Facility**.
-3. Enter the Health Facility ID (HF_ID) in the provided input field.
-4. Click **Submit** to save the configuration.
 
----
+2. Click on **Configure Health Facility**.
+
+3. Link the Health Facility ID, if not already linked.
+
+4. Enter a Counter ID (any alpha numeric value is valid; use dashes or underscores instead of spaces; if not applicable, simply use `1`).
+
+5. Click on **Download QR Code**.
 
 ## Demo Video
 
