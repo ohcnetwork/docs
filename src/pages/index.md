@@ -13,15 +13,10 @@ Originally a volunteer-driven initiative during the COVID-19 pandemic, OHC has c
 
 Today, beyond the 10BedICU Project, CARE is being adopted for various healthcare applications, including palliative care digitization, demonstrating its adaptability and growing significance in improving healthcare delivery across diverse settings. OHC's journey is a testament to the transformative impact of youth-driven initiatives in healthcare, touching the lives of millions across India.
 
-[Overview](https://ohc.network/) |
-[Govt. Orders](https://ohc.network/government-orders) | 
-[FieldOps](https://ohc.network/fieldops) |
-[TeleICU](https://ohc.network/teleicu) |
-[Requirements](https://ohc.network/requirements) |
-[Training](https://ohc.network/training)
-[Go Live](https://ohc.network/go-live) |
-[Modes](https://ohc.network/modes) |
-[FAQs](https://ohc.network/faqs) | 
+[Overview](https://ohc.network) | 
+[TeleICU](https://10bedicu.org) |
+[Training](https://school.ohc.network) |
+[Supporters](https://ohc.network/supporters) |
 [Connect](https://slack.ohc.network)
 
 ## Our Mission
