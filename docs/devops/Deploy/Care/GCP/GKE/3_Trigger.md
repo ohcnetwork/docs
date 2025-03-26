@@ -1,65 +1,64 @@
-# Deploy
+# Build Process
 
 ## Getting Ready For First Deployment
 
-Set the default gke cluster
+### Set the Default GKE Cluster
 
 ```bash
-    # Get the name using:
-    kubectl config get-contexts
+# Get the name using:
+kubectl config get-contexts
 
-    # Set the config:
-    kubectl config use-context <name>
+# Set the config:
+kubectl config use-context <name>
 ```
 
-Run the helm script:
+### Run the Helm Script
 
 ```bash
-    bash helm/scripts.sh
+bash helm/scripts.sh
 ```
 
-Use kubectl to apply all the kubernetes yaml files in the following order
+### Apply Kubernetes Configurations
+
+Use `kubectl` to apply all the Kubernetes YAML files in the following order:
 
 ```bash
-    # Deploy configmaps:
-    kubectl apply -f 'configmaps/*'
+# Deploy ConfigMaps:
+kubectl apply -f 'configmaps/*'
 
-    # Secrets:
-    kubectl apply -f 'secrets/*'
+# Secrets:
+kubectl apply -f 'secrets/*'
 
-    # Deployments:
-    kubectl apply -f 'deployments/*'
+# Deployments:
+kubectl apply -f 'deployments/*'
 
-    # Services:
-    kubectl apply -f 'services/*'
+# Services:
+kubectl apply -f 'services/*'
 
-    # Clusterissuer:
-    kubectl apply -f ClusterIssuer/cluster-issuer.yaml
+# ClusterIssuer:
+kubectl apply -f ClusterIssuer/cluster-issuer.yaml
 
-    # Certificate:
-    kubectl apply -f certificate/certificate.yml
+# Certificate:
+kubectl apply -f certificate/certificate.yml
 
-    # Ingress:
-    kubectl apply -f ingress/care.yaml
+# Ingress:
+kubectl apply -f ingress/care.yaml
 ```
 
 Once ingress is created, `kubectl get ingress care-ingress` will show the IP of the TCP load balancer.
-
 Once the DNS records are added, the SSL will be automatically handled.
 
-## Add DNS records
+## Add DNS Records
 
 Create DNS A records for each domain pointing to the static IP created from "Reserve a static IP address" step.
 
----
-
 ## Applying Release Updates on GCP Manually
 
-To apply the release updates, follow these steps:
+To apply release updates, follow these steps:
 
 1. Fetch the latest commit hash from the [Care Commit History](https://github.com/ohcnetwork/care/commits/production) and [Care FE Commit History](https://github.com/ohcnetwork/care_fe/commits/production).
-2. Trigger the cloudbuild using the webhook URL available in the cloud build console.
-3. Use curl or any API platform to initiate the build process.
+2. Trigger the Cloud Build using the webhook URL available in the Cloud Build console.
+3. Use `curl` or any API platform to initiate the build process:
 
 ```bash
 curl --request POST \
@@ -67,30 +66,27 @@ curl --request POST \
   --header 'Content-Type: application/json' \
   --data '{
   "substitutions": {
-  {
       "care_be_tag": "",
       "care_fe_tag": "",
       "metabase_tag": ""
   }
 }'
 ```
+
 ## Setting Up Automated GitHub Workflow Triggers
 
-The Manual process of triggering the build process can be automated using GitHub Actions. The following steps demonstrate how to set up GitHub Actions for triggering the build process across multiple projects.
+The manual process of triggering the build process can be automated using GitHub Actions. Follow these steps:
 
-1. Navigate to the deploy repository where the GitHub Actions are to be setup.
+1. Navigate to the deploy repository where the GitHub Actions are to be set up.
 2. Add the Webhook URL to the GitHub Secrets.
 3. Create a new GitHub Action workflow file in the `.github/workflows` directory.
-4. Add the following code snippet to the workflow file.
+4. Add the following code snippet to the workflow file:
 
 ```yaml
 name: Deploy Multiple Projects
 on:
-  # Manually trigger the workflow from the Actions tab
   workflow_dispatch:
-    # Define the workflow's inputs
     inputs:
-      # Define the inputs BE_TAG and FE_TAG
       BE_TAG:
         description: "Backend release tag"
         required: true
@@ -107,7 +103,7 @@ jobs:
     steps:
       - name: Setup Payload
         run: |
-          JSON='{ "substitutions": { "care_be_tag":"'"$BE_TAG"'", "care_fe_tag": "'"$FE_TAG"'", "metabase_tag": "'"$METABSE_TAG"'" } }'
+          JSON='{ "substitutions": { "care_be_tag":"'"$BE_TAG"'", "care_fe_tag": "'"$FE_TAG"'", "metabase_tag": "'"$METABASE_TAG"'" } }'
           echo "json=$JSON" >> $GITHUB_ENV
         env:
           BE_TAG: ${{ github.event.inputs.BE_TAG }}
@@ -165,6 +161,7 @@ jobs:
 ## Applying Release Updates
 
 To apply release updates, follow these steps:
+
 1. Retrieve the latest commit hash from the [Care Commit History](https://github.com/ohcnetwork/care/commits/production) and [Care FE Commit History](https://github.com/ohcnetwork/care_fe/commits/production).
 2. Go to the deploy repository where the GitHub Action mentioned above is set up.
 3. Click on the `Actions` tab.
