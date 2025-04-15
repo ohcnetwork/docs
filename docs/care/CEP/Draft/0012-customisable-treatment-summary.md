@@ -1,4 +1,4 @@
-# Customisable Treatment Summary in CARE
+# CEP-12: Customisable Treatment Summary in CARE
 
 ## Overview
 
@@ -71,15 +71,6 @@ Provide the ability to **manually add custom fields**, either pre-filled or as p
   - Quick annotations
   - Offline workflows
   - Patient-facing fields
-
----
-
-## Implementation Considerations
-
-- Each version should be **feature-flagged** to allow progressive rollout
-- Layout editor can be reused across versions to reduce implementation overhead
-- Backend config schema should be versioned and flexible to support future expansion
-- Printing support must gracefully handle layout and data conditions
 
 ---
 
