@@ -23,6 +23,18 @@ New to Open Healthcare Network? This FAQ section addresses common issues and pro
    - [Backend Documentation](https://github.com/ohcnetwork/care_hcx)
    - [Frontend Documentation](https://github.com/ohcnetwork/care_hcx_fe)
 
+4. **TeleICU Devices**
+   - [Backend Documentation](https://github.com/ohcnetwork/care_teleicu_devices)
+   - [Frontend Documentation](https://github.com/ohcnetwork/care_teleicu_devices_fe)
+
+5. **LiveKit (Real-time Communication)**
+   - [Backend Documentation](https://github.com/ohcnetwork/care_livekit)
+   - [Frontend Documentation](https://github.com/ohcnetwork/care_livekit_fe)
+
+6. **Ayushma (AI Assistant)**
+   - [Backend Documentation](https://github.com/ohcnetwork/ayushma)
+   - [Frontend Documentation](https://github.com/ohcnetwork/ayushma_fe)
+
 ## Common Setup Issues
 
 ### Backend Setup Issues
@@ -104,3 +116,21 @@ New to Open Healthcare Network? This FAQ section addresses common issues and pro
 ### Plugin Setup Issues
 
 For more specific issues, please refer to the GitHub repositories or reach out to the community on our Slack channel.
+
+## Learning Resources
+
+### Tools We Use in Care
+
+1. **Docker and Container Technology**
+   - [Docker Crash Course for Beginners](https://www.youtube.com/watch?v=0UG2x2iWerk) - Basic tutorial to get started with Docker
+
+### OHC School Courses
+
+1. **Care Systems 101**
+   - [Introduction to Care Systems](https://school.ohc.network/courses/357) - Overview of Care platform fundamentals
+
+2. **Django For All**
+   - [Django Development Course](https://school.ohc.network/courses/1844) - Learn Django for backend development
+
+3. **React For All**
+   - [React Development Course](https://school.ohc.network/courses/1843) - Learn React for frontend development
