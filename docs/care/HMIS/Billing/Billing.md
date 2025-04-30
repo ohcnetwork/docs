@@ -1,42 +1,49 @@
-# Billing Module
+# Billing
 
-This folder contains documentation for the **Billing** section of the HMIS (Hospital Management Information System) built with FHIR-inspired design principles.
+This overview provides a **big-picture** look at how billing data and workflows are organized, from recording healthcare services to collecting payments. The subsequent pages detail each component and its usage.
 
-The goal of these documents is to help both **developers** (for integration and validation logic) and **hospital billing staff** (for understanding workflows) navigate and use the billing system effectively.
+## Key Billing Concepts
 
----
+1. **Charge Item Definition**  
+   - **What it is:** The “catalog” or “tariff” of billable services and goods. Each definition includes a billing code, base price, optional surcharges/discounts/taxes, and applicability rules.  
+   - **Why it matters:** Ensures consistent and accurate pricing logic for all services.  
+   - **Where to learn more:** [Charge Item Definition Documentation](./ChargeItemDefinition.md)
 
-## 📁 Documentation Structure
+2. **Charge Item**  
+   - **What it is:** A single, **actual** billable line for a specific service/product given to a patient (e.g., a lab test, medication, X-ray).  
+   - **Why it matters:** Records each instance of care or resource usage, along with quantity, date, and final cost.  
+   - **Where to learn more:** [Charge Item Documentation](./ChargeItem.md)
 
-| File | Description |
-|------|-------------|
-| `Account.md` | Explains how patient accounts are managed — including statuses, coverage, and linkage with charges and payments. |
-| `ChargeItem.md` | Covers how billable services/items are posted to accounts, their status transitions, and validation rules. |
-| `ChargeItemDefinition.md` | The source-of-truth catalog of all billable services and goods, with pricing, constraints, and usage rules. |
-| `Invoice.md` | Workflow for generating, issuing, and managing invoices from charge items, including partial billing and cancellations. |
-| `PaymentReconciliation.md` | Documentation on recording and applying payments to invoices/accounts, including bulk insurance payments. |
-| `Notes.md` | Additional guidelines, clarifications, or decisions around the billing logic and implementation. |
-| `Readme.md` | You are here — overview of this documentation folder. |
+3. **Account**  
+   - **What it is:** A ledger or “billing bucket” that accumulates all charges and payments for a patient or purpose (e.g., an inpatient stay).  
+   - **Why it matters:** Centralizes the financial tracking, letting you see what the patient (or insurance) owes in total.  
+   - **Where to learn more:** [Account Documentation](./Account.md)
 
----
+4. **Invoice**  
+   - **What it is:** A formal bill grouping multiple **Charge Items** from an **Account**. Once **issued**, the system expects payment against it.  
+   - **Why it matters:** Creates an official statement for patients or insurers, facilitating payment collection.  
+   - **Where to learn more:** [Invoice Documentation](./Invoice.md)
 
-## 📌 Guidelines for Use
+5. **Payment Reconciliation**  
+   - **What it is:** A record of payments received (and how they’re allocated to invoices). Also handles reversals (e.g., bounced checks).  
+   - **Why it matters:** Keeps a detailed audit trail of all money flows, from partial payments to full settlements.  
+   - **Where to learn more:** [Payment Reconciliation Documentation](./PaymentReconciliation.md)
 
-- **For Developers**:
-  - Use this to implement frontend validations, enforce backend rules, and understand field relationships and status transitions.
-  - Refer to flowcharts and step-by-step sections to implement the UI in sync with billing logic.
+## High-Level Billing Flow
 
-- **For Staff and Admins**:
-  - Refer to individual module docs to understand workflows such as creating invoices, posting charges, reconciling payments, etc.
-  - Use this as a training/reference tool for new billing operators.
+Below is a simplified look at how these pieces fit together:
 
----
+```mermaid
+flowchart LR
+    A[Charge Item Definition<br> Price Catalog] --> B[Charge Item<br>Specific Billable Service]
+    B --> C[Account<br> Ledger for Charges/Payments]
+    C --> D[Invoice<br> Formal Bill Summarizing Charges]
+    D --> E[Payment Reconciliation<br> Payments Applied to Invoice]
+    E --> F[Account Updated<br> Balance Reduced ]
+```
 
-## 🧭 Entry Points
-
-1. Start with `Account.md` — it is the anchor for billing operations.
-2. Move to `ChargeItem.md` and `ChargeItemDefinition.md` to understand how charges work.
-3. Review `Invoice.md` for generating bills.
-4. Go through `PaymentReconciliation.md` to handle payments.
-
-
+1. **Charge Item Definition**: Administrators configure pricing rules and codes.  
+2. **Charge Item**: When a service is provided, a charge is created for the patient’s **Account**, with cost details derived from the definition.  
+3. **Account**: Aggregates all patient charges and payments.  
+4. **Invoice**: Groups outstanding charges into a final bill. Once issued, the charges become billed.  
+5. **Payment Reconciliation**: Records any incoming payment, updating the invoice and account balances accordingly.
