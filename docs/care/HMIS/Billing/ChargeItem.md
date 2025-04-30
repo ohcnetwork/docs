@@ -1,114 +1,82 @@
 # Charge Item
+A **Charge Item** is the actual **instance** of billing for a specific service or product provided to a patient. It references a **Charge Item Definition** (i.e., the priced “catalog entry”) to derive the cost, plus actual usage details (quantity, date, any overrides). Each Charge Item links to a specific **Account** (which accumulates charges for a patient or episode of care) and often to an **Encounter** (the clinical context).
 
-## Summary 
-A **Charge Item** represents a single billable service, procedure, medication, or product that a patient received, which should be charged on their account ([ChargeItem - FHIR v6.0.0-ballot2](https://build.fhir.org/chargeitem-definitions.html#:~:text=The%20resource%20ChargeItem%20describes%20the,process%20and%20internal%20cost%20allocation)). Essentially, each charge item is like a line item in a bill, detailing what was provided, to whom, when, and in what quantity. For example, a charge item could be “Chest X-Ray” or “Blood Test CBC” or “Medication: Antibiotic 500mg – 10 tablets.” Charge Items capture the necessary details (date, provider, etc.) to support billing and are later summed up on invoices. The main purpose of recording charge items is to enable the billing process and internal cost allocation ([ChargeItem - FHIR v6.0.0-ballot2](https://build.fhir.org/chargeitem-definitions.html#:~:text=The%20resource%20ChargeItem%20describes%20the,process%20and%20internal%20cost%20allocation)) – they feed into the Invoice generation and financial reporting.
+For example, if a nurse administers 2 doses of an expensive medication, the system may create a Charge Item for “Medication: XYZ” with quantity=2, referencing the relevant charge definition for medication pricing. Once a Charge Item is **billable**, it can appear on an **Invoice**.
 
-Each Charge Item is linked to an **Account** (the bucket of charges for a patient or encounter) so that the system knows where to accumulate the cost. Charge Items typically reference a predefined **Charge Item Definition** (the billing code) to fetch pricing and any special billing rules. They also have a status that tracks their billing state (e.g., whether they’ve been billed yet or not). This ensures that each service is billed exactly once and helps in workflows like charge review and approval before billing.
 
-## Key Fields and Lifecycle Statuses 
-**Key Fields:**
-- **Charge Item Code:** A code or identifier for the service or product provided. This usually corresponds to a entry in the Charge Item Definitions (the “catalog” of billable items). For example, a code might be “XRAY001” for a chest X-ray. The code is often selected from a list in the UI, and it brings along a description (e.g., “Chest X-Ray, 2 views”) and price. *(In FHIR terms, this might be represented as a CodeableConcept or reference to a ChargeItemDefinition ([ChargeItem - FHIR v6.0.0-ballot2](https://build.fhir.org/chargeitem-definitions.html#:~:text=ChargeItem)).)*
-- **Description:** A human-readable description of the charge, if not obvious from the code. In many systems, this auto-fills when a code is selected. E.g., “Complete Blood Count (CBC) test”.
-- **Quantity:** The number of units provided. If the charge item is for a service, quantity is often 1 (each service instance). If it’s for an item (like medication or supplies), quantity could be multiple (e.g., 10 tablets). The UI allows the user to input quantity. The total price for the charge item will be **quantity × unit price**.
-- **Account Reference:** The account (or patient encounter) to which this charge is applied. This links the charge to the correct bucket for billing ([Account - FHIR v6.0.0-ballot2](https://build.fhir.org/account.html#:~:text=8)) ([Account - FHIR v6.0.0-ballot2](https://build.fhir.org/account.html#:~:text=,37%20and%20PaymentReconciliation)). In the UI, if you are adding a charge from within an Account screen, this may be implicit (the system knows which account you are viewing). If adding from a general charges interface, the user must specify the target account/patient.
-- **Service Date/Time:** When the service was provided or the item was supplied to the patient. This is important for record-keeping and also for checking against any billing rules (e.g., after-hours charges, or whether the service falls within the account’s billing period). The field may be a single date/time or a range (start/end) if the service lasted a span of time ([ChargeItem - FHIR v6.0.0-ballot2](https://build.fhir.org/chargeitem-definitions.html#:~:text=ChargeItem.occurrence)).
-- **Performing Practitioner/Department:** (If applicable) Who performed the service or which department it belongs to (for routing and information). E.g., a lab test might list the lab department or the lab technician, a radiology exam lists the radiologist or radiology dept. This can help with internal tracking or if different departments have different billing responsibilities.
-- **Price (Unit Price and Total):** The monetary amount to charge for this item. In a FHIR-pure approach, the ChargeItem may not have the price explicitly stored on it, relying on the ChargeItemDefinition for pricing ([Invoice - FHIR v6.0.0-ballot2](https://build.fhir.org/invoice.html#:~:text=Since%20the%20individual%20ChargeItem%20resources,the%20context%20of%20the%20ChargeItem)). However, in an HMIS it’s common to calculate and store the price when the charge is recorded, so that staff can review it. For example, if “Chest X-Ray” costs $100, and quantity is 1, the total for that charge item is $100. If quantity were 2 (for something like two units of a supply at $5 each), total is $10.  
-  - *The UI usually shows the price when a code is selected.* If any discounts or surcharges apply, those might adjust the price (see **Charge Item Definition** rules). Developers might implement this by fetching the price from the definition and applying any relevant rules at the moment of charge entry.
-- **Override Reason / Adjustments:** (Optional) If a price is manually overridden or a charge is waived, the system might allow recording a reason. For instance, if staff set the price to $0 for a courtesy service, they should note why (e.g., “free sample – not billable”). This keeps a trail for auditors. In a strict FHIR model this could be an extension since ChargeItem doesn’t normally include a price override field in the core spec.
-- **Status:** The billing status of the charge item, indicating where it is in the billing process. The statuses commonly include **planned**, **billable**, **not-billable**, **aborted**, **billed**, **entered-in-error**, or **unknown** ([ChargeItem - FHIR v6.0.0-ballot2](https://build.fhir.org/chargeitem-definitions.html#:~:text=The%20current%20state%20of%20the,ChargeItem)). This field is crucial for workflow: it prevents double billing and indicates if a charge needs attention.  
-  - *Planned:* The charge is anticipated but not yet ready to be billed. For example, a procedure is scheduled for tomorrow – a charge item might be pre-created as planned. It hasn’t actually occurred or is pending confirmation. Planned items do not count towards the account balance until they become billable.  
-  - *Billable:* The service has been provided and the charge is confirmed, making it ready to bill. Most charges added after a service is delivered will start in the **billable** state (meaning they should appear on the next invoice).  
-  - *Not-billable:* The service was provided but will not be billed to the patient (perhaps it’s covered by a flat rate or part of a package, or given as courtesy). Setting a charge to not-billable excludes it from invoicing. For instance, if a hospital does a second X-ray at no charge due to a previous issue, they might record it for history but mark it not-billable.  
-  - *Aborted:* The service was not completed, so it should not be billed. For example, a surgery was started but aborted due to complications – there might be other ways to bill partial costs, but this particular scheduled charge might be aborted. Aborted is similar to not-billable in that it won’t be invoiced, but it specifically indicates the procedure didn’t occur as planned.  
-  - *Billed:* The charge has already been billed on an invoice ([ChargeItem - FHIR v6.0.0-ballot2](https://build.fhir.org/chargeitem-definitions.html#:~:text=The%20current%20state%20of%20the,ChargeItem)). Once an invoice including this charge is finalized (issued), the system should update the charge’s status to **billed**. This prevents the charge from being accidentally billed again on another invoice. From a UI perspective, billed items are usually locked from editing (since they’ve been sent out on an invoice).  
-  - *Entered-in-error:* The charge entry was a mistake and should be voided. Perhaps the wrong code was entered or it was a duplicate entry. Marking a Charge Item as entered-in-error means it is invalid and should not be billed or counted. The item might be hidden from normal views or shown with a strike-through. (In some systems, deletion of a charge item might be allowed if truly wrong, but often they keep it with an error status to maintain an audit trail ([ChargeItem - FHIR v6.0.0-ballot2](https://build.fhir.org/chargeitem-definitions.html#:~:text=Terminology%20Binding%20%20%2044,Summary%20true%20Comments)).)  
-  - *Unknown:* The status of the charge item isn’t known. This is uncommon in practice; it might be used if the system imported data from elsewhere and isn’t sure of the state. Generally, this would be treated similar to not-billable or would require staff resolution.
+## Schema Definition
+```json
+{
+  "id": "<str>",                      // Internal Identifier
+  "definition": "<id|fk>",            // Definition pointing to Charge Definition
+  "status": "<string>",               // planned | billable | not-billable | aborted | billed | entered-in-error | unknown
+  "code": "<code>",                   // A code that identifies the charge, like a billing code
+  "patient": "<id|fk>",               // Patient Associated with the charge
+  "encounter": "<id|fk>",             // Encounter associated with this ChargeItem
+  "facility": "<id|fk>",              // Facility where this Charge Item is created
+  "quantity": "<float>",              // Quantity of which the charge item has been serviced
+  "unitPriceComponent": [
+    "MonetaryComponent"               // Unit price components
+  ],
+  "totalPriceComponent": [
+    "MonetaryComponent"               // Total price components
+  ],
+  "total_price": {                    // Total Price in Amount
+    "Money"
+  },
+  "overrideReason": {                 // Reason for overriding the list price/factor
+    "text": "",
+    "code": "<code>"
+  },
+  "service": {                        // Why was the charged service rendered?
+    "resource": "<resource>",
+    "id": "id"
+  },
+  "account": "<id|fk>",               // Account to place this charge
+  "note": "<markdown>",               // Comments made about the ChargeItem
+  "supportingInformation": [
+    { "Reference(Any)" }              // Further information supporting this charge
+  ]
+}
+```
 
-- **Related Charge Items:** (Optional/Advanced) Sometimes one charge item may be logically grouped with others. For example, a surgical procedure might include multiple components (surgeon fee, anesthesiologist fee, operating room fee). In FHIR, ChargeItem has a `partOf` field to reference a parent charge item ([ChargeItem - FHIR v6.0.0-ballot2](https://build.fhir.org/chargeitem-definitions.html#:~:text=ChargeItem)), creating a hierarchy. In practice, our HMIS might not require explicit linking, but if it does, it could show one charge as a parent with others indented beneath it. This is more for internal grouping and doesn’t typically change billing, except perhaps to treat the whole group as one package for discounting or not-billable decisions.
+## Core Data Structure
 
-**Business Logic for Charge Items:**
-- When a new charge item is recorded as **billable**, it increases the patient’s account balance by the amount of the charge. If it’s marked not-billable or aborted, it should not affect the balance (or may even be excluded from the account’s charge list used for balance calculation, depending on implementation).
-- **Status Transitions:** A charge might move through several statuses:
-  - Planned -> Billable (when the service is done or confirmed).
-  - Billable -> Billed (once included on an invoice).
-  - Billable -> Not-billable/Aborted (if decided not to charge).
-  - Billed -> (possibly back to Billable if an invoice is cancelled; see below).
-  - Any -> Entered-in-error (if identified as wrong entry).
-- Once a charge is **billed**, it generally should not revert to **billable** unless a billing error occurred (like an invoice was cancelled). If an invoice is canceled or marked in error, the system may automatically revert its charges back to **billable** so they can be invoiced again correctly. *(Developers: implement logic that upon invoice cancellation, iterates through its charge items and sets them back to billable or whatever is appropriate, so they can be reused.)*
-- **Applicability Rules:** Charge items often must meet certain criteria to be billable. The Charge Item Definition can carry rules – for example, a certain code might only be billable if the patient is over a certain age, or only once per encounter ([ChargeItemDefinition - FHIR v6.0.0-ballot2](https://build.fhir.org/chargeitemdefinition.html#:~:text=,from%20the%20same%20billing%20system)). The system should enforce these: e.g., if a user tries to add a second charge of a type that is “only billable once per encounter,” the UI should prevent it and notify the user (instead of allowing duplicate charges). Another example: a code might require another code (e.g., a surgical fee might require an associated surgery procedure charge exists). If the prerequisite is not present, the system might warn “Cannot bill this item without XYZ also on the account.” These business rules ensure billing consistency and can reduce claim denials for incorrect coding.
-- **Price Calculation:** By default, when a charge is marked billable, the system determines its price via the linked Charge Item Definition. If any conditions (like time of service or patient age) alter the price (surcharges/discounts), those should be computed. The *total* charge amount is then stored or at least displayed. This way, when staff reviews the account or draft invoice, they see the actual dollar amounts. If a price needs to be overridden (perhaps manager approval required), it should trigger a specific workflow (like requiring an “override reason” and possibly raising a flag for review).
-- **Link to Clinical Data:** Optionally, charge items may be triggered from clinical actions. For example, when a lab test is ordered and resulted, the system could automatically generate a corresponding Charge Item. In such cases, the charge item might start as planned (when ordered) and become billable when the test is completed. This automation ensures charges aren’t missed. From a user perspective, they might just verify or adjust auto-generated charges rather than enter them all manually.
-- **Auditing and Edits:** It’s important for financial integrity that once a charge is billed or marked not-billable, it isn’t silently changed. The system should restrict editing of key fields (especially price and code) after the fact, or log any changes. For instance, if a staff corrects a quantity from 2 to 1 after initial entry, that should be tracked. If a charge was billed and needs correction, usually the proper approach is to issue an adjustment (credit) rather than editing the original charge. The HMIS may or may not support direct credit adjustments at the Charge Item level (some do via negative charges or special adjustment entries).
+### Essential Fields
 
-## Step-by-Step User Workflows (Charge Item UI)
+| Field | Description | Technical Notes |
+|-------|-------------|----------------|
+| **id** | Internal system identifier | Primary key, auto-generated |
+| **definition** | Reference to the Charge Item Definition | Links to the catalog entry for this service/item |
+| **status** | Current state in the billing lifecycle | Controls whether the item can be invoiced |
+| **code** | Billing code for the service | Often derived from the definition |
+| **patient** | Reference to the patient | Person receiving the service |
+| **encounter** | Reference to the healthcare encounter | Links to the clinical context |
+| **facility** | Reference to the healthcare facility | Location where service was provided |
+| **quantity** | Number of units provided | Default is 1 for most services |
+| **unitPriceComponent** | Price breakdown per unit | Includes base, surcharges, discounts, taxes |
+| **totalPriceComponent** | Price breakdown for all units | Unit price × quantity with all components |
+| **total_price** | Final calculated amount | Sum of all price components |
+| **account** | Reference to the billing account | Where this charge accumulates |
 
-**Adding a Charge Item (Posting a Charge):**
-1. **Identify Account/Patient:** To add a charge, the billing staff first navigates to the relevant patient’s **Account** (as described in the Account workflow). Typically, there will be an “Add Charge” button on the account’s page or a similar function in a charges module where the user selects the account/patient. 
-2. **Initiate New Charge:** The user clicks **“Add Charge”**. A charge entry form or dialog appears.
-3. **Select Service (Code):** The first field usually is to choose the service or item to charge for. This could be a dropdown or an auto-complete field tied to the **Charge Item Definitions** (the catalog of billable services). The user can type keywords or code, and select the appropriate item from the list (e.g., typing “X-Ray” shows “XRAY001 – Chest X-Ray”).  
-   - Once a code is selected, the form may auto-fill the **Description** and **Unit Price** for reference, based on the definition. For example, after choosing “XRAY001,” the description might show “Chest X-Ray (2 views)” and price “$100.”
-4. **Enter Quantity:** The user specifies the quantity if applicable. For many services, this remains “1”. For items like medication, they enter the number of units (e.g., 10 tablets). The form might have a default quantity of 1 which the user can adjust.
-5. **Verify/Enter Date:** Ensure the **Service Date** is correct. By default, it might populate with today’s date (or the encounter date). If entering charges retrospectively, the user should set the date to when the service was actually provided. For ongoing services or multi-day items, there might be start/end date fields.
-6. **Review Price:** The system calculates the total price = unit price × quantity. For instance, if unit price is $100 and quantity is 1, total is $100. This might be displayed as read-only or editable (depending on permissions). If the user has rights to override the price (e.g., apply a discount or adjust for some reason), they might be able to enter a new price or a discount percentage. In a standard workflow, price override is not common; they’d instead use predefined discount codes or mark it not-billable if waiving.
-7. **Additional Details:** If needed, the user can fill in extra fields like performing practitioner (if the form includes it), or add any note about this charge (for example, “Patient requested private room upgrade”).
-8. **Submit Charge:** The user clicks **“Save”** or **“Add”**. The system performs validations:
-   - Required fields must be present (code, quantity, date, etc.).
-   - Check any rules from the Charge Item Definition (if the system can – e.g., if this code is not allowed twice, see if it’s already on this account).
-   - If the account is on hold or inactive, the system should block this action (with a clear error as discussed).
-   - If all is well, the charge is recorded in the database.
-9. **System Response:** The new charge item now appears in the account’s charge list. It will typically show up with its details: date, description, quantity, price, and status. Initially, since this is a fresh charge, its status would likely be **billable** (because it’s ready to be billed). The account balance will instantly reflect the addition of this charge (e.g., was $0, now $100 if that was the charge).
-   - The UI might highlight newly added charges or list them in chronological order. Some systems group charges by date or category on screen for readability.
-   - If the charge item triggered any warnings (say it’s an unusual combination), the system might show those. For example, “Warning: This service is typically not done for patients under 12 (pediatric rule)” – but still allow it if user confirms. Or “Error: Duplicate charge – that item already exists for today” and refuse saving if it violates a rule.
-10. **Confirmation to User:** Possibly a toast or message “Charge added successfully” appears. Staff can then proceed to add more charges or do other tasks. Each charge item added will accumulate in the account until invoicing.
+### Status Lifecycle
 
-**Editing/Reviewing Charges:**
-- Staff can click on a charge item in the account view to see its details. If it’s in a status that is editable (e.g., billable and not yet billed), they may have an option to **Edit** or **Delete** it.
-- **Edit Charge:** Perhaps the patient’s name was spelled wrong in description or quantity was entered incorrectly. The user clicks “Edit” next to the charge. The system opens a form similar to the add form, pre-filled with the current values. The user can adjust allowable fields (maybe quantity or date; code might be locked if changes are not allowed, or maybe they can change code if they entered a wrong one initially). After saving, the changes reflect and the account balance updates if the amount changed.  
-  *(Developers: if a charge’s code is changed, that effectively is like removing one charge and adding another – consider how to audit this. Often better to require deletion and re-add to avoid confusion in records.)*
-- **Delete Charge (Entered-in-error):** If a charge was a mistake (e.g., entered on wrong patient’s account), and it hasn’t been billed yet, staff might have the ability to delete it. Upon deletion, the system might actually mark it as entered-in-error behind the scenes (to keep an audit). The UI would remove it from the visible list and adjust the account balance down accordingly. If deletion is not allowed via UI, the alternative is staff mark it “entered-in-error” if that status is provided in a dropdown. That status would exclude it from billing. In either case, once removed/marked error, the effect is the same: the patient is not billed for it. The system should log who removed it and when.
-- If a charge is already **billed** (on an invoice that was finalized), the UI will likely **not allow editing or deletion**. Instead, if a change is needed, staff would have to cancel the invoice (which reverts the charges to billable) or issue an adjustment via another process. The charge item on a billed invoice is locked to ensure the invoice remains an accurate snapshot of what was sent out.
-- **Marking Not-Billable:** As an alternative to deleting, if the service was real but they decide not to bill it, staff can edit the charge’s status to **not-billable** (if the system allows directly toggling that). The UI might provide a checkbox or status dropdown for charges (again, only if not billed yet). They would select “Not Billable” and possibly input a reason (like “included in research study” or “free re-test”). After saving, the charge would be excluded from invoices. It might appear grayed out or with a tag in the list. The account balance might immediately drop that amount (since we no longer intend to collect it). Essentially, this is a write-off of that charge.
+| Status Value | Description | System Behavior |
+|--------------|-------------|----------------|
+| **planned** | Service is scheduled but not yet provided | Not counted in account balance; not billable |
+| **billable** | Service provided and ready to bill | Included in account balance; can be invoiced |
+| **not-billable** | Service provided but won't be billed | Not included in account balance; excluded from invoices |
+| **aborted** | Service was not completed | Not included in account balance; excluded from invoices |
+| **billed** | Charge included on an invoice | Included in account balance; cannot be invoiced again |
+| **entered-in-error** | Charge was created by mistake | Excluded from all calculations and invoices |
 
-**Automatic Charge Generation:** (Just for context, not a user action)
-- Some charges might appear automatically. For instance, if the system is integrated with an order entry system, when a lab test is marked completed, a charge item could be auto-posted. In such cases, the billing staff’s role is to **review** these auto-posted charges for accuracy. The workflow would be:
-  - The charge shows up on the account (maybe flagged as new or unreviewed).
-  - Staff checks that it has the correct code and quantity. If something’s off (e.g., a test was cancelled but charge still posted), they can adjust status or remove it.
-  - If everything is correct, they don’t need to do anything further; it will flow into the invoice. This reduces manual data entry.
 
-**Charge Review & Approval:** (If applicable)
-- In some hospital workflows, especially for complex cases, charges might be entered by clinical staff and then reviewed by billing staff before invoicing. The system might use the **planned** status for preliminary entries. For example, a nurse enters the items used during a surgery into the system as planned charges. A billing specialist later reviews and switches them to **billable** once verified. In our HMIS UI, this could be done by listing planned charges and providing an “Approve” action that changes their status to billable (and perhaps assigns prices).
-- The UI could also allow batch actions, e.g., select multiple charges and mark all as not-billable or move to billable, etc., if many need updating at once.
+## User Workflows
 
-## Developer Notes (Charge Item Logic & Validation)
-- **Database Model:** Each ChargeItem record should store references to the account (account_id), possibly the definition (charge_code or an ID linking to ChargeItemDefinition), quantity, and an amount. If following FHIR strictly, you might store only the reference to ChargeItemDefinition and not the price, but practically storing the calculated price is useful for consistent reporting (especially if prices can change in the catalog later; you’d want the charge to reflect the price at time of service).
-- **Status Field Enforcement:** Use enumerated values for status (to avoid free-text). Enforce via business logic:
-  - Only certain transitions are allowed (e.g., can go from billable to billed, but not from billed back to billable unless an invoice is undone).
-  - If a user tries an invalid transition, throw an error.
-  - If using FHIR codes, map them appropriately (e.g., “billed” corresponds to FHIR’s *billed* status code ([ChargeItem - FHIR v6.0.0-ballot2](https://build.fhir.org/chargeitem-definitions.html#:~:text=The%20current%20state%20of%20the,ChargeItem))).
-- **Pricing Engine:** Implement logic to fetch and apply ChargeItemDefinition when a charge is created or edited:
-  - On charge save (if new or if code changed), retrieve the base price from the definition table.
-  - Check for any applicable *price modifiers*: for example, if the definition indicates “after hours surcharge +20%” and the service date is 10pm, you might calculate that and either adjust the price or perhaps add an additional charge item for the surcharge. FHIR’s design would use a PriceComponent in Invoice for transparency ([Invoice - FHIR v6.0.0-ballot2](https://build.fhir.org/invoice.html#:~:text=balanced%20with%20this%20Invoice%20account,to%20the%20recipient%20of%20the)), but in our system we might simply adjust the price or create a separate predefined surcharge item.
-  - Ensure the final price is stored or at least ready to be displayed. 
-  - If an override is allowed, set a flag (so we know this price didn’t follow standard rules).
-  - Consider rounding issues (especially if percentages involved).
-- **Rule Enforcement:** The ChargeItemDefinition might contain rules (applicability conditions) ([ChargeItemDefinition - FHIR v6.0.0-ballot2](https://build.fhir.org/chargeitemdefinition.html#:~:text=Many%20billing%20systems%20have%20rules,Rules%20for%20applicability%20may%20include)). To implement these:
-  - E.g., “once per encounter” – before saving a new charge, query if another charge with the same code exists on the same account (and perhaps same encounter). If yes, block or warn.
-  - “Only in outpatient setting” – if the account type is inpatient and the code is outpatient-only, then prevent adding it (or warn and require override authorization).
-  - “Only for age < 14” – check patient’s DOB against service date, calculate age, enforce accordingly.
-  - “Must accompany code X” – if code Y is added, verify code X is also on the account (maybe in planned or billable). If not, warn like “Code Y typically requires code X. Please ensure X is also added if appropriate.”
-  - These checks can be complex. A simpler implementation is to warn the user to review, rather than outright block, in some cases. But critical ones (like duplicate charge that will definitely cause issues) should be blocked.
-  - Document any override capability: perhaps a supervisor can override and add a duplicate charge if absolutely needed.
-- **Batch Operations:** Provide efficient ways to update statuses in bulk (for backend processing). For example, when an Invoice is finalized containing N charges, instead of updating each charge in a slow loop, use a batch update query to set all their statuses to billed in one go, for performance and consistency.
-- **Integrity with Invoice:** When generating an invoice, ensure only charges with status **billable** (and belonging to the account) are considered. Mark them billed atomically with invoice creation. If invoice creation fails halfway, no charge should remain incorrectly marked as billed – handle rollback.
-- **Concurrency:** If two users try to bill the same account simultaneously (rare but possible in large systems), or one is adding charges while another is invoicing, you need to handle it:
-  - Potential solution: lock the account or the involved charges during invoice generation.
-  - Or check right before finalizing invoice that none of the charges were already billed by another process (and if they were, refresh the list).
-  - This prevents double-billing or missing charges.
-- **Entered-in-error vs Deletion:** Decide how to implement charge removal. The FHIR way would mark entered-in-error ([ChargeItem - FHIR v6.0.0-ballot2](https://build.fhir.org/chargeitem-definitions.html#:~:text=Terminology%20Binding%20%20%2044,Summary%20true%20Comments)). If you choose to allow deletion in the UI, consider still keeping a record behind the scenes. Perhaps have a deleted flag or move the record to an audit log table. This avoids data loss which could be important if someone asks “Why was patient billed then credit given?” 
-- **Logging:** Log who added each charge and when. If changes are made (status change, price override, deletion), log those actions too (user ID, timestamp, old vs new values). This is crucial for auditing and resolving disputes (e.g., “why was this charge removed?”).
-- **Link to Orders:** If integrated, maintain reference IDs to clinical orders or procedures that generated the charge, if applicable. This can help trace back from a bill to the clinical event.
-- **Future Dating/Planned Items:** If a charge is marked planned (for a future procedure), you might want an automated job or trigger: when the date arrives or the procedure is completed, automatically flip it to billable. Alternatively, require manual confirmation. Ensure planned items don’t inadvertently slip into invoices without review (maybe the invoice generation code filters them out unless explicitly told to include planned ones).
-- **Data Exposure:** If there is an API or external reporting, ensure that sensitive charges (like those marked not-billable or error) are either clearly flagged or filtered out as needed to avoid confusion.
-- **Calculate Totals by Category:** Some invoices might group charges by type (e.g., Room charges vs Medications). If needed, tag Charge Items with categories (possibly derived from the definition) to facilitate such grouping on invoices or statements.
-- **FHIR Note:** In FHIR R4+, ChargeItem is a resource and can reference ChargeItemDefinition for price. If aligning with FHIR, consider using the `$apply` operation at runtime to let a rules engine calculate price components ([ChargeItemDefinition - FHIR v6.0.0-ballot2](https://build.fhir.org/chargeitemdefinition.html#:~:text=A%20billing%20engine%20will%20apply,Operation)). This could be a more dynamic but heavier approach. For a simpler HMIS, custom code as described above is likely sufficient.
+### Editing or Canceling a Charge
+- If a charge is still **billable** (and not on an issued invoice), staff can adjust quantity, override price, or mark it **not-billable**.  
+- If it is **billed** (already invoiced), any correction typically requires reversing that invoice or adding a credit note.  
+- Marking **entered-in-error** will remove it from the account’s balance. Log who performed this action.
+
+### Automatic Charge Creation
+- The system will automatically create charges when certain clinical events occur (e.g., lab test result posted). Staff can still review them before they become “billable.”

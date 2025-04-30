@@ -31,6 +31,18 @@ This resource allows your HMIS to automatically derive the appropriate cost of a
 }
 ```
 
+### Monetary Component Definition
+```json
+{
+  "type": "<string>",           // base | surcharge | discount | tax | informational
+  "code": "<code>",             // Codes to differentiate taxes, surcharges, discounts etc.
+  "factor": "<decimal>",        // Factor used for calculating this component
+  "amount": {
+    "value": "<decimal>",       // Numerical value (with implicit precision)
+    "currency": "<string>"      // ISO 4217 Currency Code
+  }
+}
+```
 ## Core Data Structure
 
 ### Essential Fields
