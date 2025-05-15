@@ -3,10 +3,9 @@
 This document lists the standard workflows that will be supported offline.  
 Each workflow has an associated markdown table that defines the structure, HTTP method, and other important information about the API endpoints involved.
 
-In the tables, backend API endpoints are clearly distinguished based on whether they will be **cached at the Service Worker level** or **stored and later synced via IndexedDB (for write operations).**
+In the tables, backend API endpoints are clearly distinguished based on whether they will be **cached** or **stored and later synced via IndexedDB (for write operations).**
 
-These  tables give us idea about which  dynamic data need to be cached for offlien support   and will helps us  for route registration in workbox.
-
+These  tables give us idea about which  dynamic data need to be cached for offlien support   and help to avoid store unnecessary data.
 ---
 
 ## Standard Workflows
@@ -21,7 +20,7 @@ These  tables give us idea about which  dynamic data need to be cached for offli
 ## 1. Patient Registration and Search Patient Workflow
 Patient registration and search patient workflow include add new patient and search patient by its mobile number.After click on one of the search patient ,user go to page from where they can create encounter,schedule appointments,see encounters list of that patient.This table mainly include endpoints regarding add patient and search patient only . create encounter,list encounter come under the encounter management and schedule appointment come under the appointment management.
 
- pattern of Read only Api that going to be cached using workbox:
+ pattern of Read only Api that going to be cached :
  1. URL starts with `/api/v1/getcurrentuser`          
  2. URL starts with `/api/v1/organization`          
  3. URL matches `/api/v1/facility/:facilityId/`       
@@ -47,7 +46,7 @@ Patient registration and search patient workflow include add new patient and sea
 
 This workflow include list down encounters on the encounter page , create/update  encounter. It include  filling questionnair available on encounter page . user can see  allregies,symptoms,diagnones and medication statements. 
 
-pattern of Read only Api that going to be cached using workbox:
+pattern of Read only Api that going to be cached:
  1. URL starts with `/api/v1/encounter`                       
  2. URL matches `/api/v1/facility/:facilityId/organizations`  
  3. URL starts with `/api/v1/valueset`                        
@@ -87,7 +86,7 @@ pattern of Read only Api that going to be cached using workbox:
 This workflow include  access patient profile and including appointments, encounters, health data, resources, users.  
 
 
-pattern of Read only Api that going to be cached using workbox:
+pattern of Read only Api that going to be cached:
  1. URL starts with `/api/v1/users/`                        
  2. URL matches `/api/v1/patient/:patientId/`               
  3. URL matches `/api/v1/patient/:patientId/get_users/`
