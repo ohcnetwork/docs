@@ -145,3 +145,75 @@ It include View, create, and manage appointments for a facility.
 | 13   | Update appointment details (status, notes, etc.)      | PUT    | `/api/v1/facility/{facilityId}/appointments/{appointmentId}/`          | Store & Sync (IndexedDB)     | Queue update locally and will sync later                   |
 | 14   | Cancel an appointment                                 | POST   | `/api/v1/facility/{facilityId}/appointments/{appointmentId}/cancel/`   | Store & Sync (IndexedDB)     | Queue cancel request locally and will sync later            | 
 | 15   | Get list of appointments of a patient                 | GET    | `/api/v1/facility/{facilityid}/appointments/?patient={patientid}&limit=100`     | cache(SW)                    | sw(workbox) will handle caching of dynamic data comig from this api     |
+
+
+
+# Approaches for Caching Read-Only APIs and Syncing Write Operations
+
+When we talk about adding offline functionality to our apps, there are several methods to achieve this. Each approach is implemented differently, but they all share one common goal: caching read-only API data locally so the UI can operate offline.
+
+The approaches discussed here focus primarily on caching API responses. Our UI shell is already cached by default since CARE is a PWA.
+
+Below, we outline some of the approaches we can use to achieve offline functionality for the workflows we’ve discussed.
+
+---
+
+### 1. Using TanStack Query Cache with Persistence
+
+This approach plays around using TanStack Query to cache the API responses and sync write operations once the app comes back online. Persistence, in this context, here means to store the cached data into some local DB (e.g., IndexedDB). Since CARE already uses TanStack Query for fetch and write operations, integrating persistence and offline syncing becomes relatively straightforward. This approach leverages existing infrastructure, reducing the need for additional caching logic or custom data handling. Now let's discuss what configuration needs to be implemented for this approach.
+
+#### 1. Persister:
+It is the mechanism that defines how and where the data is saved/restored. TanStack provides some persisters like `createSyncStoragePersister` for mainly localStorage and `createAsyncStoragePersister` for AsyncStorage. It also provides a method to create a custom persister. We will create a custom persister for IndexedDB(via dexie.js) for our use case.
+
+#### 2. cacheTime:
+For persist to work properly, we  have to  pass `QueryClient` a `cacheTime`. `cacheTime` should be set as the same value or higher than `persistQueryClient`'s `maxAge` option.
+
+#### 3. Cache Busting:
+It is a mechanism to forcefully invalidate old cached data, typically after app updates or changes to data structure. By setting a unique buster string (like a version ID), previously persisted caches without the matching string are discarded. This ensures users always get fresh data after critical changes.
+
+#### 4. PersistQueryClientProvider:
+`PersistQueryClientProvider` is a React wrapper around our normal `QueryClientProvider` that automatically restores persisted cache on mount and keeps it in sync through subscribe/unsubscribe. It prevents our queries from fetching until the cache is hydrated, ensuring a smooth offline‑first experience.
+
+
+Reference for technical implementation: [TanStack Docs](https://tanstack.com/query/v4/docs/framework/react/plugins/persistQueryClient)
+
+---
+
+### 2. Using Service Worker (Workbox) with Manual Sync for Offline Functionality
+
+This approach uses a Service Worker powered by Workbox to cache GET requests and store write operations locally (e.g., in IndexedDB). Write operations are manually synced only when the web application is active and the network is available. This gives full control over when syncs are triggered, avoiding unnecessary background processes. Now let's discuss what configuration needs to be implemented for this approach.
+
+#### 1. Workbox Routing:
+It provides utilities to intercept and handle network requests in the service worker. We have to define routing logic based on request methods and URLs. Above API tables provide info about which types of URLs we have to intercept to store them in cache storage. GET responses are stored in cache storage instead of storage like IndexedDB.  
+Each route should be registered with an appropriate caching strategy using `registerRoute()`.
+
+#### 2. Caching Strategies:
+Workbox provides many strategies that define how responses should be handled for intercepted requests. A few common strategies that Workbox provides are:
+
+- **Stale-while-revalidate:**  
+  The stale-while-revalidate pattern allows you to respond to the request as quickly as possible with a cached response if available, falling back to the network request if it's not cached. The network request is then used to update the cache.
+
+- **Cache first:**  
+  If there is a Response in the cache, the Request will be fulfilled using the cached response and the network will not be used at all. If there isn't a cached response, the Request will be fulfilled by a network request and the response will be cached so that the next request is served directly from the cache.
+
+- **Network first:**  
+  For requests that are updating frequently, the network first strategy is the ideal solution. By default, it will try to fetch the latest response from the network. If the request is successful, it'll put the response in the cache. If the network fails to return a response, the cached response will be used.
+
+#### 3. IndexedDB (via Dexie.js):
+It will be used to store write operations (like form submissions) that fail due to network issues. We will manually store these requests and later retrieve them for syncing. And we are going to use the Dexie.js wrapper that is built on top of IndexedDB to reduce complexity. Each queued request should include all relevant data (URL, method, headers, body) needed to retry the operation later.
+
+#### 4. Manual Sync Logic:
+Instead of using Workbox’s `BackgroundSyncPlugin`, write sync logic that checks `navigator.onLine` and retries queued requests only when:
+
+- The app is open (user is active and logged in)
+- The network is restored
+
+If we use manual sync logic, we can use existing API routes that are already defined in the codebase using TanStack Query.
+
+
+
+
+       
+
+
+
