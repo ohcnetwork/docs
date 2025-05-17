@@ -211,7 +211,11 @@ Instead of using Workbox’s `BackgroundSyncPlugin`, write sync logic that check
 If we use manual sync logic, we can use existing API routes that are already defined in the codebase using TanStack Query.
 
 
+Few point to be consider in these approches : 
 
+- For read-only POST APIs, TanStack Query automatically caches responses by treating them as queries, while Workbox requires manual implementation since it doesn't cache POST requests by default (unlike GET requests which are cached automatically)
+
+- In TanStack Query’s cache, we must carefully configure staleTime. While online, staleTime should remain its normal (short) value, but when offline it needs to be set to nearly the same value as cacheTime so that cached data doesn’t become stale during offline use. However, staleTime is only read once—when a query is initialized—so simply changing our network status won’t update it. That means if we set staleTime to match cacheTime to preserve offline behavior, our online behavior will no longer work as it did before.
 
        
 
