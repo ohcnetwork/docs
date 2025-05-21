@@ -146,76 +146,95 @@ It include View, create, and manage appointments for a facility.
 | 14   | Cancel an appointment                                 | POST   | `/api/v1/facility/{facilityId}/appointments/{appointmentId}/cancel/`   | Store & Sync (IndexedDB)     | Queue cancel request locally and will sync later            | 
 | 15   | Get list of appointments of a patient                 | GET    | `/api/v1/facility/{facilityid}/appointments/?patient={patientid}&limit=100`     | cache(SW)                    | sw(workbox) will handle caching of dynamic data comig from this api     |
 
+## Key Assumptions and Design Considerations for Offline Mode :
+ 
+ Before implementing offline support, it’s essential to define how the application determines internet connectivity and how it behaves in various online/offline scenarios. This document outlines the design assumptions and expected behavior around connection status handling.
+
+ We use a real server connectivity check instead of navigator.onLine. This involves pinging a known backend endpoint (e.g., /ping) and marking the user as offline if the server is unreachable.
+
+ We maintain a global state variable isOnline to represent the app’s understanding of the user’s connectivity. This value can be:
+ - set based on real server checks during page reload and websites open .
+ - Manually overridden by the user via a toggle.
+
+ ### Offline Mode Toggle Button
+ The app provides an "Enable Offline Mode" toggle button in the UI.This gives users control when internet conditions are unstable, allowing them to continue working in offline mode without interruptions.
+ 
+ we Use an Explicit `isOnline` State Instead of Just Runtime Checks because Automatic checks can flicker rapidly when internet connectivity is poor (e.g., intermittent mobile data). This can cause unpredictable app behavior, like failed fetches or UI state inconsistencies. Manual offline mode offers a **clear and consistent user experience**. Users understand when they're offline and what features are expected to work
+
+ - Enabled = isOnline = false: User manually forces the app into offline mode to prevent unstable behavior during intermittent   connectivity.
+ - Disabled = isOnline = true: The app will attempt to connect to the server normally.
+
+### Behavior on App Load and Connectivity Events
+
+#### 1. App Launch (Fresh Tab Open)
+- On opening the app, `checkRealServer()` is called.
+- If the server is reachable → `isOnline = true` or If unreachable → `isOnline = false`..
+- Ensures `isOnline` reflects real connectivity at startup.
+---
+
+#### 2. Login Attempt During Poor Connectivity
+- If the user is **not logged in** and connectivity is poor,then Login may fail:
+- App offers **fallback login** using last cached profile (if available).
+- It  Allows access even when login fails due to network issues.
+---
+
+#### 3. User Goes Offline During Active Session
+  - If already logged in and internet becomes unstable:
+  - User can toggle **offline mode manually** → `isOnline = false`.
+  - Enables offline features (e.g., cached reads, local writes).
+---
+
+#### 4. Page Reload or Tab Reopen
+- On reload or reopening , `checkRealServer()` runs again and Updates `isOnline` state.:
+- Notifies user of current connection status.
+- Even if user previously forced offline mode, connection is revalidated.
+
+### Role based caching , when multiple users access the app on the same device
+- As Care have role based access control, we  have  to ensure that if multiple user access the app on same device  then their data of one user does not override the other user data while caching. Its necessary because permissions are come from backend via api based on user. For example, the getCurrentUser API returns a list of permissions specific to the logged-in user. If this response is cached and a different user logs in, their permissions could overwrite the previous user's data. Later, if the first user tries to use the app offline, they might see incorrect permissions or data from the second user.
+
+so to ovrcome this problem we have to cache data per user. we will discussed its solution in approache's section.
 
 
-# Approaches for Caching Read-Only APIs and Syncing Write Operations
-
-When we talk about adding offline functionality to our apps, there are several methods to achieve this. Each approach is implemented differently, but they all share one common goal: caching read-only API data locally so the UI can operate offline.
-
-The approaches discussed here focus primarily on caching API responses. Our UI shell is already cached by default since CARE is a PWA.
-
-Below, we outline some of the approaches we can use to achieve offline functionality for the workflows we’ve discussed.
+# Now Lets Discussed Approches to achive offline Support :
+ The approaches discussed here focus primarily on caching API responses. Our UI shell is already cached by default since CARE is a PWA. Below are some of the approaches we can use to achieve offline functionality for the workflows we’ve discussed.
 
 ---
 
 ### 1. Using TanStack Query Cache with Persistence
-
 This approach plays around using TanStack Query to cache the API responses and sync write operations once the app comes back online. Persistence, in this context, here means to store the cached data into some local DB (e.g., IndexedDB). Since CARE already uses TanStack Query for fetch and write operations, integrating persistence and offline syncing becomes relatively straightforward. This approach leverages existing infrastructure, reducing the need for additional caching logic or custom data handling. Now let's discuss what configuration needs to be implemented for this approach.
 
 #### 1. Persister:
 It is the mechanism that defines how and where the data is saved/restored. TanStack provides some persisters like `createSyncStoragePersister` for mainly localStorage and `createAsyncStoragePersister` for AsyncStorage. It also provides a method to create a custom persister. We will create a custom persister for IndexedDB(via dexie.js) for our use case.
 
-#### 2. cacheTime:
-For persist to work properly, we  have to  pass `QueryClient` a `cacheTime`. `cacheTime` should be set as the same value or higher than `persistQueryClient`'s `maxAge` option.
+ We just need to create a createDbPersister() function that returns our custom persister. Inside this function, we define a single cache key under which the entire React Query cache will be stored. The function should implement three methods — `persistClient()`, `restoreClient()`, and `removeClient()` — following the rules to create a custom persister for React Query.
 
-#### 3. Cache Busting:
-It is a mechanism to forcefully invalidate old cached data, typically after app updates or changes to data structure. By setting a unique buster string (like a version ID), previously persisted caches without the matching string are discarded. This ensures users always get fresh data after critical changes.
+When online, data fetched using useQuery is stored in the in-memory cache and also persisted to IndexedDB via this custom persister. When offline, the cached data stored in IndexedDB (using Dexie.js) is automatically hydrated back into the in-memory cache. TanStack Query then manages the cache seamlessly, providing offline support without extra effort.
+
+#### 2. cacheTime(or  gcTime) and maxage:
+For persist to work properly, we  have to  pass `QueryClient` a `cacheTime`. `cacheTime` should be set as the same value or higher than `persistQueryClient`'s `maxAge` option. 
+
+- `cacheTime` defines how long inactive cached data stays in memory before being garbage collected. This means the data remains available for queries without refetching during this time, even if not actively used. 
+- `maxAge` (used in persistQueryClient) determines how long the persisted cache data remains valid and can be restored from storage.
 
 #### 4. PersistQueryClientProvider:
 `PersistQueryClientProvider` is a React wrapper around our normal `QueryClientProvider` that automatically restores persisted cache on mount and keeps it in sync through subscribe/unsubscribe. It prevents our queries from fetching until the cache is hydrated, ensuring a smooth offline‑first experience.
 
+ **lets discuss how to overcome the problem of cache mixing when multiple user use same device :** TanStack Query caches all API data fetched via useQuery. To avoid mixing cached data between different users, include the userId as part of the queryKey along with other parameters. Since TanStack Query stores cache data based on the queryKey (not just the URL), adding userId creates distinct cache entries even if the API endpoint (URL) is the same. This ensures each user’s data is cached separately.
+ (Unlike Workbox, which caches based on URL, TanStack Query relies on the uniqueness of the query key.)
+ 
+ **Note:** To avoid unnecessary refetch attempts when offline, configure useQuery with enabled: isOnline === true. This way, during online mode, staleTime can remain 0 to always fetch fresh data. When offline, the query is disabled (enabled: false), so cached data is used without triggering refetches that would fail.
+ This approach keeps the default online behavior unchanged while ensuring smooth offline caching without forced stale data refetches.
 
-Reference for technical implementation: [TanStack Docs](https://tanstack.com/query/v4/docs/framework/react/plugins/persistQueryClient)
+ Main advantages of this approches is :
+ - It will cache data coming from api that was fetch using useQuery irrespective of operation we use(eg.GET,POST).But Approches like workbox does not provide such option's they will cache only get api responses not read only post responses.
+ - As Care is already using tanstack query it become easy to implement this approch in the CARE. we dont have to write 
+ - Give option to separate cached data based on user by using just single userid in query key.But if we use aproches like workbox we have to add userid in url to  store data in cache based on url, it can increase  complexity.
 
----
-
-### 2. Using Service Worker (Workbox) with Manual Sync for Offline Functionality
-
-This approach uses a Service Worker powered by Workbox to cache GET requests and store write operations locally (e.g., in IndexedDB). Write operations are manually synced only when the web application is active and the network is available. This gives full control over when syncs are triggered, avoiding unnecessary background processes. Now let's discuss what configuration needs to be implemented for this approach.
-
-#### 1. Workbox Routing:
-It provides utilities to intercept and handle network requests in the service worker. We have to define routing logic based on request methods and URLs. Above API tables provide info about which types of URLs we have to intercept to store them in cache storage. GET responses are stored in cache storage instead of storage like IndexedDB.  
-Each route should be registered with an appropriate caching strategy using `registerRoute()`.
-
-#### 2. Caching Strategies:
-Workbox provides many strategies that define how responses should be handled for intercepted requests. A few common strategies that Workbox provides are:
-
-- **Stale-while-revalidate:**  
-  The stale-while-revalidate pattern allows you to respond to the request as quickly as possible with a cached response if available, falling back to the network request if it's not cached. The network request is then used to update the cache.
-
-- **Cache first:**  
-  If there is a Response in the cache, the Request will be fulfilled using the cached response and the network will not be used at all. If there isn't a cached response, the Request will be fulfilled by a network request and the response will be cached so that the next request is served directly from the cache.
-
-- **Network first:**  
-  For requests that are updating frequently, the network first strategy is the ideal solution. By default, it will try to fetch the latest response from the network. If the request is successful, it'll put the response in the cache. If the network fails to return a response, the cached response will be used.
-
-#### 3. IndexedDB (via Dexie.js):
-It will be used to store write operations (like form submissions) that fail due to network issues. We will manually store these requests and later retrieve them for syncing. And we are going to use the Dexie.js wrapper that is built on top of IndexedDB to reduce complexity. Each queued request should include all relevant data (URL, method, headers, body) needed to retry the operation later.
-
-#### 4. Manual Sync Logic:
-Instead of using Workbox’s `BackgroundSyncPlugin`, write sync logic that checks `navigator.onLine` and retries queued requests only when:
-
-- The app is open (user is active and logged in)
-- The network is restored
-
-If we use manual sync logic, we can use existing API routes that are already defined in the codebase using TanStack Query.
+ #### sync and write operation in this approah : 
 
 
-Few point to be consider in these approches : 
 
-- For read-only POST APIs, TanStack Query automatically caches responses by treating them as queries, while Workbox requires manual implementation since it doesn't cache POST requests by default (unlike GET requests which are cached automatically)
 
-- In TanStack Query’s cache, we must carefully configure staleTime. While online, staleTime should remain its normal (short) value, but when offline it needs to be set to nearly the same value as cacheTime so that cached data doesn’t become stale during offline use. However, staleTime is only read once—when a query is initialized—so simply changing our network status won’t update it. That means if we set staleTime to match cacheTime to preserve offline behavior, our online behavior will no longer work as it did before.
 
        
 
