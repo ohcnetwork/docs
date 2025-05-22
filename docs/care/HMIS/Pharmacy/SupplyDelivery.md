@@ -1,6 +1,6 @@
 # Supply Delivery
 
-### 📋 Summary
+### Summary
 
 The **Supply Delivery** resource in the CARE system records the delivery of healthcare-related items, such as medications, devices, or other supplies, to a specified location. It serves as a critical component in inventory management, ensuring accurate tracking of stock levels within healthcare facilities.
 
@@ -8,7 +8,7 @@ This resource aligns with FHIR's [SupplyDelivery](https://build.fhir.org/supplyd
 
 ---
 
-### 🎯 Key Purpose
+### Key Purpose
 
 - Document the delivery of healthcare items to specific locations.
 - Facilitate inventory management by updating stock levels upon delivery.
@@ -17,7 +17,7 @@ This resource aligns with FHIR's [SupplyDelivery](https://build.fhir.org/supplyd
 
 ---
 
-### 🧱 Core Data Structure – Essential Fields
+### Core Data Structure – Essential Fields
 
 - **`supply_request`**: Reference to the associated Supply Request.
 - **`status`**: Current status of the delivery (e.g., in-progress, completed, abandoned, entered-in-error).
@@ -32,7 +32,7 @@ This resource aligns with FHIR's [SupplyDelivery](https://build.fhir.org/supplyd
 
 ---
 
-### 🔗 Core Relationships
+### Core Relationships
 
 | Field            | Reference Resource | Description                                  |
 | ---------------- | ------------------ | -------------------------------------------- |
@@ -43,7 +43,7 @@ This resource aligns with FHIR's [SupplyDelivery](https://build.fhir.org/supplyd
 
 ---
 
-### 📄 Supported Fields
+### Supported Fields
 
 **Status Codes:**
 
@@ -66,7 +66,7 @@ This resource aligns with FHIR's [SupplyDelivery](https://build.fhir.org/supplyd
 
 ---
 
-### 🔁 Functional Workflow
+### Functional Workflow
 
 1. **Initiation**: A Supply Request is finalized, prompting the creation of a corresponding Supply Delivery with the stage set to "dispatched."
 2. **Dispatch**: Items are deducted from the inventory of the origin location upon dispatch.

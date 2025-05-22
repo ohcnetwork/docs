@@ -1,12 +1,12 @@
 # Charge Item
 
-### 📋 Summary
+### Summary
 
 The **Charge Item** resource in the CARE system captures financial details associated with services rendered or products supplied to a patient. It serves as a self-contained record, detailing the origin of the charge, the amount, applied discounts, taxes, and other relevant financial information.
 
 ---
 
-### 🎯 Key Purpose
+### Key Purpose
 
 - Document financial charges for services or products provided to patients.
 - Enable automated billing processes by linking clinical activities to financial records.
@@ -33,7 +33,7 @@ The **Charge Item** resource in the CARE system captures financial details assoc
 | **total_price**         | Final calculated amount                 | Sum of all price components                      |
 | **account**             | Reference to the billing account        | Where this charge accumulates                    |
 
-### 📄 Supported Fields
+### Supported Fields
 
 **Monetary Component:**
 
@@ -44,7 +44,7 @@ The **Charge Item** resource in the CARE system captures financial details assoc
 
 ---
 
-### 🔁 Functional Workflow
+### Functional Workflow
 
 1. **Charge Item Creation**: When a service is rendered or a product is supplied, a Charge Item is automatically generated, capturing all relevant financial details.
 2. **Association with Encounter and Account**: The Charge Item is linked to the specific patient encounter and their billing account, ensuring accurate financial tracking.

@@ -1,6 +1,6 @@
 # Supply Request
 
-### 📋 Summary
+### Summary
 
 The **Supply Request** resource in the CARE system represents a formal request for the provision of healthcare-related items such as medications, devices, or other supplies. It serves as the initial step in the supply chain workflow, capturing the intent to procure or transfer items within or between facilities.
 
@@ -8,7 +8,7 @@ This resource aligns with FHIR's [SupplyRequest](https://build.fhir.org/supplyre
 
 ---
 
-### 🎯 Key Purpose
+### Key Purpose
 
 - Initiate requests for the supply of healthcare items.
 - Facilitate inventory management by tracking requested items.
@@ -17,7 +17,7 @@ This resource aligns with FHIR's [SupplyRequest](https://build.fhir.org/supplyre
 
 ---
 
-### 🧱 Core Data Structure – Essential Fields
+### Core Data Structure – Essential Fields
 
 - **`id`**: Unique identifier for the supply request.
 - **`status`**: Current status of the request (e.g., draft, active, suspended, completed, entered-in-error, cancelled).
@@ -35,7 +35,7 @@ This resource aligns with FHIR's [SupplyRequest](https://build.fhir.org/supplyre
 
 ---
 
-### 🔗 Core Relationships
+### Core Relationships
 
 | Field         | Reference Resource         | Description                                |
 | ------------- | -------------------------- | ------------------------------------------ |
@@ -47,7 +47,7 @@ This resource aligns with FHIR's [SupplyRequest](https://build.fhir.org/supplyre
 
 ---
 
-### 📄 Supported Fields
+### Supported Fields
 
 **Status Codes:**
 
@@ -67,7 +67,7 @@ This resource aligns with FHIR's [SupplyRequest](https://build.fhir.org/supplyre
 
 ---
 
-### 🔁 Functional Workflow
+### Functional Workflow
 
 1. **Request Initiation**: A supply request is created by a practitioner or organization, specifying the item, quantity, and delivery details.
 2. **Review and Approval**: The request is reviewed and approved by the appropriate authority within the facility.
