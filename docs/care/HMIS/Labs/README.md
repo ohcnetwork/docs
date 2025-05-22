@@ -1,7 +1,6 @@
-# Labs
+# Labs & Diagnostics Module
 
-Labs & Diagnostics Module
-This overview provides a high-level understanding of how diagnostic workflows are structured in CARE — from test orders to sample collection, result entry, and billing. The subsequent pages detail each resource and its role in the system.
+This overview provides a high-level understanding of how diagnostic workflows are structured in CARE — from test orders to sample collection, report generation and recording observations. The subsequent pages detail each resource and its role in the system.
 
 ## Key Concepts
 

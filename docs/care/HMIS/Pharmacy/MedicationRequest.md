@@ -23,20 +23,6 @@ A [**MedicationRequest**](https://hl7.org/fhir/medicationrequest.html) is an ord
 
 ---
 
-### Supported Status Values
-
-- **active**: The prescription is active and should be fulfilled.
-- **on-hold**: The prescription is temporarily suspended.
-- **ended**: The prescription is no longer active, and the medication should not be taken.
-- **stopped**: The prescription was stopped before completion.
-- **completed**: The prescription has been fully completed.
-- **cancelled**: The prescription was cancelled before any administration.
-- **entered-in-error**: The prescription was entered in error.
-- **draft**: The prescription is in draft status and not yet active.
-- **unknown**: The status of the prescription is unknown.
-
----
-
 ### Core Relationships
 
 | Field        | Reference Resource | Description                                              |
@@ -50,21 +36,19 @@ A [**MedicationRequest**](https://hl7.org/fhir/medicationrequest.html) is an ord
 
 ### Supported Fields
 
-| Field Name          | Type            | Description                                              |
-| ------------------- | --------------- | -------------------------------------------------------- |
-| `identifier`        | Identifier      | Unique identifier for the prescription.                  |
-| `status`            | code            | The current status of the prescription.                  |
-| `statusReason`      | string          | Reason for the current status.                           |
-| `intent`            | code            | The intent of the prescription (e.g., order).            |
-| `priority`          | code            | Priority of the prescription.                            |
-| `doNotPerform`      | boolean         | Indicates if the medication should not be given.         |
-| `category`          | code            | Category of the prescription (e.g., outpatient).         |
-| `medication`        | CodeableConcept | The medication being prescribed.                         |
-| `subject`           | Reference       | The patient for whom the medication is prescribed.       |
-| `encounter`         | Reference       | The encounter during which the prescription was created. |
-| `authoredOn`        | dateTime        | When the prescription was authored.                      |
-| `dosageInstruction` | Dosage          | Instructions on how the medication should be taken.      |
-| `note`              | string          | Additional notes about the prescription.                 |
+| Field Name     | Type          | Description                              |
+| -------------- | ------------- | ---------------------------------------- |
+| `Medicine`     | string        | Medicine name                            |
+| `Dosage`       | string        | Dosage suggested                         |
+| `Frequency`    | string        | Frequency of medication                  |
+| `Duration`     | string        | Duration of medicine administration      |
+| `Instructions` | text          | Additional instructions                  |
+| `Route`        | text          | Administration route                     |
+| `Site`         | text          | Body site                                |
+| `Method`       | text          | Administration method                    |
+| `Intent`       | text          | Medicine intent                          |
+| `Authored_on`  | date and time | Prescribed on                            |
+| `Note`         | text          | Additional notes about the prescription. |
 
 ---
 

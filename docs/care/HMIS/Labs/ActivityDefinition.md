@@ -2,8 +2,6 @@
 
 In CARE, `ActivityDefinition` is used to define reusable **templates for clinical actions**, such as lab tests or medication requests. Each definition standardizes how a particular diagnostic activity should be instantiated at runtime — enabling consistent behavior across service requests and automated billing.
 
-Although based on the FHIR `ActivityDefinition` resource, CARE tailors it to fit real-world facility workflows, especially for diagnostic and lab use cases. In the current scope, these templates primarily support `ServiceRequest` and `MedicationRequest`. Future versions may include orchestration through `PlanDefinition` and `RequestOrchestration`.
-
 ### Core Relationships
 
 | Related Resource        | Purpose                                           |

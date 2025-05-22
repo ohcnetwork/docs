@@ -4,8 +4,6 @@ The **InventoryItem** resource represents the availability of a specific product
 
 Inventory items are automatically created and updated, typically when a supply delivery is marked as completed.
 
-An inventory item can be marked as inactive to indicate that it is no longer actively dispensed by the pharmacy, possibly due to damage or other concerns.
-
 ---
 
 ### Key Purpose
@@ -17,45 +15,17 @@ An inventory item can be marked as inactive to indicate that it is no longer act
 
 ---
 
-### Core Data Structure – Essential Fields
-
-- **`product`**: Reference to the product being tracked.
-- **`status`**: Current status of the inventory item (e.g., active, inactive).
-- **`location`**: Location where the product is stored.
-- **`net_content`**: Quantity of the product available at the specified location.
-
----
-
-### Supported Status Values
-
-The `status` field can have the following values:
-
-- **`active`**: The item is active and can be referenced.
-- **`inactive`**: The item is presently inactive; there may be references to it, but it is not expected to be used.
-- **`entered-in-error`**: The item record was entered in error.
-- **`unknown`**: The item status has not been determined.[FHIR Build+1HL7 Terminology+1](https://build.fhir.org/codesystem-inventoryitem-status.html?utm_source=chatgpt.com)
-
-_Source: FHIR InventoryItem Status Codes_
-
----
-
-### Core Relationships
-
-| Field      | Reference Resource | Description                                 |
-| ---------- | ------------------ | ------------------------------------------- |
-| `product`  | Product            | The product being tracked in the inventory. |
-| `location` | Location           | The location where the product is stored.   |
-
 ---
 
 ### Supported Fields
 
-| Field Name    | Type      | Description                                        |
-| ------------- | --------- | -------------------------------------------------- |
-| `product`     | Reference | Reference to the product being tracked.            |
-| `status`      | code      | Current status of the inventory item.              |
-| `location`    | Reference | Location where the product is stored.              |
-| `net_content` | Quantity  | Quantity of the product available at the location. |
+| Field Name        | Type      | Description                                        |
+| ----------------- | --------- | -------------------------------------------------- |
+| `product`         | Reference | Reference to the product being tracked.            |
+| `net_content`     | Quantity  | Quantity of the product available at the location. |
+| `status`          | code      | Current status of the inventory item.              |
+| `expiration_date` | date      | date of expiry                                     |
+| `Batch`           | string    | Batch Number                                       |
 
 ---
 

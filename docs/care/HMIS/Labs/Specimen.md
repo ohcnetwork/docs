@@ -14,17 +14,3 @@ Specimens can optionally be **instantiated from a `SpecimenDefinition`**, inheri
 | `SpecimenDefinition` | (Optional) Template from which the specimen was instantiated |
 | `Procedure`          | Procedure during which the specimen was collected            |
 | `Observation`        | Diagnostic data produced based on this specimen              |
-
-### Supported Fields
-
-| Field                   | Description                           | Example                                                  |
-| ----------------------- | ------------------------------------- | -------------------------------------------------------- |
-| `id`                    | Internal system ID                    | `spec-2025-001`                                          |
-| `accessionIdentifier[]` | External barcodes/IDs for tracking    | `["LAB-BLOOD-34567"]`                                    |
-| `status`                | Status of the specimen                | `available`                                              |
-| `type`                  | Type of material (e.g., venous blood) | `"venous blood"`                                         |
-| `subject`               | Links to patient and encounter        | `{ patient: "Patient/123", encounter: "Encounter/456" }` |
-| `receivedTime`          | When the lab received the specimen    | `"2025-05-21T10:15:00+05:30"`                            |
-| `request`               | Reference to the `ServiceRequest`     | `"ServiceRequest/789"`                                   |
-| `note`                  | Free-text comment                     | `"Slight hemolysis observed"`                            |
-| `condition[]`           | Physical condition of the specimen    | `["room temperature", "unclotted"]`                      |

@@ -1,12 +1,10 @@
 ### Summary
 
-The **Product Knowledge** resource in the CARE system serves as the foundational reference for all products available within a healthcare facility. It encompasses comprehensive, context-independent information about a product, such as its classification, composition, storage guidelines, and intended use.
+This resource stores all foundational information about a given product, foundational information is anything need not be duplicated across different individual products, ie ingredient lists, possible allergens, nutritional information and so on..
 
-This resource aligns with FHIR's [MedicationKnowledge](https://build.fhir.org/medicationknowledge.html) and [NutritionProduct](https://build.fhir.org/nutritionproduct.html) resources, providing a standardized framework for representing detailed product information.
+All Products will have a Product Knowledge item in Care.
 
-Each **Product** instance refers to a **Product Knowledge** entry, inheriting its general attributes while specifying batch-specific details like batch number and expiry date.
-
----
+## Production Knowledge can be instance or facility level.
 
 ### Key Purpose
 

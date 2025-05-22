@@ -1,20 +1,12 @@
 ### Summary
 
-In the CARE system, a **Product** refers to any item that can be purchased from the facility. This encompasses:
+A product in Care refers to anything that can be purchasable from the facility, this could be [medication](https://build.fhir.org/medication.html), [nutritional product](https://build.fhir.org/nutritionproduct.html) or consumables. All of these items can be requested through Medication request for a patient ( The terminology is confusion, but it made sense at the time ), requested products are dispensed through Medication Dispense.
 
-- [Medications](https://build.fhir.org/medication.html)
-- [Nutritional Products](https://build.fhir.org/nutritionproduct.html)
-- Consumables
+Since product is a culmination of multiple resources references maintained by FHIR, It should be possible to create resources of theses types when creating integrations with FHIR, the spec for the Product resource will deviate from FHIR significantly while still being able to create the individual resourse when needed.
 
-These items can be requested for a patient through a Medication Request. Although the terminology might seem counterintuitive, this design choice was made to streamline the ordering process.
+Product is an instantiation of Product Knowledge, All relevant details will always be present in Product Knowledge, the Product resource will only capture data that is unique to the particular batch in question, like batch no, expiry etc..
 
-Requested products are dispensed via the Medication Dispense process.
-
-The **Product** resource in CARE is a culmination of multiple FHIR resource references. While it deviates from FHIR's standard structure, it maintains the capability to create individual FHIR resources when necessary.
-
-A **Product** is an instantiation of **Product Knowledge**. All pertinent details are housed within the Product Knowledge resource, whereas the Product resource captures data unique to a specific batch, such as batch number and expiry date.
-
-Additionally, a Product is linked to a Charge Item Definition, facilitating the creation of Charge Items whenever the product is billed.
+A Product will have a link to a charge item definition as well, this can help create charge items whenever this particular medication is billed.
 
 ---
 

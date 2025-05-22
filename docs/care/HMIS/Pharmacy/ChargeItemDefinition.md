@@ -15,45 +15,33 @@ This resource aligns with FHIR's [ChargeItemDefinition](https://build.fhir.org/c
 
 ---
 
-### Core Data Structure – Essential Fields
-
-- **`id`**: Internal identifier for the charge item definition.
-- **`version`**: Version of the charge item definition.
-- **`title`**: Human-readable name for the charge item definition.
-- **`slug`**: URL-friendly identifier.
-- **`derivedFromUri`**: URI from which this definition is derived.
-- **`status`**: Current status (e.g., draft, active, retired, unknown).
-- **`facility`**: Reference to the facility where this definition is applicable.
-- **`description`**: Detailed description of the charge item definition.
-- **`purpose`**: Explanation of the purpose behind this definition.
-- **`code`**: Billing code or product type this definition applies to.
-- **`instance`**: References to specific resources (e.g., ActivityDefinition, Medication) this definition applies to.
-- **`propertyGroup`**: Groups of properties applicable under certain conditions.[FHIR Build+19Medplum+19RubyDoc+19](https://www.medplum.com/docs/api/fhir/resources/chargeitemdefinition?utm_source=chatgpt.com)
-
----
-
 ### Core Relationships
 
-| Field      | Reference Resource         | Description                                              |
-| ---------- | -------------------------- | -------------------------------------------------------- |
-| `facility` | Organization               | Facility where the charge item definition is applicable. |
-| `instance` | Various (e.g., Medication) | Resources this charge item definition applies to.        |
-
----
+| Related Resource       | Purpose                                            |
+| ---------------------- | -------------------------------------------------- |
+| `ActivityDefinition`   | Resource whose execution will generate this charge |
+| `Medication`           | Medication product that incurs a cost              |
+| `Encounter`, `Patient` | Used in condition evaluation for dynamic pricing   |
 
 ### Supported Fields
 
-**Property Group:**
+| Field Name        | Description                                               | Example                                |
+| ----------------- | --------------------------------------------------------- | -------------------------------------- |
+| `title`           | Name for human readability                                | `"CBC Test Standard Rate"`             |
+| `slug`            | Unique internal reference                                 | `"cbc-charge"`                         |
+| `derivedFromUri`  | Canonical URL reference if derived from standard          | `"http://example.org/rates/cbc"`       |
+| `status`          | Lifecycle status (`draft`, `active`, etc.)                | `"active"`                             |
+| `facility`        | The facility where this pricing applies                   | `Facility/medicity`                    |
+| `description`     | Free-text description of the charge definition            | `"Pricing for CBC including lab work"` |
+| `purpose`         | Rationale for the charge                                  | `"Used to generate automated bills"`   |
+| `code`            | Internal or external billing/product code                 | `"CBC01"`                              |
+| `instance[]`      | List of linked resources (ActivityDefinition, Medication) | `[ActivityDefinition/cbc]`             |
+| `propertyGroup[]` | Array of pricing conditions and breakdowns                | See below                              |
+| `baseprice[]`     | Base Charge for a lab test                                | See below                              |
+| `discounts[]`     | Price reduction applied to the base amount before tax     | See below                              |
+| `taxes[]`         | Applicable government taxes                               | See below                              |
 
-- **`applicability`**: Conditions under which the price component is applicable, defined using expressions.
-- **`priceComponent`**: Components that make up the total price, such as base price, surcharges, discounts, and taxes.
-
-**Monetary Component:**
-
-- **`type`**: Type of price component (e.g., base, surcharge, discount, tax, informational).
-- **`code`**: Code differentiating kinds of taxes, surcharges, discounts, etc.
-- **`factor`**: Factor used for calculating this component.
-- **`amount`**: Monetary amount associated with this component, including value and currency.[InterSystems Documentation](https://docs.intersystems.com/irisforhealthlatest/csp/documatic/%25CSP.Documatic.cls?CLASSNAME=HS.FHIR.DTL.vR4.Model.Element.ChargeItemDefinition.propertyGroup.priceComponent&LIBRARY=HSSYS&utm_source=chatgpt.com)
+```
 
 ---
 
