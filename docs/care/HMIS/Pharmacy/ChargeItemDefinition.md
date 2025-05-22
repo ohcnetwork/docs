@@ -1,3 +1,5 @@
+# Charge Item Definition
+
 ### Summary
 
 The **Charge Item Definition** resource in the CARE system outlines the billing rules and pricing details associated with healthcare services and products. It serves as a blueprint for how charges are calculated, considering various factors such as patient demographics, service context, and applicable taxes.
@@ -52,3 +54,4 @@ This resource aligns with FHIR's [ChargeItemDefinition](https://build.fhir.org/c
 3. **Conditional Pricing**: The system evaluates patient and encounter data against the applicability conditions to determine the appropriate pricing.
 4. **Tax Calculation**: Applicable taxes are calculated based on configured tax codes and added to the total charge.
 5. **Billing Integration**: The final charge, including all components, is integrated into the billing system for invoicing and payment processing.
+```

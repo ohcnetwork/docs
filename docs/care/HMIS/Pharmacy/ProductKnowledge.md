@@ -1,3 +1,5 @@
+# Product Knowledge
+
 ### Summary
 
 This resource stores all foundational information about a given product, foundational information is anything need not be duplicated across different individual products, ie ingredient lists, possible allergens, nutritional information and so on..

@@ -1,3 +1,5 @@
+# Inventory Item
+
 ### Summary
 
 The **InventoryItem** resource represents the availability of a specific product at a given location. It is primarily used for inventory management within healthcare facilities, ensuring accurate tracking of stock levels for medications and other products.

@@ -1,3 +1,5 @@
+# Charge Item
+
 ### 📋 Summary
 
 The **Charge Item** resource in the CARE system captures financial details associated with services rendered or products supplied to a patient. It serves as a self-contained record, detailing the origin of the charge, the amount, applied discounts, taxes, and other relevant financial information.

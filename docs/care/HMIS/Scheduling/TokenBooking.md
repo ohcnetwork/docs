@@ -1,3 +1,5 @@
+# Token Booking
+
 ### Summary
 
 In CARE, a **Token Booking** represents the reservation of a specific time slot by a patient for a healthcare service. It describes the details of a scheduled meeting between a patient and a healthcare provider.

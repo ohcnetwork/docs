@@ -1,3 +1,5 @@
+# Diagnostic Report
+
 ### Summary
 
 A `DiagnosticReport` in CARE provides a structured summary of the findings, interpretations, and outcomes derived from diagnostic activities such as lab tests. While the **clinical measurements themselves are stored as `Observation` resources**, the `DiagnosticReport` acts as a **wrapper** or **summary document**, linking together those observations in a meaningful context.

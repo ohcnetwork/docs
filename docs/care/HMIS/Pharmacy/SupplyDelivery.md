@@ -1,3 +1,5 @@
+# Supply Delivery
+
 ### 📋 Summary
 
 The **Supply Delivery** resource in the CARE system records the delivery of healthcare-related items, such as medications, devices, or other supplies, to a specified location. It serves as a critical component in inventory management, ensuring accurate tracking of stock levels within healthcare facilities.

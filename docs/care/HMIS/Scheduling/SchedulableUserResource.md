@@ -1,3 +1,5 @@
+# Schedulable User Resource
+
 ### Summary
 
 In CARE, a **Schedulable User Resource** represents a healthcare provider (e.g., doctor, nurse) whose availability can be scheduled for patient appointments.

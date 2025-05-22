@@ -1,3 +1,5 @@
+# Specimen
+
 ### Summary
 
 In CARE, a `Specimen` represents a **physical sample collected from a patient** for diagnostic analysis. This includes blood, urine, swabs, or tissue samples collected as part of a diagnostic process. Each specimen is associated with a patient, collected during an encounter, and typically originates from a `ServiceRequest`.

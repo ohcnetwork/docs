@@ -1,3 +1,5 @@
+# Observation Definition
+
 ### Summary
 
 `ObservationDefinition` is used to define the structure and expectations of a **clinical observation or lab result**, such as "Hemoglobin level" or "Blood glucose." These definitions describe the unit, valid value range, data type, and measurement method — forming a **template** for the actual `Observation` instances recorded during diagnostics.

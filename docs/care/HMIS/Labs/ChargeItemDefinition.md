@@ -1,3 +1,5 @@
+# Charge Item Definition
+
 ### Summary
 
 The `ChargeItemDefinition` in CARE specifies **how clinical activities (like lab tests or medications) are priced**. It allows each `ActivityDefinition`, `Medication`, or other healthcare service to be tied to a dynamic billing rule that governs how much a service costs under specific conditions.

@@ -1,3 +1,5 @@
+# Encounter
+
 ### Summary
 
 Encounters represent interactions between a patient and a healthcare provider.

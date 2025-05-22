@@ -1,3 +1,5 @@
+# Medication Dispense
+
 ### Summary
 
 The **MedicationDispense** resource in FHIR records the details of medications that have been dispensed to a patient. It serves as both a completion to the workflow initiated by a MedicationRequest and as a tool for inventory management within a healthcare setting.

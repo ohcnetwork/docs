@@ -1,3 +1,5 @@
+# Activity Definition
+
 ### Summary
 
 In CARE, `ActivityDefinition` is used to define reusable **templates for clinical actions**, such as lab tests or medication requests. Each definition standardizes how a particular diagnostic activity should be instantiated at runtime — enabling consistent behavior across service requests and automated billing.

@@ -1,3 +1,5 @@
+# Product
+
 ### Summary
 
 A product in Care refers to anything that can be purchasable from the facility, this could be [medication](https://build.fhir.org/medication.html), [nutritional product](https://build.fhir.org/nutritionproduct.html) or consumables. All of these items can be requested through Medication request for a patient ( The terminology is confusion, but it made sense at the time ), requested products are dispensed through Medication Dispense.

@@ -1,3 +1,5 @@
+# Specimen Definition
+
 ### Summary
 
 `SpecimenDefinition` defines the **template or blueprint for specimen types** used in the laboratory. Instead of repeatedly defining the properties of commonly collected specimens (like blood, urine, or sputum), CARE uses `SpecimenDefinition` to maintain a central, reusable registry of specimen kinds that can be instantiated when needed.

@@ -1,3 +1,5 @@
+# Supply Request
+
 ### 📋 Summary
 
 The **Supply Request** resource in the CARE system represents a formal request for the provision of healthcare-related items such as medications, devices, or other supplies. It serves as the initial step in the supply chain workflow, capturing the intent to procure or transfer items within or between facilities.

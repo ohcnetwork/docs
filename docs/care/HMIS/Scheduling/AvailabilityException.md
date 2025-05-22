@@ -1,3 +1,5 @@
+# Availability Exception
+
 ### Summary
 
 In CARE, an **Availability Exception** represents periods when a schedulable user (e.g., a healthcare provider) is unavailable for appointments, such as during vacations, training sessions, or unforeseen absences. This concept aligns with FHIR's approach to managing non-availability through the `Schedule` and `Slot` resources.
