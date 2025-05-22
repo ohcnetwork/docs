@@ -1,6 +1,6 @@
 # Pharmacy
 
-## Key Concepts
+## Key Pharmacy Concepts
 
 This table outlines the primary components of the CARE Pharmacy Module, detailing their roles and associated FHIR resources.
 | **Concept** | **FHIR Resource** | **Description** |
@@ -36,6 +36,6 @@ flowchart LR
     H -- No --> J[" Hold Dispensation"]
 ```
 
-### Concept Diagram
+## Concept Diagram
 
 ![Pharmacy Concept Diagram](../../../../static/img/care/HMIS/Pharmacy/Pharmacy%20Concept%20Diagram.svg)

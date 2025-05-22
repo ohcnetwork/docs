@@ -8,4 +8,3 @@ In CARE, the **Schedule** resource represents the availability of a healthcare p
 
 1. **Define Schedule**: Create a `Schedule` resource for each provider, specifying the time periods during which they are available.
 2. **Generate Slots**: Within the schedule, create `Slot` resources representing specific time intervals available for booking.?
-3.

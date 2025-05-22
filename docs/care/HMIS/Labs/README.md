@@ -2,7 +2,7 @@
 
 This overview provides a high-level understanding of how diagnostic workflows are structured in CARE — from test orders to sample collection, report generation and recording observations. The subsequent pages detail each resource and its role in the system.
 
-## Key Concepts
+## Key Labs Concepts
 
 | Resource              | Description                                                                                                                   |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
@@ -32,6 +32,6 @@ flowchart LR
     I --> K[" Doctor Reviews Results"]
 ```
 
-### Concept Diagram
+## Concept Diagram
 
 ![Labs Concept Diagram](../../../../static/img/care/HMIS/Labs/Labs%20Concept%20Diagram.svg)

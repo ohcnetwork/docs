@@ -1,30 +1,15 @@
 # Scheduling
 
-## Key Concepts
+## Key Scheduling Concepts
 
-1.  **Schedulable User Resource**
-
-    – A healthcare worker (e.g., doctor, nurse) whose time can be scheduled on a facility.
-
-2.  **Availability Exception**
-
-    – Custom constraints or blocks (e.g., leave, holidays) applied to a Schedulable User.
-
-3.  **Schedule**
-
-    – Represents recurring availability patterns (e.g., daily 9 AM – 5 PM) of a Schedulable User.
-
-4.  **Availability**
-
-    – Specific dates/times (within a schedule) where bookings can be made. Links to **Slots**.
-
-5.  **Token Slot**
-
-    – A concrete, bookable time unit that can be reserved by a patient (analogous to `Slot` in FHIR).
-
-6.  **Token Booking**
-
-        – Represents an appointment, tied to a `Patient` and results in an `Encounter`.
+| **Concept**                 | **Description**                                                                            |
+| --------------------------- | ------------------------------------------------------------------------------------------ |
+| **SchedulableUserResource** | A healthcare provider (e.g., doctor, nurse) whose time can be scheduled within a facility. |
+| **AvailabilityException**   | Specific time periods when a provider is unavailable (e.g., leave, holidays).              |
+| **Schedule**                | Defines recurring availability patterns (e.g., daily 9 AM – 5 PM) for a provider.          |
+| **Availability**            | Specific dates/times within a schedule when appointments can be booked.                    |
+| **TokenSlot**               | A concrete, bookable time unit available for patient appointments.                         |
+| **TokenBooking**            | Represents a confirmed appointment, linking a patient to a specific time slot.             |
 
 ## High-Level Scheduling Flow
 
@@ -43,6 +28,6 @@ flowchart LR
     I --> J[" Encounter Started"]
 ```
 
-### Concept Diagram
+## Concept Diagram
 
     ![Scheduling Concept Diagram](../../../../static/img/care/HMIS/Scheduling/Scheduling%20Concept%20Diagram.svg)

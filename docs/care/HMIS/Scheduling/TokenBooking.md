@@ -1,6 +1,6 @@
 ### Summary
 
-In CARE, a **Token Booking** represents the reservation of a specific time slot by a patient for a healthcare service. T~~his concept aligns with FHIR's Appointment resource~~, which describes the details of a scheduled meeting between a patient and a healthcare provider.
+In CARE, a **Token Booking** represents the reservation of a specific time slot by a patient for a healthcare service. It describes the details of a scheduled meeting between a patient and a healthcare provider.
 
 ### Design Philosophy
 
@@ -13,5 +13,4 @@ In CARE, a **Token Booking** represents the reservation of a specific time slot 
 
 1. **Select Available Slot**: Patient selects an available `Slot` for the desired service.
 2. **Create Appointment**: System creates an `Appointment` resource linking the patient, provider, and selected slot.
-3. s.
-4. **Manage Appointment**: Appointment status is updated as needed (e.g., checked-in, completed).
+3. **Manage Appointment**: Appointment status is updated as needed (e.g., checked-in, completed).

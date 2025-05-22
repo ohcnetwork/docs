@@ -1,13 +1,16 @@
 ### Summary
 
-In CARE, an **Encounter** represents a specific interaction between a patient and healthcare provider(s) for the purpose of providing healthcare services or assessing the patient's health status. This concept aligns with FHIR's Encounter resource, which is used to record information about the actual activities that occur during a healthcare event.
+Encounters represent interactions between a patient and a healthcare provider.
 
-### Design Philosophy
+At its core, it represents a documented contact between a patient and healthcare provider, serving as a container for clinical events and activities.
 
-- **FHIR Alignment**: Utilize FHIR's `Encounter` resource to represent actual patient-provider interactions.
-- **Integration with Appointments**: Link encounters to `Appointment` resources to trace the scheduling and fulfillment process.
-- **Comprehensive Documentation**: Capture detailed information about the encounter, including participants, locations, reasons, and diagnoses.
-- **Lifecycle Management**: Track the status of encounters through various stages, such as planned, in-progress, and completed.
+## Key Purpose
+
+- Document and track patient-provider interactions
+- Establish context for clinical activities and observations
+- Support billing and administrative workflows
+- Enable care coordination across different settings
+- Maintain chronological record of patient care events
 
 ### Core Relationships
 
