@@ -228,7 +228,7 @@ For persist to work properly, we  have to  pass `QueryClient` a `cacheTime`. `ca
  Main advantages of this approches is :
  - It will cache data coming from api that was fetch using useQuery irrespective of operation we use(eg.GET,POST).But Approches like workbox does not provide such option's they will cache only get api responses not read only post responses.
  - As Care is already using tanstack query it become easy to implement this approch in the CARE. we dont have to write 
- - Give option to separate cached data based on user by using just single userid in query key.But if we use aproches like workbox we have to add userid in url to  store data in cache based on url, it can increase  complexity.
+ - Give option to separate cached data based on user by using just single userid in query key.
 
  #### sync and write operation in this approah : 
 
