@@ -1,6 +1,6 @@
 # CEP for offline support project
 
-This document lists the standard workflows that will be supported offline and how we can achive this.  
+This document lists the standard workflows that will be supported offline and how we can achive this.it aslo contain theoritical info about alternative to achive offline functionality. 
 Each workflow has an associated markdown table that defines the structure, HTTP method, and other important information about the API endpoints involved.
 
 In the tables, backend API endpoints are clearly distinguished based on whether they will be **cached** or **stored and later synced via IndexedDB (for write operations).**
@@ -146,59 +146,27 @@ It include View, create, and manage appointments for a facility.
 
 Before implementing offline support, it’s essential to define how the application determines internet connectivity and how it behaves in various online/offline scenarios. This document outlines the design assumptions and expected behavior around connection status handling.
 
-We use a real server connectivity check instead of navigator.onLine. This involves pinging a known backend endpoint (e.g., /ping) and marking the user as offline if the server is unreachable.
-
-We maintain a global state variable isOnline to represent the app’s understanding of the user’s connectivity. This value can be:
-
-- set based on real server checks during page reload and websites open .
-- Manually overridden by the user via a toggle.
-
-### Offline Mode Toggle Button
-
-The app provides an "Enable Offline Mode" toggle button in the UI.This gives users control when internet conditions are unstable, allowing them to continue working in offline mode without interruptions.
-
-we Use an Explicit `isOnline` State Instead of Just Runtime Checks because Automatic checks can flicker rapidly when internet connectivity is poor (e.g., intermittent mobile data). This can cause unpredictable app behavior, like failed fetches or UI state inconsistencies. Manual offline mode offers a **clear and consistent user experience**. Users understand when they're offline and what features are expected to work
-
-- Enabled = isOnline = false: User manually forces the app into offline mode to prevent unstable behavior during intermittent connectivity.
-- Disabled = isOnline = true: The app will attempt to connect to the server normally.
 
 ### Behavior on App Load and Connectivity Events
 
-#### 1. App Launch (Fresh Tab Open)
 
-- On opening the app, `checkRealServer()` is called.
-- If the server is reachable → `isOnline = true` or If unreachable → `isOnline = false`..
-- Ensures `isOnline` reflects real connectivity at startup.
+#### 1. Login Attempt During Poor Connectivity
+ If user is explicity logout or session expired , we will removed all cached data also at that instant. it will increase security and also handle the case where one user cached data overiding other. so user cannot able to login and hence cannot acess website offline if user explicity logout or session expired.
 
 ---
 
-#### 2. Login Attempt During Poor Connectivity
-
-- If the user is **not logged in** and connectivity is poor,then Login may fail:
-- App offers **fallback login** using last cached profile (if available).
-- It Allows access even when login fails due to network issues.
-
----
-
-#### 3. User Goes Offline During Active Session
+#### 2. User Goes Offline During Active Session
 
 - If already logged in and internet becomes unstable:
-- User can toggle **offline mode manually** → `isOnline = false`.
-- Enables offline features (e.g., cached reads, local writes).
+-  Enables offline features (e.g., cached reads, local writes).
 
 ---
-
-#### 4. Page Reload or Tab Reopen
-
-- On reload or reopening , `checkRealServer()` runs again and Updates `isOnline` state.:
-- Notifies user of current connection status.
-- Even if user previously forced offline mode, connection is revalidated.
 
 ### Role based caching , when multiple users access the app on the same device
 
 - As Care have role based access control, we have to ensure that if multiple user access the app on same device then their data of one user does not override the other user data while caching. Its necessary because permissions are come from backend via api based on user. For example, the getCurrentUser API returns a list of permissions specific to the logged-in user. If this response is cached and a different user logs in, their permissions could overwrite the previous user's data. Later, if the first user tries to use the app offline, they might see incorrect permissions or data from the second user.
 
-so to ovrcome this problem we have to cache data per user. we will discussed its solution in approache's section.
+so to overcome this problem we have to cache data per user. we will discussed its solution in approache's section.
 
 # Now Lets Discussed Approches to achive offline Support :
 
@@ -229,17 +197,16 @@ For persist to work properly, we have to pass `QueryClient` a `cacheTime`. `cach
 
 `PersistQueryClientProvider` is a React wrapper around our normal `QueryClientProvider` that automatically restores persisted cache on mount and keeps it in sync through subscribe/unsubscribe. It prevents our queries from fetching until the cache is hydrated, ensuring a smooth offline‑first experience.
 
-**lets discuss how to overcome the problem of cache mixing when multiple user use same device :** TanStack Query caches all API data fetched via useQuery. To avoid mixing cached data between different users, include the userId as part of the queryKey along with other parameters. Since TanStack Query stores cache data based on the queryKey (not just the URL), adding userId creates distinct cache entries even if the API endpoint (URL) is the same. This ensures each user’s data is cached separately.
-(Unlike Workbox, which caches based on URL, TanStack Query relies on the uniqueness of the query key.)
+**lets discuss how to overcome the problem of cache mixing when multiple user use same device :** TanStack Query caches all API data fetched via useQuery. To avoid mixing cached data between different users,  we always cleared out cached data whenever user logout or session expired. it help to prevent data mixing as we are clearing previous user data. But here there is one point that to be come , which is after logout if we go offline and try to access website then it will not accessible offline as we already  cleared out cache data during logout and session expired. 
 
-**Note:** To avoid unnecessary refetch attempts when offline, configure useQuery with enabled: isOnline === true. This way, during online mode, staleTime can remain 0 to always fetch fresh data. When offline, the query is disabled (enabled: false), so cached data is used without triggering refetches that would fail.
+**Note:** To avoid unnecessary refetch attempts when offline, configure useQuery with enabled: navigator.online === true. This way, during online mode, staleTime can remain 0 to always fetch fresh data. When offline, the query is disabled (enabled: false), so cached data is used without triggering refetches that would fail.
 This approach keeps the default online behavior unchanged while ensuring smooth offline caching without forced stale data refetches.
 
 Main advantages of this approches is :
 
 - It will cache data coming from api that was fetch using useQuery irrespective of operation we use(eg.GET,POST).But Approches like workbox does not provide such option's they will cache only get api responses not read only post responses.
 - As Care is already using tanstack query it become easy to implement this approch in the CARE. we dont have to write
-- Give option to separate cached data based on user by using just single userid in query key.
+
 
 **Note** : write and sync logic will going to be same in other approch as well so we will discussed it later in the doc. The focus is on the caching of api responses using different-different approaches.
 
@@ -311,3 +278,7 @@ This allows the sync process to:
 - Update the local TanStack Query cache after a successful sync by invalidating or refetching this query.
 
 This reuse of existing query keys ensures consistent cache updates and helps maintain cache integrity without manual cache manipulation.
+
+
+
+
