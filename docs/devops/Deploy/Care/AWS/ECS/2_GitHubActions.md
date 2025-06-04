@@ -1,13 +1,10 @@
 # GitHub Actions
 
-## Setting up GitHub actions
+## Setting up GitHub Actions
 
-The github workflow file triggered on every manual trigger and push to the `develop` branch or tags starting with `v`. It will build the new container image upon the trigger and update the task definition in the ECS cluster.
-This ensures that the latest image is deployed to the ECS cluster.
+The GitHub workflow file is triggered on every manual trigger, push to the `develop` branch, or tags starting with `v`. It builds the new container image upon the trigger and updates the task definition in the ECS cluster. This ensures that the latest image is deployed to the ECS cluster.
 
-
-```
-yaml
+```yaml
 name: Deploy Care
 
 on:
@@ -44,7 +41,8 @@ jobs:
     name: Build & Push to container registries
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Generate docker tags
         id: meta
@@ -59,8 +57,8 @@ jobs:
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/develop' }}
             type=raw,value=latest-${{ github.run_number }},enable=${{ github.ref == 'refs/heads/develop' }}
             type=semver,pattern={{version}}
-          flavor: |
-            latest=false
+          flavor: latest=false
+
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -87,6 +85,7 @@ jobs:
           key: ${{ runner.os }}-buildx-build-${{ hashFiles('Pipfile.lock', 'docker/prod.Dockerfile') }}
           restore-keys: |
             ${{ runner.os }}-buildx-build-
+
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
@@ -107,13 +106,14 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
+  deploy:
     name: Deploy to ECS
     runs-on: ubuntu-latest
     environment:
       name: Deployment-ecs
       url: https://careapi.example.com
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Configure AWS credentials
@@ -135,7 +135,7 @@ jobs:
         with:
           task-definition: ${{ env.ECS_TASK_DEFINITION_CELERY }}
           container-name: ${{ env.CONTAINER_NAME_CRON }}
-          image: ${{env.IMAGE_VALUE}}
+          image: ${{ env.IMAGE_VALUE }}
 
       - name: Fill Celery Worker definition
         id: task-def-celery-worker
@@ -143,7 +143,7 @@ jobs:
         with:
           task-definition: ${{ steps.task-def-celery-cron.outputs.task-definition }}
           container-name: ${{ env.CONTAINER_NAME_WORKER }}
-          image: ${{env.IMAGE_VALUE}}
+          image: ${{ env.IMAGE_VALUE }}
 
       - name: Deploy Backend Celery
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
@@ -153,15 +153,15 @@ jobs:
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
 
-      - name: Fill Backend Api definition
+      - name: Fill Backend API definition
         id: task-def-api
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ${{ env.ECS_TASK_DEFINITION_BACKEND }}
           container-name: ${{ env.CONTAINER_NAME_BACKEND }}
-          image: ${{env.IMAGE_VALUE}}
+          image: ${{ env.IMAGE_VALUE }}
 
-      - name: Deploy Backend Api
+      - name: Deploy Backend API
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.task-def-api.outputs.task-definition }}
@@ -173,24 +173,24 @@ jobs:
 ### Secrets and Variables Used
 
 #### Secrets
-- `AWS_ACCESS_KEY_ID` = AWS Access Key ID for authentication
-- `AWS_SECRET_ACCESS_KEY` = AWS Secret Access Key for authentication
-- `DOCKER_HUB_USERNAME` = DockerHub username
-- `DOCKER_HUB_ACCESS_TOKEN` = DockerHub access token
-- `GITHUB_TOKEN` = GitHub token for authentication
-- `ADDITIONAL_PLUGS` = Additional plugins specified in json format to include in the build
+- `AWS_ACCESS_KEY_ID`: AWS Access Key ID for authentication
+- `AWS_SECRET_ACCESS_KEY`: AWS Secret Access Key for authentication
+- `DOCKER_HUB_USERNAME`: DockerHub username
+- `DOCKER_HUB_ACCESS_TOKEN`: DockerHub access token
+- `GITHUB_TOKEN`: GitHub token for authentication
+- `ADDITIONAL_PLUGS`: Additional plugins specified in JSON format to include in the build
 
 #### Variables
-- `IMAGE_NAME` = Name of the image to be built
-- `AWS_DEFAULT_REGION` = AWS region
-- `AWS_DEFAULT_OUTPUT` = AWS output format
-- `ECS_SERVICE_BACKEND` = ECS service name for the backend service, e.g. `care-backend`
-- `ECS_SERVICE_CELERY` = ECS service name for the celery service, e.g. `care-celery`
-- `ECS_CLUSTER` = ECS cluster name, e.g. `care-cluster`
-- `ECS_TASK_DEFINITION_BACKEND` = specify the task definition inside a json file eg. `./ecs/backend.json` refer to [backend.json](https://github.com/ohcnetwork/care/blob/develop/aws/backend.json)
-- `ECS_TASK_DEFINITION_CELERY` = specify the task definition inside a json file eg. `./ecs/celery.json` refer to [celery.json](https://github.com/ohcnetwork/care/blob/develop/aws/celery.json)
-- `CONTAINER_NAME_BACKEND` = Name of the container for the backend service, e.g. `care-backend`
-- `CONTAINER_NAME_WORKER` = Name of the container for the celery worker service, e.g. `care-worker`
-- `CONTAINER_NAME_CRON` = Name of the container for the celery cron service, e.g. `care-cron`
-- `IMAGE_TAG` = Tag for the image to be built
-- `IMAGE_VALUE` = Value of the image to be built
+- `IMAGE_NAME`: Name of the image to be built
+- `AWS_DEFAULT_REGION`: AWS region
+- `AWS_DEFAULT_OUTPUT`: AWS output format
+- `ECS_SERVICE_BACKEND`: ECS service name for the backend (`care-backend`)
+- `ECS_SERVICE_CELERY`: ECS service name for the Celery service (`care-celery`)
+- `ECS_CLUSTER`: ECS cluster name (`care-cluster`)
+- `ECS_TASK_DEFINITION_BACKEND`: Path to the backend task definition (`./aws/backend.json`)
+- `ECS_TASK_DEFINITION_CELERY`: Path to the Celery task definition (`./aws/celery.json`)
+- `CONTAINER_NAME_BACKEND`: Container name for the backend (`care-backend`)
+- `CONTAINER_NAME_WORKER`: Container name for the Celery worker (`care-worker`)
+- `CONTAINER_NAME_CRON`: Container name for the Celery cron (`care-cron`)
+- `IMAGE_TAG`: Tag for the built image
+- `IMAGE_VALUE`: Value of the built image
