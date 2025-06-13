@@ -1,154 +1,235 @@
 # FAQ
 
-New to Open Healthcare Network? This FAQ section addresses common issues and provides links to official documentation to help you get started smoothly.
+Welcome to **Open Healthcare Network**! This section addresses common setup issues and provides documentation links to help you get started smoothly.
 
-## Project Documentation Links
+---
+
+## Project Documentation
 
 ### Core Repositories
 
-- **Backend (Care)**: [README](https://github.com/ohcnetwork/care?tab=readme-ov-file#self-hosting)
-- **Frontend (Care FE)**: [README](https://github.com/ohcnetwork/care_fe?tab=readme-ov-file#getting-started)
+- **Backend (Care)**: [README](https://github.com/ohcnetwork/care)
+- **Frontend (Care FE)**: [README](https://github.com/ohcnetwork/care_fe)
 
 ### Plugins
 
-1. **ABDM (Ayushman Bharat Digital Mission)**
+| Plugin                                                  | Backend                                                                    | Frontend                                                                         |
+| ------------------------------------------------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| **ABDM** (Ayushman Bharat Digital Mission)              | [care_abdm](https://github.com/ohcnetwork/care_abdm)                       | [care_abdm_fe](https://github.com/ohcnetwork/care_abdm_fe)                       |
+| **HCX** (Health Claims Exchange)                        | [care_hcx](https://github.com/ohcnetwork/care_hcx)                         | [care_hcx_fe](https://github.com/ohcnetwork/care_hcx_fe)                         |
+| **Scribe** (Voice Assistant)                            | [care_scribe](https://github.com/ohcnetwork/care_scribe)                   | [care_scribe_fe](https://github.com/ohcnetwork/care_scribe_fe)                   |
+| **TeleICU Devices** (Remote ICU Monitoring Integration) | [care_teleicu_devices](https://github.com/ohcnetwork/care_teleicu_devices) | [care_teleicu_devices_fe](https://github.com/ohcnetwork/care_teleicu_devices_fe) |
+| **LiveKit** (Real-time Communication)                   | [care_livekit](https://github.com/ohcnetwork/care_livekit)                 | [care_livekit_fe](https://github.com/ohcnetwork/care_livekit_fe)                 |
+| **Ayushma** (AI Assistant)                              | [ayushma](https://github.com/ohcnetwork/ayushma)                           | [ayushma_fe](https://github.com/ohcnetwork/ayushma_fe)                           |
 
-   - [Backend Documentation](https://github.com/ohcnetwork/care_abdm?tab=readme-ov-file#getting-started)
-   - [Frontend Documentation](https://github.com/ohcnetwork/care_abdm_fe?tab=readme-ov-file#getting-started)
-
-2. **Scribe (Voice Assistant)**
-
-   - [Backend Documentation](https://github.com/ohcnetwork/care_scribe?tab=readme-ov-file#installation)
-   - [Frontend Documentation](https://github.com/ohcnetwork/care_scribe_fe)
-
-3. **HCX (Health Claims Exchange)**
-
-   - [Backend Documentation](https://github.com/ohcnetwork/care_hcx)
-   - [Frontend Documentation](https://github.com/ohcnetwork/care_hcx_fe)
-
-4. **TeleICU Devices**
-
-   - [Backend Documentation](https://github.com/ohcnetwork/care_teleicu_devices)
-   - [Frontend Documentation](https://github.com/ohcnetwork/care_teleicu_devices_fe)
-
-5. **LiveKit (Real-time Communication)**
-
-   - [Backend Documentation](https://github.com/ohcnetwork/care_livekit)
-   - [Frontend Documentation](https://github.com/ohcnetwork/care_livekit_fe)
-
-6. **Ayushma (AI Assistant)**
-   - [Backend Documentation](https://github.com/ohcnetwork/ayushma)
-   - [Frontend Documentation](https://github.com/ohcnetwork/ayushma_fe)
+---
 
 ## Common Setup Issues
 
 ### Backend Setup Issues
 
-1. **Loading Initial Data**
+#### 1. Loading Initial Data
 
-   - To load fixtures for testing and development:
+To load development and test fixtures:
 
-     ```
-     make load-fixtures
-     ```
+```bash
+make load-fixtures
+```
 
-   - If `make load-fixtures` doesn't work, try:
-     ```
-     docker compose exec backend bash -c "python manage.py load_govt_organization --state kerala --load-districts --load-local-bodies --load-wards"
-     ```
+If that doesn't work, try running directly with Docker:
 
-2. **Creating a Superuser**
+```bash
+docker compose exec backend bash -c "python manage.py load_fixtures"
+```
 
-   - To create an admin user for accessing the Django admin panel, run:
-     ```
-     docker compose exec backend bash -c "python manage.py createsuperuser"
-     ```
-   - Follow the prompts to set username, email, and password
+To load location-specific government organization data (e.g., Kerala):
 
-3. **Syncing Organization Roles and Permissions**
+```bash
+docker compose exec backend bash -c "python manage.py load_govt_organization --state kerala --load-districts --load-local-bodies --load-wards"
+```
 
-   - If you're experiencing permission issues, run:
-     ```
-     python manage.py sync_permissions_roles
-     ```
-   - This ensures that all roles have the correct permissions assigned
+#### 2. Creating a Superuser
 
-4. **Container Health Issues**
+To access the Django admin interface, create a superuser:
 
-   - If you see "care container unhealthy" error:
+```bash
+docker compose exec backend bash -c "python manage.py createsuperuser"
+```
 
-     - Check container logs to identify specific errors:
-       ```
-       docker logs <container_name>
-       ```
-       Example:
-       ```
-       docker logs care-backend-1
-       ```
-     - To inspect the container and access Django shell:
-       ```
-       docker exec -it <container_name> python manage.py shell
-       ```
-       Example:
-       ```
-       docker exec -it care-backend-1 python manage.py shell
-       ```
-     - Try a complete teardown and rebuild:
+Follow the prompts to enter username, email, and password.
 
-       ```
-       make teardown
-       make up
-       ```
+#### 3. Syncing Organization Roles and Permissions
 
-     - This often resolves configuration and dependency issues
+If you encounter access or permission issues, run:
+
+```bash
+python manage.py sync_permissions_roles
+```
+
+This ensures that user roles are correctly mapped to permissions.
+
+#### 4. Container Health Issues
+
+If Docker reports that the **care backend container is unhealthy**:
+
+- Check the logs for error messages:
+
+  ```bash
+  docker logs <container_name>
+  ```
+
+  Example:
+
+  ```bash
+  docker logs care-backend-1
+  ```
+
+- Open the Django shell for debugging:
+
+  ```bash
+  docker exec -it <container_name> python manage.py shell
+  ```
+
+  Example:
+
+  ```bash
+  docker exec -it care-backend-1 python manage.py shell
+  ```
+
+- Rebuild and restart the services:
+
+  ```bash
+  make teardown
+  make up
+  ```
+
+This can resolve configuration or dependency issues.
+
+---
 
 ### Frontend Setup Issues
 
-1. **Node Version Compatibility**
+#### 1. Node Version Compatibility
 
-   - The projects require Node.js 22
-   - Use nvm to manage Node versions:
-     ```
-     nvm install 22
-     nvm use 22
-     ```
-   - Check your current version with `node -v`
+The frontend projects require **Node.js 22**. Use `nvm` to install and switch versions:
 
-2. **Dependency Installation Issues**
+```bash
+nvm install 22
+nvm use 22
+```
 
-   - If facing peer dependency conflicts:
-     ```
-     npm install --legacy-peer-deps
-     ```
-   - For persistent installation failures:
-     ```
-     npm cache clean --force
-     rm -rf node_modules
-     npm install
-     ```
+To verify the active Node version:
 
-3. **API Connection Issues**
+```bash
+node -v
+```
 
-   - If you're connecting with the backend, make sure:
-     - Backend server is running before starting the frontend
-     - The environment variable in `.env` is correctly set:
-       ```
-       REACT_CARE_API_URL=http://127.0.0.1:9000
-       ```
+#### 2. Dependency Installation Issues
 
-4. **Build Errors**
-   - If encountering TypeScript errors, run:
-     ```
-     npm run lint-fix
-     ```
+If you see peer dependency warnings or install failures:
+
+```bash
+npm install --legacy-peer-deps
+```
+
+If issues persist:
+
+```bash
+npm cache clean --force
+rm -rf node_modules
+npm install
+```
+
+#### 3. API Connection Issues
+
+Ensure the backend server is up and running before starting the frontend.
+Also, check the `.env` file in your frontend project:
+
+```env
+REACT_CARE_API_URL=http://127.0.0.1:9000
+```
+
+#### 4. Build Errors
+
+If you see TypeScript errors or linting issues:
+
+```bash
+npm run lint-fix
+```
+
+---
 
 ### Plugin Setup Issues
 
-For more specific issues, please refer to the GitHub repositories or reach out to the community on our Slack channel.
+#### 1. Common Plugin Setup
+
+Most plugins follow a similar pattern. In `plug_config.py`, add:
+
+```python
+plugin_name = Plug(
+    name="plugin_name",
+    package_name="git+https://github.com/ohcnetwork/plugin_repo.git",
+    version="@master",  # or specific version
+    configs={},  # plugin-specific settings
+)
+plugs = [plugin_name]
+```
+
+#### 2. Local Plugin Development
+
+To develop plugins locally:
+
+- Update `plug_config.py`:
+
+  ```python
+  plugin_name = Plug(
+      name="plugin_name",
+      package_name="/app/plugin_folder",
+      version="",
+      configs={},
+  )
+  ```
+
+- In `plugs/manager.py`, install in editable mode:
+
+  ```python
+  subprocess.check_call(
+      [sys.executable, "-m", "pip", "install", "-e", *packages]
+  )
+  ```
+
+- Rebuild and restart the containers:
+
+  ```bash
+  make re-build
+  make up
+  ```
+
+#### 3. Plugin Troubleshooting
+
+- **Backend plugin not loading?**
+
+  - Ensure the plugin name matches the Django app name.
+  - Verify the path or repository URL is correct.
+  - Check that all required environment variables are configured.
+
+- **Frontend plugin issues?**
+
+  - Check that the correct Node.js version is used.
+
+  - In `care_fe/.env`, ensure the plugin is added to `REACT_ENABLED_APPS`:
+
+    ```env
+    REACT_ENABLED_APPS="ohcnetwork/plugin_name_fe@localhost:5173"
+    ```
+
+  - Make sure the plugin dev server is running on the expected port.
+
+---
 
 ## Learning Resources
 
-### Tools We Use in Care
+### Tools We Use
 
 1. **Docker and Container Technology**
    - [Docker Crash Course for Beginners](https://www.youtube.com/watch?v=0UG2x2iWerk) - Basic tutorial to get started with Docker
