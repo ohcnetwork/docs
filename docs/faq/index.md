@@ -1,17 +1,17 @@
-# FAQ
+# Frequently Asked Questions
 
-Welcome to **Open Healthcare Network**! This section addresses common setup issues and provides documentation links to help you get started smoothly.
+Welcome to **Open Healthcare Network**! This FAQ section addresses common questions and provides solutions to help you get started smoothly.
 
----
+## Project Overview
 
-## Project Documentation
+### What are the main components of the Open Healthcare Network?
 
-### Core Repositories
+The Open Healthcare Network consists of two core repositories:
 
 - **Backend (Care)**: [README](https://github.com/ohcnetwork/care)
 - **Frontend (Care FE)**: [README](https://github.com/ohcnetwork/care_fe)
 
-### Plugins
+### What plugins are available?
 
 | Plugin                                                  | Backend                                                                    | Frontend                                                                         |
 | ------------------------------------------------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
@@ -22,35 +22,35 @@ Welcome to **Open Healthcare Network**! This section addresses common setup issu
 | **LiveKit** (Real-time Communication)                   | [care_livekit](https://github.com/ohcnetwork/care_livekit)                 | [care_livekit_fe](https://github.com/ohcnetwork/care_livekit_fe)                 |
 | **Ayushma** (AI Assistant)                              | [ayushma](https://github.com/ohcnetwork/ayushma)                           | [ayushma_fe](https://github.com/ohcnetwork/ayushma_fe)                           |
 
----
+## Backend Setup
 
-## Common Setup Issues
+### How do I load initial data for development?
 
-### Backend Setup Issues
+You can load development and test fixtures in two ways:
 
-#### 1. Loading Initial Data
-
-To load development and test fixtures:
+1. Using make:
 
 ```bash
 make load-fixtures
 ```
 
-If that doesn't work, try running directly with Docker:
+2. Using Docker directly:
 
 ```bash
 docker compose exec backend bash -c "python manage.py load_fixtures"
 ```
 
-To load location-specific government organization data (e.g., Kerala):
+### How do I load location-specific government organization data?
+
+To load data for a specific state (e.g., Kerala), use:
 
 ```bash
 docker compose exec backend bash -c "python manage.py load_govt_organization --state kerala --load-districts --load-local-bodies --load-wards"
 ```
 
-#### 2. Creating a Superuser
+### How do I create a superuser account?
 
-To access the Django admin interface, create a superuser:
+To create a superuser for accessing the Django admin interface:
 
 ```bash
 docker compose exec backend bash -c "python manage.py createsuperuser"
@@ -58,7 +58,7 @@ docker compose exec backend bash -c "python manage.py createsuperuser"
 
 Follow the prompts to enter username, email, and password.
 
-#### 3. Syncing Organization Roles and Permissions
+### How do I fix permission and role issues?
 
 If you encounter access or permission issues, run:
 
@@ -68,48 +68,34 @@ python manage.py sync_permissions_roles
 
 This ensures that user roles are correctly mapped to permissions.
 
-#### 4. Container Health Issues
+### What should I do if the backend container is unhealthy?
 
-If Docker reports that the **care backend container is unhealthy**:
+1. Check the logs for error messages:
 
-- Check the logs for error messages:
+```bash
+docker logs <container_name>
+# Example:
+docker logs care-backend-1
+```
 
-  ```bash
-  docker logs <container_name>
-  ```
+2. Open the Django shell for debugging:
 
-  Example:
+```bash
+docker exec -it <container_name> python manage.py shell
+# Example:
+docker exec -it care-backend-1 python manage.py shell
+```
 
-  ```bash
-  docker logs care-backend-1
-  ```
+3. Rebuild and restart the services:
 
-- Open the Django shell for debugging:
+```bash
+make teardown
+make up
+```
 
-  ```bash
-  docker exec -it <container_name> python manage.py shell
-  ```
+## Frontend Setup
 
-  Example:
-
-  ```bash
-  docker exec -it care-backend-1 python manage.py shell
-  ```
-
-- Rebuild and restart the services:
-
-  ```bash
-  make teardown
-  make up
-  ```
-
-This can resolve configuration or dependency issues.
-
----
-
-### Frontend Setup Issues
-
-#### 1. Node Version Compatibility
+### What Node.js version is required?
 
 The frontend projects require **Node.js 22**. Use `nvm` to install and switch versions:
 
@@ -124,15 +110,17 @@ To verify the active Node version:
 node -v
 ```
 
-#### 2. Dependency Installation Issues
+### How do I resolve dependency installation issues?
 
 If you see peer dependency warnings or install failures:
+
+1. Try installing with legacy peer deps:
 
 ```bash
 npm install --legacy-peer-deps
 ```
 
-If issues persist:
+2. If issues persist:
 
 ```bash
 npm cache clean --force
@@ -140,30 +128,28 @@ rm -rf node_modules
 npm install
 ```
 
-#### 3. API Connection Issues
+### How do I fix API connection issues?
 
-Ensure the backend server is up and running before starting the frontend.
-Also, check the `.env` file in your frontend project:
+1. Ensure the backend server is running
+2. Check your `.env` file in the frontend project:
 
 ```env
 REACT_CARE_API_URL=http://127.0.0.1:9000
 ```
 
-#### 4. Build Errors
+### How do I fix build errors?
 
-If you see TypeScript errors or linting issues:
+If you encounter TypeScript errors or linting issues:
 
 ```bash
 npm run lint-fix
 ```
 
----
+## Plugin Setup
 
-### Plugin Setup Issues
+### How do I set up a plugin?
 
-#### 1. Common Plugin Setup
-
-Most plugins follow a similar pattern. In `plug_config.py`, add:
+Most plugins follow this pattern in `plug_config.py`:
 
 ```python
 plugin_name = Plug(
@@ -175,74 +161,62 @@ plugin_name = Plug(
 plugs = [plugin_name]
 ```
 
-#### 2. Local Plugin Development
+### How do I develop plugins locally?
 
-To develop plugins locally:
+1. Update `plug_config.py`:
 
-- Update `plug_config.py`:
+```python
+plugin_name = Plug(
+    name="plugin_name",
+    package_name="/app/plugin_folder",
+    version="",
+    configs={},
+)
+```
 
-  ```python
-  plugin_name = Plug(
-      name="plugin_name",
-      package_name="/app/plugin_folder",
-      version="",
-      configs={},
-  )
-  ```
+2. In `plugs/manager.py`, install in editable mode:
 
-- In `plugs/manager.py`, install in editable mode:
+```python
+subprocess.check_call(
+    [sys.executable, "-m", "pip", "install", "-e", *packages]
+)
+```
 
-  ```python
-  subprocess.check_call(
-      [sys.executable, "-m", "pip", "install", "-e", *packages]
-  )
-  ```
+3. Rebuild and restart the containers:
 
-- Rebuild and restart the containers:
+```bash
+make re-build
+make up
+```
 
-  ```bash
-  make re-build
-  make up
-  ```
+### What should I do if a plugin isn't loading?
 
-#### 3. Plugin Troubleshooting
+For backend plugins:
 
-- **Backend plugin not loading?**
+- Ensure the plugin name matches the Django app name
+- Verify the path or repository URL is correct
+- Check that all required environment variables are configured
 
-  - Ensure the plugin name matches the Django app name.
-  - Verify the path or repository URL is correct.
-  - Check that all required environment variables are configured.
+For frontend plugins:
 
-- **Frontend plugin issues?**
+- Verify you're using the correct Node.js version
+- In `care_fe/.env`, ensure the plugin is added to `REACT_ENABLED_APPS`:
 
-  - Check that the correct Node.js version is used.
+```env
+REACT_ENABLED_APPS="ohcnetwork/plugin_name_fe@localhost:5173"
+```
 
-  - In `care_fe/.env`, ensure the plugin is added to `REACT_ENABLED_APPS`:
-
-    ```env
-    REACT_ENABLED_APPS="ohcnetwork/plugin_name_fe@localhost:5173"
-    ```
-
-  - Make sure the plugin dev server is running on the expected port.
-
----
+- Make sure the plugin dev server is running on the expected port
 
 ## Learning Resources
 
-### Tools We Use
+### What learning resources are available?
 
 1. **Docker and Container Technology**
-   - [Docker Crash Course for Beginners](https://www.youtube.com/watch?v=0UG2x2iWerk) - Basic tutorial to get started with Docker
 
-### OHC School Courses
+   - [Docker Crash Course for Beginners](https://www.youtube.com/watch?v=0UG2x2iWerk)
 
-1. **Care Systems 101**
-
-   - [Introduction to Care Systems](https://school.ohc.network/courses/357) - Overview of Care platform fundamentals
-
-2. **Django For All**
-
-   - [Django Development Course](https://school.ohc.network/courses/1844) - Learn Django for backend development
-
-3. **React For All**
-   - [React Development Course](https://school.ohc.network/courses/1843) - Learn React for frontend development
+2. **OHC School Courses**
+   - [Care Systems 101](https://school.ohc.network/courses/357) - Overview of Care platform fundamentals
+   - [Django For All](https://school.ohc.network/courses/1844) - Learn Django for backend development
+   - [React For All](https://school.ohc.network/courses/1843) - Learn React for frontend development
