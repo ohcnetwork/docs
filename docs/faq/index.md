@@ -110,6 +110,8 @@ To verify the active Node version:
 node -v
 ```
 
+**Note**: Always sync with the latest **develop** branch before starting frontend work.
+
 ### How do I resolve dependency installation issues?
 
 If you see peer dependency warnings or install failures:
@@ -144,6 +146,26 @@ If you encounter TypeScript errors or linting issues:
 ```bash
 npm run lint-fix
 ```
+
+### What should I do if Cypress tests are failing?
+
+Cypress test failures are often specific to individual PRs and may not indicate a broader issue with your local setup. If you encounter failing Cypress tests:
+
+1. **Check if tests pass locally**:
+
+   ```bash
+   npm run cypress:run
+   ```
+
+2. **Run tests in interactive mode for debugging**:
+
+   ```bash
+   npm run cypress:open
+   ```
+
+3. **If tests fail consistently**, discuss the issue in the [Slack community](https://slack.ohc.network) - the community can help identify if it's a known issue or specific to your PR.
+
+**Note**: Many Cypress failures are flaky tests that pass on retry. If tests fail in CI but pass locally, it's often a timing or environment issue rather than a code problem.
 
 ## Plugin Setup
 
