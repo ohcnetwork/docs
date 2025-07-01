@@ -34,7 +34,7 @@ Steps:
 
    - **Dev Environment:** Use `gcloud auth login`. It creates the necessary credentials file automatically.
    - **Production:**
-     - Create a **service account** with appropriate Vertex AI permissions.
+     - Create a [**service account**](https://cloud.google.com/vertex-ai/docs/general/custom-service-account) with appropriate Vertex AI permissions.
      - Download the **credentials JSON file**.
      - Set the environment variable:
        ```bash
