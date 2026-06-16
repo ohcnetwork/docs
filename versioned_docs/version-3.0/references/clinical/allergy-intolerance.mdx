@@ -6,22 +6,12 @@ sidebar_position: 4
 
 Technical reference for the `AllergyIntolerance` module in Care EMR. Care aligns this resource to FHIR `AllergyIntolerance`.
 
+The Django model is the **storage layer** — several fields are opaque `JSONField`s whose real structure is defined only in the Pydantic **resource specs** (the API/implementation layer). The specs define the enums, the JSON-field shapes, validation, the bound value set, and the read/write API schemas. This page documents both.
+
 **Source:**
 - Model: [`care/emr/models/allergy_intolerance.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/allergy_intolerance.py)
 - Specs: [`care/emr/resources/allergy_intolerance/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/allergy_intolerance/spec.py) · [`valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/allergy_intolerance/valueset.py)
 - Base resource: [`care/emr/resources/base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)
-
-## Quick reference
-
-| Need | Section |
-| --- | --- |
-| Models and ownership | Models |
-| Field definitions | `AllergyIntolerance` fields |
-| Allowed values | Enum values |
-| API contracts | Resource specs (API schema) |
-| Server behaviour | Methods & save behaviour |
-| Client guidance | API integration notes |
-| Related references | Related |
 
 ## Models
 
@@ -66,16 +56,16 @@ Technical reference for the `AllergyIntolerance` module in Care EMR. Care aligns
 | `onset_datetime` | `datetime` | No | `None` |
 | `onset_age` | `int` | No | `None` |
 | `onset_string` | `str` | No | `None` |
-| `note` | `str` | **Yes** | - |
+| `note` | `str` | **Yes** | — |
 
 ### Context & notes
 
 | Field | Type (storage) | Spec type | Notes |
 | --- | --- | --- | --- |
-| `patient` | `FK → Patient` (`CASCADE`) | excluded from specs | Subject of the allergy. Not client-settable; derived server-side from the encounter on create. |
-| `encounter` | `FK → Encounter` (`CASCADE`) | `UUID4` | Encounter the allergy was recorded in. Sent as `external_id`. Required on write; validated to exist. |
+| `patient` | `FK → Patient` (`CASCADE`) | excluded from specs | Subject of the allergy. Not client-settable — derived server-side from the encounter on create. |
+| `encounter` | `FK → Encounter` (`CASCADE`) | `UUID4` | Encounter the allergy was recorded in. Sent as `external_id`; required on write; validated to exist. |
 | `note` | `TextField`, null | `str \| None` | Free-text clinical note. Optional. |
-| `copied_from` | `BigIntegerField`, null (`default=None`) | not exposed | Source record ID when this entry is a maintained copy. Platform-maintained. Never set from clients. |
+| `copied_from` | `BigIntegerField`, null (`default=None`) | not exposed | Source record ID when this entry is a maintained copy. Platform-maintained — never set from clients. |
 
 ## Enum values
 
@@ -143,15 +133,15 @@ All specs extend `EMRResource` (`care/emr/resources/base.py`), which provides `s
 
 Notes on the spec set:
 
-- **Create vs update surface differs.** `category`, `code`, `onset`, and `recorded_date` are write-only on **create** (`AllergyIntoleranceWriteSpec`) and are **not** present on `AllergyIntoleranceUpdateSpec`; they cannot be changed after creation through the update path.
-- **Read uses relaxed types.** `AllergyIntoleranceReadSpec` types the coded fields as plain `str` and `code` as `Coding` (no value-set re-validation on read, for performance; it relies on `model_construct`).
+- **Create vs update surface differs.** `category`, `code`, `onset`, and `recorded_date` are write-only on **create** (`AllergyIntoleranceWriteSpec`) and are **not** present on `AllergyIntoleranceUpdateSpec` — they cannot be changed after creation through the update path.
+- **Read uses relaxed types.** `AllergyIntoleranceReadSpec` types the coded fields as plain `str` and `code` as `Coding` (no value-set re-validation on read, for performance — it relies on `model_construct`).
 
 ### Validation
 
-- `encounter` (both write specs): `validate_encounter_exists`; rejects with `"Encounter not found"` if no `Encounter` has that `external_id`.
+- `encounter` (both write specs): `validate_encounter_exists` — rejects with `"Encounter not found"` if no `Encounter` has that `external_id`.
 - `code` (create): validated against value set `system-allergy-code` (must be a permitted SNOMED CT allergy concept).
 - `onset.note` is required whenever an `onset` object is supplied.
-- Any `datetime` fields are stored as-is; tz-aware handling for period-style values is enforced by `PeriodSpec` in the base (start ≤ end, both tz-aware); `AllergyIntolerance` itself uses scalar datetimes, not a `PeriodSpec`.
+- Any `datetime` fields are stored as-is; tz-aware handling for period-style values is enforced by `PeriodSpec` in the base (start ≤ end, both tz-aware) — `AllergyIntolerance` itself uses scalar datetimes, not a `PeriodSpec`.
 
 ### Server-side side effects
 
@@ -162,7 +152,7 @@ Notes on the spec set:
 ## Methods & save behaviour
 
 - `serialize` / `de_serialize` are inherited from `EMRResource`. `de_serialize` maps only DB fields not in `__exclude__` and not `id`/`external_id`, then calls `perform_extra_deserialization` for the encounter/patient wiring described above.
-- `patient` is **always** derived from the encounter on create; there is no path to set it from a client payload.
+- `patient` is **always** derived from the encounter on create — there is no path to set it from a client payload.
 - `copied_from` is platform-maintained for propagated/copied records and is not part of any spec.
 - `patient` and `encounter` are both `CASCADE`-deleted, so an allergy record never outlives its patient or encounter.
 

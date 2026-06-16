@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Facility Config
 
-Technical reference for the per-facility monetary/billing configuration in Care EMR.
+Technical reference for the per-facility monetary/billing configuration in Care EMR. The Django model `FacilityMonetoryConfig` is the **storage layer** — several of its fields are opaque `JSONField`s whose real structure lives in the Pydantic **resource specs** (the API/implementation layer). This page documents both: the model fields and the spec-defined shapes, enums, and validation that constrain them.
 
 **Sources:**
 
@@ -14,19 +14,6 @@ Technical reference for the per-facility monetary/billing configuration in Care 
 - Coding: [`care/emr/resources/common/coding.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/coding.py)
 - Expression evaluator: [`care/emr/resources/invoice/default_expression_evaluator.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/invoice/default_expression_evaluator.py)
 - API viewset: [`care/emr/api/viewsets/facility.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/facility.py)
-
-## Quick reference
-
-| Need | Section |
-| --- | --- |
-| Models and ownership | Models |
-| Field definitions | `FacilityMonetoryConfig` fields |
-| Allowed values | Enum values |
-| Structured payloads | JSON field shapes |
-| API contracts | Resource specs (API schema) |
-| Server behaviour | Methods & save behaviour |
-| Client guidance | API integration notes |
-| Related references | Related |
 
 ## Models
 
@@ -40,11 +27,13 @@ Technical reference for the per-facility monetary/billing configuration in Care 
 
 | Field | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |
-| `facility` | `OneToOneField → Facility` | yes | - | `on_delete=CASCADE`, `unique=True`. Exactly one config per facility |
-| `discount_codes` | `JSONField` → `list[Coding]` | no | `[]` | Catalog of facility-defined discount codes. Each entry is a [`Coding`](#coding-shape). Max 100. No bound value set; codes are free-form but must not duplicate or redefine instance `settings.DISCOUNT_CODES` |
+| `facility` | `OneToOneField → Facility` | yes | — | `on_delete=CASCADE`, `unique=True`. Exactly one config per facility |
+| `discount_codes` | `JSONField` → `list[Coding]` | no | `[]` | Catalog of facility-defined discount codes. Each entry is a [`Coding`](#coding-shape). Max 100. No bound value set — codes are free-form but must not duplicate or redefine instance `settings.DISCOUNT_CODES` |
 | `discount_monetary_components` | `JSONField` → `list[MonetaryComponentDefinition]` | no | `[]` | Definitions of selectable discount line items. Each entry is a [`MonetaryComponentDefinition`](#monetarycomponentdefinition-shape). Max 100. Every `code` referenced here must resolve to either an instance discount code or a facility `discount_codes` entry |
 | `discount_configuration` | `JSONField` → `DiscountConfiguration \| null` | no | `{}` | Discount-stacking rule: see [`DiscountConfiguration`](#discountconfiguration-shape). `null`/empty is treated as `{}` |
 | `invoice_number_expression` | `CharField(1000)` | no | `None` | Nullable/blank. Expression template used to generate invoice numbers. Validated by dry-running it against a dummy context (see [Invoice expression](#invoice-number-expression)) |
+
+> The Django model declares `discount_codes`, `discount_monetary_components`, and `discount_configuration` as plain `JSONField`s. Their real structure is defined by the Pydantic specs below and is **only enforced at the API layer** — the database does not constrain them.
 
 ## JSON field shapes
 
@@ -65,14 +54,14 @@ Technical reference for the per-facility monetary/billing configuration in Care 
 
 | Field | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |
-| `title` | `str` | **yes** | - | Display title (added by the definition subclass) |
-| `monetary_component_type` | `MonetaryComponentType` enum | **yes** | - | See [enum values](#monetarycomponenttype-values). `base` is **not allowed** in a definition |
+| `title` | `str` | **yes** | — | Display title (added by the definition subclass) |
+| `monetary_component_type` | `MonetaryComponentType` enum | **yes** | — | See [enum values](#monetarycomponenttype-values). `base` is **not allowed** in a definition |
 | `code` | `Coding \| null` | no | `null` | Must resolve against allowed codes (instance + facility) per `FacilityMonetaryCodeSpec` validation |
 | `factor` | `Decimal \| null` | no | `null` | `max_digits=20, decimal_places=6`. Mutually exclusive with `amount` |
 | `amount` | `Decimal \| null` | no | `null` | `max_digits=20, decimal_places=6`. Mutually exclusive with `factor` |
 | `tax_included_amount` | `Decimal \| null` | no | `null` | `max_digits=20, decimal_places=6`. On the base `MonetaryComponent` this is only allowed when type is `base`; irrelevant for definitions since `base` is rejected |
 | `global_component` | `bool` | no | `false` | Whether the component applies globally |
-| `conditions` | `list[EvaluatorConditionSpec]` | no | `[]` | Applicability conditions. Each has `metric`, `operation`, `value` validated against the evaluator-metrics registry |
+| `conditions` | `list[EvaluatorConditionSpec]` | no | `[]` | Applicability conditions; each has `metric`, `operation`, `value` validated against the evaluator-metrics registry |
 
 `EvaluatorConditionSpec` (each `conditions[]` entry):
 
@@ -89,7 +78,7 @@ Technical reference for the per-facility monetary/billing configuration in Care 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `max_applicable` | `int` (`ge=0`) | **yes** | Maximum number of discounts that may stack on a charge |
-| `applicability_order` | `DiscountApplicability` enum | **yes** | Order discounts are applied in. See [enum values](#discountapplicability-values) |
+| `applicability_order` | `DiscountApplicability` enum | **yes** | Order discounts are applied in; see [enum values](#discountapplicability-values) |
 
 ## Enum values
 
@@ -116,16 +105,16 @@ From `care/emr/resources/common/monetary_component.py`. String enum.
 
 ## Resource specs (API schema)
 
-These Pydantic specs (built on [`EMRResource`](../foundation/base-model.mdx); `serialize`/`de_serialize`, with `perform_extra_serialization`/`perform_extra_deserialization` hooks, `__model__`, `__exclude__`) define how monetary config is written and read. The monetary config is **not** exposed via the standard facility CRUD; it is written through dedicated facility detail actions and read back inside the facility retrieve payload.
+These Pydantic specs (built on [`EMRResource`](../foundation/base-model.mdx) — `serialize`/`de_serialize`, with `perform_extra_serialization`/`perform_extra_deserialization` hooks, `__model__`, `__exclude__`) define how monetary config is written and read. The monetary config is **not** exposed via the standard facility CRUD; it is written through dedicated facility detail actions and read back inside the facility retrieve payload.
 
 | Spec | Role | Bound to | Notes |
 | --- | --- | --- | --- |
 | `FacilityMonetaryCodeSpec` | write · set monetary config | `FacilityMonetoryConfig` | Validates and persists `discount_codes`, `discount_monetary_components`, `discount_configuration` in one payload. `de_serialize`d onto the get-or-created config row |
 | `FacilityInvoiceExpressionSpec` | write · set invoice expression | (plain `BaseModel`) | Single field `invoice_number_expression`; validated by dry-run before save |
 | `FacilityRetrieveSpec` | read · facility detail | `Facility` | Surfaces the facility's monetary config plus instance-level catalogs in `perform_extra_serialization` |
-| `MonetaryComponentDefinition` | nested (write) | - | Shape of each `discount_monetary_components[]` entry |
-| `DiscountConfiguration` | nested (write) | - | Shape of `discount_configuration` |
-| `Coding` | nested (write) | - | Shape of each `discount_codes[]` entry |
+| `MonetaryComponentDefinition` | nested (write) | — | Shape of each `discount_monetary_components[]` entry |
+| `DiscountConfiguration` | nested (write) | — | Shape of `discount_configuration` |
+| `Coding` | nested (write) | — | Shape of each `discount_codes[]` entry |
 
 ### `FacilityMonetaryCodeSpec`
 
@@ -139,10 +128,10 @@ These Pydantic specs (built on [`EMRResource`](../foundation/base-model.mdx); `s
 
 **Validation (model validators):**
 
-- **Count limits**: `discount_codes` and `discount_monetary_components` must each be **fewer than 100** (`DISCOUNT_CODE_COUNT_LIMIT` / `DISCOUNT_MONETARY_COMPONENT_COUNT_LIMIT = 100`), the check uses `>= 100`.
-- **No duplicate codes**: the `code` values in `discount_codes` must be unique.
-- **No redefining system codes**: a facility code may not reuse a `[code, system]` pair already present in instance `settings.DISCOUNT_CODES`.
-- **All component codes must be defined**: every `discount_monetary_components[i].code` (when present) must match a `[code, system]` pair from either `settings.DISCOUNT_CODES` (instance) or the facility's `discount_codes`.
+- **Count limits** — `discount_codes` and `discount_monetary_components` must each be **fewer than 100** (`DISCOUNT_CODE_COUNT_LIMIT` / `DISCOUNT_MONETARY_COMPONENT_COUNT_LIMIT = 100`); the check uses `>= 100`.
+- **No duplicate codes** — the `code` values in `discount_codes` must be unique.
+- **No redefining system codes** — a facility code may not reuse a `[code, system]` pair already present in instance `settings.DISCOUNT_CODES`.
+- **All component codes must be defined** — every `discount_monetary_components[i].code` (when present) must match a `[code, system]` pair from either `settings.DISCOUNT_CODES` (instance) or the facility's `discount_codes`.
 
 ### `FacilityInvoiceExpressionSpec`
 
@@ -209,11 +198,11 @@ A `null`/empty expression evaluates to `""` (no generated number).
 
 ### Class methods
 
-- `get_monetory_config(facility_id)`; returns the facility's config, **creating an empty one if none exists**. The get-or-create entry point used by both write actions and the retrieve serializer.
-- `get_component_key(component)`; derives a component's lookup key as `code.system + "/" + code.code`.
-- `calculate_monetory_components(components)`; folds a component list into a dict keyed by `get_component_key`.
-- `get_monetory_component(facility_id)`; returns the cached component dict, computing it from `discount_monetary_components` and caching it on a miss.
-- `get_discount_configuration(facility_id)`; returns the cached `discount_configuration` (defaulting to `{}`), caching it on a miss.
+- `get_monetory_config(facility_id)` — returns the facility's config, **creating an empty one if none exists**. The get-or-create entry point used by both write actions and the retrieve serializer.
+- `get_component_key(component)` — derives a component's lookup key as `code.system + "/" + code.code`.
+- `calculate_monetory_components(components)` — folds a component list into a dict keyed by `get_component_key`.
+- `get_monetory_component(facility_id)` — returns the cached component dict, computing it from `discount_monetary_components` and caching it on a miss.
+- `get_discount_configuration(facility_id)` — returns the cached `discount_configuration` (defaulting to `{}`), caching it on a miss.
 
 ### `save()` side effects
 
@@ -222,9 +211,9 @@ A `null`/empty expression evaluates to `""` (no generated number).
 ## API integration notes
 
 - One config exists per facility; use `get_monetory_config(facility_id)` to read or auto-create it rather than querying the table directly. The `set_monetary_config` / `set_invoice_expression` actions and `FacilityRetrieveSpec` all rely on this get-or-create.
-- Write `discount_codes`, `discount_monetary_components`, and `discount_configuration` through `FacilityMonetaryCodeSpec` and the nested `Coding` / `MonetaryComponentDefinition` / `DiscountConfiguration` specs so validation catches invalid codes, components, and stacking rules.
+- `discount_codes`, `discount_monetary_components`, and `discount_configuration` are opaque `JSONField`s at the DB layer; their real shape and validation come from `FacilityMonetaryCodeSpec` and the nested `Coding` / `MonetaryComponentDefinition` / `DiscountConfiguration` specs.
 - Monetary components are keyed by a FHIR-style `code.system`/`code.code` pair (`get_component_key`); consumers should match on that derived key.
-- `get_monetory_component()` / `get_discount_configuration()` results are cache-backed and platform-maintained. Do not write to the cache keys directly; write the model and let `save()` invalidate.
+- `get_monetory_component()` / `get_discount_configuration()` results are cache-backed and platform-maintained; do not write to the cache keys directly — write the model and let `save()` invalidate.
 - `invoice_number_expression` drives invoice number generation and ties this config to the billing domain.
 
 ## Related

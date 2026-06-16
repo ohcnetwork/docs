@@ -6,24 +6,12 @@ sidebar_position: 2
 
 Technical reference for the `MetaArtifact` module in Care EMR.
 
-`MetaArtifact` is a generic, polymorphic metadata record attached to any Care object by type + external ID.
+`MetaArtifact` is a generic, polymorphic metadata record attached to any Care object by type + external ID. The Django model is the storage layer: `object_value` is an opaque `JSONField`, and `associating_type` / `object_type` are bare `CharField`s. The constrained values and the API request/response schemas live in the Pydantic resource specs.
 
 **Source:**
 
 - Model: [`care/emr/models/meta_artifact.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/meta_artifact.py)
 - Resource specs: [`care/emr/resources/meta_artifact/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/meta_artifact/spec.py)
-
-## Quick reference
-
-| Need | Section |
-| --- | --- |
-| Models and ownership | Models |
-| Field definitions | `MetaArtifact` fields |
-| Allowed values | Enum values |
-| API contracts | Resource specs (API schema) |
-| Server behaviour | Methods & save behaviour |
-| Client guidance | API integration notes |
-| Related references | Related |
 
 ## Models
 
@@ -78,7 +66,7 @@ Binds `object_type`.
 
 ## Resource specs (API schema)
 
-All specs extend `EMRResource` ([`care/emr/resources/base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)); `serialize` (model → pydantic) / `de_serialize` (pydantic → model), with `perform_extra_serialization` / `perform_extra_deserialization` hooks. `__model__ = MetaArtifact`.
+All specs extend `EMRResource` ([`care/emr/resources/base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)) — `serialize` (model → pydantic) / `de_serialize` (pydantic → model), with `perform_extra_serialization` / `perform_extra_deserialization` hooks. `__model__ = MetaArtifact`.
 
 | Spec | Role | Fields exposed |
 | --- | --- | --- |
@@ -92,23 +80,23 @@ Field-level details and validation:
 | Field | Spec type | Required | Default | Validation / behaviour |
 | --- | --- | --- | --- | --- |
 | `id` | `UUID4 \| None` | optional | `None` | Read: populated from `obj.external_id` in `perform_extra_serialization` |
-| `object_value` | `dict \| list` | yes | - | Arbitrary JSON object or array |
+| `object_value` | `dict \| list` | yes | — | Arbitrary JSON object or array |
 | `note` | `str \| None` | no | `None` | Free text |
-| `associating_type` | `MetaArtifactAssociatingTypeChoices` | yes (create) | - | Bound enum; `patient` or `encounter` |
-| `associating_id` | `UUID4` | yes (create) | - | `external_id` of the parent. On create, copied to model field `associating_external_id` in `perform_extra_deserialization` |
-| `object_type` | `MetaArtifactObjectTypeChoices` | yes (create) | - | Bound enum; `drawing` |
-| `name` | `str` | yes (create) | - | `validate_name`: rejects blank/whitespace-only with `"Name cannot be empty"` |
-| `created_date` | `datetime` | read | - | From `EMRBaseModel` |
-| `modified_date` | `datetime` | read | - | From `EMRBaseModel` |
+| `associating_type` | `MetaArtifactAssociatingTypeChoices` | yes (create) | — | Bound enum; `patient` or `encounter` |
+| `associating_id` | `UUID4` | yes (create) | — | `external_id` of the parent. On create, copied to model field `associating_external_id` in `perform_extra_deserialization` |
+| `object_type` | `MetaArtifactObjectTypeChoices` | yes (create) | — | Bound enum; `drawing` |
+| `name` | `str` | yes (create) | — | `validate_name`: rejects blank/whitespace-only with `"Name cannot be empty"` |
+| `created_date` | `datetime` | read | — | From `EMRBaseModel` |
+| `modified_date` | `datetime` | read | — | From `EMRBaseModel` |
 | `created_by` / `updated_by` | `dict \| None` | read | `None` | Serialized via `serialize_audit_users` (cached `UserSpec`) |
 
 Server-maintained behaviour:
 
-- **Create** (`MetaArtifactCreateSpec.perform_extra_deserialization`): sets `obj.associating_external_id = self.associating_id`. The spec's `associating_id` (the parent's `external_id`) is the public handle, the model stores it as `associating_external_id`.
+- **Create** (`MetaArtifactCreateSpec.perform_extra_deserialization`): sets `obj.associating_external_id = self.associating_id`. The spec's `associating_id` (the parent's `external_id`) is the public handle; the model stores it as `associating_external_id`.
 - **Read** (`MetaArtifactReadSpec.perform_extra_serialization`): sets `mapping["id"] = obj.external_id` and calls `serialize_audit_users` to attach `created_by` / `updated_by`.
 - **Update**: `MetaArtifactUpdateSpec` exposes only `object_value` and `note` (plus the inherited optional `id`); `associating_type`, `associating_id`, `object_type`, and `name` are not re-accepted, so association and classification are immutable after creation.
 
-No coded field on this resource binds to a value set (no `valueset.py`). The only constrained vocabularies are the two `str` enums above.
+No coded field on this resource binds to a value set (no `valueset.py`); the only constrained vocabularies are the two `str` enums above.
 
 ## Methods & save behaviour
 
@@ -122,12 +110,12 @@ Index(fields=["associating_type", "associating_external_id"])
 
 ## API integration notes
 
-- The generic `associating_type` + `associating_external_id` pair lets a single table store metadata for many different Care object types without per-type foreign keys. Clients reference the target by its `external_id` (UUID), never its internal primary key. Clients send this as `associating_id` on create.
+- The generic `associating_type` + `associating_external_id` pair lets a single table store metadata for many different Care object types without per-type foreign keys; clients reference the target by its `external_id` (UUID), never its internal primary key. Clients send this as `associating_id` on create.
 - `associating_type` and `object_type` are open `CharField`s in storage but are constrained at the API by `str` enums (`patient` / `encounter` and `drawing` respectively). Adding new association or artifact kinds requires extending those enums in `spec.py`, not a schema migration.
 - `object_value` is an open `JSONField` typed as `dict | list` by the spec, so artifact payloads can carry deployment- or feature-specific structure without schema migrations; `object_type` records what shape to expect (e.g. `drawing`).
 - `name` is validated non-blank on create; whitespace-only names are rejected.
-- After creation the association (`associating_type` / `associating_id`), `object_type`, and `name` are fixed. Only `object_value` and `note` are updatable via `MetaArtifactUpdateSpec`.
-- Audit fields (`created_by`, `updated_by`, `created_date`, `modified_date`), the public `external_id` (exposed as `id`), and soft-delete (`deleted`) are platform-maintained via `EMRBaseModel`. Do not set them directly from clients.
+- After creation the association (`associating_type` / `associating_id`), `object_type`, and `name` are fixed — only `object_value` and `note` are updatable via `MetaArtifactUpdateSpec`.
+- Audit fields (`created_by`, `updated_by`, `created_date`, `modified_date`), the public `external_id` (exposed as `id`), and soft-delete (`deleted`) are platform-maintained via `EMRBaseModel` — do not set them directly from clients.
 
 ## Related
 

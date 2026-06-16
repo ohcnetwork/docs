@@ -4,23 +4,13 @@ sidebar_position: 2
 
 # Questionnaire Response
 
-Technical reference for the `QuestionnaireResponse` and `FormSubmission` modules in Care EMR, the **submitted answers** to a [questionnaire](./questionnaire.mdx) for a patient, and the submission envelope that carries a draft/finalised payload.
+Technical reference for the `QuestionnaireResponse` and `FormSubmission` modules in Care EMR — the **submitted answers** to a [questionnaire](./questionnaire.mdx) for a patient, and the submission envelope that carries a draft/finalised payload.
+
+The Django models are the **storage** layer; the Pydantic **resource specs** define the submit payload, the answer structure, status enums, and the read/write API schemas.
 
 **Source:**
 - Model: [`care/emr/models/questionnaire.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/questionnaire.py)
 - Specs: [`resources/questionnaire_response/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/questionnaire_response/spec.py) · [`resources/form_submission/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/form_submission/spec.py)
-
-## Quick reference
-
-| Need | Section |
-| --- | --- |
-| Models and ownership | Models |
-| Field definitions | `QuestionnaireResponse` fields |
-| Allowed values | Enums |
-| Structured payloads | Submit payload (nested shapes) |
-| API contracts | Resource specs (API schema) |
-| Client guidance | API integration notes |
-| Related references | Related |
 
 ## Models
 
@@ -37,7 +27,7 @@ Both extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base
 | --- | --- | --- |
 | `questionnaire` | `FK → Questionnaire` | `CASCADE`, nullable. The questionnaire that was answered |
 | `subject_id` | `UUIDField` | The subject the response is about (e.g. patient external id) |
-| `responses` | `JSONField` | `default=list`. The raw answers, a list of `{ "question_id": UUID, ... }` entries |
+| `responses` | `JSONField` | `default=list`. The raw answers — a list of `{ "question_id": UUID, ... }` entries |
 | `structured_responses` | `JSONField` | `default=dict`. Extracted/structured representation of the answers |
 | `structured_response_type` | `CharField` | Nullable. Discriminator for the structured payload |
 | `patient` | `FK → Patient` | `CASCADE`. The patient |
@@ -47,7 +37,7 @@ Both extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base
 
 ### `render_responses()`
 
-Joins each entry in `responses` with the matching question definition from `questionnaire.get_questions_by_id()`, producing a list of `{ "answer": <response>, "question": <question> }`, a human-readable view of the answers against the current questionnaire. Returns `[]` when there are no responses or no linked questionnaire.
+Joins each entry in `responses` with the matching question definition from `questionnaire.get_questions_by_id()`, producing a list of `{ "answer": <response>, "question": <question> }` — a human-readable view of the answers against the current questionnaire. Returns `[]` when there are no responses or no linked questionnaire.
 
 ## `FormSubmission` fields
 
@@ -119,7 +109,7 @@ All specs extend `EMRResource` (`resources/base.py`).
 | Spec class | Role | Notes |
 | --- | --- | --- |
 | `EMRQuestionnaireResponseBase` | shared | `__model__ = QuestionnaireResponse` |
-| `QuestionnaireResponseUpdate` | write · update | Only `status` (`QuestionnaireResponseStatusChoices`, default `completed`); used to mark a response `entered_in_error` |
+| `QuestionnaireResponseUpdate` | write · update | Only `status` (`QuestionnaireResponseStatusChoices`, default `completed`) — used to mark a response `entered_in_error` |
 | `QuestionnaireResponseReadSpec` | read | `id`, `status`, `questionnaire` (nested `QuestionnaireReadSpec`), `subject_id`, `responses`, `encounter` (external id or `null`), `structured_responses`, `structured_response_type`, `created_by`/`updated_by` (`UserSpec`), `created_date`/`modified_date` |
 
 New responses are created via the questionnaire submit flow (`QuestionnaireSubmitRequest`), not a generic create spec.
@@ -130,20 +120,20 @@ New responses are created via the questionnaire submit flow (`QuestionnaireSubmi
 | --- | --- | --- |
 | `BaseFormSubmissionSpec` | shared | `__model__ = FormSubmission`; `id` (`UUID4?`) |
 | `FormSubmissionUpdateSpec` | write · update | `status` (`FormSubmissionStatusChoices`), `response_dump` (`dict`) |
-| `FormSubmissionWriteSpec` | write · create | Adds `questionnaire` (slug `str`), `patient` (`UUID4`), `encounter` (`UUID4?`). `perform_extra_deserialization` resolves the questionnaire by slug and the patient/encounter by external id. When an encounter is given, the patient is taken from it |
+| `FormSubmissionWriteSpec` | write · create | Adds `questionnaire` (slug `str`), `patient` (`UUID4`), `encounter` (`UUID4?`). `perform_extra_deserialization` resolves the questionnaire by slug and the patient/encounter by external id; when an encounter is given, the patient is taken from it |
 | `FormSubmissionReadSpec` | read | `status`, `response_dump`, `created_date`/`modified_date`, `created_by`/`updated_by` (`UserSpec?`) |
 
 ## API integration notes
 
 - Both align loosely with the FHIR `QuestionnaireResponse` resource; `responses` holds the raw answers, while `structured_responses` is the extracted, query-friendly form.
-- A `QuestionnaireResponse` is normally created by submitting a `QuestionnaireSubmitRequest`, the update spec exists mainly to flag responses `entered_in_error`.
-- `FormSubmission` supports a draft→submitted lifecycle; `response_dump` is validated against the questionnaire definition.
+- A `QuestionnaireResponse` is normally created by submitting a `QuestionnaireSubmitRequest`; the update spec exists mainly to flag responses `entered_in_error`.
+- `FormSubmission` supports a draft→submitted lifecycle; `response_dump` is an opaque JSON payload validated by the questionnaire definition, not by the model.
 - Audit users (`created_by`/`updated_by`) are platform-maintained.
 
 ## Related
 
-- Reference: [Questionnaire](./questionnaire.mdx), the form definition being answered
-- Reference: [Questionnaire Response Template](./questionnaire-response-template.mdx); reusable pre-fill templates
+- Reference: [Questionnaire](./questionnaire.mdx) — the form definition being answered
+- Reference: [Questionnaire Response Template](./questionnaire-response-template.mdx) — reusable pre-fill templates
 - Reference: [Encounter](../clinical/encounter.mdx)
 - Concept: [Patient](../../concepts/clinical/patient)
 - Source: [questionnaire.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/questionnaire.py)

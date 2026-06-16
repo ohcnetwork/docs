@@ -6,7 +6,9 @@ sidebar_position: 3
 
 Technical reference for the `Permission` module in Care EMR.
 
-A permission is the ability to perform a single action in a given context, usually expressed as "Action on Resource" (for example, "Can Create Patient" in the `PATIENT` context). Permissions are the atomic building blocks of Care's security system: they are declared in code, synced into the database, grouped into [roles](./role.mdx), and bound to resources via [permission associations](./permission-association.mdx).
+A permission is the ability to perform a single action in a given context — usually expressed as "Action on Resource" (for example, "Can Create Patient" in the `PATIENT` context). Permissions are the atomic building blocks of Care's security system: they are declared in code, synced into the database, grouped into [roles](./role.mdx), and bound to resources via [permission associations](./permission-association.mdx).
+
+The Django `PermissionModel` is the **storage** layer. The real implementation lives in two other places: the **permission registry** (`care/security/permissions/`), which declares every permission as a Python `enum` member with a `name`, `description`, `context`, and the default `roles` that hold it; and the Pydantic **resource specs** (`care/emr/resources/role/spec.py`), which define the read/write API schema. This doc covers all three.
 
 **Source:**
 
@@ -15,41 +17,29 @@ A permission is the ability to perform a single action in a given context, usual
 - Computed-permission mixins: [`care/emr/resources/permissions.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/permissions.py)
 - Registry: [`care/security/permissions/base.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/permissions/base.py), [`care/security/permissions/constants.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/permissions/constants.py)
 
-## Quick reference
-
-| Need | Section |
-| --- | --- |
-| Models and ownership | Models |
-| Field definitions | `PermissionModel` fields |
-| Relationships | Related models |
-| API contracts | Resource specs (API schema) |
-| Server behaviour | Methods & save behaviour |
-| Client guidance | API integration notes |
-| Related references | Related |
-
 ## Models
 
 | Model | Purpose |
 | --- | --- |
 | `PermissionModel` | A single, named permission (action) that can be granted to a user in a context |
 
-`PermissionModel` extends [`BaseModel`](../foundation/base-model.mdx), the lowest-level Care base. It does **not** use `EMRBaseModel`, so it has no `created_by`/`updated_by`, `history`, or `meta` columns. From `BaseModel` it inherits:
+`PermissionModel` extends [`BaseModel`](../foundation/base-model.mdx) — the lowest-level Care base. It does **not** use `EMRBaseModel`, so it has no `created_by`/`updated_by`, `history`, or `meta` columns. From `BaseModel` it inherits:
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `external_id` | `UUIDField` | `default=uuid4`, `unique`, indexed. Opaque public identifier. Never expose the integer `pk` |
+| `external_id` | `UUIDField` | `default=uuid4`, `unique`, indexed. Opaque public identifier — never expose the integer `pk` |
 | `created_date` | `DateTimeField` | `auto_now_add`; nullable, indexed |
 | `modified_date` | `DateTimeField` | `auto_now`; nullable, indexed |
-| `deleted` | `BooleanField` | `default=False`, indexed. Soft-delete flag, the default manager hides `deleted=True` rows |
+| `deleted` | `BooleanField` | `default=False`, indexed. Soft-delete flag; the default manager hides `deleted=True` rows |
 
 ## `PermissionModel` fields
 
 | Field | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |
-| `slug` | `CharField(1024)` | yes | - | `unique`, indexed. Stable machine identifier for the permission (the `enum` member name, e.g. `can_create_patient`). Code, specs, and the API reference a permission by `slug`, not `external_id`. On the API it is the `lookup_field` |
-| `name` | `CharField(1024)` | yes | - | Human-readable display name (e.g. `"Can Create Patient"`). Sourced from the registry `Permission.name` |
+| `slug` | `CharField(1024)` | yes | — | `unique`, indexed. Stable machine identifier for the permission (the `enum` member name, e.g. `can_create_patient`). The slug — not `external_id` — is how code, specs, and the API reference a permission. On the API it is the `lookup_field` |
+| `name` | `CharField(1024)` | yes | — | Human-readable display name (e.g. `"Can Create Patient"`). Sourced from the registry `Permission.name` |
 | `description` | `TextField` | no | `""` | Free-text explanation. Sourced from the registry `Permission.description`; many declared permissions ship with an empty description |
-| `context` | `CharField(1024)` | yes | - | The resource context the permission applies to. No DB-level `choices`, but values are always one of the `PermissionContext` enum strings below (set by the sync command from `Permission.context.value`) |
+| `context` | `CharField(1024)` | yes | — | The resource context the permission applies to. No DB-level `choices`, but values are always one of the `PermissionContext` enum strings below (set by the sync command from `Permission.context.value`) |
 | `temp_deleted` | `BooleanField` | no | `False` | Staging flag used by the sync command to mark permissions no longer present in the declared set before they are hard-deleted; distinct from the inherited `deleted` soft-delete flag |
 
 ### `context` values (`PermissionContext`)
@@ -66,11 +56,11 @@ A permission is the ability to perform a single action in a given context, usual
 | `FACILITY_ORGANIZATION` | Scoped to a facility organization |
 | `ENCOUNTER` | Scoped to an encounter |
 
-The context drives which permissions are considered when resolving access for a serialized resource. See the mixins below, which filter on `permission__context__in=[...]`.
+The context drives which permissions are considered when resolving access for a serialized resource — see the mixins below, which filter on `permission__context__in=[...]`.
 
 ## Related models
 
-### Registry declaration: `Permission` dataclass
+### Registry declaration — `Permission` dataclass
 
 Permissions are not authored in the database. Each is a member of a `*Permissions` `enum` (one per resource area, e.g. `PatientPermissions`, `EncounterPermissions`), where the member **name** becomes the `slug` and the member **value** is a `Permission` dataclass ([`constants.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/permissions/constants.py)):
 
@@ -79,7 +69,7 @@ Permissions are not authored in the database. Each is a member of a `*Permission
 | `name` | `str` | `name` | Display name |
 | `description` | `str` | `description` | Free text |
 | `context` | `PermissionContext` | `context` (`.value`) | One of the enum values above |
-| `roles` | `list[Role]` | - (drives `RolePermission`) | Default system roles that receive this permission on sync |
+| `roles` | `list[Role]` | — (drives `RolePermission`) | Default system roles that receive this permission on sync |
 
 Example (`care/security/permissions/patient.py`):
 
@@ -92,8 +82,8 @@ can_create_patient = Permission(
 
 `PermissionController` ([`base.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/permissions/base.py)) aggregates every handler enum:
 
-- `get_permissions() → dict[slug, Permission]`, the full declared registry (cached).
-- `get_enum() → Enum`, a dynamically built `str` enum of all permission slugs, used by [`RoleCreateSpec`](./role.mdx) to constrain the `permissions` write field to known slugs.
+- `get_permissions() → dict[slug, Permission]` — the full declared registry (cached).
+- `get_enum() → Enum` — a dynamically built `str` enum of all permission slugs, used by [`RoleCreateSpec`](./role.mdx) to constrain the `permissions` write field to known slugs.
 
 ### Sync command (`sync_permissions_roles`)
 
@@ -117,7 +107,7 @@ The Pydantic specs build on `EMRResource` ([`base.py`](https://github.com/ohcnet
 | `PermissionSpec` | read · list + detail | `role/spec.py` | The only permission-facing spec. Served read-only by `PermissionViewSet` |
 | `PermissionsMixin` | read augmentation | `permissions.py` | Adds a computed `permissions` list to other resources' serialized output for the requesting user |
 
-There is **no** `PermissionCreateSpec`/`PermissionUpdateSpec`; permissions are reference data and never client-writable. (Write specs exist for roles instead. See [Role](./role.mdx).)
+There is **no** `PermissionCreateSpec`/`PermissionUpdateSpec` — permissions are reference data and never client-writable. (Write specs exist for roles instead; see [Role](./role.mdx).)
 
 ### `PermissionSpec`
 
@@ -131,7 +121,7 @@ There is **no** `PermissionCreateSpec`/`PermissionUpdateSpec`; permissions are r
 | `context` | `str` | One of the `PermissionContext` values above |
 | `id` | `UUID4` | Added by `serialize` as `external_id` (inherited base behaviour) |
 
-Served by [`PermissionViewSet`](https://github.com/ohcnetwork/care/blob/develop/care/security/api/viewsets/permissions.py), an `EMRModelReadOnlyViewSet` (list + retrieve only), `lookup_field="slug"`, filterable by `name` (`icontains`). There is no create/update/delete endpoint.
+Served by [`PermissionViewSet`](https://github.com/ohcnetwork/care/blob/develop/care/security/api/viewsets/permissions.py) — an `EMRModelReadOnlyViewSet` (list + retrieve only), `lookup_field="slug"`, filterable by `name` (`icontains`). There is no create/update/delete endpoint.
 
 ### Computed `permissions` on other resources (`PermissionsMixin`)
 
@@ -153,11 +143,11 @@ These lists let the frontend gate UI by capability without a separate authorizat
 
 ## API integration notes
 
-- Permissions are **platform-maintained reference data**, declared in the permission registry and synced into this table by `sync_permissions_roles`; they are read-only over the API (`PermissionViewSet` exposes list + retrieve only).
+- Permissions are **platform-maintained reference data**, declared in the permission registry and synced into this table by `sync_permissions_roles` — they are read-only over the API (`PermissionViewSet` exposes list + retrieve only).
 - Reference a permission by its `slug`, which is stable, `unique`, and the API `lookup_field`; treat `external_id` as the opaque public ID and never expose the integer `pk`.
 - Permissions are not granted directly to users. They are collected into a [role](./role.mdx) (via `RolePermission`), and the role is bound to a resource (organization, patient, encounter, …) through a [permission association](./permission-association.mdx). Effective access is the union of active permissions across a user's role bindings.
-- `context` is a `CharField` with no DB `choices`, but is always one of the `PermissionContext` enum strings, the mixins filter resource permissions by context, so the value is load-bearing.
-- When writing a role, the `permissions` field is constrained to known slugs via `PermissionController.get_enum()`; submitting an unknown slug fails validation. See [Role](./role.mdx).
+- `context` is a `CharField` with no DB `choices`, but is always one of the `PermissionContext` enum strings; the mixins filter resource permissions by context, so the value is load-bearing.
+- When writing a role, the `permissions` field is constrained to known slugs via `PermissionController.get_enum()` — submitting an unknown slug fails validation. See [Role](./role.mdx).
 
 ## Related
 

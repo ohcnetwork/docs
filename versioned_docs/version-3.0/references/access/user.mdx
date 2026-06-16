@@ -4,22 +4,9 @@ sidebar_position: 1
 
 # User & Skills
 
-Technical reference for the `User` module in Care EMR.
+Technical reference for the `User` module in Care EMR. The Django model is the **storage** layer; the Pydantic resource specs in `care/emr/resources/user/` and `care/emr/resources/mfa/` are the **API/implementation** layer that define enums, validation, the shape of opaque `JSONField`s, and the read/write request/response schemas.
 
 **Source:** [`care/users/models.py`](https://github.com/ohcnetwork/care/blob/develop/care/users/models.py), [`care/facility/models/patient.py`](https://github.com/ohcnetwork/care/blob/develop/care/facility/models/patient.py), [`care/emr/resources/user/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/user/spec.py), [`care/emr/resources/mfa/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/mfa/spec.py)
-
-## Quick reference
-
-| Need | Section |
-| --- | --- |
-| Models and ownership | Models |
-| Field definitions | `User` fields |
-| Allowed values | Enum values |
-| Relationships | Related models |
-| API contracts | Resource specs (API schema) |
-| Server behaviour | Methods & save behaviour |
-| Client guidance | API integration notes |
-| Related references | Related |
 
 ## Models
 
@@ -34,7 +21,7 @@ Technical reference for the `User` module in Care EMR.
 
 Base classes vary by model:
 
-- `User` extends Django's `AbstractUser` (adds `external_id` and a soft-delete `deleted` flag of its own. Not an `EMRBaseModel`).
+- `User` extends Django's `AbstractUser` (adds `external_id` and a soft-delete `deleted` flag of its own; not an `EMRBaseModel`).
 - `Skill`, `UserSkill`, and `MobileOTP` extend [`BaseModel`](../foundation/base-model.mdx) (`external_id`, `created_date`, `modified_date`, soft-delete via `deleted`).
 - `UserFlag` extends `BaseFlag` (a `BaseModel` subclass that adds a `flag` field plus cache-invalidating `save()`).
 - `PlugConfig` extends plain `django.db.models.Model` (no audit or soft-delete fields).
@@ -49,7 +36,7 @@ Base classes vary by model:
 | --- | --- | --- |
 | `external_id` | `UUIDField` | Unique, indexed; stable public identifier. Surfaced as `id` in every read spec |
 | `username` | `CharField(150)` | Unique; model-validated by `UsernameValidator`. API additionally enforces `^[a-zA-Z0-9_-]{3,}$` and global uniqueness (incl. deleted users) on create |
-| `user_type` | `CharField(100)` | Nullable; free-text role label (e.g. `administrator`). Not exposed by any user spec; set internally / by `create_superuser` |
+| `user_type` | `CharField(100)` | Nullable; free-text role label (e.g. `administrator`). Not exposed by any user spec — set internally / by `create_superuser` |
 | `prefix` | `CharField(10)` | Name prefix (e.g. Dr.); spec caps length at 10. Optional in specs |
 | `suffix` | `CharField(50)` | Name suffix; spec caps length at 50. Optional in specs |
 | `gender` | `CharField(100)` | Nullable in DB. Write specs constrain it to `GenderChoices` (required); read specs return it as a plain string. See [GenderChoices values](#genderchoices-values) |
@@ -85,7 +72,7 @@ Base classes vary by model:
 | `geo_organization` | `FK → emr.Organization (SET_NULL)` | Geographic/administrative org. Write specs accept it as a `UUID4` and resolve to an `Organization` with `org_type="govt"` (404 otherwise). Read in `UserRetrieveSpec` as a nested `OrganizationReadSpec` dict. Listed in `UserBaseSpec.__exclude__`, so it never round-trips through the generic field copy |
 | `home_facility` | `FK → facility.Facility (PROTECT)` | Primary facility. Not exposed by any user spec |
 | `skills` | `ManyToManyField → Skill` | Through `UserSkill` |
-| `cached_role_orgs` | `JSONField` | Nullable; cached role/organization map. Lazily populated by `get_cached_role_orgs()`; surfaced as `role_orgs` in read specs. Platform-maintained. Do not write directly |
+| `cached_role_orgs` | `JSONField` | Nullable; cached role/organization map. Lazily populated by `get_cached_role_orgs()`; surfaced as `role_orgs` in read specs. Platform-maintained — do not write directly |
 
 ### Notifications, MFA & preferences
 
@@ -133,7 +120,7 @@ All user specs build on `EMRResource` ([`care/emr/resources/base.py`](https://gi
 | `UserBaseSpec` | shared base | `id`, `first_name`, `last_name`, `phone_number` (max 14), `prefix` (max 10, optional), `suffix` (max 50, optional) |
 | `UserUpdateSpec` | write · update | Base + `gender` (`GenderChoices`, required), `phone_number` (max 14), `geo_organization` (`UUID4`, optional). On de-serialize, resolves `geo_organization` to an `Organization` with `org_type="govt"` (404 if missing) |
 | `UserCreateSpec` | write · create | Extends `UserUpdateSpec` + `password` (optional), `username`, `email`, `is_service_account` (default `False`), `role_orgs: list[UserRoleOrgCreateSpec]`. Validates username pattern/uniqueness, phone uniqueness, email format/uniqueness, password strength. On de-serialize, stashes `role_orgs` on the instance and calls `set_password()` |
-| `UserRoleOrgCreateSpec` | write · nested | `organization: UUID4`, `role: UUID4`, a single role-in-organization assignment supplied at user creation |
+| `UserRoleOrgCreateSpec` | write · nested | `organization: UUID4`, `role: UUID4` — a single role-in-organization assignment supplied at user creation |
 | `UserSpec` | read · list/summary | Base + `last_login`, `profile_picture_url`, `gender` (string), `username`, `mfa_enabled` (default `False`), `phone_number`, `deleted` (default `False`), `role_orgs: dict`. `@cacheable(use_base_manager=True)` (cached, incl. deleted users). Sets `id` from `external_id`, resolves picture URL, computes `mfa_enabled`, loads `role_orgs` |
 | `UserRetrieveSpec` | read · detail | Extends `UserSpec` + `geo_organization: dict`, `created_by: dict \| None`, `email`, `flags: list[str]`, `is_service_account`. Serializes `created_by` (cached `UserSpec`), `geo_organization` (`OrganizationReadSpec`), and `flags` (`get_all_flags()`) |
 | `CurrentUserRetrieveSpec` | read · self (`/users/getcurrentuser`-style) | Extends `UserRetrieveSpec` + `is_superuser`, `qualification`, `doctor_experience_commenced_on`, `doctor_medical_council_registration`, `weekly_working_hours`, `alt_phone_number`, `date_of_birth` (all nullable strings), `verified`, `pf_endpoint`/`pf_p256dh`/`pf_auth`, `organizations: list[dict]`, `facilities: list[dict]`, `permissions: list[str]`, `preferences: dict`. Computes the caller's organizations, facilities (excluding deleted), and resolved permission slugs |
@@ -174,10 +161,10 @@ Plain-`BaseModel` DTOs in [`care/emr/resources/mfa/spec.py`](https://github.com/
 
 ### Server-maintained behaviour
 
-- **`role_orgs` on create**: `UserCreateSpec.perform_extra_deserialization` copies `role_orgs` onto `obj._role_orgs` for the view to apply role/organization assignments after the user is saved; it is **not** a DB column.
-- **`set_password`**: create hashes the supplied password (or sets an unusable password when `None`) via `obj.set_password(self.password)`.
-- **Cache**: `UserSpec` is `@cacheable(use_base_manager=True)`; saving a `User` invalidates the cache (via `post_save`), and `created_by` is read through `model_from_cache(UserSpec, ...)`. `use_base_manager=True` lets cached lookups resolve soft-deleted users.
-- **Computed read fields**: `id` (from `external_id`), `profile_picture_url` (resolved), `mfa_enabled`, `role_orgs`, `flags`, `geo_organization`, `created_by`, and the current-user `organizations`/`facilities`/`permissions` are all populated in `perform_extra_serialization`, never copied straight from columns.
+- **`role_orgs` on create** — `UserCreateSpec.perform_extra_deserialization` copies `role_orgs` onto `obj._role_orgs` for the view to apply role/organization assignments after the user is saved; it is **not** a DB column.
+- **`set_password`** — create hashes the supplied password (or sets an unusable password when `None`) via `obj.set_password(self.password)`.
+- **Cache** — `UserSpec` is `@cacheable(use_base_manager=True)`; saving a `User` invalidates the cache (via `post_save`), and `created_by` is read through `model_from_cache(UserSpec, ...)`. `use_base_manager=True` lets cached lookups resolve soft-deleted users.
+- **Computed read fields** — `id` (from `external_id`), `profile_picture_url` (resolved), `mfa_enabled`, `role_orgs`, `flags`, `geo_organization`, `created_by`, and the current-user `organizations`/`facilities`/`permissions` are all populated in `perform_extra_serialization`, never copied straight from columns.
 
 ## Shared spec types
 
@@ -185,7 +172,7 @@ Referenced by the resource layer (defined under `care/emr/resources/base.py` and
 
 | Type | Shape | Source |
 | --- | --- | --- |
-| `PeriodSpec` | `{ start: datetime \| None, end: datetime \| None }`; both must be **timezone-aware**; `start ≤ end` enforced | [`base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py) |
+| `PeriodSpec` | `{ start: datetime \| None, end: datetime \| None }` — both must be **timezone-aware**; `start ≤ end` enforced | [`base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py) |
 | `Period` | `{ id: str?, start: datetime?, end: datetime? }`, `extra="forbid"` | [`common/period.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/period.py) |
 | `ContactPoint` | `{ system: ContactPointSystemChoices, value: str, use: ContactPointUseChoices }` | [`common/contact_point.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/contact_point.py) |
 | `PhoneNumber` | E.164 string (`PhoneNumberValidator`) | [`base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py) |
@@ -248,12 +235,12 @@ otp          → CharField(10)
 
 `User` overrides no `save()`/`delete()` but exposes notable helpers:
 
-- `get_cached_role_orgs()`; returns `cached_role_orgs` if set. Otherwise loads from `OrganizationUser.get_cached_role_orgs(self.id)` and persists it via `save(update_fields=["cached_role_orgs"])`. Read specs surface the result as `role_orgs`.
-- `read_profile_picture_url()`; resolves `profile_picture_url` against `FACILITY_CDN` or the S3 bucket endpoint; returns `None` when unset. Used by every read spec's `profile_picture_url`.
-- `is_mfa_enabled()`; `True` when `mfa_settings["totp"]["enabled"]` is set; surfaced as `mfa_enabled`.
-- `full_name` (property); joins `prefix`, `get_full_name()`, and `suffix`.
-- `check_username_exists(username)` (static); checks across the entire (including deleted) queryset; used by `UserCreateSpec.validate_username`.
-- `get_all_flags()`; delegates to `UserFlag.get_all_flags(self.id)`; surfaced as `flags` in `UserRetrieveSpec`.
+- `get_cached_role_orgs()` — returns `cached_role_orgs` if set; otherwise loads from `OrganizationUser.get_cached_role_orgs(self.id)` and persists it via `save(update_fields=["cached_role_orgs"])`. Read specs surface the result as `role_orgs`.
+- `read_profile_picture_url()` — resolves `profile_picture_url` against `FACILITY_CDN` or the S3 bucket endpoint; returns `None` when unset. Used by every read spec's `profile_picture_url`.
+- `is_mfa_enabled()` — `True` when `mfa_settings["totp"]["enabled"]` is set; surfaced as `mfa_enabled`.
+- `full_name` (property) — joins `prefix`, `get_full_name()`, and `suffix`.
+- `check_username_exists(username)` (static) — checks across the entire (including deleted) queryset; used by `UserCreateSpec.validate_username`.
+- `get_all_flags()` — delegates to `UserFlag.get_all_flags(self.id)`; surfaced as `flags` in `UserRetrieveSpec`.
 
 `CustomUserManager` adds:
 
@@ -266,8 +253,8 @@ otp          → CharField(10)
 ## API integration notes
 
 - `User` is exposed through Care's REST API; `external_id` (returned as `id`) is the public identifier, never the integer PK or `username` alone.
-- `deleted` is honoured by `CustomUserManager`; soft-deleted users are excluded from normal queries, but cached `UserSpec` lookups use the base manager (`use_base_manager=True`) so they can still resolve deleted users (e.g. as `created_by`).
-- Authorization is not stored on `User`. Access is resolved through the roles/permissions/organization system; `cached_role_orgs` is a platform-maintained cache. Do not write it directly from clients. New users supply `role_orgs` (organization + role UUIDs) at create time.
+- `deleted` is honoured by `CustomUserManager` — soft-deleted users are excluded from normal queries, but cached `UserSpec` lookups use the base manager (`use_base_manager=True`) so they can still resolve deleted users (e.g. as `created_by`).
+- Authorization is not stored on `User`. Access is resolved through the roles/permissions/organization system; `cached_role_orgs` is a platform-maintained cache — do not write it directly from clients. New users supply `role_orgs` (organization + role UUIDs) at create time.
 - `mfa_settings`, `preferences`, and `PlugConfig.meta` are open JSON bags for evolving config without migrations. `mfa_settings` is mutated by the MFA flow (`mfa/spec.py`), not by user create/update.
 - `is_service_account` distinguishes machine/integration accounts from human users.
 - Write paths use `UserCreateSpec` / `UserUpdateSpec`; read paths use `UserSpec` (list), `UserRetrieveSpec` (detail), `CurrentUserRetrieveSpec` (self), and `PublicUserReadSpec` (public). Picture URLs, MFA status, roles, flags, and nested org/creator objects are computed server-side.

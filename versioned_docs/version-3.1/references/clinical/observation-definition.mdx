@@ -6,26 +6,15 @@ sidebar_position: 6
 
 Technical reference for the `ObservationDefinition` module in Care EMR.
 
-An observation definition is master data that describes *how* a particular observation is captured; its code, permitted data type, unit, method, body site, and (interpretation) reference ranges. Questionnaires reference observation definitions so the same observation (e.g. blood pressure) is collected consistently across forms, at either the instance level or a single facility. A single observation code can have multiple definitions. The model is loosely based on the [FHIR ObservationDefinition](https://build.fhir.org/observationdefinition.html) resource.
+An observation definition is master data that describes *how* a particular observation is captured — its code, permitted data type, unit, method, body site, and (interpretation) reference ranges. Questionnaires reference observation definitions so the same observation (e.g. blood pressure) is collected consistently across forms, at either the instance level or a single facility. A single observation code can have multiple definitions. The model is loosely based on the [FHIR ObservationDefinition](https://build.fhir.org/observationdefinition.html) resource.
+
+The Django model is the **storage layer**: `code`, `body_site`, `method`, `permitted_unit`, `component`, and `qualified_ranges` are opaque `JSONField`s. Their real structure, the enums, the value-set bindings, and the read/write contracts live in the **Pydantic resource specs** (`care/emr/resources/observation_definition/spec.py`), all built on the `EMRResource` base.
 
 **Source:**
 
 - Model: [`care/emr/models/observation_definition.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/observation_definition.py)
 - Resource spec: [`care/emr/resources/observation_definition/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/observation_definition/spec.py)
 - Helper: [`care/emr/resources/observation_definition/observation.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/observation_definition/observation.py)
-
-## Quick reference
-
-| Need | Section |
-| --- | --- |
-| Models and ownership | Models |
-| Field definitions | `ObservationDefinition` fields |
-| Allowed values | Enum values |
-| Structured payloads | JSON field shapes (nested specs) |
-| API contracts | Resource specs (API schema) |
-| Server behaviour | Methods & save behaviour |
-| Client guidance | API integration notes |
-| Related references | Related |
 
 ## Models
 
@@ -41,11 +30,11 @@ An observation definition is master data that describes *how* a particular obser
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `facility` | `FK → Facility` (PROTECT) | Nullable, `default=None`. When set, the definition is scoped to that facility. When `null` it is instance-wide. Excluded from the base spec (`__exclude__ = ["facility"]`) and set server-side from the `facility` UUID on create |
+| `facility` | `FK → Facility` (PROTECT) | Nullable, `default=None`. When set, the definition is scoped to that facility; when `null` it is instance-wide. Excluded from the base spec (`__exclude__ = ["facility"]`) and set server-side from the `facility` UUID on create |
 | `version` | `IntegerField` | Defaults to `1`; assigned version number for the definition. Read-only in the API (`...ReadSpec` only) |
 | `slug` | `CharField(255)` | Set server-side from `slug_value`; namespaced. See [slug behaviour](#slug-behaviour) |
 | `title` | `CharField(1024)` | Required. Human-friendly name for this definition |
-| `status` | `CharField(255)` | Required. Lifecycle code from `ObservationStatusChoices`. See [Status values](#status-values). Definitions are not destroyed; they are moved to `retired` instead |
+| `status` | `CharField(255)` | Required. Lifecycle code from `ObservationStatusChoices` — see [Status values](#status-values). Definitions are not destroyed — they are moved to `retired` instead |
 | `description` | `TextField` | Required. Natural-language (markdown) description |
 | `derived_from_uri` | `TextField` | External URI this definition was derived from. Optional in the API (`str \| None`, default `None`) |
 
@@ -53,9 +42,9 @@ An observation definition is master data that describes *how* a particular obser
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `category` | `CharField(255)` | Nullable in the model, but **required** in the API as `ObservationCategoryChoices`. See [Category values](#category-values) |
-| `code` | `JSONField` | Required. `Coding` bound to the `system-observation` value set (LOINC). What is being observed. See [Coding shape](#coding-shape) |
-| `permitted_data_type` | `CharField(100)` | Required. `QuestionType` enum (questionnaire data types). See [Permitted data type values](#permitted-data-type-values). `group`, `display`, and `url` are rejected |
+| `category` | `CharField(255)` | Nullable in the model, but **required** in the API as `ObservationCategoryChoices` — see [Category values](#category-values) |
+| `code` | `JSONField` | Required. `Coding` bound to the `system-observation` value set (LOINC). What is being observed — see [Coding shape](#coding-shape) |
+| `permitted_data_type` | `CharField(100)` | Required. `QuestionType` enum (questionnaire data types) — see [Permitted data type values](#permitted-data-type-values). `group`, `display`, and `url` are rejected |
 | `body_site` | `JSONField` | Nullable. `Coding` bound to the `system-body-site-observation` value set (SNOMED CT) |
 | `method` | `JSONField` | Nullable. `Coding` bound to the `system-collection-method` value set (SNOMED CT) |
 | `permitted_unit` | `JSONField` | Nullable. `Coding` bound to the `system-ucum-units` value set (UCUM). Care does not convert between units when displaying data |
@@ -64,14 +53,14 @@ An observation definition is master data that describes *how* a particular obser
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `component` | `JSONField` | Nullable. `list[ObservationDefinitionComponentSpec] \| None`. Multiple measured values for one definition (e.g. systolic + diastolic), each with its own `code`, `permitted_data_type`, `permitted_unit`, and `qualified_ranges`. See [ObservationDefinitionComponentSpec](#observationdefinitioncomponentspec) |
-| `qualified_ranges` | `JSONField` | Model default `list`. **Required** in the API as `list[QualifiedRangeSpec]` (may be empty). Condition-dependent reference ranges / interpretations. See [QualifiedRangeSpec](#qualifiedrangespec) |
+| `component` | `JSONField` | Nullable. `list[ObservationDefinitionComponentSpec] \| None`. Multiple measured values for one definition (e.g. systolic + diastolic), each with its own `code`, `permitted_data_type`, `permitted_unit`, and `qualified_ranges` — see [ObservationDefinitionComponentSpec](#observationdefinitioncomponentspec) |
+| `qualified_ranges` | `JSONField` | Model default `list`. **Required** in the API as `list[QualifiedRangeSpec]` (may be empty). Condition-dependent reference ranges / interpretations — see [QualifiedRangeSpec](#qualifiedrangespec) |
 
 ## Enum values
 
 ### Status values
 
-`ObservationStatusChoices`; bound to the `status` field.
+`ObservationStatusChoices` — bound to the `status` field.
 
 | Value |
 | --- |
@@ -82,7 +71,7 @@ An observation definition is master data that describes *how* a particular obser
 
 ### Category values
 
-`ObservationCategoryChoices`; bound to the `category` field.
+`ObservationCategoryChoices` — bound to the `category` field.
 
 | Value |
 | --- |
@@ -98,7 +87,7 @@ An observation definition is master data that describes *how* a particular obser
 
 ### Permitted data type values
 
-`QuestionType` (from `questionnaire/spec.py`); bound to `permitted_data_type` on both the definition and each component. The values `group`, `display`, and `url` are **rejected** by `validate_question_type` ("Cannot create a definition with this type").
+`QuestionType` (from `questionnaire/spec.py`) — bound to `permitted_data_type` on both the definition and each component. The values `group`, `display`, and `url` are **rejected** by `validate_question_type` ("Cannot create a definition with this type").
 
 | Value | Allowed for a definition |
 | --- | --- |
@@ -129,7 +118,7 @@ Coding {
   version: str | null
   code:    str            # required
   display: str | null
-}                          # extra="forbid"; unknown keys rejected
+}                          # extra="forbid" — unknown keys rejected
 ```
 
 | Field | Bound value set (slug) | Code system |
@@ -154,7 +143,7 @@ ObservationDefinitionComponentSpec {
 
 ### QualifiedRangeSpec
 
-Element of `qualified_ranges` (on the definition and on each component). A qualified range is either **numeric** (`ranges`) or **categorical** (coded value sets). Never both.
+Element of `qualified_ranges` (on the definition and on each component). A qualified range is either **numeric** (`ranges`) or **categorical** (coded value sets) — never both.
 
 ```text
 QualifiedRangeSpec {
@@ -171,10 +160,10 @@ QualifiedRangeSpec {
 
 Validation (`validate_categorical_or_numeric`):
 
-- Must provide either `ranges` (numeric) **or** at least one coded value set / `valueset_interpretation` (categorical); at least one is required.
+- Must provide either `ranges` (numeric) **or** at least one coded value set / `valueset_interpretation` (categorical) — at least one is required.
 - Cannot specify both numeric `ranges` and coded value sets.
 - Numeric `ranges` must not overlap (sorted by `min`, treating missing `min`/`max` as -∞/+∞).
-- Coded value-set slugs (`normal_coded_value_set`, `critical_coded_value_set`, `abnormal_coded_value_set`, and each `valueset_interpretation.valuset`) must be unique; duplicates are rejected.
+- Coded value-set slugs (`normal_coded_value_set`, `critical_coded_value_set`, `abnormal_coded_value_set`, and each `valueset_interpretation.valuset`) must be unique — duplicates are rejected.
 
 ### NumericRangeSpec
 
@@ -211,7 +200,7 @@ ValueSetInterpretationSpec {
 
 ### EvaluatorConditionSpec
 
-Element of `QualifiedRangeSpec.conditions`. Validated against `EvaluatorMetricsRegistry`, an unknown `metric` raises, and the registered evaluator validates `operation`/`value`.
+Element of `QualifiedRangeSpec.conditions`. Validated against `EvaluatorMetricsRegistry` — an unknown `metric` raises, and the registered evaluator validates `operation`/`value`.
 
 ```text
 EvaluatorConditionSpec {
@@ -234,11 +223,11 @@ All specs subclass `BaseObservationDefinitionSpec` (which subclasses `EMRResourc
 
 Notes:
 
-- **Value-set bindings**: `code`, `body_site`, `method`, `permitted_unit` (and component equivalents) are `ValueSetBoundCoding[...]`, the submitted coding is validated against the bound value set (`system-observation`, `system-body-site-observation`, `system-collection-method`, `system-ucum-units`).
-- **Data-type guard**: `permitted_data_type` (definition and component) rejects `group`, `display`, `url`.
-- **Range consistency**: `validate_qualified_ranges_consistency`: all `qualified_ranges` on a definition must be the same kind (all numeric `ranges` or all coded value sets); mixing raises.
-- **`slug_value`**: `SlugType`: 5–50 chars, URL-safe (`[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]`), must start and end alphanumeric. Stored namespaced as `obj.slug` (see below).
-- **No metadata store**: `__store_metadata__` is `False`, so spec fields map directly to model columns rather than into `meta`.
+- **Value-set bindings** — `code`, `body_site`, `method`, `permitted_unit` (and component equivalents) are `ValueSetBoundCoding[...]`; the submitted coding is validated against the bound value set (`system-observation`, `system-body-site-observation`, `system-collection-method`, `system-ucum-units`).
+- **Data-type guard** — `permitted_data_type` (definition and component) rejects `group`, `display`, `url`.
+- **Range consistency** — `validate_qualified_ranges_consistency`: all `qualified_ranges` on a definition must be the same kind (all numeric `ranges` or all coded value sets); mixing raises.
+- **`slug_value`** — `SlugType`: 5–50 chars, URL-safe (`[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]`), must start and end alphanumeric. Stored namespaced as `obj.slug` (see below).
+- **No metadata store** — `__store_metadata__` is `False`, so spec fields map directly to model columns rather than into `meta`.
 
 ## Methods & save behaviour
 
@@ -261,8 +250,8 @@ The create/update specs receive the bare `slug_value` and store it on `obj.slug`
 ## API integration notes
 
 - Observation definitions are master data: created at the instance level or per-facility, and referenced by questionnaires rather than embedded into them.
-- The facility binding is write-once via the create spec (`facility` UUID → resolved FK), the update spec only re-sets `slug_value`.
-- Definitions are append-only by convention; retire via `status` (`retired`) instead of hard deletion; soft-delete via the inherited `deleted` flag still applies at the ORM level.
+- The facility binding is write-once via the create spec (`facility` UUID → resolved FK); the update spec only re-sets `slug_value`.
+- Definitions are append-only by convention — retire via `status` (`retired`) instead of hard deletion; soft-delete via the inherited `deleted` flag still applies at the ORM level.
 - `code`, `body_site`, `method`, `permitted_unit`, and component codings are FHIR `Coding` objects validated against bound value sets, so the data stays translatable to FHIR.
 - Units follow UCUM principles; Care does not currently convert between units at display time.
 - `qualified_ranges` supports condition-dependent numeric ranges or categorical (coded) interpretations, but a single definition must commit to one kind across all its ranges.

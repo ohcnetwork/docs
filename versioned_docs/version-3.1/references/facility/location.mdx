@@ -15,18 +15,7 @@ Technical reference for the `FacilityLocation` module in Care EMR.
 
 Locations are abstract, hierarchical entities (buildings, wards, rooms, beds) that describe where resources sit and where care is delivered. Nesting is unbounded: every location may have a parent and children. Encounters and organizations attach to locations, and location-level access is resolved through an async cascade rather than synchronously. The model is derived from the [FHIR Location](https://build.fhir.org/location.html) resource.
 
-## Quick reference
-
-| Need | Section |
-| --- | --- |
-| Models and ownership | Models |
-| Field definitions | `FacilityLocation` fields |
-| Allowed values | Enum values |
-| Relationships | Related models |
-| API contracts | Resource specs (API schema) |
-| Server behaviour | Methods & save behaviour |
-| Client guidance | API integration notes |
-| Related references | Related |
+The Django model is the **storage** layer; several fields (`location_type`, `metadata`, `cached_parent_json`) are opaque `JSONField`s whose real shape comes from the Pydantic **resource specs** (`care/emr/resources/location/spec.py`). The specs also define every enum/choice and the read/write API schemas. See [Resource specs (API schema)](#resource-specs-api-schema).
 
 ## Models
 
@@ -49,13 +38,13 @@ All models extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EM
 | `status` | `CharField(255)` | `StatusChoices` enum | Location status; one of [`StatusChoices`](#statuschoices-values) |
 | `operational_status` | `CharField(255)` | `FacilityLocationOperationalStatusChoices` enum | FHIR operational status code; one of [`FacilityLocationOperationalStatusChoices`](#facilitylocationoperationalstatuschoices-values) |
 | `system_availability_status` | `CharField(255)` | `str` (read-only) | Server-maintained; derived from encounter association. Conceptually one of [`LocationAvailabilityStatusChoices`](#locationavailabilitystatuschoices-values) (`available` / `reserved`) |
-| `mode` | `CharField(255)` | `FacilityLocationModeChoices` enum | `kind` (a type, e.g. a building/ward) or `instance` (a single location, e.g. Bed 1). See [`FacilityLocationModeChoices`](#facilitylocationmodechoices-values). Write-only on create. Not updatable |
-| `location_type` | `JSONField` (`default=dict`, nullable) | `Coding \| None` (default `None`) | A single FHIR [`Coding`](#coding-shape); **not** a `CodeableConcept`. No bound value set; free coding |
+| `mode` | `CharField(255)` | `FacilityLocationModeChoices` enum | `kind` (a type, e.g. a building/ward) or `instance` (a single location, e.g. Bed 1). See [`FacilityLocationModeChoices`](#facilitylocationmodechoices-values). Write-only on create; not updatable |
+| `location_type` | `JSONField` (`default=dict`, nullable) | `Coding \| None` (default `None`) | A single FHIR [`Coding`](#coding-shape) — **not** a `CodeableConcept`. No bound value set; free coding |
 | `form` | `CharField(255)` | `FacilityLocationFormChoices` enum | FHIR physical form of the location; one of [`FacilityLocationFormChoices`](#facilitylocationformchoices-values) |
 
 ### Hierarchy & tree caches
 
-These fields denormalize the location tree so descendants can be queried without recursive joins. They are maintained by `save()` and the cascade task. Clients should not set them directly.
+These fields denormalize the location tree so descendants can be queried without recursive joins. They are maintained by `save()` and the cascade task — clients should not set them directly.
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -196,16 +185,16 @@ Records how an encounter was associated to a location (e.g. a bed assignment ove
 
 On insert (no `id` yet):
 
-1. If `parent` is set → `level_cache`, `root_location`, and `parent_cache` are derived from the parent, the parent's `has_children` is flipped to `True` if needed.
+1. If `parent` is set → `level_cache`, `root_location`, and `parent_cache` are derived from the parent; the parent's `has_children` is flipped to `True` if needed.
 2. If `sort_index` is unset → it is assigned `max(sibling sort_index) + 1`.
 
 On update, `cached_parent_json` is cleared so it rebuilds lazily. After every `super().save()`, `sync_organization_cache()` runs and persists `facility_organization_cache` via a second `save(update_fields=[...])`.
 
 ### Caches & cascade
 
-- `sync_organization_cache()`; unions the parent's org cache, all linked `FacilityLocationOrganization` org chains, and the facility's `default_internal_organization_id`, then writes `facility_organization_cache`.
-- `get_parent_json()`; returns the cached parent chain, refreshing `cached_parent_json` (via `FacilityLocationListSpec.serialize(parent)`) when expired (`cache_expiry_days = 15`).
-- `cascade_changes()` / `handle_cascade(base_location)`, a Celery task that walks every descendant and re-saves it to invalidate its `cached_parent_json`. Triggered when a location's organizations change; expect propagation to be **eventually consistent**.
+- `sync_organization_cache()` — unions the parent's org cache, all linked `FacilityLocationOrganization` org chains, and the facility's `default_internal_organization_id`, then writes `facility_organization_cache`.
+- `get_parent_json()` — returns the cached parent chain, refreshing `cached_parent_json` (via `FacilityLocationListSpec.serialize(parent)`) when expired (`cache_expiry_days = 15`).
+- `cascade_changes()` / `handle_cascade(base_location)` — a Celery task that walks every descendant and re-saves it to invalidate its `cached_parent_json`. Triggered when a location's organizations change; expect propagation to be **eventually consistent**.
 
 ### `validate_uniqueness()`
 
@@ -213,7 +202,7 @@ Classmethod enforcing that `name` is unique among siblings at the same `level_ca
 
 ## Resource specs (API schema)
 
-The Pydantic specs in `care/emr/resources/location/spec.py` define the API request/response shapes. All extend `EMRResource` (`serialize`/`de_serialize`, with `perform_extra_serialization`/`perform_extra_deserialization` hooks. See [base model](../foundation/base-model.mdx) and [`base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)).
+The Pydantic specs in `care/emr/resources/location/spec.py` define the API request/response shapes. All extend `EMRResource` (`serialize`/`de_serialize`, with `perform_extra_serialization`/`perform_extra_deserialization` hooks; see [base model](../foundation/base-model.mdx) and [`base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)).
 
 ### Location specs
 
@@ -222,7 +211,7 @@ The Pydantic specs in `care/emr/resources/location/spec.py` define the API reque
 | `FacilityLocationBaseSpec` | shared base | `__model__ = FacilityLocation`; `id: UUID4 \| None`. `__exclude__ = [parent, facility, organizations, root_location, current_encounter]` |
 | `FacilityLocationSpec` | shared fields | `status`, `operational_status`, `name`, `description`, `location_type` (`Coding \| None`), `form`, `sort_index` (`0..10000`, default `0`) |
 | `FacilityLocationWriteSpec` | write · create | Adds `parent: UUID4 \| None`, `organizations: list[UUID4]` (required), `mode: FacilityLocationModeChoices`. Validator: if `parent` set, parent must exist and must not be `mode = instance` ("Instances cannot have children"). `perform_extra_deserialization` resolves `parent` UUID → FK |
-| `FacilityLocationUpdateSpec` | write · update | Same fields as `FacilityLocationSpec` (no `parent`/`organizations`/`mode`; hierarchy and mode are fixed after creation) |
+| `FacilityLocationUpdateSpec` | write · update | Same fields as `FacilityLocationSpec` (no `parent`/`organizations`/`mode` — hierarchy and mode are fixed after creation) |
 | `FacilityLocationMinimalListSpec` | read · minimal | Adds `parent: dict`, `mode: str`, `has_children: bool`, `system_availability_status: str`. `perform_extra_serialization` sets `id = external_id` and `parent = obj.get_parent_json()` |
 | `FacilityLocationListSpec` | read · list | Extends minimal; adds `current_encounter: dict \| None`, serialized via `EncounterListSpec` when present |
 | `FacilityLocationRetrieveSpec` | read · detail | Extends list; adds `created_by`/`updated_by` (via `serialize_audit_users`) |
@@ -240,17 +229,17 @@ The Pydantic specs in `care/emr/resources/location/spec.py` define the API reque
 
 ### Server-maintained behaviour
 
-- `system_availability_status`, `has_children`, `level_cache`, `parent_cache`, `cached_parent_json`, `facility_organization_cache`, `current_encounter`, `sort_index` (when unset) are platform-maintained. Do not write them from clients.
+- `system_availability_status`, `has_children`, `level_cache`, `parent_cache`, `cached_parent_json`, `facility_organization_cache`, `current_encounter`, `sort_index` (when unset) are platform-maintained — do not write them from clients.
 - On read, `parent` is replaced by the serialized parent chain (`get_parent_json()`), not the raw FK.
-- Granting access via `organizations` / `FacilityLocationOrganization` is **asynchronous**, the org cache and descendant caches settle after the cascade task runs.
-- `location_type` binds to a free `Coding` (no value set slug); `metadata` is an open extension bag; both add coded/extension data without schema migrations.
+- Granting access via `organizations` / `FacilityLocationOrganization` is **asynchronous**; the org cache and descendant caches settle after the cascade task runs.
+- `location_type` binds to a free `Coding` (no value set slug); `metadata` is an open extension bag — both add coded/extension data without schema migrations.
 
 ## API integration notes
 
 - Locations are exposed through Care's REST API and modelled on the FHIR `Location` resource; payload field names may differ from these Django names.
-- `mode` distinguishes `kind` (a location type) from `instance` (a concrete location such as a bed); beds are `FacilityLocation` instances, not a separate model. `instance` locations cannot have children.
+- `mode` distinguishes `kind` (a location type) from `instance` (a concrete location such as a bed) — beds are `FacilityLocation` instances, not a separate model. `instance` locations cannot have children.
 - `parent`, `organizations`, and `mode` are settable only at creation (`FacilityLocationWriteSpec`); updates use `FacilityLocationUpdateSpec`, which omits them.
-- `level_cache`, `parent_cache`, `cached_parent_json`, `has_children`, `sort_index`, `facility_organization_cache`, and `current_encounter` are platform-maintained. Do not write them from clients.
+- `level_cache`, `parent_cache`, `cached_parent_json`, `has_children`, `sort_index`, `facility_organization_cache`, and `current_encounter` are platform-maintained — do not write them from clients.
 
 ## Related
 
