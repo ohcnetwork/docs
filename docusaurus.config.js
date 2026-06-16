@@ -8,13 +8,23 @@ import {themes as prismThemes} from 'prism-react-renderer';
 
 const EDIT_URL = 'https://github.com/ohcnetwork/docs/tree/main/';
 
-/** @type {Array<{id: string, label: string, path: string, routeBasePath: string}>} */
+/** @type {Array<{id: string, label: string, path: string, routeBasePath: string, sidebarPath: string, sidebarId: string}>} */
 const CARE_DEPLOYMENTS = [
   {
     id: 'hmis',
     label: 'HMIS',
     path: 'deployments/hmis',
     routeBasePath: 'deployments/hmis',
+    sidebarPath: './sidebarsHmis.js',
+    sidebarId: 'hmisSidebar',
+  },
+  {
+    id: 'palliative',
+    label: 'Palliative',
+    path: 'deployments/palliative',
+    routeBasePath: 'deployments/palliative',
+    sidebarPath: './sidebarsPalliative.js',
+    sidebarId: 'palliativeSidebar',
   },
 ];
 
@@ -37,6 +47,14 @@ const config = {
 
   organizationName: 'ohcnetwork',
   projectName: 'docs',
+
+  customFields: {
+    playbookDeployments: CARE_DEPLOYMENTS.map(({id, label, routeBasePath}) => ({
+      id,
+      label,
+      routeBasePath,
+    })),
+  },
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -99,7 +117,7 @@ const config = {
       id: deployment.id,
       path: deployment.path,
       routeBasePath: deployment.routeBasePath,
-      sidebarPath: './sidebarsHmis.js',
+      sidebarPath: deployment.sidebarPath,
       editUrl: EDIT_URL,
     },
   ]),
@@ -127,11 +145,15 @@ const config = {
             docsPluginId: 'default',
           },
           {
-            type: 'docSidebar',
-            sidebarId: 'hmisSidebar',
-            position: 'left',
+            type: 'dropdown',
             label: 'Playbooks',
-            docsPluginId: 'hmis',
+            position: 'left',
+            items: CARE_DEPLOYMENTS.map((deployment) => ({
+              type: 'docSidebar',
+              sidebarId: deployment.sidebarId,
+              label: deployment.label,
+              docsPluginId: deployment.id,
+            })),
           },
           {
             type: 'docsVersionDropdown',
@@ -143,9 +165,7 @@ const config = {
         ],
       },
       footer: {
-        style: 'dark',
-        links: [
-        ],
+        links: [],
         copyright: `Copyright © ${new Date().getFullYear()} Open Healthcare Network Foundation. Built with Docusaurus.`,
       },
       prism: {
