@@ -1,0 +1,100 @@
+---
+sidebar_position: 1
+---
+
+# Billing & Accounts
+
+**Billing** in Care is how the cost of care is recorded, grouped, invoiced, and settled. Its anchor is the **account** — a financial bucket that aggregates everything charged to a patient within a facility — so that charges, invoices, and payments all hang together as one coherent financial history.
+
+## What it represents
+
+Billing is not a single resource but a small family of resources that work together:
+
+- **Account** — a per-patient, per-facility bucket that aggregates charges and tracks running balances. One open account is created automatically for a patient when the first charge is raised; it can be balanced and closed once care is complete.
+- **Charge item** — a single billable line for a service or product (a consultation, a dispensed medication, a bed-day). It records what was charged, the quantity, and the resolved price.
+- **Charge item definition** — the reusable pricing template that answers "how much does this cost", binding a service to its base rate, surcharges, discounts, and taxes.
+- **Invoice** — a billable grouping of charge items for one account, with snapshotted line items and computed totals, issued to the patient or payer.
+- **Payment reconciliation** — a record of a payment, advance, or credit note made against an account (and optionally a specific invoice), capturing how, when, and how much was paid.
+
+Together these answer: what was charged, what it costs, what was billed, and what was paid.
+
+## How the pieces fit
+
+```
+Charge item definition  ──(applied to)──▶  Charge item  ──(placed on)──▶  Account
+                                                │                            ▲
+                                          (grouped into)              (settled by)
+                                                ▼                            │
+                                             Invoice  ◀──(paid via)── Payment reconciliation
+```
+
+A charge item is usually built from a **definition**, placed on the patient's default **account**, then grouped into an **invoice**. A **payment reconciliation** records money received against the account or invoice. Prices, totals, and balances are computed by the platform — clients record the facts, the system does the arithmetic.
+
+## Lifecycle
+
+Each billing resource has its own status, and the invoice status drives the charge item lifecycle.
+
+Account billing status:
+
+```
+open → billing → closed (completed / voided / bad debt / combined)
+```
+
+Charge item:
+
+```
+billable → billed → paid        (or → not_billable / aborted / entered_in_error)
+```
+
+Invoice:
+
+```
+draft → issued → balanced        (or → cancelled / entered_in_error)
+```
+
+A new account opens as `active` / `open` and keeps accruing charges until billing begins and it is eventually closed. A charge starts `billable`, becomes `billed` when it lands on an invoice, and `paid` once settled. An invoice begins as a `draft` (still editable), is `issued` to the payer, and is marked `balanced` when fully settled. Totals are recomputed automatically as charges, invoices, and payments change.
+
+## Relationships
+
+- Every account and charge item belongs to a **patient** and a **facility**; a charge item and an account may optionally reference an **encounter**.
+- A charge item can originate from another resource — a service request, a medication dispense, an appointment, or a bed association — recorded as its service source.
+- Invoices and payment reconciliations are always created against an **account**, and a payment may additionally be allocated to a single invoice.
+
+## Permissions
+
+Billing data is sensitive financial information, so access is governed by dedicated, facility-scoped permissions for each resource. The key permissions:
+
+| Permission | Roles |
+| --- | --- |
+| Can Read Account | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Create Account / Can Update Account | Facility Admin, Admin |
+| Can Create Charge Item | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| Can Update Charge Item / Can Cancel Charge Item | Facility Admin, Admin |
+| Can Create Negative Charge Item | Facility Admin, Admin |
+| Can Read Charge Item | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Read Charge Item Definition | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Create Charge Item Definition on Facility / Can Set Charge Item Definition on Facility | Facility Admin, Admin |
+| Can Write Invoice | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| Can Read Invoice | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Destroy Invoice / Can Manage Locked Invoice | Facility Admin, Admin |
+| Can Write Payment Reconciliation | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| Can Read Payment Reconciliation | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Destroy Payment Reconciliation | Facility Admin, Admin |
+
+A broad set of clinical roles can read billing and raise charges, invoices, and payments, while creating or editing accounts, editing or cancelling charges, defining prices, and destroying or unlocking invoices are reserved for administrators. Roles are granted to users through organization, facility-organization, and patient memberships, and access is scoped by the organization tree — a permission held at a parent organization cascades to its descendant facilities and locations.
+
+## Related
+
+- Reference: [Account](../../references/billing/account.mdx)
+- Reference: [Charge item](../../references/billing/charge-item.mdx)
+- Reference: [Charge item definition](../../references/billing/charge-item-definition.mdx)
+- Reference: [Invoice](../../references/billing/invoice.mdx)
+- Reference: [Payment reconciliation](../../references/billing/payment-reconciliation.mdx)
+- Concept: [Patient](../clinical/patient)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Facility](../facility/facility.mdx)
+- Concept: [Supply](../supply/supply.mdx)
+
+## FHIR reference
+
+The billing resources are FHIR-aligned: the account maps to the FHIR **Account** resource, charge items and their definitions to **ChargeItem** and **ChargeItemDefinition**, the invoice to **Invoice**, and payments to **PaymentReconciliation**. Care's enum values use underscores (e.g. `entered_in_error`) rather than the FHIR-style hyphenated forms, and some field names differ from the FHIR spec.

@@ -1,0 +1,71 @@
+---
+sidebar_position: 4
+---
+
+# Allergy & Intolerance
+
+An **allergy or intolerance** records a patient's known risk of an adverse reaction to a substance — a food, a medication, an environmental trigger, or a biologic. It is part of the patient's longitudinal record and is meant to be checked before prescribing, ordering, or administering anything that could cause harm.
+
+## What it represents
+
+Each allergy or intolerance entry captures:
+
+- **The substance** — a coded allergen drawn from a curated SNOMED CT list, so the record can be matched against medications rather than read as free text
+- **Whether it is an allergy or an intolerance** — an immune-mediated allergy versus a non-immune intolerance
+- **Category** — food, medication, environment, or biologic
+- **How certain and how serious it is** — a verification level (how confirmed the report is) and a criticality (the potential for harm)
+- **Clinical state** — whether the allergy is currently active, inactive, or resolved
+- **Timing** — when it started, when it was first recorded, and the most recent known reaction
+- **Context** — the encounter it was recorded in and an optional free-text clinical note
+
+An entry is always recorded in the context of an encounter, and the patient is derived from that encounter — you do not attach an allergy to a patient directly.
+
+## Lifecycle
+
+The clinical state of an allergy moves through three values:
+
+```
+active → inactive → resolved
+```
+
+- **Active** — the allergy is currently relevant and should be considered during care
+- **Inactive** — no longer thought to be relevant, but kept on the record
+- **Resolved** — the patient is no longer believed to have this allergy
+
+Alongside the clinical state, a **verification status** (unconfirmed, presumed, confirmed, refuted, or entered-in-error) records how trustworthy the assertion is — for example, a self-reported allergy may sit as `unconfirmed` until a clinician confirms it.
+
+## Types & classification
+
+- **Type** — `allergy` (an immune response) or `intolerance` (a non-immune adverse reaction)
+- **Category** — `food`, `medication`, `environment`, or `biologic`
+- **Criticality** — `low`, `high`, or `unable_to_assess`, signalling the potential clinical harm of a future reaction
+
+## Relationships
+
+- Every allergy belongs to a **patient** and is anchored to the **encounter** in which it was recorded.
+- The substance is a coded **value set** concept, which is what lets medication ordering and other business logic flag potential conflicts.
+- Because an allergy is tied to its patient and encounter, it never outlives them; moving an entry to a different encounter is handled by the platform as a maintained copy.
+
+## Permissions
+
+Allergy & Intolerance has no dedicated permission of its own. Access is governed by the **patient clinical-data** and **encounter clinical-data** permissions, checked against the patient the entry belongs to and the encounter it is recorded in.
+
+| Permission | Roles |
+| --- | --- |
+| Can view clinical data about patients | Doctor, Nurse, Staff, Administrator, Facility Admin |
+| Can Update a Patient's data | Doctor, Nurse, Staff, Administrator, Facility Admin |
+| Update Encounter related clinical data | Doctor, Nurse, Administrator, Facility Admin |
+
+Reading allergies requires "Can view clinical data about patients"; creating an entry requires "Can Update a Patient's data"; updating one requires "Update Encounter related clinical data" on its encounter. These roles are granted to users through organization, facility-organization, or direct patient memberships, and access is scoped by the organization tree — a permission held at a parent organization cascades to its descendants, so a user with the right role on a facility automatically reaches the patients and encounters beneath it.
+
+## Related
+
+- Reference: [Allergy & Intolerance (technical)](../../references/clinical/allergy-intolerance.mdx)
+- Concept: [Patient](../clinical/patient)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Condition](../clinical/condition.mdx)
+- Concept: [Medication](../medications/medication.mdx)
+
+## FHIR reference
+
+Care aligns this resource to the FHIR `AllergyIntolerance` resource, and the clinical state, verification, category, and criticality values follow the corresponding FHIR code systems.

@@ -1,0 +1,93 @@
+---
+sidebar_position: 1
+---
+
+# Inventory & Supply
+
+**Inventory & supply** is how Care tracks what physical items a facility stocks, how much of each is on hand, and how items move between stores, wards, suppliers, and patients. It is the operational backbone behind medications, nutritional products, and consumables — keeping stock counts accurate as goods are received, transferred, and dispensed.
+
+## What it represents
+
+Care models supply as a small set of connected resources, each answering a different question:
+
+- **Product knowledge** — the reusable catalogue definition of an item (its name, codes, base unit, ingredients or nutrients, and storage guidelines). It is the "what is this item" record, defined once per instance or per facility.
+- **Product** — a concrete, batch-level instance of a catalogue item at a facility, carrying batch-specific detail like lot number, expiry, and purchase price.
+- **Inventory item** — the current on-hand quantity of one product at one facility location (for example, a ward pharmacy or central store).
+- **Supply request** — a request to move a quantity of a catalogue item into a destination location, grouped under an order.
+- **Supply delivery** — a record of items actually moving — into a facility from a supplier, between locations, or out to a patient — grouped under a delivery order.
+
+Stock balances are not entered by hand. Care derives the on-hand quantity for each location from the deliveries that bring stock in and the dispenses that take it out, so availability stays consistent with what actually happened.
+
+## Catalogue vs. stock
+
+It helps to separate the *idea* of an item from the *thing on the shelf*:
+
+- **Catalogue** (product knowledge) describes an item in the abstract — paracetamol 500 mg tablets, defined once and reused everywhere.
+- **Stock** (product, then inventory item) is a specific batch of that item sitting in a specific location, with a real quantity that goes up and down.
+
+A catalogue entry can be defined instance-wide (shared across all facilities) or scoped to a single facility. Each product references exactly one catalogue entry, so naming and coding live in one place rather than being copied onto every batch.
+
+## How stock moves
+
+Stock changes through two ordered workflows. A **request** signals intent ("we need this here"); a **delivery** records the actual movement.
+
+```
+Supply request:   draft → active → processed → completed
+                                  ↘ suspended / cancelled
+Supply delivery:  in_progress → completed
+                              ↘ abandoned
+```
+
+Both flows are grouped under orders. A **request order** describes items wanted at a destination location, optionally from a supplier organization or an origin location. A **delivery order** records the matching shipment and starts in `draft` or `pending` before progressing.
+
+A delivery has two shapes depending on where stock comes from:
+
+- **External delivery** — the order has no origin location, so goods arrive from a supplier. The delivery names the product received.
+- **Intra-facility move** — the order has an origin location, so stock transfers between two locations within the facility. The delivery draws from a specific inventory item (batch).
+
+A delivery order can also dispense directly to a patient. When a delivery completes — or a dispense changes — Care recomputes the affected inventory item so its on-hand quantity reflects everything that has moved in and out.
+
+## Relationships
+
+Supply ties together several other parts of Care:
+
+- **Location** — every inventory item, request, and delivery is anchored to a [facility location](../facility/location.mdx); access is scoped through it.
+- **Facility** — products and catalogue entries belong to a [facility](../facility/facility.mdx), and stock is counted per facility location.
+- **Organization** — suppliers are [organizations](../facility/organization.mdx) marked as product suppliers.
+- **Medication** — dispensing a [medication](../medications/medication.mdx) draws down inventory, keeping clinical and stock records in sync.
+- **Billing** — products can link to a charge definition and delivery orders to an invoice, so issued items can be billed.
+
+## Permissions
+
+Access to supply resources is governed by facility-scoped permissions. The main ones, with the roles that hold them by default:
+
+| Permission | Roles |
+| --- | --- |
+| Can Read Product | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Create Product on Facility | Facility Admin, Admin |
+| Can Read Product Knowledge | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Create Product Knowledge on Facility | Facility Admin, Admin |
+| Can Read Inventory Item | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Read Supply Request | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Create Supply Request on Facility | Facility Admin, Admin, Staff, Doctor, Nurse |
+| Can Read Supply Delivery | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Create Supply Delivery on Facility | Facility Admin, Admin |
+| Can Create External Supply Delivery on Facility | Facility Admin, Admin |
+
+Roles are granted to users through organization, facility-organization, and patient memberships. Access to a location's inventory, requests, and deliveries is checked against the facility organizations that own that location, and a permission held at a parent organization cascades to its descendants in the organization tree. In practice, clinical and pharmacy staff can read stock and raise supply requests, while creating catalogue items and recording deliveries is reserved for facility administrators.
+
+## Related
+
+- Reference: [Product](../../references/supply/product.mdx)
+- Reference: [Product knowledge](../../references/supply/product-knowledge.mdx)
+- Reference: [Inventory item](../../references/supply/inventory-item.mdx)
+- Reference: [Supply request](../../references/supply/supply-request.mdx)
+- Reference: [Supply delivery](../../references/supply/supply-delivery.mdx)
+- Concept: [Medication](../medications/medication.mdx)
+- Concept: [Location](../facility/location.mdx)
+- Concept: [Organization](../facility/organization.mdx)
+- Concept: [Billing](../billing/billing.mdx)
+
+## FHIR reference
+
+These resources are FHIR-aligned: product knowledge maps to FHIR `MedicationKnowledge` / `NutritionProduct`, and the request and delivery records align with FHIR `SupplyRequest` and `SupplyDelivery`. Coded fields use Care's own snake_case status and category values rather than FHIR URIs.

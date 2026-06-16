@@ -1,0 +1,69 @@
+---
+sidebar_position: 5
+---
+
+# Device
+
+A **device** in Care is a physical or logical piece of equipment tracked within a facility — a monitor, pump, camera, or any asset a clinical team relies on. The device record anchors where that equipment lives, which encounter it is attached to, and the history of how it has moved and been serviced over time.
+
+## What it represents
+
+In Care's FHIR-aligned model, a device maps to the **Device** resource. It captures:
+
+- **Identity** — registered name, a friendly display name, and identifiers such as serial number, lot number, model number, and part number
+- **Provenance** — manufacturer, manufacture date, and expiration date
+- **Status** — both its lifecycle state and its physical availability
+- **Contact** — structured contact points (phone, email, and similar) for the device or its vendor
+- **Placement** — the facility that owns it, the organization responsible for it, and the location and encounter it is currently associated with
+- **Type-specific data** — optional plugin-driven configuration when the device is a known care type (for example, a camera)
+
+A device is owned by exactly one facility, but it is not tied to a single location or encounter forever. It can be moved between locations and attached to or detached from encounters, and Care keeps an audit trail of each of those associations.
+
+## Lifecycle
+
+A device carries two independent status fields. Its **lifecycle status** describes whether it is in service:
+
+```
+active → inactive → entered_in_error
+```
+
+- **active** — the device is in service
+- **inactive** — the device is not currently in service
+- **entered_in_error** — the record was created by mistake
+
+Separately, its **availability status** describes its physical condition: `available`, `lost`, `damaged`, or `destroyed`. A device can be `active` in the system while its availability reflects that it is, say, out for repair.
+
+## Relationships
+
+Devices connect to the rest of Care through a few associations, each managed through its own action rather than edited directly on the device:
+
+- **Facility** — the owning facility, set when the device is registered. A device always belongs to one facility.
+- **Managing organization** — the facility organization accountable for the device. This scopes who can see and manage it.
+- **Location** — where the device is currently placed. Moving a device opens a new entry in its location history and closes the previous one.
+- **Encounter** — the [encounter](../clinical/encounter.mdx) the device is currently attached to. Attaching or detaching is recorded in encounter history; when an encounter is completed, attached devices are released automatically.
+
+Care also keeps a **service history** — a log of maintenance and servicing events — so the upkeep of each device stays auditable alongside its movements.
+
+## Permissions
+
+Access to devices is governed by the device permissions, granted to users through their roles:
+
+| Permission | Roles |
+| --- | --- |
+| Can List Devices on Facility | Staff, Administrator, Doctor, Nurse, Facility Admin, Pharmacist |
+| Can Manage Devices on Facility | Staff, Administrator, Facility Admin, Pharmacist |
+| Can Manage Device Associations to Encounters | Staff, Administrator, Doctor, Nurse, Facility Admin |
+
+Roles are granted to users through facility-organization memberships, and access is scoped by the organization tree: a permission held at a parent organization cascades to its descendants. A device is visible to users whose memberships overlap its managing organization (or the organization of the location it currently sits in), so listing and management follow the facility's organization hierarchy rather than being open to everyone in the facility.
+
+## Related
+
+- Reference: [Device (technical)](../../references/facility/device.mdx)
+- Concept: [Facility](./facility.mdx)
+- Concept: [Location](./location.mdx)
+- Concept: [Organization](./organization.mdx)
+- Concept: [Encounter](../clinical/encounter.mdx)
+
+## FHIR reference
+
+Care's device model aligns with the FHIR **Device** resource, including its lifecycle status, availability status, and structured contact points. The encounter, location, and service associations are tracked as Care-specific history records layered on top of that resource.

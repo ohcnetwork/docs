@@ -1,0 +1,94 @@
+---
+sidebar_position: 2
+---
+
+# Organizations
+
+An **organization** in Care is a grouping used to structure people and resources into a nested tree. It is how Care decides who can do what: roles are granted to users on an organization, and the permissions that come with those roles flow down to everything inside that branch of the tree.
+
+## What it represents
+
+In Care's FHIR-aligned model, an organization maps to the **Organization** resource. It captures:
+
+- **Identity** — a display name, description, and an open `metadata` bag for deployment-specific data
+- **Classification** — a type that says what kind of grouping it is (a team, a governance unit, a role group, a supplier)
+- **Tree position** — a parent organization, so groups nest into a hierarchy with roots, branches, and descendants
+- **Membership** — links between users and the organization, each carrying a role that defines what those users can do
+
+An organization is not a single person or a single facility. It is the container that groups them, and the place where access is anchored.
+
+## Two kinds of organization
+
+Care has two organization trees that work the same way but live at different scopes:
+
+- **Organization** — instance-wide. This is the governance and permissions backbone for the whole deployment: geography, administrative units, supplier groups, and role groups that exist independently of any one facility.
+- **Facility organization** — scoped to a single facility. This is how a facility is divided internally into departments and teams (for example, `Cardiology` or an emergency ward) with their own staff and access.
+
+Every facility has a single **root** facility organization at the top of its internal tree; departments and teams hang off it.
+
+## Types and classification
+
+An organization's type describes what the grouping is for:
+
+| Type | Meaning |
+| --- | --- |
+| `team` | A team or department-style grouping |
+| `govt` | A governance or governmental unit, typically managed by a superadmin |
+| `role` | A role group — a set of users who share a role across the deployment |
+| `product_supplier` | A supplier organization, linked to the supply chain |
+
+Governance, role, and root organizations are restricted to superadmin management; ordinary teams are managed by facility and organization admins.
+
+## The tree and how access cascades
+
+Organizations nest into a tree. The key idea is **inheritance**: a permission held on an organization applies not just there but to every organization beneath it. If a user is an admin of a region, they are effectively an admin of every district, facility group, and team inside that region — without being added to each one individually.
+
+```
+Root organization
+ └─ Branch organization
+     └─ Child organization
+         └─ Team
+```
+
+A user added near the top of the tree carries their role's permissions all the way down. A user added to a single team has access only within that team. This makes the tree the natural unit for delegating administration as a deployment grows.
+
+Membership is also deliberate: belonging to an organization does not automatically grant access to everything it owns — only to the resources actually assigned to it and to what the user's role allows.
+
+## Permissions
+
+Access to organizations is governed by two permission sets — `OrganizationPermissions` for the instance-wide tree and `FacilityOrganizationPermissions` for facility-scoped organizations.
+
+Key instance-wide organization permissions:
+
+| Permission | Roles |
+| --- | --- |
+| Can View Organizations | Facility Admin, Admin, Administrator, Staff, Doctor, Nurse, Volunteer, Pharmacist, plus role-org Admin / Manager / Member |
+| Can Create Organizations | Admin |
+| Can Delete Organizations | Admin |
+| Can Manage Organizations | Admin, role-org Admin |
+| Can Manage Users in an Organization | Admin, Administrator, Facility Admin, role-org Admin |
+| Can List Users in an Organizations | Facility Admin, Admin, Administrator, Staff, Doctor, Nurse, Volunteer, Pharmacist, plus role-org Admin / Manager |
+
+Key facility-organization permissions:
+
+| Permission | Roles |
+| --- | --- |
+| Can View Facility Organizations | Facility Admin, Admin, Administrator, Staff, Doctor, Nurse, Volunteer |
+| Can Create Facility Organizations | Facility Admin |
+| Can Delete Facility Organizations | Facility Admin |
+| Can Manage Facility Organizations | Facility Admin, Administrator |
+| Can Manage Users in a Facility Organization | Facility Admin, Administrator |
+
+Roles are granted to users through organization and facility-organization memberships. Access is then scoped by the tree: a permission held at a parent organization cascades to all of its descendants, so checks walk the chain of ancestors above a given organization. Geo admins are a special case — they can manage and view facility organizations within the geography they administer, regardless of facility membership. When assigning a role to another user, an admin can only grant a role whose permissions are a subset of their own.
+
+## Related
+
+- Reference: [Organization (technical)](../../references/facility/organization.mdx)
+- Concept: [Facility](./facility.mdx)
+- Concept: [Location](./location.mdx)
+- Concept: [Access control](../access/access-control.mdx)
+- Concept: [User](../access/user.mdx)
+
+## FHIR reference
+
+Organizations align with the FHIR **Organization** resource — a nested grouping used to organize people and resources and to anchor permissions. Both the instance-wide and facility-scoped trees follow this model.

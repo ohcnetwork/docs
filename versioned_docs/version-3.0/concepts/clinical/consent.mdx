@@ -1,0 +1,85 @@
+---
+sidebar_position: 9
+---
+
+# Consent
+
+A **consent** in Care records a patient's decision — to permit or deny — for a defined category of activity, such as treatment, research participation, or sharing of their information. It captures what the patient agreed to, when it applies, and who verified it, so that care teams have an auditable record of the patient's wishes.
+
+## What it represents
+
+Consent maps to the FHIR **Consent** resource. Each record captures:
+
+- **Decision** — whether the patient permits or denies the activity
+- **Category** — what the consent is about (treatment, privacy, research, advance directives, and so on)
+- **Validity** — the date it was recorded and the period during which it applies
+- **Verification** — who confirmed the consent and how (for example, by a family member)
+- **Supporting documents** — scanned or uploaded consent forms attached to the record
+- **Encounter linkage** — the visit the consent was captured during
+
+A consent is always anchored to an encounter, and the owning patient is reached through that encounter. The patient's history is the container that makes their consents coherent over time.
+
+## Decision
+
+Every consent states one of two outcomes:
+
+- **Permit** — the patient grants consent for the activity
+- **Deny** — the patient refuses consent for the activity
+
+## Types
+
+The category describes what kind of activity the consent governs:
+
+| Category | Meaning |
+| --- | --- |
+| Treatment | Consent to receive treatment |
+| Patient privacy | Disclosure or sharing of patient information |
+| Research | Participation in research |
+| DNR | Do-not-resuscitate directive |
+| Comfort care | Comfort / palliative care directive |
+| Advance care directive | A patient's advance care directive |
+| Advance directive (other) | Other advance directive |
+
+## Lifecycle
+
+A consent moves through a small set of statuses that describe whether it is in force:
+
+```
+draft → active → inactive
+              ↘ not_done
+              ↘ entered_in_error
+```
+
+- **draft** — being prepared, not yet in force
+- **active** — currently in force
+- **inactive** — no longer in force
+- **not_done** — the consent activity did not take place
+- **entered_in_error** — recorded by mistake; kept for audit but disregarded
+
+Status is recorded directly on the consent; there is no automatic state machine, so a record can be marked `entered_in_error` or `inactive` as a plain update while the history remains auditable.
+
+## Relationships
+
+A consent belongs to a single **encounter**, and an encounter can carry many consents. The **patient** is reached through that encounter, so a consent is part of the patient's longitudinal record. Verification entries reference the **user** who confirmed the consent, and uploaded consent forms are linked as supporting attachments.
+
+## Permissions
+
+Consent is patient clinical data, so it has no dedicated permission of its own — access is governed by the patient permissions defined in `PatientPermissions`. Reading consents requires the clinical-data permission; creating or updating them requires patient write access.
+
+| Permission | Roles |
+| --- | --- |
+| Can view clinical data about patients | Staff, Doctor, Nurse, Admin, Facility Admin |
+| Can Update a Patient's data | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
+
+Roles are granted to users through organization, facility-organization, and patient memberships. Access to a specific consent is decided by the roles a user holds on its patient — gathered through the patient's encounters, locations, owning organizations, and any direct patient association. Because access is scoped by the organization tree, a permission held at a parent organization cascades to its descendants.
+
+## Related
+
+- Reference: [Consent (technical)](../../references/clinical/consent.mdx)
+- Concept: [Patient](../clinical/patient)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [User](../access/user.mdx)
+
+## FHIR reference
+
+Consent aligns with the FHIR **Consent** resource: `status`, `category`, `decision`, and `period` map to their FHIR counterparts.

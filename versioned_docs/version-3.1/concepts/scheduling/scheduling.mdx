@@ -1,0 +1,74 @@
+---
+sidebar_position: 1
+---
+
+# Scheduling & Appointments
+
+**Scheduling** in Care defines when a resource — a practitioner, a location, or a healthcare service — is available, and **appointments** record a patient being booked into a concrete time within that availability. Together they answer "who is free, when?" and "who is coming in, and at what time?" — the backbone of front-desk and clinic operations.
+
+## What it represents
+
+Scheduling spans a few related building blocks, in plain terms:
+
+- **Schedule** — a named, date-bounded block of availability attached to a bookable resource (for example, "Morning OPD", valid for the next quarter)
+- **Availability** — how a schedule's time is divided: recurring weekly windows, slot length, and how many people each slot can hold
+- **Exception** — a date range that blocks a resource regardless of its schedules (leave, holidays, one-off closures)
+- **Slot** — a concrete, bookable time window generated from a schedule's availability
+- **Booking (appointment)** — a patient placed into a slot, with a status that tracks them from proposed through to seen or cancelled
+
+A schedule describes *potential* availability; a booking is an *actual* appointment. One schedule produces many slots, and each slot can hold one or more bookings up to its capacity.
+
+## Bookable resources
+
+A schedule is never attached to a patient — it is attached to whatever the patient comes to see. Care supports three kinds of bookable resource:
+
+| Resource type | What gets booked |
+| --- | --- |
+| Practitioner | A clinician or staff member who is a part of the facility |
+| Location | A room, bed, or area within the facility |
+| Healthcare service | A named service offering (for example, a vaccination clinic) |
+
+When booking, clients name the resource by its type and id; Care resolves the underlying practitioner, location, or service behind the scenes.
+
+## Appointment lifecycle
+
+A booking moves through a status as the patient progresses. The common path is:
+
+```
+proposed → pending → booked → arrived → checked_in → in_consultation → fulfilled
+```
+
+Other terminal or branch states include `noshow` (patient did not arrive), `waitlist`, and the cancellation states `cancelled`, `rescheduled`, and `entered_in_error`. Cancelling and rescheduling do not happen through a plain status edit — they go through dedicated cancel and reschedule actions, which also free up the slot's capacity. A booking already `in_consultation` cannot be cancelled.
+
+## Relationships
+
+- A **booking** links a **patient** to a **slot**, and can carry an associated [encounter](../clinical/encounter.mdx), a queue [token](./token.mdx), and a billing charge.
+- A **schedule** lives inside a **facility** and points at one bookable resource.
+- When a schedule defines a charge, a booking made against it can automatically raise the matching [billing](../billing/billing.mdx) charge; queue-style workflows issue a [token](./token.mdx) so patients can be called in order.
+
+## Permissions
+
+Access to schedules and bookings is governed by the schedule permission set. The key permissions and the roles that hold them:
+
+| Permission | Roles |
+| --- | --- |
+| Can Create on Schedule | Admin, Staff, Facility Admin, Doctor, Nurse |
+| Can list schedule on Object | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
+| Can list bookings on Object | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
+| Can update bookings on Object | Admin, Staff, Facility Admin, Doctor, Nurse |
+| Can reschedule bookings on Object | Doctor, Staff, Nurse, Administrator, Facility Admin, Admin |
+
+Roles are granted to users through facility-organization memberships, and access is scoped by the organization tree: a permission held at a parent organization cascades to its descendants. For practitioner schedules, access is decided against the organizations the practitioner belongs to within the facility; for locations and healthcare services, against that resource's managing organization.
+
+## Related
+
+- Reference: [Schedule & availability (technical)](../../references/scheduling/schedule.mdx)
+- Reference: [Booking (technical)](../../references/scheduling/booking.mdx)
+- Concept: [Token](./token.mdx)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Healthcare service](../facility/healthcare-service.mdx)
+- Concept: [Location](../facility/location.mdx)
+
+## FHIR reference
+
+Scheduling is FHIR-aligned: a schedule's slots map to the FHIR **Slot** resource, and a booking maps to the FHIR **Appointment** resource. Care's API field names may differ from the FHIR element names.

@@ -1,0 +1,64 @@
+---
+sidebar_position: 2
+---
+
+# Users
+
+A **user** in Care is an account that a person — or a machine integration — uses to sign in and act in the system. Users are the *who* behind every record: a user creates a patient, documents an encounter, or places an order, and the system tracks what each account is allowed to do through roles and organizations.
+
+## What it represents
+
+A user account captures:
+
+- **Identity & profile** — name (with prefix and suffix), username, gender, date of birth, and profile picture
+- **Contact** — phone number, alternate phone, and email
+- **Clinician credentials** — qualification, medical council registration, experience, and weekly working hours (for staff who deliver care)
+- **Authentication & security** — password, multi-factor authentication (TOTP and backup codes), and web-push notification keys
+- **Placement** — the geographic organization and facility a user belongs to, plus the roles they hold in each
+- **Account type** — whether the account is a real person or a service account used by an integration
+
+A user is *not* the same as a role. The account is the identity; the roles attached to it (in one or more organizations) decide what that identity can do.
+
+## Types of accounts
+
+| Type | Purpose |
+| --- | --- |
+| Human user | A person who signs in — clinicians, nurses, registration staff, administrators |
+| Service account | A non-human account used by an integration or automation to talk to Care's API |
+
+Clinician fields such as qualification and council registration are only meaningful for staff who provide care; administrative and service accounts leave them blank.
+
+## Relationships
+
+- **Organizations & facilities** — a user is placed in a geographic organization and can be assigned roles across many organizations and facilities. This placement is what grants access.
+- **Patients & encounters** — when a user creates or updates a clinical record, the account is recorded as the actor; clinical history stays auditable to the user who entered it.
+- **Skills** — users can be tagged with skills (competencies) for scheduling and discovery.
+
+## Identifiers
+
+Each user has a stable public identifier (surfaced as `id` in the API) that is separate from the username. Usernames, phone numbers, and emails must each be unique across the system, so they can also locate an account during sign-in and administration.
+
+## Permissions
+
+User administration is governed by the user permission set. The two key permissions and the roles that hold them:
+
+| Permission | Roles |
+| --- | --- |
+| Can create User in care | Admin, Facility Admin, Administrator |
+| Can list Users in Care | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist |
+
+Creating users is reserved for administrators, while most clinical and support roles can list and view other users in their facility. Roles are granted to a user through organization, facility-organization, and patient memberships, and access is scoped by the organization tree — a permission held at a parent organization cascades to its descendants. A superuser bypasses these checks entirely.
+
+For the broader model of how roles, permissions, and organizations combine to decide access, see [Access control](./access-control.mdx).
+
+## Related
+
+- Reference: [User & Skills (technical)](../../references/access/user.mdx)
+- Concept: [Access control](./access-control.mdx)
+- Concept: [Organization](../facility/organization.mdx)
+- Concept: [Facility](../facility/facility.mdx)
+- Concept: [Patient](../clinical/patient)
+
+## FHIR reference
+
+A care-providing user aligns with FHIR's **Practitioner** resource, and a user's role within an organization aligns with **PractitionerRole**. Care keeps the account identity and its organization-scoped roles as related but distinct ideas, mirroring that separation.

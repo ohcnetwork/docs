@@ -1,0 +1,65 @@
+---
+sidebar_position: 6
+---
+
+# Diagnostic Report
+
+A **diagnostic report** in Care holds the results and interpretation of a diagnostic test or investigation — a lab panel, an imaging study, or a similar workup. It is the answer that closes the loop on an order: every report fulfils exactly one [service request](./service-request.mdx) and is anchored to the patient and encounter the order was raised under.
+
+## What it represents
+
+In Care's FHIR-aligned model, a diagnostic report maps to the **DiagnosticReport** resource. It captures:
+
+- **What was tested** — a coded category (the diagnostic service section, e.g. laboratory, radiology) and an optional coded report name or panel
+- **The results** — the individual measurements and findings, recorded as observations linked to the report
+- **The interpretation** — a free-text conclusion summarising what the results mean, plus optional notes
+- **Provenance** — the service request it fulfils, and the patient and encounter it belongs to
+
+A report is not the order itself. The order (service request) asks for the work; the diagnostic report is the verified outcome that comes back.
+
+## Lifecycle
+
+A report moves through statuses as results are produced and verified:
+
+```
+registered → partial → preliminary → final
+```
+
+- **registered** — the report exists but no results are attached yet
+- **partial** — some results are in; the report is still incomplete
+- **preliminary** — provisional results are available but not yet verified
+- **final** — the report is verified and complete
+
+Not every report passes through every step; a straightforward result can move from `registered` to `final` directly.
+
+## Relationships
+
+A diagnostic report sits downstream of an order and pulls together the data around it:
+
+- **Service request** — the order being fulfilled; a report belongs to exactly one request, chosen when the report is created
+- **Patient** and **encounter** — set from the context of the originating order, not entered by hand
+- **Observations** — the individual result rows (values, findings) collected under the report
+- **Specimen** — when a sample is involved, it is collected against the service request that this report fulfils
+
+## Permissions
+
+Access to diagnostic reports is governed by a dedicated permission enum:
+
+| Permission | Roles |
+| --- | --- |
+| Can Create Diagnostic Report on Facility | Facility Admin, Admin, Doctor, Nurse |
+| Can Read Diagnostic Report | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer |
+
+Roles are granted to users through organization, facility-organization, and patient memberships. Access is then scoped by the organization tree: a permission held at a parent organization cascades to its descendants. In practice, Care decides report access via the originating service request — a user can act on a report if they hold the matching permission on the encounter (or on a facility organization tied to the request's locations) that the report belongs to.
+
+## Related
+
+- Reference: [Diagnostic Report (technical)](../../references/clinical/diagnostic-report.mdx)
+- Concept: [Service Request](./service-request.mdx)
+- Concept: [Observation](./observation.mdx)
+- Concept: [Specimen](./specimen.mdx)
+- Concept: [Encounter](./encounter.mdx)
+
+## FHIR reference
+
+Care's diagnostic report aligns with the FHIR **DiagnosticReport** resource. The coded `category` and `code` fields are bound value sets (HL7 diagnostic service sections and LOINC), and `status` follows the FHIR report-status vocabulary.

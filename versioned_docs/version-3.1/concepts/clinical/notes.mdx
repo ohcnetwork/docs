@@ -1,0 +1,59 @@
+---
+sidebar_position: 10
+---
+
+# Clinical Notes
+
+**Clinical notes** are threaded discussions attached to a patient's record. They let care teams capture narrative context — handover notes, observations, and coordination — that does not fit into structured fields, and keep that conversation tied to the right patient and, when relevant, the right visit.
+
+## What it represents
+
+A note is a conversation, not a single entry. It captures:
+
+- **Threads** — a titled discussion attached to a patient, optionally scoped to one encounter
+- **Messages** — the individual posts within a thread, each authored by a user
+- **Authorship and timing** — who wrote each message and when, carried by the standard audit fields
+- **Edit history** — when a message is edited, the previous version and its author are preserved automatically
+
+Notes are free-text by design. They complement structured clinical data (conditions, observations, orders) rather than replace it.
+
+## Relationships
+
+Every thread is anchored to a [patient](../clinical/patient). A thread may also be scoped to a single [encounter](../clinical/encounter.mdx):
+
+- **Patient-level threads** — no encounter; visible across the patient's whole record
+- **Encounter-scoped threads** — tied to one visit, for conversation about that episode of care
+
+Within a thread, every message belongs to that thread and inherits the same patient (and encounter) anchoring. Deleting a patient removes their threads; deleting a thread removes its messages.
+
+## Edit history
+
+Messages can be edited, but earlier versions are never lost. On each edit, the platform appends the previous message body and its author to the message's history automatically — clients cannot set or overwrite this. The current text shows in the thread; the prior versions remain auditable.
+
+Editing is also restricted to the original author: a user can revise their own messages, but not someone else's.
+
+## Permissions
+
+Notes do not have a dedicated permission set — access is governed by the same **patient** and **encounter** clinical-data permissions that protect the rest of the record. Whether a thread is patient-level or encounter-scoped decides which one applies.
+
+| Permission | Roles |
+| --- | --- |
+| Can view clinical data about patients | Staff, Doctor, Nurse, Administrator (admin), Facility Admin |
+| Can Read encounter related clinical data | Administrator (admin), Doctor, Nurse, Facility Admin |
+| Can Update a Patient's data | Staff, Doctor, Nurse, Administrator, Administrator (admin), Facility Admin |
+| Update Encounter related clinical data | Administrator (admin), Doctor, Nurse, Facility Admin |
+
+In practice: reading notes requires clinical-data read access on the patient (or, for encounter-scoped threads, on the encounter). Posting or editing a message in a patient-level thread requires permission to update the patient's data; in an encounter-scoped thread it requires permission to update the encounter's clinical data, and is blocked once the encounter is closed.
+
+Roles are granted to users through organization, facility-organization, and patient memberships. Access is scoped by the organization tree — a permission held at a parent organization cascades to its descendants — so a user sees and edits notes only for patients and encounters within their reach.
+
+## Related
+
+- Reference: [Notes (technical)](../../references/clinical/notes.mdx)
+- Concept: [Patient](../clinical/patient)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Observation](../clinical/observation.mdx)
+
+## FHIR reference
+
+Care's clinical resources are FHIR-aligned, but free-text notes are modeled as Care's own `NoteThread` and `NoteMessage` resources rather than a single FHIR resource. Narrative content elsewhere in the record maps to FHIR's `Annotation` and narrative elements; notes here are a Care-native threading layer over that idea.

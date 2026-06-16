@@ -1,0 +1,65 @@
+---
+sidebar_position: 4
+---
+
+# Healthcare Service
+
+A **healthcare service** in Care is a specific service a facility offers — cardiology, a laboratory, radiology, a pharmacy, or a store. It names what is on offer, where it is delivered, and which department runs it, so the rest of Care can route work to the right place.
+
+## What it represents
+
+A healthcare service captures, in plain terms:
+
+- **What the service is** — a display name and a coded service type (for example, a cardiology or radiology code)
+- **Where it is delivered** — the locations within the facility where the service is provided
+- **Who runs it** — the managing organization (the department or team responsible for it)
+- **What it behaves like internally** — an optional internal type that tells Care how the service is used (pharmacy, lab, scheduling, or store)
+- **How it appears** — optional presentation hints (such as colours or icons) used by the interface
+
+A healthcare service belongs to one facility. The facility is set from context, not chosen on the form, so a service is always tied to the facility it lives in.
+
+## Types
+
+Beyond its clinical service type, a healthcare service can carry an **internal type** that tells Care how to treat it operationally:
+
+| Internal type | Used for |
+| --- | --- |
+| `pharmacy` | Dispensing and medication supply |
+| `lab` | Laboratory and diagnostic ordering |
+| `scheduling` | Appointment and resource scheduling |
+| `store` | Inventory and supply stores |
+
+The internal type is optional. A service without one is simply an offered service with no special operational handling.
+
+## Relationships
+
+A healthcare service is the connective tissue between a facility's structure and the work that happens in it:
+
+- **Facility** — every service belongs to exactly one facility, assigned from context.
+- **Locations** — a service points to the locations where it is delivered; one service can span several locations.
+- **Organization** — a managing organization (a facility department or team) owns the service and is responsible for it.
+
+Because of these links, a healthcare service is what scheduling, ordering, and supply workflows reference when they need to know *what* is being offered and *where*.
+
+## Permissions
+
+Access to healthcare services is governed by the `HealthcareService` permissions:
+
+| Permission | Roles |
+| --- | --- |
+| Can Read Healthcare Service | Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Create Healthcare Service on Facility | Facility Admin, Administrator |
+
+Reading the catalogue of services is broadly available to clinical and support staff, while creating or changing services is restricted to facility administrators. Roles are granted to users through facility-organization memberships, and access is scoped by the organization tree: a permission held at a parent organization cascades to its descendants. Creating a service additionally requires the permission at the facility root.
+
+## Related
+
+- Reference: [Healthcare Service (technical)](../../references/facility/healthcare-service.mdx)
+- Concept: [Facility](./facility.mdx)
+- Concept: [Organization](./organization.mdx)
+- Concept: [Location](./location.mdx)
+- Concept: [Scheduling](../scheduling/scheduling.mdx)
+
+## FHIR reference
+
+Care's healthcare service is aligned with the FHIR **HealthcareService** resource, and its service type is coded against the HL7 Healthcare Service Type Code value set.

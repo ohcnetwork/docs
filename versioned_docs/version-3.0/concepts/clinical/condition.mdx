@@ -1,0 +1,83 @@
+---
+sidebar_position: 3
+---
+
+# Condition
+
+A **condition** in Care records a clinical problem, diagnosis, or symptom for a patient — for example a chronic illness on the problem list, a diagnosis made during a visit, or a presenting complaint. It is part of the patient's longitudinal clinical record and is always captured in the context of an encounter. In the Care product UI conditions are surfaced as **Symptoms**.
+
+## What it represents
+
+A condition captures, in plain terms:
+
+- **What the problem is** — a coded clinical finding (drawn from SNOMED CT), not free text, so it can be searched, summarized, and exchanged
+- **How certain it is** — whether the condition is confirmed, provisional, suspected, or refuted
+- **What kind of problem it is** — a problem-list item, an encounter diagnosis, or a chronic condition
+- **How serious it is** — an optional severity (mild, moderate, severe)
+- **When it started and stopped** — onset and abatement, given as a date, an age, or a description
+- **Where it belongs** — the patient it concerns and the encounter it was recorded in, plus an optional clinical note
+
+A condition is distinct from an allergy or an observation: it is a problem the patient *has*, recorded and tracked over time, rather than a measurement or a reaction.
+
+## Classification
+
+Every condition is classified so it shows up in the right place in the record:
+
+| Category | What it means |
+| --- | --- |
+| Problem list item | An ongoing problem tracked on the patient's problem list |
+| Encounter diagnosis | A diagnosis made during a specific visit |
+| Chronic condition | A long-term condition carried across encounters |
+
+## Lifecycle
+
+A condition's **clinical status** describes where the problem stands now, and its **verification status** describes how sure the clinician is. These move independently.
+
+Clinical status:
+
+```
+active → inactive → resolved
+active → remission
+active → recurrence / relapse
+(unknown when not yet established)
+```
+
+Verification status:
+
+```
+unconfirmed → provisional → differential → confirmed
+(refuted or entered_in_error when ruled out or mistaken)
+```
+
+Verification status must always be set; a condition is never recorded without saying how certain it is.
+
+## Relationships
+
+- **Patient** — every condition belongs to one patient and forms part of their clinical history.
+- **Encounter** — a condition is always recorded within an encounter; Care derives the patient from that encounter, so clinicians never attach a condition to a patient directly.
+
+Because the patient is taken from the encounter, conditions stay tied to the visit where they were documented while still rolling up into the patient's overall record.
+
+## Permissions
+
+Conditions are clinical data. There is no separate "condition" permission — access is governed by the **patient** clinical-data permission and the **encounter** clinical-data permissions, since every condition lives inside an encounter for a patient.
+
+| Permission | Roles |
+| --- | --- |
+| Can view clinical data about patients | Staff, Doctor, Nurse, Admin, Facility Admin |
+| Can Read encounter related clinical data | Admin, Doctor, Nurse, Facility Admin |
+| Update Encounter related clinical data | Admin, Doctor, Nurse, Facility Admin |
+
+Roles are granted to users through organization, facility-organization, and patient memberships. Access is scoped by the organization tree: a permission held at a parent organization cascades to its descendants, and a user's effective roles on a patient are resolved across their organization, the patient's encounters and locations, and any direct patient assignment. Reading or writing a condition therefore requires the right clinical-data permission on the patient or the encounter it belongs to.
+
+## Related
+
+- Reference: [Condition (technical)](../../references/clinical/condition.mdx)
+- Concept: [Patient](../clinical/patient)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Allergy / intolerance](../clinical/allergy-intolerance.mdx)
+- Concept: [Observation](../clinical/observation.mdx)
+
+## FHIR reference
+
+A condition aligns with the FHIR **Condition** resource. Its coded `code` is bound to a SNOMED CT clinical-finding value set, and its clinical-status, verification-status, category, and severity values follow the corresponding FHIR concepts.
