@@ -6,18 +6,23 @@ sidebar_position: 9
 
 Technical reference for the `NoteThread` and `NoteMessage` modules in Care EMR.
 
-The Django models (`care/emr/models/notes.py`) are the **storage layer**: `NoteThread`
-groups messages for a patient (optionally scoped to an encounter), and `NoteMessage`
-stores each message body plus an opaque `message_history` `JSONField`. The structure of
-`message_history`, the read/write schemas, and the server-side edit-history behaviour are
-defined by the **Pydantic resource specs** (`care/emr/resources/notes/`), all built on
-`EMRResource`.
-
 **Source:**
 
 - Model: [`care/emr/models/notes.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/notes.py)
 - Specs: [`resources/notes/thread_spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/notes/thread_spec.py), [`resources/notes/notes_spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/notes/notes_spec.py)
 - Base: [`resources/base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)
+
+## Quick reference
+
+| Need | Section |
+| --- | --- |
+| Models and ownership | Models |
+| Field definitions | `NoteThread` fields |
+| Relationships | Related models |
+| API contracts | Resource specs (API schema) |
+| Server behaviour | Methods & save behaviour |
+| Client guidance | API integration notes |
+| Related references | Related |
 
 ## Models
 
@@ -32,7 +37,7 @@ Both models extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care E
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `title` | `CharField(255)` | Nullable, blank-allowed at the storage layer; the spec layer requires it on write (`title: str`, `max_length=255`) |
+| `title` | `CharField(255)` | Nullable and blank-allowed in the database, the write spec requires it (`title: str`, `max_length=255`) |
 | `patient` | `FK → Patient` | `on_delete=CASCADE`; thread is removed when the [patient](./patient) is deleted. Excluded from spec serialization (`__exclude__`); set from the URL/viewset context, not the request body |
 | `encounter` | `FK → Encounter` | Nullable, blank-allowed; `on_delete=CASCADE`. Scopes the thread to a specific [encounter](./encounter.mdx) when set. Excluded from spec serialization; on create it is resolved from a UUID in the request body (see specs below) |
 
@@ -48,11 +53,11 @@ An individual message within a thread.
 | --- | --- | --- |
 | `thread` | `FK → NoteThread` | `on_delete=CASCADE`; messages are removed when the thread is deleted. Excluded from spec serialization (`__exclude__`); set from the URL/viewset context |
 | `message` | `TextField` | Free-text message body. Required on write (`message: str`) |
-| `message_history` | `JSONField` | Defaults to `{}`. Opaque at the model layer; the spec layer gives it the shape below and maintains it server-side on edit. Exposed read-only |
+| `message_history` | `JSONField` | Defaults to `{}`. The update spec writes the shape below and maintains it server-side on edit. Exposed read-only |
 
 #### `message_history` shape
 
-`message_history` is not a free-form blob — the update spec writes a fixed structure. On
+`message_history` is not a free-form blob, the update spec writes a fixed structure. On
 each update, the **previous** message body is appended to a `history` list:
 
 ```jsonc
@@ -93,9 +98,9 @@ All specs extend `EMRResource` (`resources/base.py`), which provides `serialize`
 
 Validation / server behaviour:
 
-- `title` is **required** on write at the spec layer (`Field(..., max_length=255)`), even though the column is nullable.
+- `title` is **required** on write (`Field(..., max_length=255)`), even though the column is nullable.
 - `NoteThreadCreateSpec.encounter` is validated with `validate_encounter_exists`: a non-null value must match an existing `Encounter.external_id`, otherwise `ValueError("Encounter not found")`.
-- On create, `perform_extra_deserialization` looks up the `Encounter` by `external_id` and assigns it to the FK. `patient` is not part of any thread spec — it is assigned from the request context.
+- On create, `perform_extra_deserialization` looks up the `Encounter` by `external_id` and assigns it to the FK. `patient` is not part of any thread spec; it is assigned from the request context.
 
 ### Message specs
 
@@ -116,13 +121,13 @@ Validation / server behaviour:
 
 - `NoteThread` / `NoteMessage` inherit save/audit behaviour from [`EMRBaseModel`](../foundation/base-model.mdx): `external_id`, `created_by`/`updated_by`, `created_date`/`modified_date`, and soft delete via `deleted`.
 - Audit users in read specs are populated by `EMRResource.serialize_audit_users`, which resolves `created_by`/`updated_by` to cached `UserSpec` dicts.
-- `message_history` is mutated only by `NoteMessageUpdateSpec.perform_extra_deserialization` — never by client input.
+- `message_history` is mutated only by `NoteMessageUpdateSpec.perform_extra_deserialization`. Never by client input.
 - Cascade deletes: deleting a patient removes its threads; deleting a thread removes its messages.
 
 ## API integration notes
 
 - Note threads and messages are exposed through Care's REST API; field names in API payloads follow the spec classes above, which may differ from Django model names.
-- Threads are always anchored to a `patient` (set from request context); the `encounter` link is optional and narrows a thread to a single visit. On create, send `encounter` as the encounter's `external_id` (UUID) — it is validated to exist.
+- Threads are always anchored to a `patient` (set from request context), the `encounter` link is optional and narrows a thread to a single visit. On create, send `encounter` as the encounter's `external_id` (UUID); it is validated to exist.
 - `title` and `message` are required on write even though the underlying columns are permissive.
 - `message_history` is read-only and platform-maintained: each edit appends the previous body and authorship to `history`. Do not send it from clients.
 - Authorship and timestamps come from the inherited `EMRBaseModel` audit fields (`created_by`, `updated_by`, `created_date`, `modified_date`); soft deletes are handled via `deleted`.

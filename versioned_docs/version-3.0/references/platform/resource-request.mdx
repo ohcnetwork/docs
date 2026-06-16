@@ -6,12 +6,25 @@ sidebar_position: 4
 
 Technical reference for the `ResourceRequest` module in Care EMR.
 
-`ResourceRequest` models an inter-facility request for a resource (transfer, supply, or assistance), tracked from origin through approval and assignment. The Django model is the **storage layer**: `status`, `category`, and `priority` are open `CharField`/`IntegerField` columns with no model-level choices. The **API/implementation layer** lives in the Pydantic resource specs, which constrain those fields to enums, add validation, resolve foreign keys, and define the read/write schemas.
+`ResourceRequest` models an inter-facility request for a resource (transfer, supply, or assistance), tracked from origin through approval and assignment.
 
 **Sources:**
 
 - Model: [`care/emr/models/resource_request.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/resource_request.py)
 - Spec: [`care/emr/resources/resource_request/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/resource_request/spec.py)
+
+## Quick reference
+
+| Need | Section |
+| --- | --- |
+| Models and ownership | Models |
+| Field definitions | `ResourceRequest` fields |
+| Allowed values | Enum values |
+| Relationships | Related models |
+| API contracts | Resource specs (API schema) |
+| Server behaviour | Methods & save behaviour |
+| Client guidance | API integration notes |
+| Related references | Related |
 
 ## Models
 
@@ -20,7 +33,7 @@ Technical reference for the `ResourceRequest` module in Care EMR.
 | `ResourceRequest` | An inter-facility request for a resource (transfer, supply, or assistance), tracked from origin through approval and assignment |
 | `ResourceRequestComment` | A free-text comment thread entry attached to a `ResourceRequest` |
 
-Both models extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, audit fields — `created_by`, `updated_by`, `created_date`, `modified_date` — and soft-delete semantics).
+Both models extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base with `external_id`, audit fields (`created_by`, `updated_by`, `created_date`, `modified_date`), and soft-delete semantics.
 
 ## `ResourceRequest` fields
 
@@ -37,11 +50,11 @@ Both models extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care E
 | Field | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |
 | `emergency` | `bool` (`BooleanField`) | Yes (spec) | `False` (model) | Flags urgent requests |
-| `title` | `str` (`CharField(255)`) | Yes | — | Not null, not blank |
+| `title` | `str` (`CharField(255)`) | Yes | - | Not null, not blank |
 | `reason` | `str` (`TextField`) | Yes (spec) | `""` (model) | Free text |
-| `status` | `StatusChoices` enum (`CharField(100)`) | Yes | — | Constrained to [Status values](#statuschoices-values) by the spec; no model-level choices |
-| `category` | `CategoryChoices` enum (`CharField(100)`) | Yes | — | Constrained to [Category values](#categorychoices-values) by the spec; no model-level choices |
-| `priority` | `int` (`IntegerField`) | Yes (spec) | `None` (model, nullable) | Spec requires an integer; the model column is nullable |
+| `status` | `StatusChoices` enum (`CharField(100)`) | Yes | - | Constrained to [Status values](#statuschoices-values) by the spec; no model-level choices |
+| `category` | `CategoryChoices` enum (`CharField(100)`) | Yes | - | Constrained to [Category values](#categorychoices-values) by the spec; no model-level choices |
+| `priority` | `int` (`IntegerField`) | Yes (spec) | `None` (model, nullable) | Spec requires an integer, the model column is nullable |
 
 ### Referring contact
 
@@ -60,7 +73,7 @@ Both models extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care E
 
 ## Enum values
 
-The spec layer binds `status` and `category` to string enums defined in `spec.py`. The Django model stores them as plain `CharField`s, so these values are enforced only through the API.
+The API binds `status` and `category` to string enums defined in `spec.py`; send only the values listed below.
 
 ### `StatusChoices` values
 
@@ -131,7 +144,7 @@ There is no separate `UpdateSpec`: `ResourceRequestCreateSpec` handles both crea
 
 ### `ResourceRequestComment`
 
-A comment entry on a resource request. Deleting a comment does not cascade to the request — the FK uses `PROTECT`.
+A comment entry on a resource request. Deleting a comment does not cascade to the request, the FK uses `PROTECT`.
 
 ```text
 request → FK ResourceRequest (PROTECT, required)
@@ -147,7 +160,7 @@ comment → TextField (default "")
 ## API integration notes
 
 - `ResourceRequest` and `ResourceRequestComment` are exposed through Care's REST API; write bodies use the `CreateSpec` schema, reads use `ListSpec`/`RetrieveSpec`.
-- `status` and `category` are open `CharField`s in the database but are constrained to `StatusChoices` / `CategoryChoices` by the spec — only those values pass API validation.
+- `status` and `category` are open `CharField`s in the database but are constrained to `StatusChoices` / `CategoryChoices` by the spec. Only those values pass API validation.
 - `priority` is a required integer at the API layer even though the model column is nullable.
 - Foreign keys are sent/returned as `external_id` UUIDs in write payloads and as nested objects (`FacilityReadSpec`, `PatientListSpec`, `UserSpec`) in read payloads.
 - Assigning a request to a user requires `assigned_facility`, and the user must belong to that facility.

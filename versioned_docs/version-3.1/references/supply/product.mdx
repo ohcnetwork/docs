@@ -6,11 +6,22 @@ sidebar_position: 1
 
 Technical reference for the `Product` module in Care EMR.
 
-`Product` is the STORAGE layer (Django model). The API/implementation layer lives in the Pydantic **resource specs**, which define the enums, the structured shape of the model's opaque `JSONField`s, validation rules, and the read/write schemas. Several model fields are opaque `JSONField`s whose real structure is only visible in the specs — see [Resource specs (API schema)](#resource-specs-api-schema).
-
 **Source:**
 - Model: [`care/emr/models/product.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/product.py)
 - Spec: [`care/emr/resources/inventory/product/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/product/spec.py)
+
+## Quick reference
+
+| Need | Section |
+| --- | --- |
+| Models and ownership | Models |
+| Field definitions | `Product` fields |
+| Allowed values | Enums |
+| Structured payloads | Nested JSON shapes |
+| API contracts | Resource specs (API schema) |
+| Server behaviour | Methods & save behaviour |
+| Client guidance | API integration notes |
+| Related references | Related |
 
 ## Models
 
@@ -20,7 +31,7 @@ Technical reference for the `Product` module in Care EMR.
 
 `Product` extends [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, audit fields, and soft-delete semantics).
 
-A `Product` carries only the data that is unique to a particular batch — lot number, expiry, purchase price. All catalogue-level detail (name, codes, dosage form) lives on the linked [`ProductKnowledge`](../supply/product-knowledge.mdx); a `Product` is its instantiation at a facility.
+A `Product` carries only the data that is unique to a particular batch; lot number, expiry, purchase price. All catalogue-level detail (name, codes, dosage form) lives on the linked [`ProductKnowledge`](../supply/product-knowledge.mdx), a `Product` is its instantiation at a facility.
 
 ## `Product` fields
 
@@ -28,7 +39,7 @@ A `Product` carries only the data that is unique to a particular batch — lot n
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `facility` | `FK → facility.Facility` (`PROTECT`) | Facility the product belongs to. Required at storage; not a spec field — set by the viewset from the URL context, not from the request body. |
+| `facility` | `FK → facility.Facility` (`PROTECT`) | Facility the product belongs to. Required at storage. Not a spec field; set by the viewset from the URL context, not from the request body. |
 | `product_knowledge` | `FK → emr.ProductKnowledge` (`PROTECT`) | Catalogue definition this product instantiates. On write the spec accepts a `slug` string and resolves it; on read it is serialized to the nested [`ProductKnowledge`](../supply/product-knowledge.mdx) read object. |
 | `charge_item_definition` | `FK → emr.ChargeItemDefinition` (`PROTECT`, nullable) | Used to create charge items when the product is billed. Write accepts a `slug` string; read serializes to the nested [`ChargeItemDefinition`](../billing/charge-item-definition.mdx) read object. |
 
@@ -37,13 +48,13 @@ A `Product` carries only the data that is unique to a particular batch — lot n
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `status` | `CharField(255)` | yes (spec) | Constrained by the spec to [`ProductStatusOptions`](#productstatusoptions-values): `active` / `inactive` / `entered_in_error`. |
-| `product_type` | `CharField(255)` | — | Kind of product. Present at storage but **not exposed by the `Product` resource spec** — `product_type` is carried on the linked [`ProductKnowledge`](../supply/product-knowledge.mdx) (`ProductTypeOptions`: `medication` / `nutritional_product` / `consumable`). |
+| `product_type` | `CharField(255)` | - | Kind of product. Present at storage but **not exposed by the `Product` resource spec**; `product_type` is carried on the linked [`ProductKnowledge`](../supply/product-knowledge.mdx) (`ProductTypeOptions`: `medication` / `nutritional_product` / `consumable`). |
 
 ### Batch & pricing
 
 | Field | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |
-| `batch` | `JSONField` (nullable) | no | `dict` / `None` | Spec shape: [`ProductBatch`](#productbatch-shape) `{ lot_number: str \| None }`. The model stores an opaque dict; the spec narrows it to a single optional `lot_number`. |
+| `batch` | `JSONField` (nullable) | no | `dict` / `None` | Spec shape: [`ProductBatch`](#productbatch-shape) `{ lot_number: str \| None }`. Use only the optional `lot_number` key. |
 | `expiration_date` | `DateTimeField` (nullable) | no | `None` | Batch expiry. Spec type `datetime \| None`. |
 | `standard_pack_size` | `IntegerField` (nullable) | no | `None` | Units per standard pack. Spec type `int \| None`. |
 | `purchase_price` | `DecimalField(max_digits=20, decimal_places=6)` (nullable) | no | `None` | Acquisition cost for this batch. Spec type `Decimal \| None`, constrained `max_digits=20, decimal_places=6`. |
@@ -63,7 +74,7 @@ Defined in [`spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/
 
 ### `ProductTypeOptions` values
 
-Not a field on the `Product` spec — defined in [`product_knowledge/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/product_knowledge/spec.py) and carried on the linked [`ProductKnowledge`](../supply/product-knowledge.mdx). Listed here because the model has a `product_type` storage column.
+Not a field on the `Product` spec; defined in [`product_knowledge/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/product_knowledge/spec.py) and carried on the linked [`ProductKnowledge`](../supply/product-knowledge.mdx). Listed here because the model has a `product_type` storage column.
 
 | Value |
 | --- |

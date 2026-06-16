@@ -10,9 +10,20 @@ Technical reference for the `ActivityDefinition` module in Care EMR.
 - Model: [`care/emr/models/activity_definition.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/activity_definition.py)
 - Resource specs: [`spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/activity_definition/spec.py) · [`valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/activity_definition/valueset.py) · [`service_request.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/activity_definition/service_request.py)
 
-An Activity Definition is a FHIR-aligned, facility-scoped **template** for clinical activities. It captures the defaults needed to instantiate downstream resources (currently a [Service Request](./service-request.mdx)) when the definition is "applied" against an encounter — combining stored defaults with the encounter context.
+An Activity Definition is a FHIR-aligned, facility-scoped **template** for clinical activities. It captures the defaults needed to instantiate downstream resources (currently a [Service Request](./service-request.mdx)) when the definition is "applied" against an encounter; combining stored defaults with the encounter context.
 
-The Django model is the **storage layer**: several fields are opaque `JSONField`s or integer `ArrayField`s whose real structure lives in the Pydantic **resource specs** (the API/implementation layer). The specs define the enums, the JSON shapes, the validation rules, and the read/write schemas. Read both layers together.
+## Quick reference
+
+| Need | Section |
+| --- | --- |
+| Models and ownership | Models |
+| Field definitions | `ActivityDefinition` fields |
+| Allowed values | Enum values |
+| Structured payloads | Bound value sets |
+| API contracts | Resource specs (API schema) |
+| Server behaviour | Methods & save behaviour |
+| Client guidance | API integration notes |
+| Related references | Related |
 
 ## Models
 
@@ -20,7 +31,7 @@ The Django model is the **storage layer**: several fields are opaque `JSONField`
 | --- | --- |
 | `ActivityDefinition` | Versioned, facility-scoped template describing a clinical activity and the defaults used to create the resources it produces |
 
-`ActivityDefinition` extends `SlugBaseModel` (a Care EMR base that adds a facility-scoped `slug` on top of `EMRBaseModel` — which provides `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and the `history`/`meta` JSON fields). See [Base model](../foundation/base-model.mdx).
+`ActivityDefinition` extends `SlugBaseModel`, a Care EMR base that adds a facility-scoped `slug` on top of `EMRBaseModel`. It inherits `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and the `history`/`meta` JSON fields. See [Base model](../foundation/base-model.mdx).
 
 ## `ActivityDefinition` fields
 
@@ -30,7 +41,7 @@ Each field below shows the **storage type** (Django model) and, where the spec c
 
 | Field | Storage type | API shape / notes |
 | --- | --- | --- |
-| `facility` | `FK → facility.Facility` (PROTECT) | Owning facility; definitions are facility-scoped. Spec-`__exclude__`d — set server-side, never accepted in the payload. |
+| `facility` | `FK → facility.Facility` (PROTECT) | Owning facility; definitions are facility-scoped. Spec-`__exclude__`d; set server-side, never accepted in the payload. |
 | `slug` | `CharField(255)` | Facility-scoped identifier. On write it is supplied as `slug_value` (`SlugType`) and assigned to `obj.slug` in `perform_extra_deserialization`. On read it is returned as `slug` plus a parsed `slug_config` dict. |
 | `version` | `IntegerField` | Default `1`. Read-only in specs (`version: int \| None`), serialized on list/retrieve. Models an append-only version chain. |
 | `latest` | `BooleanField` | Default `True`; marks the current version among a slug's version chain. Not exposed in the specs (server-maintained). |
@@ -41,9 +52,9 @@ Each field below shows the **storage type** (Django model) and, where the spec c
 | Field | Storage type | API shape / notes |
 | --- | --- | --- |
 | `title` | `CharField(1024)` | Required (`str`). Human-friendly name. |
-| `status` | `CharField(255)` | Required enum — `ActivityDefinitionStatusOptions` (`draft` / `active` / `retired` / `unknown`). |
-| `classification` | `CharField(100)` | Required enum — `ActivityDefinitionCategoryOptions` (`laboratory` / `imaging` / `counselling` / `surgical_procedure` / `education`). |
-| `kind` | `CharField(100)` | Required enum — `ActivityDefinitionKindOptions` (only `service_request`). Determines the resource produced when applied. |
+| `status` | `CharField(255)` | Required enum; `ActivityDefinitionStatusOptions` (`draft` / `active` / `retired` / `unknown`). |
+| `classification` | `CharField(100)` | Required enum; `ActivityDefinitionCategoryOptions` (`laboratory` / `imaging` / `counselling` / `surgical_procedure` / `education`). |
+| `kind` | `CharField(100)` | Required enum; `ActivityDefinitionKindOptions` (only `service_request`). Determines the resource produced when applied. |
 | `description` | `TextField` | Optional in specs; default `""`. |
 | `usage` | `TextField` | Optional in specs; default `""`. |
 
@@ -59,17 +70,17 @@ Stored as `JSONField`. The spec binds each to a value set via `ValueSetBoundCodi
 
 ### Requirement & linkage arrays
 
-Stored as integer-ID arrays (`ArrayField(IntegerField, default=list)`) holding primary keys — not Django FK relations. The specs accept/return them by **external slug or UUID**, not raw integer PKs:
+Stored as integer-ID arrays (`ArrayField(IntegerField, default=list)`) holding primary keys. Not Django FK relations. The specs accept/return them by **external slug or UUID**, not raw integer PKs:
 
 | Field | Storage type | Write shape | Read (retrieve) shape |
 | --- | --- | --- | --- |
-| `specimen_requirements` | `ArrayField[int]` | `list[ExtendedSlugType]` | `list[dict]` — serialized [Specimen Definitions](./specimen-definition.mdx) (`SpecimenDefinitionReadSpec`) |
-| `observation_result_requirements` | `ArrayField[int]` | `list[ExtendedSlugType]` | `list[dict]` — serialized [Observation Definitions](./observation-definition.mdx) (`ObservationDefinitionReadSpec`) |
-| `locations` | `ArrayField[int]` | `list[UUID4]` | `list[dict]` — serialized [Locations](../facility/location.mdx) (`FacilityLocationListSpec`) |
-| `charge_item_definitions` | `ArrayField[int]` | `list[ExtendedSlugType]` | `list[dict]` — serialized [Charge Item Definitions](../billing/charge-item-definition.mdx) (`ChargeItemDefinitionReadSpec`) |
-| `tags` | `ArrayField[int]` | not written via spec | `list[dict]` — rendered via `SingleFacilityTagManager().render_tags(obj)` |
+| `specimen_requirements` | `ArrayField[int]` | `list[ExtendedSlugType]` | `list[dict]`; serialized [Specimen Definitions](./specimen-definition.mdx) (`SpecimenDefinitionReadSpec`) |
+| `observation_result_requirements` | `ArrayField[int]` | `list[ExtendedSlugType]` | `list[dict]`; serialized [Observation Definitions](./observation-definition.mdx) (`ObservationDefinitionReadSpec`) |
+| `locations` | `ArrayField[int]` | `list[UUID4]` | `list[dict]`; serialized [Locations](../facility/location.mdx) (`FacilityLocationListSpec`) |
+| `charge_item_definitions` | `ArrayField[int]` | `list[ExtendedSlugType]` | `list[dict]`; serialized [Charge Item Definitions](../billing/charge-item-definition.mdx) (`ChargeItemDefinitionReadSpec`) |
+| `tags` | `ArrayField[int]` | not written via spec | `list[dict]`; rendered via `SingleFacilityTagManager().render_tags(obj)` |
 
-> `ExtendedSlugType`: 7–88 chars, URL-safe, must start with `f-` or `i-`. `SlugType` (used for `slug_value`): 5–50 chars, URL-safe. Referential integrity for the stored integer arrays is the caller's responsibility — retrieve serialization skips IDs that no longer resolve.
+> `ExtendedSlugType`: 7–88 chars, URL-safe, must start with `f-` or `i-`. `SlugType` (used for `slug_value`): 5–50 chars, URL-safe. Referential integrity for the stored integer arrays is the caller's responsibility; retrieve serialization skips IDs that no longer resolve.
 
 ### Service relationships
 
@@ -131,21 +142,21 @@ All specs extend `EMRResource` (see [Base model](../foundation/base-model.mdx)),
   - Resolves `category` by `slug` (only when provided).
   - Assigns `obj.slug = self.slug_value`.
 - **`ActivityDefinitionReadSpec.perform_extra_serialization`** (read path): sets `id = external_id`, renders `tags`, serializes `category` (if present) via `ResourceCategoryReadSpec`, and parses `slug_config = obj.parse_slug(obj.slug)`.
-- **`ActivityDefinitionRetrieveSpec.perform_extra_serialization`**: calls the parent, then resolves each ID array (`specimen_requirements`, `observation_result_requirements`, `locations`, `charge_item_definitions`) against its model — silently dropping IDs that no longer exist — and serializes `healthcare_service`.
+- **`ActivityDefinitionRetrieveSpec.perform_extra_serialization`**: calls the parent, resolves each ID array (`specimen_requirements`, `observation_result_requirements`, `locations`, `charge_item_definitions`) against its model, drops IDs that no longer exist, and serializes `healthcare_service`.
 - The base `de_serialize` writes only model-mapped fields (`exclude_defaults=True`), so unset optional fields fall back to model defaults.
 
 ## Methods & save behaviour
 
 - **Apply → Service Request** ([`service_request.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/activity_definition/service_request.py)): `convert_ad_to_sr(activity_definition, encounter)` builds a draft [`ServiceRequest`](./service-request.mdx) carrying over `title`, `category`, `code`, `body_site`, `locations`, `healthcare_service`, and binding `patient`/`encounter` from the encounter. The created request defaults to `status=draft`, `intent=proposal`, `priority=routine`, `do_not_perform=False`.
 - **Charge items on apply**: `apply_ad_charge_definitions(activity_definition, encounter, service_request)` loads every linked [Charge Item Definition](../billing/charge-item-definition.mdx), instantiates a Charge Item per definition (via `apply_charge_item_definition`), tags it to the service request (`service_resource = service_request`, `service_resource_id = external_id`), copies the creator, and sets `performer_actor` to the request's `requester` when set.
-- `version` / `latest` model an append-only version chain — clients select the active definition via `latest`, while older versions remain referenceable.
+- `version` / `latest` model an append-only version chain. Clients select the active definition via `latest`, while older versions remain referenceable.
 
 ## API integration notes
 
 - Payload field names follow the Pydantic specs and differ from the Django model: write `slug` as `slug_value`; reference `specimen_requirements` / `observation_result_requirements` / `charge_item_definitions` / `category` by **external slug** (`ExtendedSlugType`, `f-`/`i-` prefixed), `locations` / `healthcare_service` by **UUID**.
 - `code` is required and must validate against the `activity-definition-procedure-code` value set; `body_site` and each entry of `diagnostic_report_codes` validate against their bound value sets.
 - The "apply" operation instantiates the target `kind` (currently only `service_request`) by merging stored defaults with the encounter; linked `charge_item_definitions` are instantiated at the same time.
-- Stored requirement/linkage fields are **plain integer ID arrays** — retrieve serialization resolves them to nested objects and skips IDs that no longer resolve.
+- Stored requirement/linkage fields are **plain integer ID arrays**; retrieve serialization resolves them to nested objects and skips IDs that no longer resolve.
 
 ## Related
 

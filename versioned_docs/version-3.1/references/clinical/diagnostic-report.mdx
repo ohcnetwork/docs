@@ -6,12 +6,24 @@ sidebar_position: 7
 
 Technical reference for the `DiagnosticReport` module in Care EMR.
 
-The Django model (`care/emr/models/diagnostic_report.py`) is the **storage** layer: it persists `category` and `code` as opaque `JSONField`s and `status` as a free `CharField`. The real structure of those fields — the status enum, the coded-concept shape, the bound value sets, and the read/write API schemas — lives in the Pydantic **resource specs** (`care/emr/resources/diagnostic_report/`), which build on `EMRResource` and serialize/deserialize between the API and the model.
-
 **Source:**
 - Model: [`care/emr/models/diagnostic_report.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/diagnostic_report.py)
 - Spec: [`care/emr/resources/diagnostic_report/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/diagnostic_report/spec.py)
 - Valueset: [`care/emr/resources/diagnostic_report/valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/diagnostic_report/valueset.py)
+
+## Quick reference
+
+| Need | Section |
+| --- | --- |
+| Models and ownership | Models |
+| Field definitions | `DiagnosticReport` fields |
+| Allowed values | Enum values |
+| Structured payloads | Bound value sets |
+| Relationships | Related models |
+| API contracts | Resource specs (API schema) |
+| Server behaviour | Methods & save behaviour |
+| Client guidance | API integration notes |
+| Related references | Related |
 
 ## Models
 
@@ -51,9 +63,9 @@ The `Coding` shape (from `care/emr/resources/common/coding.py`, `extra="forbid"`
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `facility` | `FK → facility.Facility` | `PROTECT`, nullable. Facility the report is scoped to. Set server-side; not a writable spec field. |
-| `patient` | `FK → emr.Patient` | `CASCADE`. Subject of the report. Set server-side; not a writable spec field. |
-| `encounter` | `FK → emr.Encounter` | `CASCADE`. Encounter the report was produced under. Set server-side; not a writable spec field. |
+| `facility` | `FK → facility.Facility` | `PROTECT`, nullable. Facility the report is scoped to. Set server-side. Not a writable spec field. |
+| `patient` | `FK → emr.Patient` | `CASCADE`. Subject of the report. Set server-side. Not a writable spec field. |
+| `encounter` | `FK → emr.Encounter` | `CASCADE`. Encounter the report was produced under. Set server-side. Not a writable spec field. |
 | `service_request` | `FK → emr.ServiceRequest` | `CASCADE`. The order/request this report fulfils. Write-only on create (resolved from `external_id`); excluded from base serialization via `__exclude__`. |
 
 ## Enum values
@@ -112,7 +124,7 @@ diagnostic_report
   service_request → FK emr.ServiceRequest (CASCADE)
 ```
 
-Deleting a `Patient`, `Encounter`, or `ServiceRequest` cascades to its diagnostic reports; the `facility` link is `PROTECT`ed and only soft-deletes apply through `EMRBaseModel`. On retrieve, related `Observation` records are pulled in via the reverse FK (`Observation.diagnostic_report`).
+Deleting a `Patient`, `Encounter`, or `ServiceRequest` cascades to its diagnostic reports, the `facility` link is `PROTECT`ed and only soft-deletes apply through `EMRBaseModel`. On retrieve, related `Observation` records are pulled in via the reverse FK (`Observation.diagnostic_report`).
 
 ## Methods & save behaviour
 
@@ -124,11 +136,11 @@ Deleting a `Patient`, `Encounter`, or `ServiceRequest` cascades to its diagnosti
 ## API integration notes
 
 - Diagnostic reports are exposed through Care's REST API and align with the FHIR `DiagnosticReport` resource; payload field names follow the spec classes above.
-- `category` and `code` are coded concepts (`Coding`: `system`/`code`/`display`), not free strings — `code` is validated against the bound value set, so populate from the relevant value set. `Coding` forbids extra keys.
+- `category` and `code` are coded concepts (`Coding`: `system`/`code`/`display`), not free strings; `code` is validated against the bound value set, so populate from the relevant value set. `Coding` forbids extra keys.
 - `status` is stored as a free `CharField` but the spec restricts writes to the `DiagnosticReportStatusChoices` enum (`registered`, `partial`, `preliminary`, `final`).
 - A report fulfils exactly one `service_request`; create the [Service Request](./service-request.mdx) first, then pass its `external_id` as `service_request` on create.
 - `note` and `conclusion` carry human-readable narrative and are not parsed by the platform.
-- The detail (`Retrieve`) payload embeds the linked service request, its requester, the encounter (with patient), audit users, and all child observations — none of which are writable.
+- The detail (`Retrieve`) payload embeds the linked service request, its requester, the encounter (with patient), audit users, and all child observations; none of which are writable.
 
 ## Related
 

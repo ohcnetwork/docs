@@ -8,13 +8,23 @@ Technical reference for the `SupplyRequest` module in Care EMR.
 
 A `SupplyRequest` is a line item asking for a quantity of a catalogue item (`ProductKnowledge`). Each request belongs to a `RequestOrder`, which groups requests describing the movement of items into a destination facility location (optionally from a supplier organization and/or an origin location).
 
-The Django model is the **storage** layer — `status`, `priority`, `intent`, `reason`, `category`, and `supplied_item_condition` are stored as plain `CharField`s with no DB-level constraint. The **real allowed values, validation, and API request/response shapes** live in the Pydantic resource specs (`care/emr/resources/inventory/supply_request/`), documented below.
-
 **Source:**
 
 - Model: [`care/emr/models/supply_request.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/supply_request.py)
 - Spec: [`care/emr/resources/inventory/supply_request/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/supply_request/spec.py)
 - Spec: [`care/emr/resources/inventory/supply_request/request_order.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/supply_request/request_order.py)
+
+## Quick reference
+
+| Need | Section |
+| --- | --- |
+| Models and ownership | Models |
+| Field definitions | `SupplyRequest` fields |
+| Relationships | Related models |
+| API contracts | Resource specs (API schema) |
+| Server behaviour | Methods & save behaviour |
+| Client guidance | API integration notes |
+| Related references | Related |
 
 ## Models
 
@@ -30,9 +40,9 @@ Both models extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care E
 | Field | Type | Notes |
 | --- | --- | --- |
 | `status` | `CharField(255)` | Lifecycle status. Spec-bound to `SupplyRequestStatusOptions` (see below). Required on write. |
-| `quantity` | `DecimalField` | Nullable in DB; `max_digits=20`, `decimal_places=6`. Quantity requested. The write spec accepts a `Decimal` (`max_digits=20`, `decimal_places=0`); the read spec returns it as an `int`. |
+| `quantity` | `DecimalField` | Nullable in DB; `max_digits=20`, `decimal_places=6`. Quantity requested. The write spec accepts a `Decimal` (`max_digits=20`, `decimal_places=0`), the read spec returns it as an `int`. |
 | `supplied_item_condition` | `CharField(255)` | Condition of the supplied item. Not exposed by any current spec (model-only field). |
-| `item` | `FK → ProductKnowledge` | `CASCADE`; the catalogue item being requested. Required on create; resolved server-side from an `external_id`. |
+| `item` | `FK → ProductKnowledge` | `CASCADE`, the catalogue item being requested. Required on create; resolved server-side from an `external_id`. |
 | `order` | `FK → RequestOrder` | `CASCADE`, nullable in DB. The parent order. Required on both create and update in the spec; resolved server-side from an `external_id`. |
 
 ### `SupplyRequestStatusOptions` values
@@ -92,7 +102,7 @@ Enums from `request_order.py`. Each binds to the matching `RequestOrder` `CharFi
 | `abandoned` |
 | `entered_in_error` |
 
-`SUPPLY_REQUEST_ORDER_COMPLETED_STATUSES` = `[abandoned, entered_in_error, completed]` — the terminal/closed statuses.
+`SUPPLY_REQUEST_ORDER_COMPLETED_STATUSES` = `[abandoned, entered_in_error, completed]`, the terminal/closed statuses.
 
 #### `SupplyRequestIntentOptions` (→ `intent`)
 
@@ -162,17 +172,17 @@ All specs extend [`EMRResource`](https://github.com/ohcnetwork/care/blob/develop
 ## Methods & save behaviour
 
 - Neither model overrides `save()`; standard `EMRBaseModel` audit and soft-delete behaviour applies.
-- Status is free-text at the DB layer; lifecycle is enforced only by the spec enums at the API boundary. There is no automatic `status_history` tracking on these models.
+- Status lifecycle is enforced by the API enums. There is no automatic `status_history` tracking on these models.
 - Deleting a `RequestOrder` cascades to its `SupplyRequest` rows (`order` FK is `CASCADE`); deleting a referenced `ProductKnowledge` cascades to the request.
 
 ## API integration notes
 
 - Field names in API payloads follow the spec field names above; foreign keys are exchanged as `external_id` UUIDs on write and as expanded objects on read.
-- `status`, `priority`, `intent`, `reason`, and `category` are validated against the spec enums — send the exact string values listed above.
+- `status`, `priority`, `intent`, `reason`, and `category` are validated against the spec enums; send the exact string values listed above.
 - `supplied_item_condition` exists on the model but is not surfaced by any current spec.
-- `quantity` is sent/returned as a whole number through the specs; the DB column itself retains six decimal places.
+- `quantity` is sent/returned as a whole number through the specs, the DB column itself retains six decimal places.
 - `tags` on `RequestOrder` is an integer array of tag IDs (not a relational join); on read it is rendered to tag objects via the facility tag manager.
-- `external_id` (from `EMRBaseModel`) is the stable public identifier used in API URLs — not the internal primary key.
+- `external_id` (from `EMRBaseModel`) is the stable public identifier used in API URLs. Not the internal primary key.
 
 ## Related
 

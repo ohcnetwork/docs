@@ -6,7 +6,7 @@ sidebar_position: 1
 
 Technical reference for the `Account` module in Care EMR.
 
-`Account` is a financial bucket aggregating all transactions made against a patient within a facility. The Django model is the **storage layer** — several fields are opaque `JSONField`s whose real structure lives in the Pydantic **resource specs** (`care/emr/resources/account/`). This doc enriches the model fields with the spec-defined enums, JSON shapes, validation, and the API read/write schemas.
+`Account` is a financial bucket aggregating all transactions made against a patient within a facility.
 
 **Source:**
 - Model: [`care/emr/models/account.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/account.py)
@@ -14,6 +14,19 @@ Technical reference for the `Account` module in Care EMR.
 - Default account helper: [`account/default_account.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/account/default_account.py)
 - Balance sync: [`account/sync_items.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/account/sync_items.py)
 - Base resource: [`care/emr/resources/base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)
+
+## Quick reference
+
+| Need | Section |
+| --- | --- |
+| Models and ownership | Models |
+| Field definitions | `Account` fields |
+| Allowed values | Enum values |
+| Structured payloads | JSON field shapes |
+| Relationships | Related models |
+| API contracts | Resource specs (API schema) |
+| Client guidance | API integration notes |
+| Related references | Related |
 
 ## Models
 
@@ -31,7 +44,7 @@ An account is perpetual by default: a charge item is placed on the default accou
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `facility` | `FK → facility.Facility` (PROTECT) | yes | Facility where the account is created. Server-set; not exposed on write specs |
+| `facility` | `FK → facility.Facility` (PROTECT) | yes | Facility where the account is created. Server-set. Not exposed on write specs |
 | `patient` | `FK → emr.Patient` (PROTECT) | yes | The entity that incurred the expenses. On create, supplied as a patient `external_id` (UUID) and resolved server-side |
 | `name` | `CharField(255)` | yes | Human-readable label. Default account auto-names as `"{patient.name} {YYYY-MM-DD}"` |
 | `description` | `TextField` | no | Nullable; explanation of purpose/use |
@@ -41,9 +54,9 @@ An account is perpetual by default: a charge item is placed on the default accou
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `status` | `CharField(255)` | yes | Account lifecycle status — `AccountStatusOptions` enum (see [values](#accountstatusoptions-values)) |
-| `billing_status` | `CharField(255)` | yes | Billing lifecycle status — `AccountBillingStatusOptions` enum (see [values](#accountbillingstatusoptions-values)) |
-| `service_period` | `JSONField` (default `{}`) | yes (on spec) | Transaction window. Shape = `PeriodSpec { start, end }` — see [service_period shape](#service_period-shape) |
+| `status` | `CharField(255)` | yes | Account lifecycle status; `AccountStatusOptions` enum (see [values](#accountstatusoptions-values)) |
+| `billing_status` | `CharField(255)` | yes | Billing lifecycle status; `AccountBillingStatusOptions` enum (see [values](#accountbillingstatusoptions-values)) |
+| `service_period` | `JSONField` (default `{}`) | yes (on spec) | Transaction window. Shape = `PeriodSpec { start, end }`. See [service_period shape](#service_period-shape) |
 
 ### Balances & totals
 
@@ -134,7 +147,7 @@ MonetaryComponent {
 }
 ```
 
-Key `MonetaryComponent` validation: `tax_included_amount` only allowed on a `base` component; a `base` component must have an `amount`, no `factor`, and no `conditions`; `amount` and `factor` are mutually exclusive; exactly one of `amount`/`factor` is required unless it is a `global_component` with a `code`.
+Key `MonetaryComponent` validation: `tax_included_amount` only allowed on a `base` component, a `base` component must have an `amount`, no `factor`, and no `conditions`; `amount` and `factor` are mutually exclusive; exactly one of `amount`/`factor` is required unless it is a `global_component` with a `code`.
 
 ## Resource specs (API schema)
 
@@ -153,7 +166,7 @@ The API layer is defined in [`resources/account/spec.py`](https://github.com/ohc
 
 - **Create** (`AccountCreateSpec`): mixes in `ExtensionValidator` (validates `extensions`) and requires `patient` as a UUID. `perform_extra_deserialization` resolves it via `get_object_or_404(Patient, external_id=...)` and assigns `obj.patient`. `patient` is otherwise excluded from the base serialize loop.
 - **Update** (`AccountUpdateSpec`): mixes in `ExtensionValidator`; `primary_encounter` is optional. If supplied, `perform_extra_deserialization` resolves it via `get_object_or_404(Encounter, external_id=...)` and assigns `obj.primary_encounter`.
-- **Status / billing_status** are validated against `AccountStatusOptions` / `AccountBillingStatusOptions` — invalid values are rejected by the Pydantic enums.
+- **Status / billing_status** are validated against `AccountStatusOptions` / `AccountBillingStatusOptions`; invalid values are rejected by the Pydantic enums.
 - **Read serialization**: `perform_extra_serialization` sets `mapping["id"] = obj.external_id`; `AccountReadSpec` additionally serializes the patient (`PatientListSpec`) and renders tags via `SingleFacilityTagManager`; `AccountRetrieveSpec` serializes the full patient (`PatientRetrieveSpec`, scoped to `obj.facility`) and the primary encounter (`EncounterRetrieveSpec`) when present.
 - **Totals are read-only**: balance/aggregate fields appear only on read specs; they are recomputed by `sync_account_items`, never set from client payloads.
 
@@ -166,7 +179,7 @@ The API layer is defined in [`resources/account/spec.py`](https://github.com/ohc
 - `service_period = { "start": care_now() }` (start only)
 - `name = "{patient.name} {YYYY-MM-DD}"`
 
-This is how the default account is materialized when the first charge item is added — clients normally do not create accounts directly.
+This is how the default account is materialized when the first charge item is added. Clients normally do not create accounts directly.
 
 <a id="balance-sync"></a>
 ### Balance sync
@@ -196,10 +209,10 @@ primary_encounter → FK emr.Encounter (SET_NULL, nullable)
 ## API integration notes
 
 - Account records are exposed through Care's REST API and align to the FHIR `Account` resource; spec field names may differ from FHIR (e.g. enum values use underscores).
-- The default account is created automatically via `get_default_account` when the first charge item is added for a patient in a facility — clients normally do not create accounts directly.
+- The default account is created automatically via `get_default_account` when the first charge item is added for a patient in a facility. Clients normally do not create accounts directly.
 - On **create**, supply `patient` as the patient's `external_id` (UUID); `facility` is server-scoped.
-- On **update**, `primary_encounter` accepts an encounter `external_id` (UUID); only the base fields plus `primary_encounter` are mutable.
-- Balance/aggregate fields (`total_net`, `total_gross`, `total_paid`, `total_balance`, `total_billable_charge_items`, `total_price_components`, `cached_items`, `calculated_at`) are platform-maintained and appear only on read specs — never set them from clients.
+- On **update**, `primary_encounter` accepts an encounter `external_id` (UUID). Only the base fields plus `primary_encounter` are mutable.
+- Balance/aggregate fields (`total_net`, `total_gross`, `total_paid`, `total_balance`, `total_billable_charge_items`, `total_price_components`, `cached_items`, `calculated_at`) are platform-maintained and appear only on read specs. Never set them from clients.
 - `service_period` requires **timezone-aware** datetimes with `start <= end`.
 - `extensions` is the supported place for custom key-value data without schema migrations; it is validated by `ExtensionValidator` and surfaced only on the retrieve spec.
 - Account data should be gated behind permissions that restrict access to users with rights to financial information.

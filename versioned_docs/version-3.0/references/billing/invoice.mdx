@@ -6,12 +6,23 @@ sidebar_position: 4
 
 Technical reference for the `Invoice` module in Care EMR.
 
-The Django model is the **storage** layer: it holds the columns and several opaque `JSONField`s (`charge_items_copy`, `total_price_components`, `lock_history`) whose real structure lives in the Pydantic **resource specs**. The specs define the API request/response schemas, the `InvoiceStatusOptions` enum, the shape of the JSON fields, validation, and the server-side totalling/snapshot behaviour. Read both layers together.
-
 **Source:**
 - Model: [`care/emr/models/invoice.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/invoice.py)
 - Resource specs: [`spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/invoice/spec.py) · [`sync_items.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/invoice/sync_items.py) · [`return_items_invoice.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/invoice/return_items_invoice.py) · [`default_expression_evaluator.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/invoice/default_expression_evaluator.py)
 - Shared types: [`base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py) · [`monetary_component.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/monetary_component.py)
+
+## Quick reference
+
+| Need | Section |
+| --- | --- |
+| Models and ownership | Models |
+| Field definitions | `Invoice` fields |
+| Allowed values | Enums |
+| Relationships | Related models |
+| API contracts | Resource specs (API schema) |
+| Server behaviour | Methods & save behaviour |
+| Client guidance | API integration notes |
+| Related references | Related |
 
 ## Models
 
@@ -37,25 +48,25 @@ An invoice groups [charge items](../billing/charge-item.mdx) raised against a si
 
 | Field | Type | Spec / values | Notes |
 | --- | --- | --- | --- |
-| `status` | `CharField(100)` | `InvoiceStatusOptions` enum — required on write | Lifecycle status. See [values](#invoicestatusoptions-values) |
+| `status` | `CharField(100)` | `InvoiceStatusOptions` enum. Required on write | Lifecycle status. See [values](#invoicestatusoptions-values) |
 | `title` | `CharField(1024)` | `str \| None`, default `None` | Optional human-readable invoice title |
 | `cancelled_reason` | `TextField` | `str \| None` | Optional reason recorded when cancelled |
 | `payment_terms` | `TextField` | `str \| None` | Optional payment details (markdown) |
 | `note` | `TextField` | `str \| None` | Optional free-text comments (markdown) |
 | `number` | `CharField(1000)` | `str \| None`, default `None` | Invoice number. Auto-generated for return invoices via the facility's `invoice_number_expression` (see [Methods](#methods--save-behaviour)) |
 | `issue_date` | `DateTimeField` | `datetime \| None` (tz-aware), default `None` | When the invoice was issued |
-| `is_refund` | `BooleanField` | `bool`, default `False` | Flags a refund/return invoice; required for negative totals (see validation) |
+| `is_refund` | `BooleanField` | `bool`, default `False` | Flags a refund/return invoice. Required for negative totals (see validation) |
 
 ### Charge items
 
 | Field | Type | Spec shape | Notes |
 | --- | --- | --- | --- |
 | `charge_items` | `ArrayField[int]`, default `[]` | write: `list[UUID4]`; storage: list of integer PKs | Live references to the grouped `ChargeItem` rows. On write the client sends external UUIDs; resolved to PKs server-side |
-| `charge_items_copy` | `JSONField`, default `[]` | `list[dict]` — array of serialized `ChargeItemReadSpec` | Point-in-time snapshot of the line items, written by `sync_invoice_items`. Used as the retrieve `charge_items` for any non-`draft` invoice |
+| `charge_items_copy` | `JSONField`, default `[]` | `list[dict]`; array of serialized `ChargeItemReadSpec` | Point-in-time snapshot of the line items, written by `sync_invoice_items`. Used as the retrieve `charge_items` for any non-`draft` invoice |
 
 ### Totals (server-maintained)
 
-These are computed by `sync_invoice_items` / `calculate_charge_items_summary` — never set them from a client.
+These are computed by `sync_invoice_items` / `calculate_charge_items_summary`. Never set them from a client.
 
 | Field | Type | Spec shape | Notes |
 | --- | --- | --- | --- |
@@ -70,7 +81,7 @@ On the read specs, if `locked` is `True`, both `total_net` and `total_gross` are
 | Field | Type | Spec shape | Notes |
 | --- | --- | --- | --- |
 | `locked` | `BooleanField`, default `False` | `bool` (read-only on read specs) | When set, the invoice is frozen against further edits and totals serialize as `0` |
-| `lock_history` | `JSONField`, default `[]` | `list[dict]` — each entry `{ user, ... }` | Audit trail of lock/unlock events. On retrieve, each entry's `user` id is hydrated into a `UserSpec` dict |
+| `lock_history` | `JSONField`, default `[]` | `list[dict]`. Each entry `{ user, ... }` | Audit trail of lock/unlock events. On retrieve, each entry's `user` id is hydrated into a `UserSpec` dict |
 
 ## Enums
 
@@ -86,7 +97,7 @@ On the read specs, if `locked` is `True`, both `total_net` and `total_gross` are
 | `cancelled` | Cancelled |
 | `entered_in_error` | Recorded in error |
 
-`INVOICE_CANCELLED_STATUS = ["cancelled", "entered_in_error"]` — the two terminal/void states.
+`INVOICE_CANCELLED_STATUS = ["cancelled", "entered_in_error"]`, the two terminal/void states.
 
 ### `MonetaryComponentType` values
 
@@ -98,7 +109,7 @@ On the read specs, if `locked` is `True`, both `total_net` and `total_gross` are
 | `surcharge` | Added to net |
 | `discount` | Subtracted from net |
 | `tax` | Added to gross only (excluded from net) |
-| `informational` | Carried for display; not summed |
+| `informational` | Carried for display. Not summed |
 
 ## Resource specs (API schema)
 
@@ -108,7 +119,7 @@ All specs subclass `EMRResource` (`serialize` / `de_serialize`, with `perform_ex
 | --- | --- | --- | --- |
 | `BaseInvoiceSpec` | shared | `id`, `title`, `status` (required), `cancelled_reason`, `payment_terms`, `note`, `issue_date`, `number` | Base for all specs |
 | `InvoiceWriteSpec` | write · create + update | `account: UUID4` (required), `charge_items: list[UUID4]` (default `[]`) | `perform_extra_deserialization`: resolves `account` from `external_id`, sets `patient = account.patient`, stages `charge_items` (rewritten in `perform_create`) |
-| `InvoiceReadSpec` | read · list | `total_net`, `total_gross`, `locked`, `created_date`, `modified_date`, `account: dict`, `is_refund` | `perform_extra_serialization`: `id = external_id`; `account` → `AccountMinimalReadSpec`; if `locked`, zero out `total_net`/`total_gross` |
+| `InvoiceReadSpec` | read · list | `total_net`, `total_gross`, `locked`, `created_date`, `modified_date`, `account: dict`, `is_refund` | `perform_extra_serialization`: `id = external_id`; `account` → `AccountMinimalReadSpec`. If `locked`, zero out `total_net`/`total_gross` |
 | `InvoiceRetrieveSpec` | read · detail | (all read fields) + `charge_items: list[dict]`, `total_price_components: list[dict]`, `created_by`, `updated_by`, `payments: list[dict]`, `total_payments`, `credit_notes: list[dict]`, `total_credit_notes`, `lock_history: list[dict]` | See retrieve serialization below |
 
 `InvoiceWriteSpec` is used for both create and update (no separate Update spec). `InvoiceRetrieveSpec` extends `InvoiceReadSpec`.
@@ -116,7 +127,7 @@ All specs subclass `EMRResource` (`serialize` / `de_serialize`, with `perform_ex
 ### `InvoiceRetrieveSpec.perform_extra_serialization`
 
 - `id = external_id`; `account` serialized via `AccountReadSpec` (full account on detail).
-- `charge_items`: if `status == draft`, live `ChargeItemReadSpec.serialize(...)` over `ChargeItem.objects.filter(id__in=charge_items)` (`select_related` `paid_invoice`, `charge_item_definition`); otherwise the stored `charge_items_copy` snapshot.
+- `charge_items`: if `status == draft`, live `ChargeItemReadSpec.serialize(...)` over `ChargeItem.objects.filter(id__in=charge_items)` (`select_related` `paid_invoice`, `charge_item_definition`). Otherwise the stored `charge_items_copy` snapshot.
 - `created_by` / `updated_by`: hydrated via `serialize_audit_users`.
 - Reconciliations against this invoice with `outcome = complete` and `status = active` are split into:
   - `payments` (+ `total_payments`) where `is_credit_note` is false,
@@ -144,24 +155,24 @@ Validation (per component): `base` must carry an `amount` and no `conditions`; `
 
 ## Related models
 
-- [`ChargeItem`](../billing/charge-item.mdx) — line items grouped by the invoice; snapshotted into `charge_items_copy` via `ChargeItemReadSpec`.
-- [`Account`](../billing/account.mdx) — the billing account; resolved on write, rebalanced after return-invoice generation/cancellation.
-- [`PaymentReconciliation`](../billing/payment-reconciliation.mdx) — payments and credit notes reported on the retrieve view (filtered to `outcome=complete`, `status=active`).
-- [`ChargeItemDefinition`](../billing/charge-item-definition.mdx) — applied when building return-invoice charge items.
+- [`ChargeItem`](../billing/charge-item.mdx); line items grouped by the invoice; snapshotted into `charge_items_copy` via `ChargeItemReadSpec`.
+- [`Account`](../billing/account.mdx), the billing account; resolved on write, rebalanced after return-invoice generation/cancellation.
+- [`PaymentReconciliation`](../billing/payment-reconciliation.mdx); payments and credit notes reported on the retrieve view (filtered to `outcome=complete`, `status=active`).
+- [`ChargeItemDefinition`](../billing/charge-item-definition.mdx); applied when building return-invoice charge items.
 
 ## Methods & save behaviour
 
-- **`sync_invoice_items(invoice)`** (`sync_items.py`) — recomputes `total_net`, `total_gross`, `total_price_components`, and `charge_items_copy` from the linked charge items, then rounds totals using `INVOICE_FINAL_AMOUNT_PRECISION` / `INVOICE_FINAL_AMOUNT_ROUNDING_METHOD`. **Validation:** if `is_refund` is false and either total is negative, raises `ValidationError("A Refund Ivoice is required for negative values")`.
-- **`calculate_charge_items_summary(charge_items)`** — net = Σ base + Σ surcharge − Σ discount; gross = net + Σ tax; components aggregated per `type + code` (key = `system + code`, else `No-Code`).
-- **`evaluate_invoice_identifier_default_expression(facility)`** (`default_expression_evaluator.py`) — generates `number` from the facility's `invoice_number_expression` with context `{ invoice_count, current_year_yyyy, current_year_yy }`; returns `""` if unset. `evaluate_invoice_dummy_expression` previews an expression with sample context.
-- **`generate_return_invoice(delivery_order)`** (`return_items_invoice.py`) — creates a `draft` refund invoice (`is_refund=True`), reverses each completed `SupplyDelivery`'s charge item via `apply_charge_item_definition(reverse=True)`, marks items `billed`, runs `sync_invoice_items`, sets status `issued`, then triggers `rebalance_account_task`. Raises if any delivery is still `in_progress`.
-- **`cancel_return_invoice(delivery_order)`** — sets the invoice `cancelled`, marks its charge items `entered_in_error` (clears `paid_invoice`/`paid_on`), voids the supply deliveries, rebalances the account, and resyncs inventory.
+- **`sync_invoice_items(invoice)`** (`sync_items.py`); recomputes `total_net`, `total_gross`, `total_price_components`, and `charge_items_copy` from the linked charge items, then rounds totals using `INVOICE_FINAL_AMOUNT_PRECISION` / `INVOICE_FINAL_AMOUNT_ROUNDING_METHOD`. **Validation:** if `is_refund` is false and either total is negative, raises `ValidationError("A Refund Ivoice is required for negative values")`.
+- **`calculate_charge_items_summary(charge_items)`**: net = Σ base + Σ surcharge − Σ discount; gross = net + Σ tax; components aggregated per `type + code` (key = `system + code`, else `No-Code`).
+- **`evaluate_invoice_identifier_default_expression(facility)`** (`default_expression_evaluator.py`); generates `number` from the facility's `invoice_number_expression` with context `{ invoice_count, current_year_yyyy, current_year_yy }`; returns `""` if unset. `evaluate_invoice_dummy_expression` previews an expression with sample context.
+- **`generate_return_invoice(delivery_order)`** (`return_items_invoice.py`); creates a `draft` refund invoice (`is_refund=True`), reverses each completed `SupplyDelivery`'s charge item via `apply_charge_item_definition(reverse=True)`, marks items `billed`, runs `sync_invoice_items`, sets status `issued`, then triggers `rebalance_account_task`. Raises if any delivery is still `in_progress`.
+- **`cancel_return_invoice(delivery_order)`**: sets the invoice `cancelled`, marks its charge items `entered_in_error` (clears `paid_invoice`/`paid_on`), voids the supply deliveries, rebalances the account, and resyncs inventory.
 
 ## API integration notes
 
 - `status` is the control surface for the billing lifecycle. Drive transitions through the API rather than editing rows directly; values are `draft`, `issued`, `balanced`, `cancelled`, `entered_in_error`.
 - On write (`InvoiceWriteSpec`): send `account` and `charge_items` as **external UUIDs**. `patient` is derived from the account server-side and must not be sent. `account` and `charge_items` are excluded from the generic field mapper and handled in `perform_extra_deserialization`.
-- `charge_items_copy`, `total_price_components`, `total_net`, and `total_gross` are platform-maintained snapshots derived from the linked charge items — do not set them directly.
+- `charge_items_copy`, `total_price_components`, `total_net`, and `total_gross` are platform-maintained snapshots derived from the linked charge items. Do not set them directly.
 - List view (`InvoiceReadSpec`) returns a minimal `account`; detail view (`InvoiceRetrieveSpec`) returns the full account plus charge items, aggregated price components, payments, credit notes, and lock history.
 - When `locked` is `True`, the read specs serialize `total_net` and `total_gross` as `0`.
 

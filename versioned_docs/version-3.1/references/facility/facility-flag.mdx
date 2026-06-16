@@ -6,7 +6,7 @@ sidebar_position: 3
 
 Technical reference for the `FacilityFlag` module in Care EMR.
 
-`FacilityFlag` is a server-side feature-gating primitive: it associates a registered flag name with one `Facility` so behaviour can be toggled per facility. It is **not** a FHIR resource and has **no dedicated Pydantic resource spec** — there is no `FacilityFlag` API endpoint, serializer, or `...CreateSpec`/`...ReadSpec`. The sections below are documented entirely from the Django storage model. Flags reach API clients only as a derived, read-only array on the Facility resource (see [Resource specs](#resource-specs-api-schema)).
+`FacilityFlag` is a server-side feature-gating primitive: it associates a registered flag name with one `Facility` so behaviour can be toggled per facility. It is **not** a FHIR resource and has **no dedicated Pydantic resource spec**; there is no `FacilityFlag` API endpoint, serializer, or `...CreateSpec`/`...ReadSpec`. This page documents the model, inherited flag helpers, cache behaviour, and the derived facility read payload. Flags reach API clients only as a read-only array on the Facility resource (see [Resource specs](#resource-specs-api-schema)).
 
 **Source:**
 - Model: [`care/facility/models/facility_flag.py`](https://github.com/ohcnetwork/care/blob/develop/care/facility/models/facility_flag.py)
@@ -14,20 +14,32 @@ Technical reference for the `FacilityFlag` module in Care EMR.
 - Flag registry & types: [`care/utils/registries/feature_flag.py`](https://github.com/ohcnetwork/care/blob/develop/care/utils/registries/feature_flag.py)
 - Surfaced via Facility spec: [`care/emr/resources/facility/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/facility/spec.py)
 
+## Quick reference
+
+| Need | Section |
+| --- | --- |
+| Models and ownership | Models |
+| Field definitions | `FacilityFlag` fields |
+| Relationships | Related models |
+| API contracts | Resource specs (API schema) |
+| Server behaviour | Methods & save behaviour |
+| Client guidance | API integration notes |
+| Related references | Related |
+
 ## Models
 
 | Model | Purpose |
 | --- | --- |
 | `FacilityFlag` | Associates a registered feature flag with a single `Facility`, gating behaviour per facility |
 
-`FacilityFlag` extends `BaseFlag`, which extends `BaseModel` — the lightweight Care EMR base providing `external_id` (UUID), `created_date`/`modified_date` audit timestamps, and soft-delete via `deleted`. Unlike `EMRBaseModel` (see [Base model](../foundation/base-model.mdx)), `BaseModel` does **not** add `created_by`/`updated_by`, `history`, or `meta` JSON. `BaseFlag` adds the `flag` value and the per-entity flag machinery (cache invalidation, validation against the flag registry).
+`FacilityFlag` extends `BaseFlag`, which extends `BaseModel`, the lightweight Care EMR base providing `external_id` (UUID), `created_date`/`modified_date` audit timestamps, and soft-delete via `deleted`. Unlike `EMRBaseModel` (see [Base model](../foundation/base-model.mdx)), `BaseModel` does **not** add `created_by`/`updated_by`, `history`, or `meta` JSON. `BaseFlag` adds the `flag` value and the per-entity flag machinery (cache invalidation, validation against the flag registry).
 
 ## `FacilityFlag` fields
 
 | Field | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |
-| `flag` | `CharField(max_length=1024)` | yes | — | Inherited from `BaseFlag`. The registered flag name; validated against the `FACILITY` flag registry on every save (see [validation](#save-inherited-from-baseflag)). Value space is **not** an enum — it is whatever has been registered at runtime via `FlagRegistry`, so it is open-ended but constrained to registered strings |
-| `facility` | `FK → facility.Facility` | yes | — | `on_delete=CASCADE`, `null=False`, `blank=False`. The facility the flag applies to. Drives the `entity` / `entity_id` properties via `entity_field_name="facility"` |
+| `flag` | `CharField(max_length=1024)` | yes | - | Inherited from `BaseFlag`. The registered flag name; validated against the `FACILITY` flag registry on every save (see [validation](#save-inherited-from-baseflag)). Value space is **not** an enum; it is whatever has been registered at runtime via `FlagRegistry`, so it is open-ended but constrained to registered strings |
+| `facility` | `FK → facility.Facility` | yes | - | `on_delete=CASCADE`, `null=False`, `blank=False`. The facility the flag applies to. Drives the `entity` / `entity_id` properties via `entity_field_name="facility"` |
 | `external_id` | `UUIDField` | auto | `uuid4` | Inherited from `BaseModel`; `unique=True`, `db_index=True` |
 | `created_date` | `DateTimeField` | auto | `auto_now_add` | Inherited; `null=True`, `blank=True`, `db_index=True` |
 | `modified_date` | `DateTimeField` | auto | `auto_now` | Inherited; `null=True`, `blank=True`, `db_index=True` |
@@ -44,7 +56,7 @@ There are **no `JSONField`s** on this model, so there is no opaque JSON shape to
 | `USER` | `"USER"` | `UserFlag` ([User](../access/user.mdx)) |
 | `FACILITY` | `"FACILITY"` | `FacilityFlag` (this model) |
 
-`flag` values themselves are not enumerated in source — they are registered dynamically (`FlagRegistry.register(FlagType.FACILITY, "<name>")`). A name not present in the `FACILITY` registry raises `FlagNotFoundError` on save.
+`flag` values themselves are not enumerated in source; they are registered dynamically (`FlagRegistry.register(FlagType.FACILITY, "<name>")`). A name not present in the `FACILITY` registry raises `FlagNotFoundError` on save.
 
 ### Class-level configuration
 
@@ -100,13 +112,13 @@ Both wrap the generic `BaseFlag` methods using `entity_field_name="facility"`. `
 
 ## Resource specs (API schema)
 
-**`FacilityFlag` has no Pydantic resource spec and no REST endpoint of its own.** There is no `FacilityFlagCreateSpec` / `FacilityFlagUpdateSpec` / `FacilityFlagListSpec` / `FacilityFlagRetrieveSpec`, no serializer, and no viewset — confirmed by absence in `care/emr/resources/` and `care/facility/api/`. Flags are administered through Django admin or management/registration code, not the public API.
+**`FacilityFlag` has no Pydantic resource spec and no REST endpoint of its own.** There is no `FacilityFlagCreateSpec` / `FacilityFlagUpdateSpec` / `FacilityFlagListSpec` / `FacilityFlagRetrieveSpec`, no serializer, and no viewset; confirmed by absence in `care/emr/resources/` and `care/facility/api/`. Flags are administered through Django admin or management/registration code, not the public API.
 
 The one place flags surface to API clients is the **Facility** resource, which exposes them as a derived read-only field:
 
 | Spec | Field | Role | Behaviour |
 | --- | --- | --- | --- |
-| `FacilityRetrieveSpec` ([`facility/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/facility/spec.py)) | `flags: list[str]` | read · detail | Populated in `perform_extra_serialization` via `mapping["flags"] = obj.get_facility_flags()`. Server-maintained, read-only; clients cannot set or mutate flags through the Facility write specs |
+| `FacilityRetrieveSpec` ([`facility/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/facility/spec.py)) | `flags: list[str]` | read · detail | Populated in `perform_extra_serialization` via `mapping["flags"] = obj.get_facility_flags()`. Server-maintained, read-only. Clients cannot set or mutate flags through the Facility write specs |
 
 Notes on this binding:
 
@@ -122,7 +134,7 @@ Notes on this binding:
 
 ```text
 flag → CharField(max_length=1024)
-(abstract base — no table of its own)
+(abstract base; no table of its own)
 class attrs: cache_key_template, all_flags_cache_key_template, flag_type, entity_field_name
 ```
 
@@ -148,14 +160,14 @@ Flags must be registered before a `FacilityFlag` referencing them can be saved. 
 
 - `FacilityFlag` is a server-side gating primitive, not a FHIR resource and not a writable API resource. There is no CRUD endpoint; flags are managed via Django admin or registration/management code.
 - Clients observe a facility's flags only through the read-only `flags: list[str]` field on `FacilityRetrieveSpec` (see [Resource specs](#resource-specs-api-schema)).
-- Read access in application code should go through `check_facility_has_flag` / `get_all_flags` (or `Facility.get_facility_flags()`), which are cache-backed — do not query the table directly for hot-path checks.
-- Flag names are constrained to entries registered in the `FACILITY` `FlagRegistry`; clients cannot introduce arbitrary flag strings — an unregistered name fails validation on save with `FlagNotFoundError`.
+- Read access in application code should go through `check_facility_has_flag` / `get_all_flags` (or `Facility.get_facility_flags()`), which are cache-backed. Do not query the table directly for hot-path checks.
+- Flag names are constrained to entries registered in the `FACILITY` `FlagRegistry`. Clients cannot introduce arbitrary flag strings, an unregistered name fails validation on save with `FlagNotFoundError`.
 - The `{facility, flag}` uniqueness is enforced only over non-deleted rows, so soft-deleted history is preserved and a flag can be removed then re-added.
 
 ## Related
 
 - Reference: [Facility](../facility/facility.mdx)
 - Reference: [Facility Config](../facility/facility-config.mdx)
-- Reference: [User](../access/user.mdx) — the `USER` flag counterpart of the same `BaseFlag` machinery
+- Reference: [User](../access/user.mdx), the `USER` flag counterpart of the same `BaseFlag` machinery
 - Reference: [Base model](../foundation/base-model.mdx)
 - Source: [facility_flag.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/facility/models/facility_flag.py)

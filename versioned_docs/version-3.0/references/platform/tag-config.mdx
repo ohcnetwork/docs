@@ -6,18 +6,29 @@ sidebar_position: 6
 
 Technical reference for the `TagConfig` module in Care EMR. Tags are hierarchical labels that can be applied to resources (patients, encounters, and more) for classification and filtering; `TagConfig` defines the available tags and their tree structure.
 
-The Django model (`care/emr/models/tag_config.py`) is the **storage layer**: it holds opaque `JSONField`s (`metadata`, `cached_parent_json`) whose real structure is not visible in the model. The Pydantic **resource specs** (`care/emr/resources/tag/config_spec.py`) are the API/implementation layer: they define the enums, the structured shape of those JSON fields, field validation, and the read/write schemas.
-
 **Source:**
 - Model: [`care/emr/models/tag_config.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/tag_config.py)
 - Resource spec: [`care/emr/resources/tag/config_spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/tag/config_spec.py)
 - Cache invalidation: [`care/emr/resources/tag/cache_invalidation.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/tag/cache_invalidation.py)
 
+## Quick reference
+
+| Need | Section |
+| --- | --- |
+| Models and ownership | Models |
+| Field definitions | `TagConfig` fields |
+| Allowed values | Enums |
+| Structured payloads | Nested specs (shape of JSON fields) |
+| API contracts | Resource specs (API schema) |
+| Server behaviour | Methods & save behaviour |
+| Client guidance | API integration notes |
+| Related references | Related |
+
 ## Models
 
 | Model | Purpose |
 | --- | --- |
-| `TagConfig` | Definition of a single tag — its display, category, scope, status, metadata, and position in the tag tree |
+| `TagConfig` | Definition of a single tag; its display, category, scope, status, metadata, and position in the tag tree |
 
 `TagConfig` extends [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, audit fields `created_by`/`updated_by`, `created_date`/`modified_date`, soft-delete via `deleted`, and `history`/`meta` JSON). Applied tag IDs are stored on the tagged resource itself (for example `Patient.instance_tags` / `Patient.facility_tags` and `Encounter.tags`).
 
@@ -25,7 +36,7 @@ The Django model (`care/emr/models/tag_config.py`) is the **storage layer**: it 
 
 ### Scope
 
-A tag is scoped to at most one owner — an instance-wide organization, a facility-scoped organization, or a facility.
+A tag is scoped to at most one owner, an instance-wide organization, a facility-scoped organization, or a facility.
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -38,7 +49,7 @@ A tag is scoped to at most one owner — an instance-wide organization, a facili
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `status` | `CharField(255)` | Lifecycle status. Constrained by `TagStatus` in the spec — `active` / `archived` (see [enum](#tagstatus-values)) |
+| `status` | `CharField(255)` | Lifecycle status. Constrained by `TagStatus` in the spec; `active` / `archived` (see [enum](#tagstatus-values)) |
 | `display` | `CharField(255)` | Human-readable label. Required in the spec |
 | `description` | `TextField` | Nullable, blank-able. Required key in the base spec but accepts `null` |
 | `category` | `CharField(255)` | Grouping category. Constrained by `TagCategoryChoices` in the spec (see [enum](#tagcategorychoices-values)) |
@@ -47,7 +58,7 @@ A tag is scoped to at most one owner — an instance-wide organization, a facili
 
 ### Tree structure & caches
 
-`TagConfig` is self-referential — tags form a tree, with denormalized caches rebuilt on insert to avoid recursive joins (the same pattern as [`Organization`](../facility/organization.mdx)). These fields are platform-maintained and are **not** writable through the create/update specs.
+`TagConfig` is self-referential; tags form a tree, with denormalized caches rebuilt on insert to avoid recursive joins (the same pattern as [`Organization`](../facility/organization.mdx)). These fields are platform-maintained and are **not** writable through the create/update specs.
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -79,7 +90,7 @@ A tag is scoped to at most one owner — an instance-wide organization, a facili
 
 ### `TagResource` values
 
-`resource` binds to this enum in `TagConfigWriteSpec` (set only on create; the read specs surface it as a plain `str`).
+`resource` binds to this enum in `TagConfigWriteSpec` (set only on create, the read specs surface it as a plain `str`).
 
 | Value |
 | --- |
@@ -108,7 +119,7 @@ A tag is scoped to at most one owner — an instance-wide organization, a facili
 
 ### `TagConfigMetadata` (shape of `metadata`)
 
-Defines the real structure of the opaque `metadata` `JSONField`. Plain Pydantic `BaseModel` (not an `EMRResource`).
+Defines the accepted structure of the `metadata` `JSONField`. Plain Pydantic `BaseModel` (not an `EMRResource`).
 
 | Field | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |
@@ -132,55 +143,55 @@ All specs extend `EMRResource` (`care/emr/resources/base.py`), which provides `s
 Two `@model_validator(mode="after")` checks run before deserialization:
 
 - `validate_exists`:
-  - If `facility` is set, it must exist; if `facility_organization` is also set it must belong to that facility, else `ValidationError("Facility Organization not found")`.
+  - If `facility` is set, it must exist. If `facility_organization` is also set it must belong to that facility, else `ValidationError("Facility Organization not found")`.
   - If `organization` is set, it must exist, else `ValidationError("Organization not found")`.
   - If `parent` is set, a `TagConfig` with that `external_id` **and the same `resource`** must exist (and, when `facility` is set, belong to that facility), else `ValueError("Parent tag config not found")`.
-- `validate_organizations`: a `facility_organization` without a `facility` is rejected — `ValueError("Facility Organization not allowed in instance level tag configs")`.
+- `validate_organizations`: a `facility_organization` without a `facility` is rejected; `ValueError("Facility Organization not allowed in instance level tag configs")`.
 
 ### Server-maintained behaviour
 
 - `TagConfigWriteSpec.perform_extra_deserialization` resolves `parent`, `organization`, and `facility` (plus `facility_organization` scoped to the resolved facility) from their `external_id`s onto the model instance; `parent` is explicitly set to `None` when absent.
 - `TagConfigReadSpec.perform_extra_serialization` sets `id = external_id`, inlines the parent record via `obj.get_parent_json()` (only when non-empty), and serializes `facility` with `FacilityBareMinimumSpec` (`{ id, name }`).
 - `TagConfigRetrieveSpec.perform_extra_serialization` calls the read-spec hook, then `serialize_audit_users` (populates `created_by`/`updated_by` from cache) and serializes `facility_organization` / `organization` with their full read specs.
-- Tree caches (`level_cache`, `parent_cache`, `root_tag_config`, `has_children`) are populated by the model's `set_tag_config_cache()` on insert — never accepted from clients.
-- `system_generated` is declared on `TagConfigReadSpec` but is **not** a field on the current `TagConfig` model (nor on `EMRBaseModel`); the generic `serialize` only copies model fields, so unless it is provided elsewhere it is not populated from storage. Treat it as a read-only flag and verify against the live model before relying on it.
+- Tree caches (`level_cache`, `parent_cache`, `root_tag_config`, `has_children`) are populated by the model's `set_tag_config_cache()` on insert. Never accepted from clients.
+- `system_generated` is declared on `TagConfigReadSpec` but is **not** a field on the current `TagConfig` model (nor on `EMRBaseModel`), the generic `serialize` only copies model fields, so unless it is provided elsewhere it is not populated from storage. Treat it as a read-only flag and verify against the live model before relying on it.
 
 ### Cache invalidation
 
 A `post_save` signal connects `invalidate_tag_config_cache` to `TagConfig`. On every save it:
 
 1. Invalidates the tag's own `TagConfigReadSpec` cache and resets `cached_parent_json = {}`.
-2. Invalidates all descendants (rows whose `parent_cache` overlaps the tag id) — they embed parent data via `get_parent_json()`.
+2. Invalidates all descendants (rows whose `parent_cache` overlaps the tag id); they embed parent data via `get_parent_json()`.
 3. Invalidates the parent's cache (its `has_children` may have changed).
 
 ## Methods & save behaviour
 
 ### `set_tag_config_cache()`
 
-When a `parent` is set, recomputes `parent_cache` (`parent.parent_cache + [parent.id]`) and `level_cache` (`parent.level_cache + 1`), derives `root_tag_config` from the parent (the parent itself if the parent is a root, otherwise the parent's `root_tag_config`), and — if the parent had no children — flips `parent.has_children = True`, persisting only that field. Finishes with `super().save()`.
+When a `parent` is set, recomputes `parent_cache` (`parent.parent_cache + [parent.id]`) and `level_cache` (`parent.level_cache + 1`), derives `root_tag_config` from the parent (the parent itself if the parent is a root, otherwise the parent's `root_tag_config`), and flips `parent.has_children = True` if the parent had no children, persisting only that field. Finishes with `super().save()`.
 
 ### `get_parent_json()`
 
-Returns `cached_parent_json` when present and its `cache_expiry` is still in the future; otherwise recursively rebuilds the nested parent record (`id` = parent `external_id`, `display`, `description`, `category`, nested `parent`, `level_cache`), stamps a fresh expiry (`cache_expiry_days = 15`), persists `cached_parent_json`, and returns it. Returns `{}` for root tags.
+Returns `cached_parent_json` when present and its `cache_expiry` is still in the future. Otherwise recursively rebuilds the nested parent record (`id` = parent `external_id`, `display`, `description`, `category`, nested `parent`, `level_cache`), stamps a fresh expiry (`cache_expiry_days = 15`), persists `cached_parent_json`, and returns it. Returns `{}` for root tags.
 
 ### `save()` side effects
 
-On **insert** (no `id` yet), the base `save()` runs first, then `set_tag_config_cache()` populates the tree caches — a **second write pass**. On **update**, `save()` persists normally without recomputing caches. Either path triggers the `post_save` cache-invalidation signal above.
+On **insert** (no `id` yet), the base `save()` runs first, then `set_tag_config_cache()` populates the tree caches, a **second write pass**. On **update**, `save()` persists normally without recomputing caches. Either path triggers the `post_save` cache-invalidation signal above.
 
 ## API integration notes
 
 - Tag definitions are exposed through Care's REST API; applied tags are stored as integer ID arrays on each tagged resource (e.g. `Patient.instance_tags`/`facility_tags`, `Encounter.tags`), not as join rows.
 - Create uses `TagConfigWriteSpec` (sets `resource`, scope FKs, and `parent`); update uses `TagConfigUpdateSpec` (only org/facility-org reassignment plus the shared display/category/status/metadata fields). List responses use `TagConfigReadSpec`; detail responses use `TagConfigRetrieveSpec`.
-- Tree position (`level_cache`, `parent_cache`, `root_tag_config`) and `has_children` are platform-maintained — do not set them directly from clients.
+- Tree position (`level_cache`, `parent_cache`, `root_tag_config`) and `has_children` are platform-maintained. Do not set them directly from clients.
 - A tag is owned by at most one of `facility`, `facility_organization`, or `organization`; `resource` declares which resource type it targets and must match a value from [`TagResource`](#tagresource-values).
 - `metadata` is the supported place for display hints (`color`, `icon`) without schema migrations; its shape is enforced by `TagConfigMetadata`.
 
 ## Related
 
-- Reference: [Organization](../facility/organization.mdx) — tags reuse the same tree-cache pattern and can be org-scoped
-- Reference: [Patient](../clinical/patient) — carries `instance_tags` / `facility_tags`
-- Reference: [Encounter](../clinical/encounter.mdx) — carries `tags`
-- Reference: [Facility](../facility/facility.mdx) — facility-scoped tags; read spec inlines a `FacilityBareMinimumSpec`
+- Reference: [Organization](../facility/organization.mdx); tags reuse the same tree-cache pattern and can be org-scoped
+- Reference: [Patient](../clinical/patient); carries `instance_tags` / `facility_tags`
+- Reference: [Encounter](../clinical/encounter.mdx); carries `tags`
+- Reference: [Facility](../facility/facility.mdx); facility-scoped tags; read spec inlines a `FacilityBareMinimumSpec`
 - Reference: [Base models & conventions](../foundation/base-model.mdx)
 - Source: [tag_config.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/tag_config.py)
 - Source: [config_spec.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/tag/config_spec.py)

@@ -12,9 +12,21 @@ Technical reference for the `MedicationRequest` module in Care EMR.
 - Spec: [`resources/medication/request_prescription/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/request_prescription/spec.py)
 - Value sets: [`resources/medication/valueset/`](https://github.com/ohcnetwork/care/tree/develop/care/emr/resources/medication/valueset)
 
-A medication request captures the prescriber's intent to supply and/or administer a medication to a patient — the FHIR [`MedicationRequest`](https://hl7.org/fhir/medicationrequest.html) resource. Requests carry the medication, dosage instructions, timing, and route as structured JSON, and are grouped under a prescription per encounter.
+A medication request captures the prescriber's intent to supply and/or administer a medication to a patient, the FHIR [`MedicationRequest`](https://hl7.org/fhir/medicationrequest.html) resource. Requests carry the medication, dosage instructions, timing, and route as structured JSON, and are grouped under a prescription per encounter.
 
-The Django model is the **storage** layer: several fields are opaque `JSONField`s whose real structure is not visible in the model. The Pydantic **resource specs** (`care/emr/resources/medication/request/`) are the API/implementation layer — they define the enums, the nested shape of those JSON fields, validation, the read/write schemas, and server-side side effects. The tables below combine both.
+## Quick reference
+
+| Need | Section |
+| --- | --- |
+| Models and ownership | Models |
+| Field definitions | `MedicationRequest` fields |
+| Allowed values | Enum values |
+| Structured payloads | Bound value sets |
+| Relationships | Related models |
+| API contracts | Resource specs (API schema) |
+| Server behaviour | Methods & save behaviour |
+| Client guidance | API integration notes |
+| Related references | Related |
 
 ## Models
 
@@ -23,7 +35,7 @@ The Django model is the **storage** layer: several fields are opaque `JSONField`
 | `MedicationRequestPrescription` | Groups medication requests authored together for an encounter (a prescription) |
 | `MedicationRequest` | A single medication order/request for a patient within an encounter |
 
-Both models extend [`EMRBaseModel`](../foundation/base-model.mdx) — the shared Care EMR base providing `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON.
+Both models extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base providing `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON.
 
 ## `MedicationRequest` fields
 
@@ -44,7 +56,7 @@ Both models extend [`EMRBaseModel`](../foundation/base-model.mdx) — the shared
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `medication` | `JSONField` → `ValueSetBoundCoding[system-medication] \| None` | Conditional | Model default `{}`. Single `Coding { system, code, display }` bound to the [Medication](#bound-value-sets) value set (SNOMED CT medicinal products). Exactly one of `medication` / `requested_product` must be set |
-| `method` | `JSONField` | n/a | Model default `{}`. Present in storage but **not exposed by any current spec** — administration method is carried per dosage line via `dosage_instruction[].method` |
+| `method` | `JSONField` | n/a | Model default `{}`. Present in storage but **not exposed by any current spec**; administration method is carried per dosage line via `dosage_instruction[].method` |
 | `dosage_instruction` | `JSONField` → `list[DosageInstruction]` | Yes | Model default `[]`. List of structured dosage lines. See [DosageInstruction shape](#dosageinstruction-nested-spec) |
 | `note` | `TextField` → `str \| None` | No | Free-text note on the request |
 
@@ -52,16 +64,16 @@ Both models extend [`EMRBaseModel`](../foundation/base-model.mdx) — the shared
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `patient` | `FK → Patient` | server-set | `CASCADE`. Not accepted from the client — set server-side from `encounter.patient` |
+| `patient` | `FK → Patient` | server-set | `CASCADE`. Not accepted from the client; set server-side from `encounter.patient` |
 | `encounter` | `FK → Encounter` | Yes (create) | `CASCADE`. Write spec accepts `encounter` as a UUID; validated to exist |
 | `authored_on` | `DateTimeField` → `datetime` | Yes (spec) | Model default `timezone.now`. When the request was authored (tz-aware) |
-| `requester` | `FK → users.User` | No | `SET_NULL`. Write spec accepts `requester` UUID; the prescriber |
+| `requester` | `FK → users.User` | No | `SET_NULL`. Write spec accepts `requester` UUID, the prescriber |
 | `requested_product` | `FK → ProductKnowledge` | Conditional | `SET_NULL`, default `None`. Write spec accepts `requested_product` UUID. Exactly one of `medication` / `requested_product` must be set |
 | `prescription` | `FK → MedicationRequestPrescription` | No | `SET_NULL`, default `None`. Set via `prescription` UUID or `create_prescription` (see [validation](#resource-specs-api-schema)) |
 
 ## Enum values
 
-The spec enums use **underscored** member values (e.g. `on_hold`, `entered_in_error`, `original_order`) — not the hyphenated FHIR spellings. These are the literal strings the API accepts and returns.
+The spec enums use **underscored** member values (e.g. `on_hold`, `entered_in_error`, `original_order`). Not the hyphenated FHIR spellings. These are the literal strings the API accepts and returns.
 
 ### `MedicationRequestStatus` values
 
@@ -159,7 +171,7 @@ Used by `DoseAndRate.type`.
 
 ## `DosageInstruction` nested spec
 
-Each entry of the `dosage_instruction` JSON list deserializes to a `DosageInstruction` (Pydantic, snake_case keys). This is the real structure behind the opaque `JSONField`.
+Each entry of the `dosage_instruction` JSON list deserializes to a `DosageInstruction` (Pydantic, snake_case keys). Use the structure below when writing dosage instructions.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
@@ -185,10 +197,10 @@ Timing {
 }
 
 TimingRepeat {
-  frequency: int              # required — repetitions per period
-  period: Decimal(20,0)       # required — duration the frequency applies to
-  period_unit: TimingUnit     # required — s|min|h|d|wk|mo|a
-  bounds_duration: TimingQuantity  # required — total span
+  frequency: int              # required; repetitions per period
+  period: Decimal(20,0)       # required; duration the frequency applies to
+  period_unit: TimingUnit     # required; s|min|h|d|wk|mo|a
+  bounds_duration: TimingQuantity  # required; total span
 }
 
 TimingQuantity {              # integer-valued time amount
@@ -197,7 +209,7 @@ TimingQuantity {              # integer-valued time amount
 }
 
 DoseAndRate {
-  type: DoseType              # required — ordered | calculated
+  type: DoseType              # required; ordered | calculated
   dose_range: DoseRange | None      # for titrated doses
   dose_quantity: DosageQuantity | None  # for regular doses
 }
@@ -217,7 +229,7 @@ Note: in storage these JSON keys are snake_case as defined by the Pydantic specs
 
 ## Bound value sets
 
-Coded fields bind to Care value sets via `ValueSetBoundCoding[<slug>]`; the supplied `Coding.code` is validated against the value set on write. All draw from SNOMED CT (`http://snomed.info/sct`).
+Coded fields bind to Care value sets via `ValueSetBoundCoding[<slug>]`, the supplied `Coding.code` is validated against the value set on write. All draw from SNOMED CT (`http://snomed.info/sct`).
 
 | Field | Value set slug | SNOMED CT scope |
 | --- | --- | --- |
@@ -243,9 +255,9 @@ All specs extend [`EMRResource`](../foundation/base-model.mdx) (`serialize` / `d
 | `MedicationRequestUpdateSpec` | write · update | Narrow: only `status`, `note`, `dispense_status` are mutable post-create |
 | `MedicationRequestReadWithoutPrescriptionSpec` | read · embedded | Full read minus prescription; expands `requested_product` (`ProductKnowledgeReadSpec`), `requester`/`created_by`/`updated_by` (`UserSpec`), plus `created_date`/`modified_date` |
 | `MedicationRequestReadSpec` | read · detail/list | Adds expanded `prescription` (`MedicationRequestPrescriptionReadSpec`) and `encounter` external id |
-| `CreatePrescription` | write · nested | `{ name?, note?, alternate_identifier (required) }` — inline prescription creation |
+| `CreatePrescription` | write · nested | `{ name?, note?, alternate_identifier (required) }`; inline prescription creation |
 
-### Validation (create — `MedicationRequestSpec`)
+### Validation for create (`MedicationRequestSpec`)
 
 - **Medication XOR product:** cannot set both `medication` and `requested_product`; one is required.
 - **Prescription XOR create:** cannot set both `prescription` and `create_prescription`.
@@ -310,9 +322,9 @@ Pharmacist-modifiable statuses (`MEDICATION_PRESCRIPTION_PHARMACIST_ALLOWED_STAT
 
 ## API integration notes
 
-- Coded fields use single `Coding` objects `{ system, code, display }` validated against bound SNOMED CT value sets — send the `code` from the correct value set or the write is rejected.
+- Coded fields use single `Coding` objects `{ system, code, display }` validated against bound SNOMED CT value sets; send the `code` from the correct value set or the write is rejected.
 - Enum members are underscored (`on_hold`, `entered_in_error`, `original_order`, etc.); send those literals, not the FHIR hyphenated forms.
-- `dosage_instruction` is the structured carrier for SIG text, timing/frequency, PRN flags, dose and rate, and max-dose limits — write the full nested shape (snake_case keys) rather than free text alone.
+- `dosage_instruction` is the structured carrier for SIG text, timing/frequency, PRN flags, dose and rate, and max-dose limits; write the full nested shape (snake_case keys) rather than free text alone.
 - On create, supply either `medication` or `requested_product` (not both) and either `prescription` or `create_prescription` (not both, both optional).
 - Updates are restricted to `status`, `note`, and `dispense_status`.
 - `requester`, `requested_product`, and `prescription` use `SET_NULL`, so the request survives deletion of the referenced user, product, or prescription.

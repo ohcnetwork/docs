@@ -4,12 +4,9 @@ sidebar_position: 1
 
 # Base models & conventions
 
-Technical reference for the shared base layer that every Care EMR resource is built on. There are **two layers**:
+Technical reference for the shared base layer that every Care EMR resource is built on.
 
-- **Storage layer** — abstract Django models in `care/emr/models` and `care/utils/models`. They supply opaque IDs, audit fields, soft-delete, history, slugs, and feature flags. Several columns are opaque `JSONField`s whose real structure is *not* visible in the model.
-- **API / implementation layer** — Pydantic resource specs built on `EMRResource` (`care/emr/resources/base.py`). They define enums, field validation, the structured shape of those JSON fields (via nested specs), and the read/write schemas. The shared structured types live in `care/emr/resources/common/` and are reused across nearly every resource.
-
-This page documents both layers and the shared common spec types. Concrete resources (for example [Patient](../clinical/patient)) inherit a storage base and define their own resource specs on top of `EMRResource`.
+This page collects the abstract Django bases, the `EMRResource` serialization contract, shared IDs, audit fields, soft-delete behaviour, slug helpers, metadata handling, and common spec types used across concrete resources such as [Patient](../clinical/patient).
 
 **Source:**
 [`care/emr/models/base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/base.py),
@@ -17,20 +14,32 @@ This page documents both layers and the shared common spec types. Concrete resou
 [`care/emr/resources/base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py),
 [`care/emr/resources/common/`](https://github.com/ohcnetwork/care/tree/develop/care/emr/resources/common)
 
+## Quick reference
+
+| Need | Section |
+| --- | --- |
+| Shared model columns | Model foundations |
+| Serialization contract | Resource spec contract |
+| Shared nested types | Shared common specs |
+| Feature flag helpers | Related models |
+| Server behaviour | Methods & save behaviour |
+| Client guidance | API integration notes |
+| Related references | Related |
+
 ## Models
 
-| Model | Layer | Purpose |
+| Model | Scope | Purpose |
 | --- | --- | --- |
-| `BaseModel` | storage | Lowest-level abstract base — opaque `external_id`, timestamps, and soft-delete |
-| `BaseManager` | storage | Default manager that hides soft-deleted rows |
-| `BaseFlag` | storage | Abstract base for feature-flag tables with cache-backed lookups |
-| `EMRBaseModel` | storage | Standard base for EMR resources — adds audit `created_by`/`updated_by`, `history`, and `meta` |
-| `SlugBaseModel` | storage | EMR base that adds facility-scoped or instance-scoped slug helpers |
-| `EMRResource` | API | Pydantic base for all resource specs — `serialize` / `de_serialize` between DB objects and API schemas |
+| `BaseModel` | Django model | Lowest-level abstract base with public `external_id`, timestamps, and soft-delete |
+| `BaseManager` | Django model | Default manager that hides soft-deleted rows |
+| `BaseFlag` | Django model | Abstract base for feature-flag tables with cache-backed lookups |
+| `EMRBaseModel` | Django model | Standard base for EMR resources; adds audit `created_by`/`updated_by`, `history`, and `meta` |
+| `SlugBaseModel` | Django model | EMR base that adds facility-scoped or instance-scoped slug helpers |
+| `EMRResource` | API | Pydantic base for all resource specs; `serialize` / `de_serialize` between DB objects and API schemas |
 
-All five storage models are `abstract = True`: they define no database table of their own. Concrete resource models inherit one of them and contribute the columns described below to their own table.
+All five Django model bases are `abstract = True`: they define no database table of their own. Concrete resource models inherit one of them and contribute the columns described below to their own table.
 
-The storage inheritance chain is:
+The model inheritance chain is:
 
 ```text
 models.Model
@@ -50,15 +59,15 @@ pydantic.BaseModel
 
 ---
 
-## Storage layer
+## Model foundations
 
 ### `BaseModel` fields
 
-The root abstract model. Every other base — and therefore every persisted Care resource — inherits these columns.
+The root abstract model. Every other base, and therefore every persisted Care resource, inherits these columns.
 
 | Field | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |
-| `external_id` | `UUIDField` | yes | `uuid4` | `unique`, `db_index`. The opaque public identifier used in URLs and API payloads — never expose the integer `pk` |
+| `external_id` | `UUIDField` | yes | `uuid4` | `unique`, `db_index`. The opaque public identifier used in URLs and API payloads. Never expose the integer `pk` |
 | `created_date` | `DateTimeField` | no | `auto_now_add` | nullable, `db_index`. Set once on insert |
 | `modified_date` | `DateTimeField` | no | `auto_now` | nullable, `db_index`. Updated on every save |
 | `deleted` | `BooleanField` | yes | `False` | `db_index`. Soft-delete marker |
@@ -83,7 +92,7 @@ The standard base for EMR resource models. Extends `BaseModel`, so it also carri
 
 | Field | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |
-| `history` | `JSONField` | no | `dict` | Flattened JSON array of every version of the resource with its performer. **Not** returned by regular endpoints — served on request through a dedicated history API (audit / point-in-time reconstruction) |
+| `history` | `JSONField` | no | `dict` | Flattened JSON array of every version of the resource with its performer. **Not** returned by regular endpoints; served on request through a dedicated history API (audit / point-in-time reconstruction) |
 | `meta` | `JSONField` | no | `dict` | Open metadata bag. `EMRResource` writes spec fields here when `__store_metadata__ = True` (see below) |
 | `created_by` | `FK → users.User` | no | `None` | `on_delete=SET_NULL`, nullable. `related_name="%(app_label)s_%(class)s_created_by"` |
 | `updated_by` | `FK → users.User` | no | `None` | `on_delete=SET_NULL`, nullable. `related_name="%(app_label)s_%(class)s_updated_by"` |
@@ -92,13 +101,13 @@ The `%(app_label)s_%(class)s_…` `related_name` templating lets every concrete 
 
 ### `SlugBaseModel` helpers
 
-Extends `EMRBaseModel` for resources that expose a human-readable, scoped slug (for example value sets and definitions). It adds no new columns — concrete subclasses provide their own `slug` and, when facility-scoped, `facility` fields. It sets the class flag `FACILITY_SCOPED = True`.
+Extends `EMRBaseModel` for resources that expose a human-readable, scoped slug (for example value sets and definitions). It adds no new columns; concrete subclasses provide their own `slug` and, when facility-scoped, `facility` fields. It sets the class flag `FACILITY_SCOPED = True`.
 
 | Method | Behaviour |
 | --- | --- |
 | `calculate_slug_from_facility(facility_external_id, slug)` | Class helper → `f-<facility_external_id>-<slug>` |
 | `calculate_slug_from_instance(slug)` | Class helper → `i-<slug>` |
-| `calculate_slug()` | Instance helper — facility-scoped form when `FACILITY_SCOPED` and `facility` are set, otherwise instance-scoped |
+| `calculate_slug()` | Instance helper; facility-scoped form when `FACILITY_SCOPED` and `facility` are set, otherwise instance-scoped |
 | `parse_slug(slug)` | Reverses the encoding; returns `{facility, slug_value}` for `f-` slugs or `{slug_value}` for `i-` slugs; raises `ValueError` on invalid input |
 
 Slug encoding:
@@ -154,7 +163,7 @@ Helper properties and classmethods:
 
 ---
 
-## API layer
+## Resource spec contract
 
 ### `EMRResource`
 
@@ -175,8 +184,8 @@ The Pydantic base class (`care/emr/resources/base.py`) that every resource spec 
 | `perform_extra_serialization(mapping, obj)` | DB → API | Hook for resolving derived/nested read fields; base sets `id` |
 | `perform_extra_deserialization(is_update, obj)` | API → DB | Hook for server-side side effects on write (e.g. appending to `status_history`, resolving FKs from `external_id`, validating coded values against a value set) |
 | `serialize_audit_users(mapping, obj)` | DB → API | Helper that fills `created_by` / `updated_by` from a cached `UserSpec` |
-| `to_json()` | — | `model_dump(mode="json", exclude=["meta"])` |
-| `get_database_mapping()` | — | Lists the model's non-FK column names, used to decide which spec fields map to columns |
+| `to_json()` | - | `model_dump(mode="json", exclude=["meta"])` |
+| `get_database_mapping()` | - | Lists the model's non-FK column names, used to decide which spec fields map to columns |
 
 **Spec naming convention.** Concrete resources expose a small set of specs built on `EMRResource`. Read these as a table per resource:
 
@@ -209,7 +218,7 @@ An `Annotated` type exported from `base.py`: a phone string validated by `PhoneN
 
 ## Shared common specs
 
-`care/emr/resources/common/` holds the structured types reused across resources. These are the real shapes behind many of the opaque `JSONField`s in the storage layer.
+`care/emr/resources/common/` holds the structured types reused across resources. These are the schema-backed shapes used by many model `JSONField`s.
 
 ### `Coding`
 
@@ -219,7 +228,7 @@ A single code from a code system. `model_config = extra="forbid"`.
 | --- | --- | --- | --- | --- |
 | `system` | `str` | no | `None` | URI of the code system |
 | `version` | `str` | no | `None` | Code-system version |
-| `code` | `str` | **yes** | — | The code value |
+| `code` | `str` | **yes** | - | The code value |
 | `display` | `str` | no | `None` | Human-readable label |
 
 ### `CodeableConcept`
@@ -230,11 +239,11 @@ A concept expressed as one or more codings plus free text. `extra="forbid"`.
 | --- | --- | --- | --- | --- |
 | `id` | `str` | no | `None` | |
 | `coding` | `list[Coding]` | no | `None` | One or more `Coding` entries |
-| `text` | `str \| None` | **yes** (field present) | — | Free-text rendering; declared without a default, so the key must be supplied (may be `null`) |
+| `text` | `str \| None` | **yes** (field present) | - | Free-text rendering; declared without a default, so the key must be supplied (may be `null`) |
 
 ### `Period`
 
-The read/storage period shape (looser than `PeriodSpec` — no timezone or ordering validation). `extra="forbid"`.
+The read/storage period shape (looser than `PeriodSpec`; no timezone or ordering validation). `extra="forbid"`.
 
 | Field | Type | Required | Default |
 | --- | --- | --- | --- |
@@ -295,11 +304,11 @@ Pricing line components used by billing resources (see [Charge Item Definition](
 
 | Field | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |
-| `monetary_component_type` | `MonetaryComponentType` | **yes** | — | enum below |
+| `monetary_component_type` | `MonetaryComponentType` | **yes** | - | enum below |
 | `code` | `Coding` | no | `None` | |
 | `factor` | `Decimal` | no | `None` | `max_digits=20`, `decimal_places=6` |
 | `amount` | `Decimal` | no | `None` | `max_digits=20`, `decimal_places=6` |
-| `tax_included_amount` | `Decimal` | no | `None` | `max_digits=20`, `decimal_places=6`; only allowed when type is `base` |
+| `tax_included_amount` | `Decimal` | no | `None` | `max_digits=20`, `decimal_places=6`. Only allowed when type is `base` |
 | `global_component` | `bool` | no | `False` | |
 | `conditions` | `list[EvaluatorConditionSpec]` | no | `[]` | Must be empty for `base` components |
 
@@ -308,7 +317,7 @@ Validation rules (model validators):
 - `tax_included_amount` is only allowed when `monetary_component_type == base`.
 - A `base` component must have no `conditions` and must set `amount`.
 - `amount` and `factor` are mutually exclusive (not both).
-- Either `amount` or `factor` must be present — unless `global_component` is set together with a `code`.
+- Either `amount` or `factor` must be present; unless `global_component` is set together with a `code`.
 
 #### `MonetaryComponentType` values
 
@@ -320,7 +329,7 @@ Validation rules (model validators):
 | `tax` |
 | `informational` |
 
-`MonetaryComponentsWithoutBase` (a `RootModel` over `list[MonetaryComponent]`) adds: no duplicate `code.code` values across the list; and, when a base component declares `tax_included_amount`, the sum of tax-component amounts (or `base.amount * factor`) plus `tax_included_amount` must equal the base amount. `MonetaryComponents` extends it with: at most **one** `base` component.
+`MonetaryComponentsWithoutBase` (a `RootModel` over `list[MonetaryComponent]`) adds two list-level rules: no duplicate `code.code` values across the list, and when a base component declares `tax_included_amount`, the sum of tax-component amounts (or `base.amount * factor`) plus `tax_included_amount` must equal the base amount. `MonetaryComponents` extends it by allowing at most **one** `base` component.
 
 `MonetaryComponentDefinition` extends `MonetaryComponent` for definition-time use: adds a **required** `title: str`, disables the duplicate-code / amount-or-factor checks, and forbids a `base` component entirely.
 
@@ -340,7 +349,7 @@ Validation rules (model validators):
 
 ### `EvaluatorConditionSpec`
 
-A single condition evaluated against a registered metric — used inside `MonetaryComponent.conditions`.
+A single condition evaluated against a registered metric; used inside `MonetaryComponent.conditions`.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
@@ -352,11 +361,11 @@ A single condition evaluated against a registered metric — used inside `Moneta
 
 The shapes used to *define* a value set (the FHIR `compose` structure), used by [ValueSet](../forms/valueset.mdx).
 
-- `ValueSet` — `name: str` (required), `status: str | None`, `compose: ValueSetCompose` (required).
-- `ValueSetCompose` — `id`, `include: list[ValueSetInclude]` (required), `exclude: list[ValueSetInclude] | None`, `property: list[str] | None`.
-- `ValueSetInclude` — `id`, `system`, `version`, `concept: list[ValueSetConcept] | None`, `filter: list[ValueSetFilter] | None`. **`concept` and `filter` are mutually exclusive.**
-- `ValueSetConcept` — `id`, `code`, `display` (all optional).
-- `ValueSetFilter` — `id`, `property`, `op`, `value`. `op` must be one of: `=`, `is-a`, `descendent-of`, `is-not-a`, `regex`, `in`, `not-in`, `generalizes`, `child-of`, `descendent-leaf`, `exists`.
+- `ValueSet`; `name: str` (required), `status: str | None`, `compose: ValueSetCompose` (required).
+- `ValueSetCompose`; `id`, `include: list[ValueSetInclude]` (required), `exclude: list[ValueSetInclude] | None`, `property: list[str] | None`.
+- `ValueSetInclude`; `id`, `system`, `version`, `concept: list[ValueSetConcept] | None`, `filter: list[ValueSetFilter] | None`. **`concept` and `filter` are mutually exclusive.**
+- `ValueSetConcept`; `id`, `code`, `display` (all optional).
+- `ValueSetFilter`; `id`, `property`, `op`, `value`. `op` must be one of: `=`, `is-a`, `descendent-of`, `is-not-a`, `regex`, `in`, `not-in`, `generalizes`, `child-of`, `descendent-leaf`, `exists`.
 
 All ValueSet types use `extra="forbid"`.
 
@@ -377,23 +386,23 @@ Defined in `common/mail_type.py`.
 - `BaseFlag.save()` validates `flag` against `FlagRegistry`, then deletes the single-flag and all-flags cache entries for the entity before persisting, keeping the cached lookups consistent.
 - `BaseFlag.check_entity_has_flag` / `get_all_flags` populate those caches on read with a 1-day TTL (`FLAGS_CACHE_TTL = 60 * 60 * 24`).
 - `SlugBaseModel` exposes slug encode/parse helpers but does not override `save()`; subclasses decide when to call `calculate_slug()`.
-- `EMRResource.de_serialize` is where write-time side effects happen — subclasses override `perform_extra_deserialization` to append to status histories, resolve FKs from `external_id`, and validate coded fields against bound value sets.
+- `EMRResource.de_serialize` is where write-time side effects happen; subclasses override `perform_extra_deserialization` to append to status histories, resolve FKs from `external_id`, and validate coded fields against bound value sets.
 - `cacheable(...)` (in `base.py`) is a decorator that marks a spec cacheable and wires a `post_save` signal to invalidate the per-instance serializer cache; `model_from_cache` then serves serialized specs from cache by `pk` / `id` / `external_id`.
 
 ## API integration notes
 
-- `external_id` (UUID) is the identifier used across Care's REST API and FHIR resources; the integer primary key is internal and never exposed. `EMRResource.serialize` surfaces it as `id`, and `de_serialize` refuses to write `id` / `external_id` from request bodies.
-- Deletes are soft — a resource removed through the API still exists in the database with `deleted=True` and is hidden by the default manager.
+- `external_id` (UUID) is the identifier used across Care's REST API and FHIR resources, the integer primary key is internal and never exposed. `EMRResource.serialize` surfaces it as `id`, and `de_serialize` refuses to write `id` / `external_id` from request bodies.
+- Deletes are soft, a resource removed through the API still exists in the database with `deleted=True` and is hidden by the default manager.
 - `history` is not returned by standard endpoints; every version (including migration-time changes) is stored flattened with its performer and served through a separate, on-request audit API.
 - `meta` is the supported place for system metadata without schema migrations; specs with `__store_metadata__ = True` round-trip extra fields through it. `created_by` / `updated_by` are platform-maintained audit fields and should not be set directly by clients.
-- Periods sent on write (`PeriodSpec`) must be timezone-aware and ordered (`start ≤ end`); the read-side `Period` type does not enforce this.
+- Periods sent on write (`PeriodSpec`) must be timezone-aware and ordered (`start ≤ end`), the read-side `Period` type does not enforce this.
 - Feature-flag state (`BaseFlag` subclasses) is read through the cached classmethods rather than queried row-by-row.
 
 ## Related
 
-- Reference: [Patient](../clinical/patient) — a representative `EMRBaseModel` + `EMRResource` subclass
-- Reference: [ValueSet](../forms/valueset.mdx) — uses `SlugBaseModel` and the ValueSet compose types
-- Reference: [Charge Item Definition](../billing/charge-item-definition.mdx) — uses `MonetaryComponent` pricing types
+- Reference: [Patient](../clinical/patient), a representative `EMRBaseModel` + `EMRResource` subclass
+- Reference: [ValueSet](../forms/valueset.mdx); uses `SlugBaseModel` and the ValueSet compose types
+- Reference: [Charge Item Definition](../billing/charge-item-definition.mdx); uses `MonetaryComponent` pricing types
 - Source: [`base.py` (emr models)](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/base.py)
 - Source: [`base.py` (utils models)](https://github.com/ohcnetwork/care/blob/develop/care/utils/models/base.py)
 - Source: [`base.py` (resources / `EMRResource`)](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)

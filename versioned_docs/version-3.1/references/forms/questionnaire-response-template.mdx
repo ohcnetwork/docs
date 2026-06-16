@@ -4,13 +4,21 @@ sidebar_position: 3
 
 # Questionnaire Response Template
 
-Technical reference for the `QuestionnaireResponseTemplate` module in Care EMR — a reusable, shareable template that pre-fills a [questionnaire response](./questionnaire-response.mdx) along with associated medication requests and activity definitions (a clinician's "favourite" / order set).
-
-The Django model is the **storage** layer; the Pydantic **resource specs** define the structured `template_data` payload, validation, and the read/write API schemas.
+Technical reference for the `QuestionnaireResponseTemplate` module in Care EMR, a reusable, shareable template that pre-fills a [questionnaire response](./questionnaire-response.mdx) along with associated medication requests and activity definitions (a clinician's "favourite" / order set).
 
 **Source:**
 - Model: [`care/emr/models/questionnaire.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/questionnaire.py)
 - Spec: [`resources/questionnaire_response_template/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/questionnaire_response_template/spec.py)
+
+## Quick reference
+
+| Need | Section |
+| --- | --- |
+| Models and ownership | Models |
+| Field definitions | `QuestionnaireResponseTemplate` fields |
+| API contracts | Resource specs (API schema) |
+| Client guidance | API integration notes |
+| Related references | Related |
 
 ## Models
 
@@ -26,16 +34,16 @@ The Django model is the **storage** layer; the Pydantic **resource specs** defin
 | --- | --- | --- |
 | `name` | `CharField(255)` | Template name |
 | `description` | `TextField` | `default=""` |
-| `template_data` | `JSONField` | `default=dict`. Structured payload — shape defined by `TemplateData` (see [shape](#templatedata-shape)) |
+| `template_data` | `JSONField` | `default=dict`. Structured payload; shape defined by `TemplateData` (see [shape](#templatedata-shape)) |
 | `facility` | `FK → Facility` | `CASCADE`, nullable. Owning facility (instance-wide when null) |
 | `questionnaire` | `FK → Questionnaire` | `CASCADE`, nullable, `default=None`. Optional questionnaire the template targets |
 | `facility_organizations` | `ArrayField[int]` | `default=list`. Facility-organization ids the template is shared with |
 | `users` | `ArrayField[int]` | `default=list`. User ids the template is shared with |
-| `available_keys` | `ArrayField[CharField(255)]` | `default=list`. Platform-maintained — the populated top-level keys of `template_data`, recomputed on every write |
+| `available_keys` | `ArrayField[CharField(255)]` | `default=list`. Platform-maintained, the populated top-level keys of `template_data`, recomputed on every write |
 
 ## `TemplateData` shape
 
-The real structure of the opaque `template_data` `JSONField` (`resources/questionnaire_response_template/spec.py`). Every section is optional; `available_keys` records which are populated.
+`template_data` follows the `TemplateData` schema (`resources/questionnaire_response_template/spec.py`). Every section is optional; `available_keys` records which are populated.
 
 ```text
 TemplateData {
@@ -73,7 +81,7 @@ All specs extend `EMRResource` (`resources/base.py`).
 ### Validation & server-maintained behaviour
 
 - `validate_facility` (`model_validator(after)` on create): rejects facility organizations without a facility.
-- `available_keys` is derived on every create/update in `perform_extra_deserialization` — it lists the `template_data` keys whose value is non-empty. Clients should not set it directly.
+- `available_keys` is derived on every create/update in `perform_extra_deserialization`; it lists the `template_data` keys whose value is non-empty. Clients should not set it directly.
 - Embedded `requested_product` and activity-definition `slug` are validated to exist (`ProductKnowledge`, `ActivityDefinition`) before save.
 
 ## API integration notes
@@ -84,7 +92,7 @@ All specs extend `EMRResource` (`resources/base.py`).
 
 ## Related
 
-- Reference: [Questionnaire Response](./questionnaire-response.mdx) — what a template helps pre-fill
+- Reference: [Questionnaire Response](./questionnaire-response.mdx); what a template helps pre-fill
 - Reference: [Questionnaire](./questionnaire.mdx)
 - Reference: [Medication Request](../medications/medication-request.mdx) · [Activity Definition](../clinical/activity-definition.mdx) · [Service Request](../clinical/service-request.mdx)
 - Source: [questionnaire.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/questionnaire.py)

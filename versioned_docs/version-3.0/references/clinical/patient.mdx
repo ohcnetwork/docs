@@ -8,6 +8,17 @@ Technical reference for the `Patient` module in Care EMR. For a product-oriented
 
 **Source:** [`care/emr/models/patient.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/patient.py)
 
+## Quick reference
+
+| Need | Section |
+| --- | --- |
+| Models and ownership | Models |
+| Field definitions | `Patient` fields |
+| Relationships | Related models |
+| Server behaviour | Methods & save behaviour |
+| Client guidance | API integration notes |
+| Related references | Related |
+
 ## Models
 
 | Model | Purpose |
@@ -50,8 +61,8 @@ These are **denormalized caches** rebuilt on every `Patient.save()` for fast fil
 | Field | Type | Rebuilt by |
 | --- | --- | --- |
 | `geo_organization` | `FK → Organization` | Geographic/administrative org assignment |
-| `organization_cache` | `ArrayField[int]` | `rebuild_organization_cache()` — includes `geo_organization` parent chain and all linked `PatientOrganization` orgs |
-| `users_cache` | `ArrayField[int]` | `rebuild_users_cache()` — user IDs from `PatientUser` rows |
+| `organization_cache` | `ArrayField[int]` | `rebuild_organization_cache()`; includes `geo_organization` parent chain and all linked `PatientOrganization` orgs |
+| `users_cache` | `ArrayField[int]` | `rebuild_users_cache()`; user IDs from `PatientUser` rows |
 
 ### Identifiers & tags
 
@@ -105,8 +116,8 @@ value   → CharField(1024), indexed
 
 ### Age
 
-- `get_age() → str` — human-readable age (years, months, days) relative to `deceased_datetime` or now
-- `age → int` — whole years only
+- `get_age() → str`; human-readable age (years, months, days) relative to `deceased_datetime` or now
+- `age → int`; whole years only
 
 Both use `date_of_birth` when present, otherwise `year_of_birth` (January 1).
 
@@ -126,7 +137,7 @@ Integrators should expect **two write passes** when creating or updating patient
 - Patient records are exposed through Care's REST API and FHIR `Patient` resources; field names in API payloads may differ from Django model names.
 - Use `instance_identifiers` / `facility_identifiers` JSON for read-optimized identifier lookup; write through `PatientIdentifier` for consistency.
 - `extensions` is the supported place for custom key-value data without schema migrations.
-- `users_cache` and `organization_cache` are maintained by the platform — do not set them directly from clients.
+- `users_cache` and `organization_cache` are maintained by the platform. Do not set them directly from clients.
 
 ## Related
 

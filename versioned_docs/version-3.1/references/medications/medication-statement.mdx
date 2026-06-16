@@ -6,9 +6,7 @@ sidebar_position: 4
 
 Technical reference for the `MedicationStatement` module in Care EMR.
 
-A `MedicationStatement` records a medication the patient **is taking, has taken, or intends to take** — as *reported* (by the patient, a relative, or a clinician) rather than actively prescribed or dispensed. It aligns with the FHIR `MedicationStatement` resource.
-
-The Django model is the **storage** layer: `medication` and `effective_period` are opaque `JSONField`s whose real structure lives in the Pydantic **resource specs** (`care/emr/resources/medication/statement/`). The specs define the enums, the nested JSON shapes, validation, the value-set binding on `medication`, and the read/write API schemas. This page documents both.
+A `MedicationStatement` records a medication the patient **is taking, has taken, or intends to take**; as *reported* (by the patient, a relative, or a clinician) rather than actively prescribed or dispensed. It aligns with the FHIR `MedicationStatement` resource.
 
 **Source:**
 
@@ -16,17 +14,30 @@ The Django model is the **storage** layer: `medication` and `effective_period` a
 - Spec: [`care/emr/resources/medication/statement/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/statement/spec.py)
 - Value set: [`care/emr/resources/medication/valueset/medication.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/valueset/medication.py)
 
+## Quick reference
+
+| Need | Section |
+| --- | --- |
+| Models and ownership | Models |
+| Field definitions | `MedicationStatement` fields |
+| Allowed values | Enum values |
+| Structured payloads | Nested JSON shapes |
+| API contracts | Resource specs (API schema) |
+| Server behaviour | Methods & save behaviour |
+| Client guidance | API integration notes |
+| Related references | Related |
+
 ## Models
 
 | Model | Purpose |
 | --- | --- |
-| `MedicationStatement` | A record of a medication the patient is taking, has taken, or intends to take — as reported rather than actively prescribed |
+| `MedicationStatement` | A record of a medication the patient is taking, has taken, or intends to take; as reported rather than actively prescribed |
 
 `MedicationStatement` extends [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, audit fields `created_by`/`updated_by`, `created_date`/`modified_date`, `history`/`meta` JSON, and soft-delete semantics).
 
 ## `MedicationStatement` fields
 
-The **Type** column gives the Django storage type; the **Spec shape** column gives the structured shape enforced by the Pydantic resource spec when reading/writing over the API.
+The **Type** column gives the Django storage type, the **Spec shape** column gives the structured shape enforced by the Pydantic resource spec when reading/writing over the API.
 
 ### Statement details
 
@@ -44,7 +55,7 @@ The **Type** column gives the Django storage type; the **Spec shape** column giv
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `patient` | `FK → Patient` | `on_delete=CASCADE`. The patient the statement is about. Set server-side from the encounter — not accepted from clients. |
+| `patient` | `FK → Patient` | `on_delete=CASCADE`. The patient the statement is about. Set server-side from the encounter. Not accepted from clients. |
 | `encounter` | `FK → Encounter` | `on_delete=CASCADE`. The encounter in which the statement was recorded. Supplied as a UUID on create. |
 
 ```text
@@ -124,30 +135,30 @@ All specs subclass `EMRResource` (`care/emr/resources/base.py`), which provides 
 
 Key validation and server-maintained behaviour:
 
-- **`encounter` existence** — `MedicationStatementSpec.validate_encounter_exists` (a `field_validator` on `encounter`) raises `"Encounter not found"` unless an `Encounter` with that `external_id` exists.
-- **`patient` derived server-side** — `MedicationStatementSpec.perform_extra_deserialization` runs only on create (`is_update` false): it resolves the `Encounter` from the supplied UUID and sets `obj.patient = obj.encounter.patient`. Clients never send `patient`.
-- **Update is restricted** — `MedicationStatementUpdateSpec` only accepts `status`, `effective_period`, and `note`; `medication`, `reason`, `dosage_text`, `information_source`, and `encounter` are not updatable through it.
-- **Read serialization** — `MedicationStatementReadSpec.perform_extra_serialization` sets `id = obj.external_id`, `encounter = obj.encounter.external_id`, and serializes audit users via `serialize_audit_users` (`created_by`/`updated_by` as `UserSpec`).
-- **`medication` value-set check** — enforced at validation time on the `Coding.code` (see [Bound value set](#bound-value-set)).
-- **`effective_period` tz-awareness / ordering** — enforced by `PeriodSpec` (see [`PeriodSpec` shape](#periodspec-shape)).
+- **`encounter` existence**: `MedicationStatementSpec.validate_encounter_exists` (a `field_validator` on `encounter`) raises `"Encounter not found"` unless an `Encounter` with that `external_id` exists.
+- **`patient` derived server-side**: `MedicationStatementSpec.perform_extra_deserialization` runs only on create (`is_update` false): it resolves the `Encounter` from the supplied UUID and sets `obj.patient = obj.encounter.patient`. Clients never send `patient`.
+- **Update is restricted**: `MedicationStatementUpdateSpec` only accepts `status`, `effective_period`, and `note`; `medication`, `reason`, `dosage_text`, `information_source`, and `encounter` are not updatable through it.
+- **Read serialization**: `MedicationStatementReadSpec.perform_extra_serialization` sets `id = obj.external_id`, `encounter = obj.encounter.external_id`, and serializes audit users via `serialize_audit_users` (`created_by`/`updated_by` as `UserSpec`).
+- **`medication` value-set check**: enforced at validation time on the `Coding.code` (see [Bound value set](#bound-value-set)).
+- **`effective_period` tz-awareness / ordering**: enforced by `PeriodSpec` (see [`PeriodSpec` shape](#periodspec-shape)).
 
-There is **no** `status_history` on this resource — status is a single current value, not an appended log.
+There is **no** `status_history` on this resource; status is a single current value, not an appended log.
 
 ## Methods & save behaviour
 
-- Inherited from [`EMRBaseModel`](../foundation/base-model.mdx): `external_id` (UUID), audit fields, soft delete. Deletes are soft — a removed statement is retained with `deleted=True` and hidden by the default manager.
+- Inherited from [`EMRBaseModel`](../foundation/base-model.mdx): `external_id` (UUID), audit fields, soft delete. Deletes are soft, a removed statement is retained with `deleted=True` and hidden by the default manager.
 - Create flow: client sends `MedicationStatementSpec` → `de_serialize` copies scalar/JSON fields → `perform_extra_deserialization` resolves `encounter` and back-fills `patient` → model saved.
 - Read flow: `MedicationStatementReadSpec.serialize(obj)` copies fields, then `perform_extra_serialization` injects `id`, `encounter` (as UUIDs) and audit users.
 
 ## API integration notes
 
 - Exposed through Care's REST API, aligned with FHIR `MedicationStatement`. Use the spec field names above for payloads.
-- `medication` is a single SNOMED CT `Coding` object whose `code` must be in the `system-medication` value set — **not** a free CodeableConcept and not a scalar string.
+- `medication` is a single SNOMED CT `Coding` object whose `code` must be in the `system-medication` value set; **not** a free CodeableConcept and not a scalar string.
 - `effective_period` datetimes must be timezone-aware and ordered (`start ≤ end`).
 - `encounter` is supplied as a UUID; `patient` is derived from it server-side and must not be sent.
 - Updates go through `MedicationStatementUpdateSpec` and can only change `status`, `effective_period`, and `note`.
 - `information_source` distinguishes a self-reported or third-party statement from an actively managed prescription ([`MedicationRequest`](medication-request.mdx)).
-- `external_id` (UUID), `created_by`/`updated_by`, `created_date`/`modified_date`, `history`, and `meta` are platform-maintained — do not set them directly from clients.
+- `external_id` (UUID), `created_by`/`updated_by`, `created_date`/`modified_date`, `history`, and `meta` are platform-maintained. Do not set them directly from clients.
 
 ## Related
 

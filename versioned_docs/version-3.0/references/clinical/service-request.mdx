@@ -10,9 +10,21 @@ Technical reference for the `ServiceRequest` module in Care EMR.
 - Model: [`care/emr/models/service_request.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/service_request.py)
 - Resource spec: [`care/emr/resources/service_request/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/service_request/spec.py)
 
-A service request is an order or proposal to perform some action — clinical or otherwise — for a patient (FHIR `ServiceRequest`). It can drive the creation of specimens, diagnostic reports, observations, and procedures, all of which link back to the originating request. Care implements a minimal subset of the FHIR spec.
+A service request is an order or proposal to perform some action; clinical or otherwise; for a patient (FHIR `ServiceRequest`). It can drive the creation of specimens, diagnostic reports, observations, and procedures, all of which link back to the originating request. Care implements a minimal subset of the FHIR spec.
 
-The Django model is the **storage** layer: several columns are opaque `JSONField`s and free-text `CharField`s whose real structure and allowed values live in the **Pydantic resource specs** (`care/emr/resources/service_request/spec.py`). The specs define the enums, the bound value sets, the coded-field shapes, and the read/write API schemas. This page documents both.
+## Quick reference
+
+| Need | Section |
+| --- | --- |
+| Models and ownership | Models |
+| Field definitions | `ServiceRequest` fields |
+| Allowed values | Enums |
+| Structured payloads | Bound value sets |
+| Relationships | Related models |
+| API contracts | Resource specs (API schema) |
+| Server behaviour | Methods & save behaviour |
+| Client guidance | API integration notes |
+| Related references | Related |
 
 ## Models
 
@@ -20,7 +32,7 @@ The Django model is the **storage** layer: several columns are opaque `JSONField
 | --- | --- |
 | `ServiceRequest` | An order or proposal to perform an action for a patient |
 
-`ServiceRequest` extends `EMRBaseModel` (shared Care EMR base with `external_id`, audit fields `created_by`/`updated_by`, `created_date`/`modified_date`, `meta`, and soft-delete semantics — see [Base model](../foundation/base-model.mdx)).
+`ServiceRequest` extends `EMRBaseModel` (shared Care EMR base with `external_id`, audit fields `created_by`/`updated_by`, `created_date`/`modified_date`, `meta`, and soft-delete semantics. See [Base model](../foundation/base-model.mdx)).
 
 ## `ServiceRequest` fields
 
@@ -28,7 +40,7 @@ The Django model is the **storage** layer: several columns are opaque `JSONField
 
 | Field | Model type | Spec type / shape | Notes |
 | --- | --- | --- | --- |
-| `title` | `CharField(1024)` | `str` | Human-readable summary. Required on create; optional on update. |
+| `title` | `CharField(1024)` | `str` | Human-readable summary. Required on create. Optional on update. |
 | `category` | `CharField(255)` | `ActivityDefinitionCategoryOptions` enum | Coded category. Required on create. See [category values](#category-values). |
 | `status` | `CharField(255)` | `ServiceRequestStatusChoices` enum | Lifecycle status. Required on create. See [status values](#status-values). |
 | `intent` | `CharField(255)` | `ServiceRequestIntentChoices` enum | Required on create. See [intent values](#intent-values). |
@@ -61,19 +73,19 @@ A bound `Coding` (`ValueSetBoundCoding`) has the shape:
 | Field | Model type | Spec type | Notes |
 | --- | --- | --- | --- |
 | `facility` | `FK → facility.Facility` | (not in write spec) | Owning facility. `PROTECT`. Set server-side from request context. |
-| `patient` | `FK → emr.Patient` | (derived) | Subject of the request. `CASCADE`. Not accepted from clients — set server-side from `encounter.patient` on create. |
+| `patient` | `FK → emr.Patient` | (derived) | Subject of the request. `CASCADE`. Not accepted from clients; set server-side from `encounter.patient` on create. |
 | `encounter` | `FK → emr.Encounter` (nullable) | `UUID4` (create only) | Encounter the request was created in. `CASCADE`. Required (UUID) on `Create`; resolved via `get_object_or_404`. Read back as a serialized encounter dict. |
 | `healthcare_service` | `FK → emr.HealthcareService` (nullable) | `UUID4 \| None` | Service fulfilling the request. `PROTECT`. Write accepts `external_id`; resolved server-side. Excluded from base serialize; returned only on `Retrieve`. |
 | `activity_definition` | `FK → emr.ActivityDefinition` (nullable) | (read only) | Template the request was created from. `PROTECT`. Serialized only on `Retrieve`. |
 | `requester` | `FK → users.User` (nullable) | `UUID4 \| None` (write) / `dict \| None` (read) | User who placed the request. `CASCADE`. Write accepts `external_id`; read returns a cached `UserSpec` dict. |
 | `locations` | `ArrayField[int]` | `list[UUID4]` (write) / `list[dict]` (read) | Facility-location IDs the request applies to. Model default `[]`. Write accepts location `external_id`s (stored on `obj._locations` for the manager to persist); serialized as `FacilityLocationListSpec` dicts only on `Retrieve`. |
-| `tags` | `ArrayField[int]` | `list[dict]` (read) | Tag IDs. Model default `[]`. Rendered via `SingleFacilityTagManager().render_tags(obj)` on read; not set directly from the write spec. |
+| `tags` | `ArrayField[int]` | `list[dict]` (read) | Tag IDs. Model default `[]`. Rendered via `SingleFacilityTagManager().render_tags(obj)` on read. Not set directly from the write spec. |
 
 ## Enums
 
 ### Status values
 
-`ServiceRequestStatusChoices` — note values are **snake_case**, not hyphenated FHIR codes.
+`ServiceRequestStatusChoices`; note values are **snake_case**, not hyphenated FHIR codes.
 
 | Value | Meaning |
 | --- | --- |
@@ -132,11 +144,11 @@ Coded `Coding` fields validate their `code` against a registered Care value set 
 | Field | Value set slug | Composition |
 | --- | --- | --- |
 | `code` | `activity-definition-procedure-code` | SNOMED CT `is-a 71388002` (Procedure). See [`activity_definition/valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/activity_definition/valueset.py). |
-| `body_site` | `system-body-site-observation` | SNOMED CT — explicit limb/joint concepts plus `is-a 442083009`. See [`observation/valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/observation/valueset.py). |
+| `body_site` | `system-body-site-observation` | SNOMED CT; explicit limb/joint concepts plus `is-a 442083009`. See [`observation/valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/observation/valueset.py). |
 
 ## Resource specs (API schema)
 
-All specs subclass `EMRResource` (`serialize` / `de_serialize`, `perform_extra_serialization` / `perform_extra_deserialization` hooks — see [Base model](../foundation/base-model.mdx)). `__model__ = ServiceRequest`; `__exclude__ = ["encounter", "healthcare_service", "locations"]` on the base, so those three are handled only by the explicit per-spec hooks.
+All specs subclass `EMRResource` (`serialize` / `de_serialize`, `perform_extra_serialization` / `perform_extra_deserialization` hooks. See [Base model](../foundation/base-model.mdx)). `__model__ = ServiceRequest`; `__exclude__ = ["encounter", "healthcare_service", "locations"]` on the base, so those three are handled only by the explicit per-spec hooks.
 
 | Spec class | Role | Adds / overrides |
 | --- | --- | --- |
@@ -151,40 +163,40 @@ All specs subclass `EMRResource` (`serialize` / `de_serialize`, `perform_extra_s
 
 - `healthcare_service` (when provided): looked up by `external_id` and assigned.
 - `requester` (when provided): looked up by `external_id` via `get_object_or_404(User, ...)`.
-- `locations`: the list of UUIDs is stored on `obj._locations`; the persisting view/manager translates them to integer IDs for the `locations` array.
-- **Create only:** `encounter` is required and fetched via `get_object_or_404(Encounter, ...)`, then `obj.patient` is forced to `encounter.patient` — clients cannot set `patient` directly.
+- `locations`: the list of UUIDs is stored on `obj._locations`, the persisting view/manager translates them to integer IDs for the `locations` array.
+- **Create only:** `encounter` is required and fetched via `get_object_or_404(Encounter, ...)`, then `obj.patient` is forced to `encounter.patient`. Clients cannot set `patient` directly.
 
 ### Read-side behaviour (`perform_extra_serialization`)
 
-- `id` is set to `external_id`; `encounter` is serialized with `EncounterListSpec`; `tags` come from `SingleFacilityTagManager().render_tags(obj)`; `requester` (if set) is a cached `UserSpec`.
-- **Retrieve only:** queries `FacilityLocation` for `obj.locations`; serializes `healthcare_service` and `activity_definition` if present; fetches related `Specimen` and `DiagnosticReport` rows that reference this request; embeds the patient (`PatientRetrieveSpec`, scoped to `obj.facility`) under `encounter.patient`; and attaches audit users.
+- `id` is set to `external_id`. `encounter` is serialized with `EncounterListSpec`, `tags` come from `SingleFacilityTagManager().render_tags(obj)`, and `requester` (if set) is a cached `UserSpec`.
+- **Retrieve only:** queries `FacilityLocation` for `obj.locations`, serializes `healthcare_service` and `activity_definition` if present, fetches related `Specimen` and `DiagnosticReport` rows that reference this request, embeds the patient (`PatientRetrieveSpec`, scoped to `obj.facility`) under `encounter.patient`, and attaches audit users.
 
 ## Methods & save behaviour
 
 - `ServiceRequest` inherits `save`, soft-delete, and audit behaviour from `EMRBaseModel` (see [Base model](../foundation/base-model.mdx)). No custom `save` override is defined on the model.
-- All write validation (enums, required `code`, bound value sets, encounter requirement) is enforced by the Pydantic write specs during `de_serialize`, not by Django field choices — the DB columns are plain `CharField`/`JSONField`.
+- All write validation (enums, required `code`, bound value sets, encounter requirement) is enforced by the Pydantic write specs during `de_serialize`, not by Django field choices. The Django columns are plain `CharField`/`JSONField`.
 - `patient` is never accepted from the client; it is derived from `encounter.patient` on create.
-- Related `Specimen` and `DiagnosticReport` records reference the request via their own `service_request` FK; the request's detail view (`Retrieve`) reads them back rather than storing them.
+- Related `Specimen` and `DiagnosticReport` records reference the request via their own `service_request` FK, the request's detail view (`Retrieve`) reads them back rather than storing them.
 
 ## API integration notes
 
 - `ServiceRequest` is exposed through Care's REST API and aligns with FHIR `ServiceRequest`, but field/enum spellings follow Care conventions: status/intent/priority are **snake_case** enum values and `occurance` keeps its model typo.
-- `code` is **required** and `body_site` optional; both are single `Coding` objects validated against their bound value sets — not `CodeableConcept`.
+- `code` is **required** and `body_site` optional; both are single `Coding` objects validated against their bound value sets. Not `CodeableConcept`.
 - `category`, `status`, `intent`, and `priority` are validated as enums by the spec even though the columns are free `CharField`s.
-- Write `healthcare_service`, `requester`, and `locations` as `external_id`/UUIDs; the server resolves them. `encounter` (UUID) is required on create and determines the patient.
-- `locations` and `tags` store ID arrays for fast filtering — drive them through the location/tag managers rather than setting the raw arrays from clients.
+- Write `healthcare_service`, `requester`, and `locations` as `external_id`/UUIDs, the server resolves them. `encounter` (UUID) is required on create and determines the patient.
+- `locations` and `tags` store ID arrays for fast filtering; drive them through the location/tag managers rather than setting the raw arrays from clients.
 
 ## Related models
 
-- [Activity Definition](./activity-definition.mdx) — template a request can be created from; supplies the `category` enum and `code` value set
-- [Encounter](./encounter.mdx) — required context on create; supplies the patient
-- [Patient](./patient) — subject, derived from the encounter
-- [Specimen](./specimen.mdx) — specimens collected for a request
-- [Diagnostic Report](./diagnostic-report.mdx) — reports produced for a request
-- [Observation](./observation.mdx) — shares the body-site value set
-- [Healthcare Service](../facility/healthcare-service.mdx) — service fulfilling the request
-- [Location](../facility/location.mdx) — facility locations the request applies to
-- [User](../access/user.mdx) — requester / audit users
+- [Activity Definition](./activity-definition.mdx); template a request can be created from; supplies the `category` enum and `code` value set
+- [Encounter](./encounter.mdx). Required context on create; supplies the patient
+- [Patient](./patient); subject, derived from the encounter
+- [Specimen](./specimen.mdx); specimens collected for a request
+- [Diagnostic Report](./diagnostic-report.mdx); reports produced for a request
+- [Observation](./observation.mdx); shares the body-site value set
+- [Healthcare Service](../facility/healthcare-service.mdx); service fulfilling the request
+- [Location](../facility/location.mdx); facility locations the request applies to
+- [User](../access/user.mdx); requester / audit users
 
 ## Related
 

@@ -12,7 +12,18 @@ Technical reference for the `Schedule` module in Care EMR.
 
 A schedule is a repeatable block of time during which a resource (a practitioner, location, or healthcare service) is available for booking. A schedule carries one or more **availabilities** that describe how that time is broken into slots, and **exceptions** that block out specific dates.
 
-The **Django model** (`care/emr/models/scheduling/schedule.py`) is the storage layer — including the opaque `Availability.availability` `JSONField`. The **Pydantic resource specs** (`care/emr/resources/scheduling/...`) are the API/implementation layer: they define the enums, the real shape of that JSON field, validation rules, and the read/write schemas. Everything below the `## Models` section reflects the specs.
+## Quick reference
+
+| Need | Section |
+| --- | --- |
+| Models and ownership | Models |
+| Field definitions | `Schedule` fields |
+| Allowed values | Enums |
+| Relationships | Related models |
+| API contracts | Resource specs (API schema) |
+| Server behaviour | Methods & save behaviour |
+| Client guidance | API integration notes |
+| Related references | Related |
 
 ## Models
 
@@ -23,7 +34,7 @@ The **Django model** (`care/emr/models/scheduling/schedule.py`) is the storage l
 | `Availability` | Slot configuration for a schedule (slot size, tokens, weekly recurrence) |
 | `AvailabilityException` | A date/time range that blocks a resource (leave, holidays) |
 
-All models extend [`EMRBaseModel`](../foundation/base-model.mdx) — the shared Care EMR base providing `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON.
+All models extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base providing `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON.
 
 ## `Schedule` fields
 
@@ -49,7 +60,7 @@ Both charge links are managed only through the `set_charge_item_definition` acti
 
 ### `SchedulableResourceTypeOptions`
 
-The discriminator for what kind of entity a schedule/exception is attached to. Sent as `resource_type` on write; the matching `resource_id` is the `external_id` of that entity.
+The discriminator for what kind of entity a schedule/exception is attached to. Sent as `resource_type` on write, the matching `resource_id` is the `external_id` of that entity.
 
 | Value | Resolves to |
 | --- | --- |
@@ -73,7 +84,7 @@ Type of an individual `Availability` block (`Availability.slot_type` on the mode
 
 ### `SchedulableResource`
 
-A bookable entity within a facility. Exactly one of `user`, `location`, or `healthcare_service` identifies the underlying resource; `resource_type` discriminates which. It is **never created directly via the API** — `Schedule` and `AvailabilityException` writes call `get_or_create_resource(resource_type, resource_id, facility)` server-side, validating that the target belongs to the facility.
+A bookable entity within a facility. Exactly one of `user`, `location`, or `healthcare_service` identifies the underlying resource; `resource_type` discriminates which. It is **never created directly via the API**; `Schedule` and `AvailabilityException` writes call `get_or_create_resource(resource_type, resource_id, facility)` server-side, validating that the target belongs to the facility.
 
 ```text
 facility            → FK Facility (CASCADE)
@@ -106,9 +117,9 @@ Defines how a schedule's time is divided into bookable slots. A schedule can hol
 | `tokens_per_slot` | `IntegerField` (nullable) | conditional | `int \| None`, `ge=1`. Capacity per slot. Required when `slot_type == appointment`; forced to `null` otherwise |
 | `create_tokens` | `BooleanField` | no | Default `False`. When `True`, a token is issued for each booking (queue/token workflows) |
 | `reason` | `TextField` (nullable) | no | Spec default `""` |
-| `availability` | `JSONField`, default `dict` | yes | **Not a dict** — the spec models it as a `list[AvailabilityDateTimeSpec]` (weekly recurrence). See below |
+| `availability` | `JSONField`, default `dict` | yes | **Not a dict**, the spec models it as a `list[AvailabilityDateTimeSpec]` (weekly recurrence). See below |
 
-#### `availability` JSON shape — `AvailabilityDateTimeSpec`
+#### `availability` JSON shape; `AvailabilityDateTimeSpec`
 
 Each entry is one weekly recurrence window. The `JSONField` stores a **list** of these objects.
 
@@ -123,11 +134,11 @@ AvailabilityDateTimeSpec {
 Validation on the list (`AvailabilityForScheduleSpec.validate_availability` + `validate_for_slot_type`):
 - For every entry, `start_time < end_time` (strict).
 - No two entries on the **same** `day_of_week` may overlap (`has_overlapping_availability`: ranges overlap when `a.start ≤ b.end and b.start ≤ a.end`). Overlap is checked across all availabilities of the same schedule on create.
-- When `slot_type == appointment`: `slot_size_in_minutes` and `tokens_per_slot` are mandatory; each window's duration must be an exact multiple of `slot_size_in_minutes`; and the resulting slot count must not exceed `settings.MAX_SLOTS_PER_AVAILABILITY` (default **30**).
+- When `slot_type == appointment`: `slot_size_in_minutes` and `tokens_per_slot` are mandatory. Each window's duration must be an exact multiple of `slot_size_in_minutes`, and the resulting slot count must not exceed `settings.MAX_SLOTS_PER_AVAILABILITY` (default **30**).
 
 ### `AvailabilityException`
 
-Blocks a resource for a date/time range regardless of its schedules — used for leave, holidays, or one-off closures.
+Blocks a resource for a date/time range regardless of its schedules; used for leave, holidays, or one-off closures.
 
 | Field | Type | Req. | Spec detail |
 | --- | --- | --- | --- |
@@ -147,23 +158,23 @@ All specs extend `EMRResource` ([`base.py`](https://github.com/ohcnetwork/care/b
 | --- | --- | --- |
 | `ScheduleBaseSpec` | shared | `id`, `is_public`. `__exclude__ = ["resource", "facility"]` |
 | `ScheduleCreateSpec` | write · create | `facility`, `name`, `valid_from`, `valid_to`, `availabilities: list[AvailabilityForScheduleSpec]`, `resource_type`, `resource_id`, `is_public`. Validates dates ≥ now, `valid_from ≤ valid_to`, and cross-availability non-overlap. `perform_extra_deserialization` stashes `facility`, `_resource_id`, `_resource_type`, and `availabilities` on the instance for the viewset |
-| `ScheduleUpdateSpec` | write · update | `name`, `valid_from`, `valid_to`, `is_public`. `perform_extra_deserialization` blocks narrowing validity that would drop allocated slots — compares `Sum(TokenSlot.allocated)` in the old vs new range and raises if they differ |
+| `ScheduleUpdateSpec` | write · update | `name`, `valid_from`, `valid_to`, `is_public`. `perform_extra_deserialization` blocks narrowing validity that would drop allocated slots; compares `Sum(TokenSlot.allocated)` in the old vs new range and raises if they differ |
 | `ScheduleReadSpec` | read · list + detail | All of the above plus `availabilities` (re-serialized from `Availability` rows), `resource_type`, `charge_item_definition` / `revisit_charge_item_definition` (full `ChargeItemDefinitionReadSpec` or `null`), `revisit_allowed_days`, `created_by`, `updated_by` |
 | `AvailabilityBaseSpec` | shared | `id`. `__exclude__ = ["schedule"]` |
 | `AvailabilityForScheduleSpec` | write/read (nested in schedule) | `name`, `slot_type`, `slot_size_in_minutes`, `tokens_per_slot`, `create_tokens`, `reason`, `availability: list[AvailabilityDateTimeSpec]`. Carries the availability + slot-type validators |
 | `AvailabilityCreateSpec` | write · create (standalone) | Adds `schedule: UUID4`; on create, re-checks overlap against all existing availabilities of that schedule |
-| `AvailabilityDateTimeSpec` | nested | `day_of_week` (le=6), `start_time`, `end_time` — the shape of the `availability` JSON field |
+| `AvailabilityDateTimeSpec` | nested | `day_of_week` (le=6), `start_time`, `end_time`, the shape of the `availability` JSON field |
 | `AvailabilityExceptionBaseSpec` | shared | `id`, `reason`, `valid_from`, `valid_to`, `start_time`, `end_time`. `__exclude__ = ["resource", "facility"]` |
 | `AvailabilityExceptionWriteSpec` | write · create/upsert | Adds `facility`, `resource_type`, `resource_id`. Validates dates ≥ today and `valid_from ≤ valid_to`; stashes `_resource_type`/`_resource_id` |
 | `AvailabilityExceptionReadSpec` | read · list + detail | Base fields; `perform_extra_serialization` maps `id` → `external_id` |
-| `ChargeItemDefinitionSetSpec` | write (action body) | `charge_item_definition: str \| None`, `re_visit_allowed_days: int`, `re_visit_charge_item_definition: str \| None` — body for `POST .../set_charge_item_definition` (charge fields resolved by `slug` within the facility) |
+| `ChargeItemDefinitionSetSpec` | write (action body) | `charge_item_definition: str \| None`, `re_visit_allowed_days: int`, `re_visit_charge_item_definition: str \| None`; body for `POST .../set_charge_item_definition` (charge fields resolved by `slug` within the facility) |
 
 ### Server-maintained behaviour (viewset hooks)
 
 - **Resource resolution.** On schedule/exception create, `get_or_create_resource(resource_type, resource_id, facility)` validates the target is in the facility (practitioner must be a `FacilityOrganizationUser`; location/healthcare-service must belong to the facility) and gets-or-creates the `SchedulableResource`. `facility` is injected from the URL via `clean_create_data`.
 - **Nested availability create.** `ScheduleViewSet.perform_create` (atomic) sets `resource`, saves the schedule, then de-serializes and saves each `availability` linked to it.
-- **Charge items.** `revisit_allowed_days`, `charge_item_definition`, and `revisit_charge_item_definition` are set **only** through the `set_charge_item_definition` detail action — never the create/update body.
-- **Locking + slot guards.** Update/destroy take a `Lock("booking:resource:<id>")`. Deleting a schedule or availability is rejected if future allocated `TokenSlot`s exist; otherwise availabilities and slots are soft-deleted (`deleted=True`).
+- **Charge items.** `revisit_allowed_days`, `charge_item_definition`, and `revisit_charge_item_definition` are set **only** through the `set_charge_item_definition` detail action. Never the create/update body.
+- **Locking + slot guards.** Update/destroy take a `Lock("booking:resource:<id>")`. Deleting a schedule or availability is rejected if future allocated `TokenSlot`s exist. Otherwise availabilities and slots are soft-deleted (`deleted=True`).
 - **Exception slot clearing.** Creating an `AvailabilityException` soft-deletes overlapping `TokenSlot`s, but rejects the request if any of them are already allocated ("There are bookings during this exception").
 - **List requires resource.** `Schedule` and `AvailabilityException` list endpoints require `resource_type` and `resource_id` query params and scope results to that `SchedulableResource`.
 
@@ -176,8 +187,8 @@ All specs extend `EMRResource` ([`base.py`](https://github.com/ohcnetwork/care/b
 ## API integration notes
 
 - Schedules, availabilities, and exceptions are exposed through Care's REST API; slot generation is derived from `Availability` rather than stored as rows.
-- A `SchedulableResource` is the join point for booking — clients send `resource_type` + `resource_id`; resolve the underlying `user`, `location`, or `healthcare_service` via `resource_type` rather than assuming one is set.
-- `ChargeItemDefinition` links are `PROTECT` — a definition referenced by a schedule cannot be deleted while the schedule exists.
+- A `SchedulableResource` is the join point for booking. Clients send `resource_type` + `resource_id`; resolve the underlying `user`, `location`, or `healthcare_service` via `resource_type` rather than assuming one is set.
+- `ChargeItemDefinition` links are `PROTECT`, a definition referenced by a schedule cannot be deleted while the schedule exists.
 - `availability` on `Availability` is a JSON **list** of weekly recurrence windows (`AvailabilityDateTimeSpec`); treat it as the canonical source for which days/times the block covers.
 - `create_tokens` and `tokens_per_slot` drive token/queue behaviour for high-volume, precision-optional workflows; `appointment` slot types are for time-precise booking and must divide each window evenly (≤ `MAX_SLOTS_PER_AVAILABILITY`, default 30).
 

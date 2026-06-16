@@ -6,12 +6,23 @@ sidebar_position: 10
 
 Technical reference for the `Specimen` module in Care EMR.
 
-The Django model (`care/emr/models/specimen.py`) is the **storage layer** — several fields are opaque `JSONField`s whose real structure is defined only in the Pydantic **resource specs** (`care/emr/resources/specimen/`). The specs define the enums, the nested JSON shapes, coded value-set bindings, validation, and the read/write API schemas. This page documents both layers.
-
 **Source:**
 - Model: [`care/emr/models/specimen.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/specimen.py)
 - Resource specs: [`care/emr/resources/specimen/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/specimen/spec.py), [`valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/specimen/valueset.py)
 - Viewset: [`care/emr/api/viewsets/specimen.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/specimen.py)
+
+## Quick reference
+
+| Need | Section |
+| --- | --- |
+| Models and ownership | Models |
+| Field definitions | `Specimen` fields |
+| Allowed values | Enums |
+| Structured payloads | Nested JSON specs |
+| Relationships | Related models |
+| API contracts | Resource specs (API schema) |
+| Client guidance | API integration notes |
+| Related references | Related |
 
 ## Models
 
@@ -28,18 +39,18 @@ The Django model (`care/emr/models/specimen.py`) is the **storage layer** — se
 | Field | Model type | Spec shape / values | Notes |
 | --- | --- | --- | --- |
 | `accession_identifier` | `CharField(255)`, `db_index=True` | `str`, default `""` | Lab accession/barcode identifier; indexed for lookup. Spec default is empty string (not required on write). |
-| `status` | `CharField(20)` | `SpecimenStatusOptions` enum | Specimen status. Required on base/create; optional on update. See [status values](#specimenstatusoptions-values). |
-| `specimen_type` | `JSONField` | `Coding` bound to value set `system-specimen_type-code` | Kind of material collected (single coding). Required on base/create; optional on update. |
+| `status` | `CharField(20)` | `SpecimenStatusOptions` enum | Specimen status. Required on base/create. Optional on update. See [status values](#specimenstatusoptions-values). |
+| `specimen_type` | `JSONField` | `Coding` bound to value set `system-specimen_type-code` | Kind of material collected (single coding). Required on base/create. Optional on update. |
 
 ### Clinical links
 
 | Field | Model type | Notes |
 | --- | --- | --- |
 | `facility` | `FK → Facility` | `PROTECT`, nullable; facility the specimen belongs to. Excluded from all specs (`__exclude__`). |
-| `patient` | `FK → Patient` | `CASCADE`; the patient the specimen was collected from. Set on create via `subject_patient` (UUID). |
+| `patient` | `FK → Patient` | `CASCADE`, the patient the specimen was collected from. Set on create via `subject_patient` (UUID). |
 | `encounter` | `FK → Encounter` | `CASCADE`, nullable; encounter during collection. Set on create via `subject_encounter` (UUID). |
-| `service_request` | `FK → ServiceRequest` | `CASCADE`, nullable; the order this specimen fulfills. Set on create via `request` (UUID); excluded from base/read field copy. |
-| `specimen_definition` | `FK → SpecimenDefinition` | `CASCADE`, nullable; the definition/template this specimen was derived from. |
+| `service_request` | `FK → ServiceRequest` | `CASCADE`, nullable, the order this specimen fulfills. Set on create via `request` (UUID); excluded from base/read field copy. |
+| `specimen_definition` | `FK → SpecimenDefinition` | `CASCADE`, nullable, the definition/template this specimen was derived from. |
 
 ### Collection & processing
 
@@ -59,7 +70,7 @@ The Django model (`care/emr/models/specimen.py`) is the **storage layer** — se
 
 | Value | Meaning |
 | --- | --- |
-| `draft` | Care-specific; not from FHIR |
+| `draft` | Care-specific. Not from FHIR |
 | `available` | Specimen available for testing |
 | `unavailable` | Specimen no longer available |
 | `unsatisfactory` | Specimen unsuitable for testing |
@@ -166,19 +177,19 @@ All specs extend `EMRResource` (`care/emr/resources/base.py`), which provides `s
 | `SpecimenReadSpec` | read · list | Adds `specimen_definition: dict \| None`. `perform_extra_serialization` sets `id = external_id` and, when present, embeds the linked specimen definition via `SpecimenDefinitionReadSpec.serialize(...).to_json()`. |
 | `SpecimenRetrieveSpec` | read · detail | Extends `SpecimenReadSpec`, adds `service_request: dict \| None`; serialization additionally embeds the linked service request via `ServiceRequestReadSpec.serialize(...).to_json()`. |
 
-Nested specs (defined in the same module): `CollectionSpec`, `ProcessingSpec`, `QuantitySpec`, `DurationSpec` — see [Nested JSON specs](#nested-json-specs).
+Nested specs (defined in the same module): `CollectionSpec`, `ProcessingSpec`, `QuantitySpec`, `DurationSpec`. See [Nested JSON specs](#nested-json-specs).
 
 ### Validation & server behaviour
 
 - **User references resolved & validated**: `collection.collector` and `processing[].performer` must reference existing users (by `external_id`); serialization injects fully resolved `collector_object` / `performer_object` (cached `UserSpec`).
-- **Coded fields validated against value sets** at write time (`ValueSetBoundCoding`) — an unbound/invalid `code` is rejected.
+- **Coded fields validated against value sets** at write time (`ValueSetBoundCoding`), an unbound/invalid `code` is rejected.
 - **Read specs embed related resources** (specimen definition on list/detail; service request on detail) as nested JSON rather than bare IDs.
 - The base spec does **not** override `perform_extra_deserialization`, so no `status_history`-style server-side history is appended on write for this resource (unlike some other clinical resources).
 
 ## API integration notes
 
 - Aligned with the FHIR `Specimen` resource; Care API field names differ in places (e.g. `subject_patient` / `subject_encounter` / `request` on create map to the `patient` / `encounter` / `service_request` FKs).
-- The viewset (`SpecimenViewSet`) mixes in **retrieve** and **update** only (`EMRRetrieveMixin`, `EMRUpdateMixin`) — it exposes read/detail/list and update, with `pydantic_model = BaseSpecimenSpec`, `pydantic_update_model = SpecimenUpdateSpec`, `pydantic_read_model = SpecimenReadSpec`, `pydantic_retrieve_model = SpecimenRetrieveSpec`.
+- The viewset (`SpecimenViewSet`) mixes in **retrieve** and **update** only (`EMRRetrieveMixin`, `EMRUpdateMixin`); it exposes read/detail/list and update, with `pydantic_model = BaseSpecimenSpec`, `pydantic_update_model = SpecimenUpdateSpec`, `pydantic_read_model = SpecimenReadSpec`, `pydantic_retrieve_model = SpecimenRetrieveSpec`.
 - Filtering: `accession_identifier` (`icontains`); ordering on `created_date` / `modified_date`.
 - Custom action `POST retrieve_by_accession_identifier` looks a specimen up by `accession_identifier` (must be ≥ 5 chars); raises a validation error on multiple/no matches and returns a `SpecimenRetrieveSpec`.
 - Authorization: read via `can_read_specimen`, write via `can_write_specimen`, both keyed off the linked `service_request`.
