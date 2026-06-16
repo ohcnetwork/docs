@@ -6,9 +6,9 @@ sidebar_position: 3
 
 Technical reference for the `Permission` module in Care EMR.
 
-A permission is the ability to perform a single action in a given context — usually expressed as "Action on Resource" (for example, "Can Create Patient" in the `PATIENT` context). Permissions are the atomic building blocks of Care's security system: they are declared in code, synced into the database, grouped into [roles](./role.mdx), and bound to resources via [permission associations](./permission-association.mdx).
+A permission is the ability to perform a single action in a given context — usually expressed as "Action on Resource" (for example, "Can Create Patient" in the `PATIENT` context). Permissions are the atomic building blocks of Care's security system: code declares them, the sync command writes them into the database, [roles](./role.mdx) group them, and [permission associations](./permission-association.mdx) bind them to resources.
 
-The Django `PermissionModel` is the **storage** layer. The real implementation lives in two other places: the **permission registry** (`care/security/permissions/`), which declares every permission as a Python `enum` member with a `name`, `description`, `context`, and the default `roles` that hold it; and the Pydantic **resource specs** (`care/emr/resources/role/spec.py`), which define the read/write API schema. This doc covers all three.
+The Django `PermissionModel` is only the **storage** layer. The real implementation lives in two other places: the **permission registry** (`care/security/permissions/`), which declares every permission as a Python `enum` member with a `name`, `description`, `context`, and the default `roles` that hold it; and the Pydantic **resource specs** (`care/emr/resources/role/spec.py`), which define the read/write API schema. This doc covers all three.
 
 **Source:**
 
@@ -40,7 +40,7 @@ The Django `PermissionModel` is the **storage** layer. The real implementation l
 | `name` | `CharField(1024)` | yes | — | Human-readable display name (e.g. `"Can Create Patient"`). Sourced from the registry `Permission.name` |
 | `description` | `TextField` | no | `""` | Free-text explanation. Sourced from the registry `Permission.description`; many declared permissions ship with an empty description |
 | `context` | `CharField(1024)` | yes | — | The resource context the permission applies to. No DB-level `choices`, but values are always one of the `PermissionContext` enum strings below (set by the sync command from `Permission.context.value`) |
-| `temp_deleted` | `BooleanField` | no | `False` | Staging flag used by the sync command to mark permissions no longer present in the declared set before they are hard-deleted; distinct from the inherited `deleted` soft-delete flag |
+| `temp_deleted` | `BooleanField` | no | `False` | Staging flag the sync command uses to mark permissions no longer present in the declared set before hard-deleting them; distinct from the inherited `deleted` soft-delete flag |
 
 ### `context` values (`PermissionContext`)
 
@@ -111,7 +111,7 @@ There is **no** `PermissionCreateSpec`/`PermissionUpdateSpec` — permissions ar
 
 ### `PermissionSpec`
 
-`__model__ = PermissionModel`. A flat read schema with no extra serialization hooks (it inherits the base, which sets `id = external_id`):
+`__model__ = PermissionModel`. A flat read schema with no extra serialization hooks; it inherits the base, which sets `id = external_id`:
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -137,17 +137,17 @@ These lists let the frontend gate UI by capability without a separate authorizat
 
 ## Methods & save behaviour
 
-`PermissionModel` defines no custom `save()`, `delete()` override, validators, or signals beyond what it inherits from `BaseModel`. Soft-delete behaviour (`delete()` setting `deleted=True`) and the soft-delete-filtering default manager come from the base. The lifecycle is driven externally by the `sync_permissions_roles` command (see above), which uses `temp_deleted` as a staging flag and **hard-deletes** undeclared rows.
+`PermissionModel` defines no custom `save()`, `delete()` override, validators, or signals beyond what it inherits from `BaseModel`. Soft-delete behaviour (`delete()` setting `deleted=True`) and the soft-delete-filtering default manager both come from the base. The lifecycle is driven externally by the `sync_permissions_roles` command (see above), which uses `temp_deleted` as a staging flag and **hard-deletes** undeclared rows.
 
 `PermissionSpec` performs no extra serialization or deserialization; serialization is the base `serialize` flow plus the inherited `id = external_id` mapping.
 
 ## API integration notes
 
-- Permissions are **platform-maintained reference data**, declared in the permission registry and synced into this table by `sync_permissions_roles` — they are read-only over the API (`PermissionViewSet` exposes list + retrieve only).
+- Permissions are **platform-maintained reference data**, declared in the permission registry and synced into this table by `sync_permissions_roles`. They are read-only over the API — `PermissionViewSet` exposes list + retrieve only.
 - Reference a permission by its `slug`, which is stable, `unique`, and the API `lookup_field`; treat `external_id` as the opaque public ID and never expose the integer `pk`.
-- Permissions are not granted directly to users. They are collected into a [role](./role.mdx) (via `RolePermission`), and the role is bound to a resource (organization, patient, encounter, …) through a [permission association](./permission-association.mdx). Effective access is the union of active permissions across a user's role bindings.
+- Permissions are not granted directly to users. A [role](./role.mdx) collects them (via `RolePermission`), and a [permission association](./permission-association.mdx) binds that role to a resource (organization, patient, encounter, …). Effective access is the union of active permissions across a user's role bindings.
 - `context` is a `CharField` with no DB `choices`, but is always one of the `PermissionContext` enum strings; the mixins filter resource permissions by context, so the value is load-bearing.
-- When writing a role, the `permissions` field is constrained to known slugs via `PermissionController.get_enum()` — submitting an unknown slug fails validation. See [Role](./role.mdx).
+- When writing a role, `PermissionController.get_enum()` constrains the `permissions` field to known slugs — submitting an unknown slug fails validation. See [Role](./role.mdx).
 
 ## Related
 

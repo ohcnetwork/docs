@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Encounter
 
-An **encounter** in Care is a single interaction between a patient and a facility — a clinic visit, an admission, an emergency presentation, or a tele-consult. It is the episode that clinical work happens inside: observations, conditions, orders, medications, and notes are all recorded against an encounter, which in turn belongs to a [patient](../clinical/patient).
+An **encounter** in Care is a single interaction between a patient and a facility — a clinic visit, an admission, an emergency presentation, or a tele-consult. It is the episode that contains clinical work: observations, conditions, orders, medications, and notes are all recorded against an encounter, which in turn belongs to a [patient](../clinical/patient).
 
 ## What it represents
 
@@ -17,11 +17,11 @@ In Care's FHIR-aligned model, an encounter maps to the **Encounter** resource. I
 - **Care team** — the practitioners and their roles for this episode
 - **Context links** — the originating appointment, the patient's current location, and the organizations responsible for the encounter
 
-A patient is the long-lived record; an encounter is one chapter in it. One patient accumulates many encounters over time, and each encounter is the container that ties a specific episode of care together.
+A patient is the long-lived record; an encounter is one chapter in it. A single patient accumulates many encounters over time, and each encounter is the container that ties one episode of care together.
 
 ## Classification
 
-Every encounter is tagged with a **class** that describes the kind of contact:
+Every encounter carries a **class** that describes the kind of contact:
 
 | Class | Meaning |
 | --- | --- |
@@ -36,7 +36,7 @@ A **priority** (such as routine, urgent, emergency, or elective) records how tim
 
 ## Lifecycle
 
-An encounter moves through a status that reflects where the episode stands. The status history is preserved each time it changes:
+An encounter moves through a status that reflects where the episode stands. Care preserves the status history every time it changes:
 
 ```
 planned → in_progress → on_hold → discharged → completed
@@ -51,7 +51,7 @@ planned → in_progress → on_hold → discharged → completed
 - **discharged** — the patient has been discharged but paperwork may remain
 - **completed**, **cancelled**, **discontinued**, **entered_in_error** — terminal states that close the encounter
 
-Once an encounter reaches a terminal (closed) state, clinical data can no longer be written to it; reopening requires the appropriate permission.
+Once an encounter reaches a terminal (closed) state, no further clinical data can be written to it; reopening requires the appropriate permission.
 
 ## Relationships
 
@@ -61,11 +61,11 @@ An encounter sits at the centre of an episode of care and connects to:
 - **Facility** — where the interaction takes place
 - **Appointment** — the originating [scheduling](../scheduling/scheduling.mdx) booking, when one exists
 - **Location** — the patient's current [location](../facility/location.mdx) within the facility, with a full location history
-- **Organizations** — the facility [organizations](../facility/organization.mdx) responsible for the encounter, which drive who can access it
+- **Organizations** — the facility [organizations](../facility/organization.mdx) responsible for the encounter, which determine who can access it
 
 ## Permissions
 
-Access to encounters is governed by the encounter permission set. The complete set of permissions, what each allows, and the system roles that hold them by default:
+The encounter permission set governs access to encounters. The table below lists every permission, what it allows, and the system roles that hold it by default:
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
@@ -77,7 +77,7 @@ Access to encounters is governed by the encounter permission set. The complete s
 | Can Read encounter related clinical data | View clinical data recorded against the encounter | Admin, Doctor, Nurse, Facility Admin |
 | Can submit questionnaire about patient encounters | Submit questionnaire responses about a patient's encounters | Staff, Doctor, Nurse, Admin, Facility Admin |
 
-Roles are granted to users through facility-organization memberships, and access is scoped by the organization tree: a permission held at a parent organization cascades to its descendant organizations. A user can reach an encounter when they hold the relevant permission in any organization linked to that encounter — either through the encounter's responsible organizations or through the patient's current location. Writes are additionally blocked once an encounter is in a closed (terminal) state.
+Users receive roles through facility-organization memberships, and the organization tree scopes their access: a permission held at a parent organization cascades to its descendant organizations. A user can reach an encounter when they hold the relevant permission in any organization linked to that encounter — either through the encounter's responsible organizations or through the patient's current location. Writes are blocked once an encounter is in a closed (terminal) state.
 
 ## Related
 

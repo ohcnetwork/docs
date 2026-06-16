@@ -4,13 +4,13 @@ sidebar_position: 4
 
 # Allergy & Intolerance
 
-An **allergy or intolerance** records a patient's known risk of an adverse reaction to a substance — a food, a medication, an environmental trigger, or a biologic. It is part of the patient's longitudinal record and is meant to be checked before prescribing, ordering, or administering anything that could cause harm.
+An **allergy or intolerance** records a patient's known risk of an adverse reaction to a substance — a food, a medication, an environmental trigger, or a biologic. It lives in the patient's longitudinal record and is meant to be checked before prescribing, ordering, or administering anything that could cause harm.
 
 ## What it represents
 
 Each allergy or intolerance entry captures:
 
-- **The substance** — a coded allergen drawn from a curated SNOMED CT list, so the record can be matched against medications rather than read as free text
+- **The substance** — a coded allergen drawn from a curated SNOMED CT list, so the record matches against medications rather than reading as free text
 - **Whether it is an allergy or an intolerance** — an immune-mediated allergy versus a non-immune intolerance
 - **Category** — food, medication, environment, or biologic
 - **How certain and how serious it is** — a verification level (how confirmed the report is) and a criticality (the potential for harm)
@@ -18,7 +18,7 @@ Each allergy or intolerance entry captures:
 - **Timing** — when it started, when it was first recorded, and the most recent known reaction
 - **Context** — the encounter it was recorded in and an optional free-text clinical note
 
-An entry is always recorded in the context of an encounter, and the patient is derived from that encounter — you do not attach an allergy to a patient directly.
+An entry is always recorded in the context of an encounter, and the patient is derived from that encounter — you never attach an allergy to a patient directly.
 
 ## Lifecycle
 
@@ -32,7 +32,7 @@ active → inactive → resolved
 - **Inactive** — no longer thought to be relevant, but kept on the record
 - **Resolved** — the patient is no longer believed to have this allergy
 
-Alongside the clinical state, a **verification status** (unconfirmed, presumed, confirmed, refuted, or entered-in-error) records how trustworthy the assertion is — for example, a self-reported allergy may sit as `unconfirmed` until a clinician confirms it.
+Alongside the clinical state, a **verification status** (unconfirmed, presumed, confirmed, refuted, or entered-in-error) records how trustworthy the assertion is. A self-reported allergy, for instance, may sit as `unconfirmed` until a clinician confirms it.
 
 ## Types & classification
 
@@ -44,7 +44,7 @@ Alongside the clinical state, a **verification status** (unconfirmed, presumed, 
 
 - Every allergy belongs to a **patient** and is anchored to the **encounter** in which it was recorded.
 - The substance is a coded **value set** concept, which is what lets medication ordering and other business logic flag potential conflicts.
-- Because an allergy is tied to its patient and encounter, it never outlives them; moving an entry to a different encounter is handled by the platform as a maintained copy.
+- Because an allergy is tied to its patient and encounter, it never outlives them; the platform handles moving an entry to a different encounter as a maintained copy.
 
 ## Permissions
 
@@ -73,7 +73,7 @@ Allergy & Intolerance has no dedicated permission of its own. Access is governed
 | Can Read encounter related clinical data | Read clinical data recorded on an encounter, including allergies | Admin, Doctor, Nurse, Facility Admin |
 | Can submit questionnaire about patient encounters | Fill and submit questionnaires about an encounter | Staff, Doctor, Nurse, Admin, Facility Admin |
 
-Reading allergies requires "Can view clinical data about patients"; creating an entry requires "Can Update a Patient's data"; updating one requires "Update Encounter related clinical data" on its encounter. These roles are granted to users through organization, facility-organization, or direct patient memberships, and access is scoped by the organization tree — a permission held at a parent organization cascades to its descendants, so a user with the right role on a facility automatically reaches the patients and encounters beneath it.
+Reading allergies requires "Can view clinical data about patients"; creating an entry requires "Can Update a Patient's data"; updating one requires "Update Encounter related clinical data" on its encounter. Users receive these roles through organization, facility-organization, or direct patient memberships, and the organization tree scopes access — a permission held at a parent organization cascades to its descendants, so a user with the right role on a facility automatically reaches the patients and encounters beneath it.
 
 ## Related
 

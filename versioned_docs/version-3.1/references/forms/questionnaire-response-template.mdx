@@ -4,9 +4,9 @@ sidebar_position: 3
 
 # Questionnaire Response Template
 
-Technical reference for the `QuestionnaireResponseTemplate` module in Care EMR — a reusable, shareable template that pre-fills a [questionnaire response](./questionnaire-response.mdx) along with associated medication requests and activity definitions (a clinician's "favourite" / order set).
+Technical reference for the `QuestionnaireResponseTemplate` module in Care EMR — a reusable, shareable template that pre-fills a [questionnaire response](./questionnaire-response.mdx) along with its medication requests and activity definitions (a clinician's "favourite" / order set).
 
-The Django model is the **storage** layer; the Pydantic **resource specs** define the structured `template_data` payload, validation, and the read/write API schemas.
+The Django model is the **storage** layer. The Pydantic **resource specs** define the structured `template_data` payload, its validation, and the read/write API schemas.
 
 **Source:**
 - Model: [`care/emr/models/questionnaire.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/questionnaire.py)
@@ -18,7 +18,7 @@ The Django model is the **storage** layer; the Pydantic **resource specs** defin
 | --- | --- |
 | `QuestionnaireResponseTemplate` | A named template bundling pre-filled questionnaire answers, medication requests, and activity definitions, scoped to a facility/users/organizations |
 
-`QuestionnaireResponseTemplate` extends [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, audit fields, soft-delete, and `history`/`meta` JSON).
+`QuestionnaireResponseTemplate` extends [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base that provides `external_id`, audit fields, soft-delete, and `history`/`meta` JSON.
 
 ## `QuestionnaireResponseTemplate` fields
 
@@ -35,7 +35,7 @@ The Django model is the **storage** layer; the Pydantic **resource specs** defin
 
 ## `TemplateData` shape
 
-The real structure of the opaque `template_data` `JSONField` (`resources/questionnaire_response_template/spec.py`). Every section is optional; `available_keys` records which are populated.
+The concrete structure behind the opaque `template_data` `JSONField` (`resources/questionnaire_response_template/spec.py`). Every section is optional, and `available_keys` records which ones are populated.
 
 ```text
 TemplateData {
@@ -72,15 +72,15 @@ All specs extend `EMRResource` (`resources/base.py`).
 
 ### Validation & server-maintained behaviour
 
-- `validate_facility` (`model_validator(after)` on create): rejects facility organizations without a facility.
-- `available_keys` is derived on every create/update in `perform_extra_deserialization` — it lists the `template_data` keys whose value is non-empty. Clients should not set it directly.
-- Embedded `requested_product` and activity-definition `slug` are validated to exist (`ProductKnowledge`, `ActivityDefinition`) before save.
+- `validate_facility` (`model_validator(after)` on create) rejects facility organizations that have no facility.
+- `available_keys` is derived on every create/update in `perform_extra_deserialization`. It lists the `template_data` keys whose value is non-empty, and clients should not set it directly.
+- Before save, the embedded `requested_product` and activity-definition `slug` are validated to exist (`ProductKnowledge`, `ActivityDefinition`).
 
 ## API integration notes
 
-- This is a Care-specific authoring/convenience resource (not a FHIR resource): one template can seed a questionnaire response, medication requests, and activity-definition-driven service requests at once.
-- Sharing is controlled by `facility`, `facility_organizations`, and `users`; instance-wide templates leave `facility` null.
-- `available_keys` lets clients cheaply discover which sections a template carries without parsing `template_data`.
+- This is a Care-specific authoring convenience resource, not a FHIR resource: a single template can seed a questionnaire response, medication requests, and activity-definition-driven service requests at once.
+- `facility`, `facility_organizations`, and `users` control sharing. Instance-wide templates leave `facility` null.
+- `available_keys` lets clients discover which sections a template carries without parsing `template_data`.
 
 ## Related
 

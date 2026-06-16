@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # Condition
 
-A **condition** in Care records a clinical problem, diagnosis, or symptom for a patient — for example a chronic illness on the problem list, a diagnosis made during a visit, or a presenting complaint. It is part of the patient's longitudinal clinical record and is always captured in the context of an encounter. In the Care product UI conditions are surfaced as **Symptoms**.
+A **condition** in Care records a clinical problem, diagnosis, or symptom for a patient — a chronic illness on the problem list, a diagnosis made during a visit, or a presenting complaint. It belongs to the patient's longitudinal clinical record and is always captured in the context of an encounter. In the Care product UI, conditions appear as **Symptoms**.
 
 ## What it represents
 
@@ -17,11 +17,11 @@ A condition captures, in plain terms:
 - **When it started and stopped** — onset and abatement, given as a date, an age, or a description
 - **Where it belongs** — the patient it concerns and the encounter it was recorded in, plus an optional clinical note
 
-A condition is distinct from an allergy or an observation: it is a problem the patient *has*, recorded and tracked over time, rather than a measurement or a reaction.
+A condition differs from an allergy or an observation: it is a problem the patient *has*, recorded and tracked over time, rather than a measurement or a reaction.
 
 ## Classification
 
-Every condition is classified so it shows up in the right place in the record:
+Every condition is classified so it appears in the right place in the record:
 
 | Category | What it means |
 | --- | --- |
@@ -31,7 +31,7 @@ Every condition is classified so it shows up in the right place in the record:
 
 ## Lifecycle
 
-A condition's **clinical status** describes where the problem stands now, and its **verification status** describes how sure the clinician is. These move independently.
+A condition's **clinical status** describes where the problem stands now; its **verification status** describes how sure the clinician is. The two move independently.
 
 Clinical status:
 
@@ -49,18 +49,18 @@ unconfirmed → provisional → differential → confirmed
 (refuted or entered_in_error when ruled out or mistaken)
 ```
 
-Verification status must always be set; a condition is never recorded without saying how certain it is.
+Verification status must always be set; a condition is never recorded without stating how certain it is.
 
 ## Relationships
 
 - **Patient** — every condition belongs to one patient and forms part of their clinical history.
-- **Encounter** — a condition is always recorded within an encounter; Care derives the patient from that encounter, so clinicians never attach a condition to a patient directly.
+- **Encounter** — a condition is always recorded within an encounter. Care derives the patient from that encounter, so clinicians never attach a condition to a patient directly.
 
 Because the patient is taken from the encounter, conditions stay tied to the visit where they were documented while still rolling up into the patient's overall record.
 
 ## Permissions
 
-Conditions are clinical data. There is no separate "condition" permission — access is governed by the **patient** and **encounter** permission sets, since every condition lives inside an encounter for a patient. The complete set of permissions from both resources is listed below.
+Conditions are clinical data. There is no separate "condition" permission — access is governed by the **patient** and **encounter** permission sets, since every condition lives inside an encounter for a patient. The full set of permissions from both resources is listed below.
 
 ### Patient permissions
 

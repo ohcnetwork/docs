@@ -6,7 +6,7 @@ sidebar_position: 1
 
 Technical reference for the `FileUpload` resource in Care EMR.
 
-`FileUpload` is metadata for a file held in object storage (S3-compatible). The Django model is the **storage layer**: it persists the record and an opaque `meta` JSON column. The Pydantic **resource specs** in `care/emr/resources/file_upload/spec.py` are the API layer — they define the `file_type` / `file_category` enums, validate the upload, decide what the `meta` JSON holds (`mime_type`), and shape every read/write payload (including the derived `extension`, `signed_url`, and `read_signed_url` fields that do not exist as columns).
+`FileUpload` is metadata for a file held in object storage (S3-compatible). The Django model is the **storage layer**: it persists the record and an opaque `meta` JSON column. The Pydantic **resource specs** in `care/emr/resources/file_upload/spec.py` are the API layer. They define the `file_type` / `file_category` enums, validate the upload, decide what the `meta` JSON holds (`mime_type`), and shape every read/write payload — including the derived `extension`, `signed_url`, and `read_signed_url` fields, which have no backing columns.
 
 **Source:**
 - Model: [`care/emr/models/file_upload.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/file_upload.py)
@@ -53,7 +53,7 @@ Technical reference for the `FileUpload` resource in Care EMR.
 
 ### Storage manager
 
-`FileUpload` declares a class-level `files_manager = S3FilesManager(BucketType.PATIENT)`. This is not a database field — it is the object-storage helper used to generate signed write/read URLs and to `put_object`, all against the `PATIENT` bucket.
+`FileUpload` declares a class-level `files_manager = S3FilesManager(BucketType.PATIENT)`. This is not a database field — it is the object-storage helper that generates signed write/read URLs and runs `put_object`, all against the `PATIENT` bucket.
 
 ## Enums
 
@@ -84,7 +84,7 @@ File category (`spec.py`). String enum.
 
 ## Resource specs (API schema)
 
-All specs extend `EMRResource` (`care/emr/resources/base.py`) — `serialize` (DB → Pydantic) and `de_serialize` (Pydantic → DB), with `perform_extra_serialization` / `perform_extra_deserialization` hooks. `FileUpload` does **not** set `__store_metadata__`, so `mime_type` is moved in/out of `meta` explicitly by the hooks rather than the generic meta machinery.
+All specs extend `EMRResource` (`care/emr/resources/base.py`), which provides `serialize` (DB → Pydantic) and `de_serialize` (Pydantic → DB) along with the `perform_extra_serialization` / `perform_extra_deserialization` hooks. `FileUpload` does **not** set `__store_metadata__`, so the hooks move `mime_type` in and out of `meta` explicitly rather than relying on the generic meta machinery.
 
 | Spec | Role | Exposes / behaviour |
 | --- | --- | --- |
@@ -140,17 +140,17 @@ No field in these specs binds to a value set or uses `CodeableConcept` / `Period
 
 ### `get_extension()`
 
-Returns the file extension derived from `internal_name` via `parse_file_extension`, formatted as `.ext` (or `.tar.gz`-style multi-part), or `""` when none is found. Surfaced to clients as the `extension` read field.
+Returns the file extension derived from `internal_name` via `parse_file_extension`, formatted as `.ext` (or a multi-part form like `.tar.gz`), or `""` when none is found. Surfaced to clients as the `extension` read field.
 
 ### `save()` side effects
 
-On save, when `internal_name` is empty or the row is new (`not self.id`) and the caller has **not** passed `skip_internal_name=True`:
+On save, a random `internal_name` is generated when `internal_name` is empty or the row is new (`not self.id`) and the caller has **not** passed `skip_internal_name=True`:
 
 1. A random `internal_name` is generated as `uuid4() + int(time.time())`.
 2. If an extension can be derived, it is appended to that random name.
 3. `internal_name` is set before the row is persisted.
 
-This keeps the storage key free of the user-supplied `name`, limiting PII leakage if the bucket is compromised. The inline `upload-file` path calls `save(skip_internal_name=True)` after uploading so the generated key is preserved.
+Keeping the user-supplied `name` out of the storage key limits PII leakage if the bucket is compromised. The inline `upload-file` path calls `save(skip_internal_name=True)` after uploading to preserve the generated key.
 
 ## API integration notes
 
@@ -162,8 +162,8 @@ This keeps the storage key free of the user-supplied `name`, limiting PII leakag
 ### Server-maintained behaviour
 
 - `internal_name` is platform-maintained — never set it from clients; the model generates a random PII-free key.
-- `mime_type` lives in `meta`, not a column; it is written by `FileUploadCreateSpec` and read back during serialization. On the inline path it is **re-derived from file content** (`magic.from_buffer`) rather than trusting the client.
-- `associating_id` + `file_type` together link a file to its owning resource; `list` requires both as query params and only returns `upload_completed=True` rows.
+- `mime_type` lives in `meta`, not a column; `FileUploadCreateSpec` writes it and serialization reads it back. On the inline path it is **re-derived from file content** (`magic.from_buffer`) rather than trusting the client.
+- `associating_id` + `file_type` together link a file to its owning resource; `list` requires both as query params and returns only `upload_completed=True` rows.
 - Every action runs `file_authorizer(user, file_type, associating_id, "read"|"write")`.
 - Archival (`POST .../{external_id}/archive/`, body `{ archive_reason }`) sets `is_archived`, `archive_reason`, `archived_datetime`, `archived_by` server-side and returns `FileUploadListSpec`. This soft state is distinct from the `EMRBaseModel` soft-delete (`deleted`).
 - `mark_upload_completed` and `archive` both return `FileUploadListSpec` (no signed URL).

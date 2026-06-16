@@ -11,16 +11,16 @@ A **service request** in Care is an order or proposal to perform an action — a
 In Care's FHIR-aligned model, a service request maps to the **ServiceRequest** resource. It captures:
 
 - **What is being asked for** — a human-readable title and a coded service or procedure
-- **Why and how** — its category (laboratory, imaging, counselling, surgical, education), priority, and whether it is a firm order or just a proposal
+- **Why and how** — its category (laboratory, imaging, counselling, surgical, education), priority, and whether it is a firm order or a proposal
 - **Clinical context** — the patient and encounter it belongs to, optional notes, patient instructions, and a target body site
 - **Who and where** — the requesting clinician, the healthcare service expected to fulfil it, and the facility locations it applies to
-- **Downstream linkage** — the specimens and diagnostic reports generated in response to it
+- **Downstream linkage** — the specimens and diagnostic reports generated in response
 
-A service request is not the result — it is the ask. The findings it produces live in separate observation, specimen, and diagnostic report records that point back to it.
+A service request is the ask, not the result. The findings it produces live in separate observation, specimen, and diagnostic report records that point back to it.
 
 ## Lifecycle
 
-A request moves through a small set of statuses from draft to a terminal state:
+A request moves through a small set of statuses, from draft to a terminal state:
 
 ```
 draft → active → on_hold → completed
@@ -47,11 +47,11 @@ A service request never stands alone. It is always created within an **encounter
 - The **encounter** supplies the patient and the clinical setting.
 - A **healthcare service** and one or more **locations** describe who fulfils the request and where.
 - **Specimens** and **diagnostic reports** are produced in response and reference the request as their origin.
-- A request can be created from an activity-definition template that supplies its category and the value set its code is drawn from.
+- A request can be created from an activity-definition template, which supplies its category and the value set its code is drawn from.
 
 ## Permissions
 
-Access to service requests is governed by a dedicated permission set. The table below lists the complete set of permissions and the system roles that hold each by default:
+A dedicated permission set governs access to service requests. The table below lists every permission and the system roles that hold each by default:
 
 | Permission | Description | System Roles |
 | --- | --- | --- |

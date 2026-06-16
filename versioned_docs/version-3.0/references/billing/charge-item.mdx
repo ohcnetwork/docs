@@ -15,9 +15,9 @@ Technical reference for the `ChargeItem` module in Care EMR.
   [`handle_charge_item_cancel.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/charge_item/handle_charge_item_cancel.py))
 - Viewset: [`care/emr/api/viewsets/charge_item.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/charge_item.py)
 
-A charge item tracks the financial cost of a service or product supplied to a patient. Charge items are self-descriptive — they record what was charged, the quantity, the unit and total price components, and any applied discounts or override reasons. Every charge item belongs to an [`Account`](./account.mdx) and is created against a patient (optionally an encounter).
+A charge item records the financial cost of a service or product supplied to a patient. Charge items are self-descriptive: each one captures what was charged, the quantity, the unit and total price components, and any applied discounts or override reasons. Every charge item belongs to an [`Account`](./account.mdx) and is created against a patient, and optionally an encounter.
 
-The Django model is the **storage** layer: several fields are opaque `JSONField`s whose real structure lives only in the Pydantic resource specs (`care/emr/resources/charge_item/`). Those specs define the enums, the JSON shapes, validation, and the read/write API schemas, and they drive server-side cost calculation and status side effects. This page documents both layers.
+The Django model is the **storage** layer. Several of its fields are opaque `JSONField`s whose real structure lives only in the Pydantic resource specs (`care/emr/resources/charge_item/`). Those specs define the enums, the JSON shapes, the validation rules, and the read/write API schemas, and they drive server-side cost calculation and status side effects. This page documents both layers.
 
 ## Models
 
@@ -62,7 +62,7 @@ The Django model is the **storage** layer: several fields are opaque `JSONField`
 
 ### Service source
 
-These record why the charge was rendered — the originating resource that produced this charge.
+These fields record why the charge was rendered — the originating resource that produced it.
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -82,7 +82,7 @@ These record why the charge was rendered — the originating resource that produ
 
 ### Status values
 
-`status` is a plain `CharField` in storage, but every write goes through `ChargeItemStatusOptions` (`care/emr/resources/charge_item/spec.py`):
+`status` is a plain `CharField` in storage, but every write passes through `ChargeItemStatusOptions` (`care/emr/resources/charge_item/spec.py`):
 
 | Value | Meaning |
 | --- | --- |
@@ -95,7 +95,7 @@ These record why the charge was rendered — the originating resource that produ
 
 (`planned` exists in the source as a commented-out option and is **not** currently selectable.)
 
-`not_billable`, `aborted`, and `entered_in_error` form the cancelled set (`CHARGE_ITEM_CANCELLED_STATUS`). Transitioning into this set on update triggers the cancel side effect (see [Methods & save behaviour](#methods--save-behaviour)). `billed` and `paid` cannot be set manually — the viewset rejects manual changes into them.
+`not_billable`, `aborted`, and `entered_in_error` form the cancelled set (`CHARGE_ITEM_CANCELLED_STATUS`). Moving into this set on update triggers the cancel side effect (see [Methods & save behaviour](#methods--save-behaviour)). `billed` and `paid` cannot be set manually — the viewset rejects manual changes into them.
 
 ### Service resource types
 
@@ -108,7 +108,7 @@ These record why the charge was rendered — the originating resource that produ
 | `appointment` |
 | `bed_association` |
 
-On create the viewset validates the referenced resource: `service_request` must exist (and not be completed) for the patient/encounter, and `bed_association` must reference a `FacilityLocationEncounter` on a non-completed encounter in the facility.
+On create, the viewset validates the referenced resource: `service_request` must exist (and not be completed) for the patient/encounter, and `bed_association` must reference a `FacilityLocationEncounter` on a non-completed encounter in the facility.
 
 ### MonetaryComponentType values
 
@@ -137,7 +137,7 @@ Used by every entry in `unit_price_components` / `total_price_components` (`care
 
 ### Coding shape
 
-`code` and the `code` field inside components / `override_reason` (`care/emr/resources/common/coding.py`, `extra="forbid"`):
+`code`, plus the `code` field inside components and `override_reason` (`care/emr/resources/common/coding.py`, `extra="forbid"`):
 
 ```text
 Coding {
@@ -201,7 +201,7 @@ Charge items are exposed through `ChargeItemViewSet` (create / retrieve / update
 | `ChargeItemUpdateSpec` | write · update | Base fields + `performer_actor`. Does not re-bind patient/encounter/account |
 | `ChargeItemReadSpec` | read · list & detail | Base fields + server-side: `total_price_components`, `total_price`, `charge_item_definition` (nested), `paid_invoice` (nested), `tags` (objects), `service_resource(_id)`, `created_date`, `modified_date`, `paid_on`, `performer_actor`, `created_by`, `updated_by`, `discount_configuration` |
 
-Notable validation / binding:
+Notable validation and binding:
 
 - `code`, `override_reason.code`, and component `code`s are FHIR-aligned `Coding`s with **no bound value set**.
 - `ChargeItemWriteSpec.perform_extra_deserialization` resolves `patient`/`encounter`/`account`/`performer_actor` from external ids; supplying `encounter` overrides `patient` with the encounter's patient, and `account` is looked up scoped to that patient.
@@ -221,7 +221,7 @@ Notable validation / binding:
 
 ## Related models
 
-`ChargeItem` is a leaf model — it holds foreign keys rather than owning child rows. Its relationships:
+`ChargeItem` is a leaf model: it holds foreign keys rather than owning child rows. Its relationships:
 
 ```text
 facility               → FK facility.Facility (PROTECT)
@@ -235,21 +235,21 @@ performer_actor        → FK users.User (CASCADE, nullable)
 
 ## Methods & save behaviour
 
-Cost resolution and status side effects are applied in the spec helpers and the viewset, not in the model's `save()`.
+Cost resolution and status side effects run in the spec helpers and the viewset, not in the model's `save()`.
 
-- **Cost sync (`sync_charge_item_costs`)** — runs on every create and on update (unless suppressed). Iterates `unit_price_components`: multiplies the `base` amount by `quantity` to seed `total_price`/`base`, adds `surcharge`s, applies `discount`s (filtered by `discount_configuration` via `apply_discount_configuration`), then adds `tax`es on the taxable price. Writes the resolved breakdown to `total_price_components` and the sum to `total_price`. Raises `ValidationError` if `total_price < 0` and the charge is not a reversal.
-- **Apply from definition (`apply_charge_item_definition` / `POST apply_charge_item_defs`)** — builds a `ChargeItem` from a `ChargeItemDefinition`: copies `title`/`description`, merges category + global components, evaluates per-component `conditions` against patient/facility/encounter context (dropping unmet ones), sets `status = billable`, resolves `discount_configuration`, defaults the account to the patient's default account, and runs cost sync. `reverse` negates component amounts to produce a credit.
-- **Cancel (`handle_charge_item_cancel`)** — fires on update when `status` moves into `CHARGE_ITEM_CANCELLED_STATUS` (`not_billable` / `aborted` / `entered_in_error`). If the charge sits on a **draft** invoice it is removed from the invoice, the invoice is rebalanced and saved, and `paid_invoice` / `paid_on` are cleared. Cancelling a charge on a non-draft invoice raises `ValidationError`. Cost sync is skipped for cancellations.
-- **Update guards (`validate_data` / `perform_update`)** — no updates allowed once the charge is in a cancelled status; updates blocked if the linked invoice is `balanced`/`issued`; `status` cannot be manually moved into `billed`/`paid`; if the source definition has `can_edit_charge_item = False`, pricing fields (`unit_price_components`, `total_price_components`, `total_price`, `quantity`) are reset from the previous object and cost sync is skipped. After update, a draft `paid_invoice` is re-synced.
+- **Cost sync (`sync_charge_item_costs`)** — runs on every create and on update (unless suppressed). It iterates `unit_price_components`: it multiplies the `base` amount by `quantity` to seed `total_price`/`base`, adds `surcharge`s, applies `discount`s (filtered by `discount_configuration` via `apply_discount_configuration`), then adds `tax`es on the taxable price. It writes the resolved breakdown to `total_price_components` and the sum to `total_price`. It raises `ValidationError` if `total_price < 0` and the charge is not a reversal.
+- **Apply from definition (`apply_charge_item_definition` / `POST apply_charge_item_defs`)** — builds a `ChargeItem` from a `ChargeItemDefinition`: it copies `title`/`description`, merges category + global components, evaluates per-component `conditions` against patient/facility/encounter context (dropping unmet ones), sets `status = billable`, resolves `discount_configuration`, defaults the account to the patient's default account, and runs cost sync. `reverse` negates component amounts to produce a credit.
+- **Cancel (`handle_charge_item_cancel`)** — fires on update when `status` moves into `CHARGE_ITEM_CANCELLED_STATUS` (`not_billable` / `aborted` / `entered_in_error`). If the charge sits on a **draft** invoice, it is removed from the invoice, the invoice is rebalanced and saved, and `paid_invoice` / `paid_on` are cleared. Cancelling a charge on a non-draft invoice raises `ValidationError`. Cost sync is skipped for cancellations.
+- **Update guards (`validate_data` / `perform_update`)** — no updates are allowed once the charge is in a cancelled status; updates are blocked if the linked invoice is `balanced`/`issued`; `status` cannot be manually moved into `billed`/`paid`; and if the source definition has `can_edit_charge_item = False`, the pricing fields (`unit_price_components`, `total_price_components`, `total_price`, `quantity`) are reset from the previous object and cost sync is skipped. After update, a draft `paid_invoice` is re-synced.
 - **Cancel authorization (`authorize_cancel`)** — cancellation is free within `CHARGE_ITEM_FREE_CANCEL_PERIOD_MINUTES` of creation; afterwards it requires the `can_cancel_charge_item_in_facility` permission.
 - **Change account (`POST change_account`)** — bulk-moves up to 100 `billable` charge items to a target account, then queues `rebalance_account_task` for every affected account.
 
 ## API integration notes
 
 - The viewset sets `facility` from the URL and ignores any body value; `patient` is derived from `encounter` when supplied.
-- A charge item must resolve to an `account` — when none is supplied the patient's default account is used. `encounter` and `charge_item_definition` are optional.
+- A charge item must resolve to an `account` — when none is supplied, the patient's default account is used. `encounter` and `charge_item_definition` are optional.
 - `total_price`, `total_price_components`, `paid_invoice`, and `paid_on` are server-maintained; do not set them from clients.
-- Create/update enforce that `performer_actor` (and, when applying definitions, the actor) belongs to the facility's organization.
+- Create and update enforce that `performer_actor` (and, when applying definitions, the actor) belongs to the facility's organization.
 - `discount_configuration` and `tags` are structured but deployment-tunable: `discount_configuration` follows `DiscountConfiguration`, and tags are resolved via the single-facility tag manager.
 
 ## Related

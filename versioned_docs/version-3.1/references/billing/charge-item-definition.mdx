@@ -15,8 +15,8 @@ A charge item definition is the billing template that answers "how much does res
 
 Two layers describe this resource:
 
-- The **Django model** (`care/emr/models/charge_item_definition.py`) is the storage layer. `price_components` and `discount_configuration` are opaque `JSONField`s — their real structure is not visible in the model.
-- The **Pydantic resource specs** (`care/emr/resources/charge_item_definition/`) are the API layer. They define the enum for `status`, the structured shape of those JSON fields (via `MonetaryComponent` / `DiscountConfiguration`), validation rules, and the read/write schemas. See [Resource specs (API schema)](#resource-specs-api-schema).
+- The **Django model** (`care/emr/models/charge_item_definition.py`) is the storage layer. `price_components` and `discount_configuration` are opaque `JSONField`s — the model does not expose their real structure.
+- The **Pydantic resource specs** (`care/emr/resources/charge_item_definition/`) are the API layer. They define the `status` enum, the structured shape of those JSON fields (via `MonetaryComponent` / `DiscountConfiguration`), validation rules, and the read/write schemas. See [Resource specs (API schema)](#resource-specs-api-schema).
 
 ## Models
 
@@ -24,7 +24,7 @@ Two layers describe this resource:
 | --- | --- |
 | `ChargeItemDefinition` | Facility-scoped pricing template defining the price components applied to a billable resource |
 
-`ChargeItemDefinition` extends [`SlugBaseModel`](../foundation/base-model.mdx) — the slug-aware Care EMR base. `SlugBaseModel` extends `EMRBaseModel`, so the model inherits `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and the `history`/`meta` JSON fields, and adds facility-scoped slug helpers (see [Methods & save behaviour](#methods--save-behaviour)).
+`ChargeItemDefinition` extends [`SlugBaseModel`](../foundation/base-model.mdx), the slug-aware Care EMR base. `SlugBaseModel` in turn extends `EMRBaseModel`, so the model inherits `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and the `history`/`meta` JSON fields, then adds facility-scoped slug helpers (see [Methods & save behaviour](#methods--save-behaviour)).
 
 ## `ChargeItemDefinition` fields
 
@@ -60,7 +60,7 @@ Two layers describe this resource:
 
 ### Status values
 
-`ChargeItemDefinitionStatusOptions` (`spec.py`) — `status` is constrained to these values. Note the model `CharField` is unconstrained at the DB level; the spec is the source of truth.
+`ChargeItemDefinitionStatusOptions` (`spec.py`) constrains `status` to these values. The model `CharField` is unconstrained at the DB level, so the spec is the source of truth.
 
 | Value | Meaning |
 | --- | --- |
@@ -70,7 +70,7 @@ Two layers describe this resource:
 
 ### Monetary component type values
 
-`MonetaryComponentType` (`common/monetary_component.py`) — the `monetary_component_type` of each price component.
+`MonetaryComponentType` (`common/monetary_component.py`) sets the `monetary_component_type` of each price component.
 
 | Value | Meaning |
 | --- | --- |
@@ -82,7 +82,7 @@ Two layers describe this resource:
 
 ### Discount applicability values
 
-`DiscountApplicability` (`common/monetary_component.py`) — `discount_configuration.applicability_order`.
+`DiscountApplicability` (`common/monetary_component.py`) sets `discount_configuration.applicability_order`.
 
 | Value | Meaning |
 | --- | --- |
@@ -134,7 +134,7 @@ DiscountConfiguration {
 
 ## Resource specs (API schema)
 
-The API does not serialize the Django model directly; it goes through Pydantic specs built on `EMRResource` (`resources/base.py`), which provide `serialize` (DB → API) and `de_serialize` (API → DB).
+The API never serializes the Django model directly. It routes through Pydantic specs built on `EMRResource` (`resources/base.py`), which provide `serialize` (DB → API) and `de_serialize` (API → DB).
 
 | Spec class | Role | Exposes / behaviour |
 | --- | --- | --- |
@@ -142,7 +142,7 @@ The API does not serialize the Django model directly; it goes through Pydantic s
 | `ChargeItemDefinitionWriteSpec` | write · create + update | Adds `slug_value: SlugType` and `category: ExtendedSlugType | null`. Validates `price_components`; deserialization side effects below |
 | `ChargeItemDefinitionReadSpec` | read · list + detail | Adds read-only `version`, `category: dict`, `slug_config: dict`, `tags: list[dict]`, `slug: str`, `created_by`, `updated_by`, `created_date`, `updated_date` |
 
-Nested specs used by these: `MonetaryComponent` (price component), `DiscountConfiguration` (discount rules), `Coding` (component code), `EvaluatorConditionSpec` (component conditions).
+These specs reuse several nested specs: `MonetaryComponent` (price component), `DiscountConfiguration` (discount rules), `Coding` (component code), and `EvaluatorConditionSpec` (component conditions).
 
 ### Write-spec validation & side effects
 
@@ -181,7 +181,7 @@ category  → FK emr.ResourceCategory (CASCADE, nullable)
 
 ## Methods & save behaviour
 
-`ChargeItemDefinition` adds no overrides of its own, but inherits slug behaviour from `SlugBaseModel` (`FACILITY_SCOPED = True`):
+`ChargeItemDefinition` adds no overrides of its own; it inherits slug behaviour from `SlugBaseModel` (`FACILITY_SCOPED = True`):
 
 | Method | Behaviour |
 | --- | --- |
@@ -194,9 +194,9 @@ Because slugs are namespaced by the owning facility's `external_id`, the same hu
 
 ## API integration notes
 
-- Charge item definitions are FHIR-aligned (`ChargeItemDefinition`); `price_components` mirror the FHIR `MonetaryComponent` shape. API field names differ from Django model names (e.g. the client sends `slug_value`, not `slug`; `category` is a slug string on write but an object on read).
+- Charge item definitions are FHIR-aligned (`ChargeItemDefinition`), and `price_components` mirror the FHIR `MonetaryComponent` shape. API field names differ from Django model names (e.g. the client sends `slug_value`, not `slug`; `category` is a slug string on write but an object on read).
 - `status` is enum-gated by the spec (`draft`/`active`/`retired`); only `active` definitions should drive new charge items.
-- `price_components` and `discount_configuration` are validated by Pydantic on write — well-formedness is enforced server-side, not left to the client.
+- Pydantic validates `price_components` and `discount_configuration` on write, so well-formedness is enforced server-side rather than left to the client.
 - `can_edit_charge_item` is a platform-enforced flag controlling whether a derived charge item is mutable, not the definition itself.
 - `slug_config`, `tags`, `category`, and audit users are computed server-side and appear only on read.
 

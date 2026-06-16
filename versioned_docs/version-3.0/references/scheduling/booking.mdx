@@ -12,9 +12,9 @@ Technical reference for the `TokenBooking` and `TokenSlot` modules in Care EMR.
 - Resource spec: [`care/emr/resources/scheduling/slot/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/scheduling/slot/spec.py)
 - Viewset (side effects): [`care/emr/api/viewsets/scheduling/booking.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/scheduling/booking.py)
 
-A booking is the appointment of a patient into a concrete time slot generated from a [Schedule](../scheduling/schedule.mdx). `TokenSlot` materializes a bookable unit of availability; `TokenBooking` records a patient's appointment against that slot and tracks its status through the appointment lifecycle.
+A booking places a patient into a concrete time slot generated from a [Schedule](../scheduling/schedule.mdx). `TokenSlot` materializes a bookable unit of availability; `TokenBooking` records a patient's appointment against that slot and tracks its status through the appointment lifecycle.
 
-The Django model is the **storage** layer — `status` is an unconstrained `CharField` and several relations are opaque at the DB level. The **Pydantic resource specs** (`care/emr/resources/scheduling/slot/`) are the API layer: they constrain `status` to a fixed enum, validate writes, and define the read schemas (which embed slot, resource, facility, token, charge item, encounter, and patient sub-objects).
+The Django model is the **storage** layer: `status` is an unconstrained `CharField`, and several relations are opaque at the DB level. The **Pydantic resource specs** (`care/emr/resources/scheduling/slot/`) are the API layer. They constrain `status` to a fixed enum, validate writes, and define the read schemas, which embed slot, resource, facility, token, charge item, encounter, and patient sub-objects.
 
 ## Models
 
@@ -23,7 +23,7 @@ The Django model is the **storage** layer — `status` is an unconstrained `Char
 | `TokenSlot` | A concrete, bookable time window generated from a schedulable resource's availability |
 | `TokenBooking` | A patient's appointment against a `TokenSlot`, with status, notes, and optional links to an encounter, token, and charge item |
 
-Both models extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base providing `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON).
+Both models extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base that provides `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON.
 
 ## `TokenBooking` fields
 
@@ -66,7 +66,7 @@ Derived sets (from `slot/spec.py`):
 | `CANCELLED_STATUS_CHOICES` | `entered_in_error`, `cancelled`, `rescheduled` |
 | `COMPLETED_STATUS_CHOICES` | `fulfilled`, `noshow`, `entered_in_error`, `cancelled`, `rescheduled` |
 
-`TokenBookingWriteSpec.perform_extra_deserialization` rejects any write whose `status` is in `CANCELLED_STATUS_CHOICES` with `"Cannot cancel a booking. Use the cancel endpoint"` — cancellation/rescheduling must go through the dedicated endpoints (see below).
+`TokenBookingWriteSpec.perform_extra_deserialization` rejects any write whose `status` is in `CANCELLED_STATUS_CHOICES` with `"Cannot cancel a booking. Use the cancel endpoint"`. Cancellation and rescheduling must go through the dedicated endpoints (see below).
 
 ## Related models
 
@@ -115,16 +115,16 @@ All specs extend `EMRResource` ([`base.py`](https://github.com/ohcnetwork/care/b
 - **Creation (`lock_create_appointment`)** — under a per-resource lock and a transaction: rejects past slots (`end_datetime < now`) and full slots (`allocated >= availability.tokens_per_slot`), rejects a duplicate active booking for the same patient/slot (any status not in `COMPLETED_STATUS_CHOICES`), then increments `token_slot.allocated`, creates the booking with `status="booked"`, and — if the schedule has a `charge_item_definition` — auto-creates the linked `charge_item`.
 - **Cancel (`cancel` action)** — accepts `CancelBookingSpec { reason: cancelled | entered_in_error | rescheduled, note?: str }`. Rejects cancelling an `in_consultation` booking. Decrements `token_slot.allocated` (unless already cancelled), sets `status = reason`, optionally overwrites `note`, sets `updated_by`, and aborts any linked `charge_item` (`handle_charge_item_cancel` + status `aborted`).
 - **Reschedule (`reschedule` action)** — accepts `RescheduleBookingSpec { new_slot: UUID, new_booking_note: str, previous_booking_note?: str, tags: list[UUID] }`. Requires `can_reschedule_booking`. Cancels the existing booking with reason `rescheduled`, then `lock_create_appointment` creates a fresh booking on `new_slot` for the same patient; rejects rescheduling to the same slot.
-- **Generate token (`generate_token` action)** — accepts `TokenGenerationSpec { category: UUID, note?: str, queue?: UUID }`. Rejects if a token already exists. Resolves/creates a `TokenQueue` for the slot's date and resource, allocates the next `number` under a queue lock, creates a `Token` (`status="CREATED"`), and links it to `booking.token`.
+- **Generate token (`generate_token` action)** — accepts `TokenGenerationSpec { category: UUID, note?: str, queue?: UUID }`. Rejects if a token already exists. Resolves or creates a `TokenQueue` for the slot's date and resource, allocates the next `number` under a queue lock, creates a `Token` (`status="CREATED"`), and links it to `booking.token`.
 - **`booked_on`** is `auto_now_add` — never set by clients.
 
 ## API integration notes
 
 - `TokenSlot` and `TokenBooking` are exposed through Care's scheduling REST API and align with the FHIR `Slot` and `Appointment` resources; payload field names may differ from Django model names.
 - Writes use `TokenBookingWriteSpec` (`status` constrained to `BookingStatusChoices`, `note` required). `cancelled` / `entered_in_error` / `rescheduled` cannot be set through a plain update — use the `cancel` / `reschedule` actions.
-- List responses use `TokenBookingReadSpec`; detail responses use `TokenBookingRetrieveSpec` (adds `associated_encounter`).
-- `allocated` on `TokenSlot` is a capacity counter maintained by `lock_create_appointment` / cancel; do not write it directly.
-- `tags` is an array of integer tag IDs in storage but returned as rendered tag objects on read.
+- List responses use `TokenBookingReadSpec`; detail responses use `TokenBookingRetrieveSpec` (which adds `associated_encounter`).
+- `allocated` on `TokenSlot` is a capacity counter maintained by `lock_create_appointment` and cancel; do not write it directly.
+- `tags` is stored as an array of integer tag IDs but returned as rendered tag objects on read.
 - List requires a `resource_type` query param and authorization scoped to organizations or resource IDs.
 
 ## Related

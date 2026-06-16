@@ -4,7 +4,7 @@ sidebar_position: 6
 
 # Diagnostic Report
 
-A **diagnostic report** in Care holds the results and interpretation of a diagnostic test or investigation — a lab panel, an imaging study, or a similar workup. It is the answer that closes the loop on an order: every report fulfils exactly one [service request](./service-request.mdx) and is anchored to the patient and encounter the order was raised under.
+A **diagnostic report** in Care holds the results and interpretation of a diagnostic test or investigation — a lab panel, an imaging study, or a similar workup. It closes the loop on an order: every report fulfils exactly one [service request](./service-request.mdx) and is anchored to the patient and encounter that order was raised under.
 
 ## What it represents
 
@@ -26,7 +26,7 @@ registered → partial → preliminary → final
 ```
 
 - **registered** — the report exists but no results are attached yet
-- **partial** — some results are in; the report is still incomplete
+- **partial** — some results are in, but the report is still incomplete
 - **preliminary** — provisional results are available but not yet verified
 - **final** — the report is verified and complete
 
@@ -43,14 +43,14 @@ A diagnostic report sits downstream of an order and pulls together the data arou
 
 ## Permissions
 
-Access to diagnostic reports is governed by a dedicated permission enum:
+A dedicated permission enum governs access to diagnostic reports:
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
 | Can Create Diagnostic Report on Facility | Create diagnostic reports for a facility's patients | Facility Admin, Admin, Doctor, Nurse |
 | Can Read Diagnostic Report | View diagnostic reports and their results | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer |
 
-Roles are granted to users through organization, facility-organization, and patient memberships. Access is then scoped by the organization tree: a permission held at a parent organization cascades to its descendants. In practice, Care decides report access via the originating service request — a user can act on a report if they hold the matching permission on the encounter (or on a facility organization tied to the request's locations) that the report belongs to.
+Users receive roles through organization, facility-organization, and patient memberships. The organization tree then scopes access: a permission held at a parent organization cascades to its descendants. In practice, Care decides report access through the originating service request — a user can act on a report if they hold the matching permission on the encounter (or on a facility organization tied to the request's locations) that the report belongs to.
 
 ## Related
 
@@ -62,4 +62,4 @@ Roles are granted to users through organization, facility-organization, and pati
 
 ## FHIR reference
 
-Care's diagnostic report aligns with the FHIR **DiagnosticReport** resource. The coded `category` and `code` fields are bound value sets (HL7 diagnostic service sections and LOINC), and `status` follows the FHIR report-status vocabulary.
+Care's diagnostic report aligns with the FHIR **DiagnosticReport** resource. The coded `category` and `code` fields bind to value sets (HL7 diagnostic service sections and LOINC), and `status` follows the FHIR report-status vocabulary.

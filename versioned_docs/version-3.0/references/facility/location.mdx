@@ -13,9 +13,9 @@ Technical reference for the `FacilityLocation` module in Care EMR.
 - Base resource: [`care/emr/resources/base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)
 - Coding type: [`care/emr/resources/common/coding.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/coding.py)
 
-Locations are abstract, hierarchical entities (buildings, wards, rooms, beds) that describe where resources sit and where care is delivered. Nesting is unbounded: every location may have a parent and children. Encounters and organizations attach to locations, and location-level access is resolved through an async cascade rather than synchronously. The model is derived from the [FHIR Location](https://build.fhir.org/location.html) resource.
+Locations are abstract, hierarchical entities (buildings, wards, rooms, beds) that describe where resources sit and where care is delivered. Nesting is unbounded: every location may have a parent and children. Encounters and organizations attach to locations, and location-level access resolves through an async cascade rather than synchronously. The model derives from the [FHIR Location](https://build.fhir.org/location.html) resource.
 
-The Django model is the **storage** layer; several fields (`location_type`, `metadata`, `cached_parent_json`) are opaque `JSONField`s whose real shape comes from the Pydantic **resource specs** (`care/emr/resources/location/spec.py`). The specs also define every enum/choice and the read/write API schemas. See [Resource specs (API schema)](#resource-specs-api-schema).
+The Django model is the **storage** layer. Several fields (`location_type`, `metadata`, `cached_parent_json`) are opaque `JSONField`s whose real shape comes from the Pydantic **resource specs** (`care/emr/resources/location/spec.py`). The specs also define every enum/choice and the read/write API schemas. See [Resource specs (API schema)](#resource-specs-api-schema).
 
 ## Models
 
@@ -44,7 +44,7 @@ All models extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EM
 
 ### Hierarchy & tree caches
 
-These fields denormalize the location tree so descendants can be queried without recursive joins. They are maintained by `save()` and the cascade task — clients should not set them directly.
+These fields denormalize the location tree so descendants can be queried without recursive joins. `save()` and the cascade task maintain them — clients should not set them directly.
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -67,7 +67,7 @@ These fields denormalize the location tree so descendants can be queried without
 
 ## Enum values
 
-All enums are `str` `Enum`s defined in `care/emr/resources/location/spec.py`. Values below are character-for-character from source.
+All enums are `str` `Enum`s defined in `care/emr/resources/location/spec.py`. The values below are character-for-character from source.
 
 ### `StatusChoices` values
 
@@ -156,18 +156,18 @@ Coding {
 
 ### `FacilityLocationOrganization`
 
-Denotes which organization can access a given location. Users under that organization inherit access to the location (and its encounters) through the role they hold on the organization.
+Marks which organization can access a given location. Users under that organization inherit access to the location (and its encounters) through the role they hold on the organization.
 
 ```text
 location     → FK FacilityLocation (CASCADE)
 organization → FK FacilityOrganization (CASCADE)
 ```
 
-Saving a `FacilityLocationOrganization` calls `location.save()` (rebuilding `facility_organization_cache`) and then `location.cascade_changes()`, which propagates the change to descendants asynchronously. On write, the set of organizations is supplied through `FacilityLocationWriteSpec.organizations` (a list of UUIDs).
+Saving a `FacilityLocationOrganization` calls `location.save()` (rebuilding `facility_organization_cache`), then `location.cascade_changes()`, which propagates the change to descendants asynchronously. On write, the set of organizations comes from `FacilityLocationWriteSpec.organizations` (a list of UUIDs).
 
 ### `FacilityLocationEncounter`
 
-Records how an encounter was associated to a location (e.g. a bed assignment over a time window).
+Records how an encounter was associated with a location (e.g. a bed assignment over a time window).
 
 | Field | Type | Spec | Notes |
 | --- | --- | --- | --- |
@@ -198,7 +198,7 @@ On update, `cached_parent_json` is cleared so it rebuilds lazily. After every `s
 
 ### `validate_uniqueness()`
 
-Classmethod enforcing that `name` is unique among siblings at the same `level_cache` within the same `root_location` (or among root-level locations when there is no root). For a new instance with a `parent`, `level_cache` and `root_location` are computed from that parent before checking.
+Classmethod that enforces `name` uniqueness among siblings at the same `level_cache` within the same `root_location` (or among root-level locations when there is no root). For a new instance with a `parent`, `level_cache` and `root_location` are computed from that parent before the check.
 
 ## Resource specs (API schema)
 

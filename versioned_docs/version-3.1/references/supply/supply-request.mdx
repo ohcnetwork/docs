@@ -6,9 +6,9 @@ sidebar_position: 4
 
 Technical reference for the `SupplyRequest` module in Care EMR.
 
-A `SupplyRequest` is a line item asking for a quantity of a catalogue item (`ProductKnowledge`). Each request belongs to a `RequestOrder`, which groups requests describing the movement of items into a destination facility location (optionally from a supplier organization and/or an origin location).
+A `SupplyRequest` is a line item asking for a quantity of a catalogue item (`ProductKnowledge`). Each request belongs to a `RequestOrder`, which groups requests that describe the movement of items into a destination facility location — optionally from a supplier organization and/or an origin location.
 
-The Django model is the **storage** layer — `status`, `priority`, `intent`, `reason`, `category`, and `supplied_item_condition` are stored as plain `CharField`s with no DB-level constraint. The **real allowed values, validation, and API request/response shapes** live in the Pydantic resource specs (`care/emr/resources/inventory/supply_request/`), documented below.
+The Django model is the **storage** layer: `status`, `priority`, `intent`, `reason`, `category`, and `supplied_item_condition` are stored as plain `CharField`s with no DB-level constraint. The **real allowed values, validation, and API request/response shapes** live in the Pydantic resource specs (`care/emr/resources/inventory/supply_request/`), documented below.
 
 **Source:**
 
@@ -23,7 +23,7 @@ The Django model is the **storage** layer — `status`, `priority`, `intent`, `r
 | `SupplyRequest` | A request for a quantity of a catalogue item (product knowledge), grouped under an order |
 | `RequestOrder` | An order that groups supply requests for movement of items into a destination facility location |
 
-Both models extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, audit fields `created_date`/`modified_date`/`created_by`/`updated_by`, soft-delete via `deleted`, and `history`/`meta` JSON).
+Both models extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base providing `external_id`, audit fields (`created_date`/`modified_date`/`created_by`/`updated_by`), soft-delete via `deleted`, and `history`/`meta` JSON.
 
 ## `SupplyRequest` fields
 
@@ -75,7 +75,7 @@ destination → FK FacilityLocation (CASCADE, related_name="destination_request_
 | `origin` | `FK → FacilityLocation` | Nullable `CASCADE`, `related_name="origin_request_orders"`. Sending location. |
 | `destination` | `FK → FacilityLocation` | `CASCADE`, `related_name="destination_request_orders"`. Receiving location. Required. |
 
-`SupplyRequest.order` points back to a `RequestOrder`, so a single order fans out to many supply requests. `origin` and `destination` both target `FacilityLocation` but use distinct `related_name`s, letting a location surface both the orders it sends (`origin_request_orders`) and the orders it receives (`destination_request_orders`).
+`SupplyRequest.order` points back to a `RequestOrder`, so a single order fans out to many supply requests. Both `origin` and `destination` target `FacilityLocation` but use distinct `related_name`s, so a location can surface both the orders it sends (`origin_request_orders`) and the orders it receives (`destination_request_orders`).
 
 ### `RequestOrder` enum values
 
@@ -162,7 +162,7 @@ All specs extend [`EMRResource`](https://github.com/ohcnetwork/care/blob/develop
 ## Methods & save behaviour
 
 - Neither model overrides `save()`; standard `EMRBaseModel` audit and soft-delete behaviour applies.
-- Status is free-text at the DB layer; lifecycle is enforced only by the spec enums at the API boundary. There is no automatic `status_history` tracking on these models.
+- Status is free-text at the DB layer; the lifecycle is enforced only by the spec enums at the API boundary. These models do no automatic `status_history` tracking.
 - Deleting a `RequestOrder` cascades to its `SupplyRequest` rows (`order` FK is `CASCADE`); deleting a referenced `ProductKnowledge` cascades to the request.
 
 ## API integration notes
@@ -170,8 +170,8 @@ All specs extend [`EMRResource`](https://github.com/ohcnetwork/care/blob/develop
 - Field names in API payloads follow the spec field names above; foreign keys are exchanged as `external_id` UUIDs on write and as expanded objects on read.
 - `status`, `priority`, `intent`, `reason`, and `category` are validated against the spec enums — send the exact string values listed above.
 - `supplied_item_condition` exists on the model but is not surfaced by any current spec.
-- `quantity` is sent/returned as a whole number through the specs; the DB column itself retains six decimal places.
-- `tags` on `RequestOrder` is an integer array of tag IDs (not a relational join); on read it is rendered to tag objects via the facility tag manager.
+- `quantity` is sent and returned as a whole number through the specs, while the DB column itself retains six decimal places.
+- `tags` on `RequestOrder` is an integer array of tag IDs, not a relational join; on read it is rendered to tag objects via the facility tag manager.
 - `external_id` (from `EMRBaseModel`) is the stable public identifier used in API URLs — not the internal primary key.
 
 ## Related

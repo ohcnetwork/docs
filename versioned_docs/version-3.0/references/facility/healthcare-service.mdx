@@ -6,7 +6,7 @@ sidebar_position: 6
 
 Technical reference for the `HealthcareService` module in Care EMR.
 
-A `HealthcareService` describes a service offered at a facility (e.g. cardiology, lab, radiology, pharmacy), scoped to one or more locations and a managing facility organization. The Django model is the **storage** layer — `service_type` and `styling_metadata` are opaque `JSONField`s whose real structure lives in the Pydantic **resource specs**, which also define the bound value set, the enum for `internal_type`, and the read/write API schemas.
+A `HealthcareService` describes a service offered at a facility (e.g. cardiology, lab, radiology, pharmacy), scoped to one or more locations and a managing facility organization. The Django model is the **storage** layer: `service_type` and `styling_metadata` are opaque `JSONField`s whose real structure lives in the Pydantic **resource specs**. Those specs also define the bound value set, the enum for `internal_type`, and the read/write API schemas.
 
 **Source:**
 
@@ -20,7 +20,7 @@ A `HealthcareService` describes a service offered at a facility (e.g. cardiology
 | --- | --- |
 | `HealthcareService` | A bookable/offerable service provided at a facility (e.g. cardiology, lab, radiology), scoped to locations and a managing organization |
 
-`HealthcareService` extends [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base giving `external_id`, audit fields, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON).
+`HealthcareService` extends [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base that provides `external_id`, audit fields, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON.
 
 ## `HealthcareService` fields
 
@@ -30,28 +30,28 @@ A `HealthcareService` describes a service offered at a facility (e.g. cardiology
 | --- | --- | --- |
 | `name` | `CharField(1024)` | Display name of the service. Required (no default) |
 | `service_type` | `JSONField` → `Coding` | Defaults to `{}` (`dict`). Stores a single FHIR-style `Coding` object, not a string. In the API this field is a `ValueSetBoundCoding` bound to the **Healthcare Service Type Code** value set (see below). Optional (`None`) |
-| `internal_type` | `CharField(255)` | Nullable, default `None`. In the API constrained to the `HealthcareServiceInternalType` enum (`pharmacy` / `lab` / `scheduling` / `store`). Optional |
-| `extra_details` | `TextField` | Free-text additional details. Not nullable and has no DB default, so a value (empty string allowed) must be supplied. Required in write specs |
+| `internal_type` | `CharField(255)` | Nullable, default `None`. In the API, constrained to the `HealthcareServiceInternalType` enum (`pharmacy` / `lab` / `scheduling` / `store`). Optional |
+| `extra_details` | `TextField` | Free-text additional details. Not nullable and has no DB default, so a value must be supplied (an empty string is allowed). Required in write specs |
 
 ### Scope & placement
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `facility` | `FK → facility.Facility` | `PROTECT`; nullable (`default=None`, `blank=True`). The facility offering the service. Excluded from all specs (`__exclude__ = ["facility"]`) — set server-side from the URL context, never via the request body |
-| `locations` | `ArrayField[int]` | Defaults to `[]`; list of `FacilityLocation` **primary-key integers** (not FK rows) where the service is provided. Write specs accept location `external_id`s (UUIDs); retrieve specs return serialized location objects |
-| `managing_organization` | `FK → emr.FacilityOrganization` | `PROTECT`; nullable. The facility-scoped org (department/team) responsible for the service. Write specs accept its `external_id` (UUID); resolved server-side |
+| `facility` | `FK → facility.Facility` | `PROTECT`; nullable (`default=None`, `blank=True`). The facility offering the service. Excluded from all specs (`__exclude__ = ["facility"]`) and set server-side from the URL context, never via the request body |
+| `locations` | `ArrayField[int]` | Defaults to `[]`; a list of `FacilityLocation` **primary-key integers** (not FK rows) where the service is provided. Write specs accept location `external_id`s (UUIDs); retrieve specs return serialized location objects |
+| `managing_organization` | `FK → emr.FacilityOrganization` | `PROTECT`; nullable. The facility-scoped org (department/team) responsible for the service. Write specs accept its `external_id` (UUID), resolved server-side |
 
 ### Presentation
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `styling_metadata` | `JSONField` → `dict` | Nullable in DB; defaults to `{}` in the specs. Open JSON bag of UI presentation hints (e.g. colors, icons). No backend semantics |
+| `styling_metadata` | `JSONField` → `dict` | Nullable in DB; defaults to `{}` in the specs. An open JSON bag of UI presentation hints (e.g. colors, icons), with no backend semantics |
 
 ## Coded field shapes (JSON fields)
 
 ### `service_type` → `Coding`
 
-`service_type` stores a single `Coding` object. In the API it is a `ValueSetBoundCoding` whose `code` is validated against the **Healthcare Service Type Code** value set on de-serialization. Optional (`None`).
+`service_type` stores a single `Coding` object. In the API it is a `ValueSetBoundCoding` whose `code` is validated against the **Healthcare Service Type Code** value set during de-serialization. Optional (`None`).
 
 ```text
 Coding {
@@ -73,13 +73,13 @@ Coding {
 | Compose / include system | `http://terminology.hl7.org/CodeSystem/service-type` |
 | System version | `2.0.0` |
 
-Registered via `register_valueset(...)` and `register_as_system()`. The `service_type.code` submitted on create/update must resolve within this value set.
+Registered via `register_valueset(...)` and `register_as_system()`. The `service_type.code` submitted on create or update must resolve within this value set.
 
 ## Enums
 
 ### `HealthcareServiceInternalType` values
 
-Constrains `internal_type` in the specs (`str` enum; the model column is a plain `CharField` so legacy/other values may exist in storage).
+Constrains `internal_type` in the specs (`str` enum). The model column is a plain `CharField`, so legacy or other values may exist in storage.
 
 | Value |
 | --- |
@@ -96,7 +96,7 @@ Constrains `internal_type` in the specs (`str` enum; the model column is a plain
 facility → FK Facility (PROTECT, nullable)
 ```
 
-The facility at which the service is offered. `PROTECT` prevents deleting a facility that still has healthcare services. Excluded from specs and set from request context. See [Facility](./facility.mdx).
+The facility at which the service is offered. `PROTECT` prevents deleting a facility that still has healthcare services. Excluded from specs and set from the request context. See [Facility](./facility.mdx).
 
 ### `emr.FacilityOrganization`
 
@@ -104,15 +104,15 @@ The facility at which the service is offered. `PROTECT` prevents deleting a faci
 managing_organization → FK FacilityOrganization (PROTECT, nullable)
 ```
 
-The facility-scoped organization (department/team) that owns the service. Write specs take its `external_id` (UUID); the retrieve spec embeds it serialized via `FacilityOrganizationReadSpec`. See [Organization](./organization.mdx).
+The facility-scoped organization (department/team) that owns the service. Write specs take its `external_id` (UUID); the retrieve spec embeds it, serialized via `FacilityOrganizationReadSpec`. See [Organization](./organization.mdx).
 
 ### Locations
 
-`locations` is an `ArrayField` of integer PKs rather than a relational join. Each entry references a `FacilityLocation` row by primary key; resolution and validation are handled in application code, not by a database foreign key. Write specs accept location `external_id`s (UUIDs); the retrieve spec embeds each location serialized via `FacilityLocationListSpec`. See [Location](./location.mdx).
+`locations` is an `ArrayField` of integer PKs rather than a relational join. Each entry references a `FacilityLocation` row by primary key, and application code handles resolution and validation instead of a database foreign key. Write specs accept location `external_id`s (UUIDs); the retrieve spec embeds each location, serialized via `FacilityLocationListSpec`. See [Location](./location.mdx).
 
 ## Resource specs (API schema)
 
-All specs extend `EMRResource` (`care/emr/resources/base.py`), which provides `serialize` (DB object → spec) and `de_serialize` (spec → DB object) with the `perform_extra_serialization` / `perform_extra_deserialization` hooks. `__exclude__ = ["facility"]` keeps `facility` out of every payload.
+All specs extend `EMRResource` (`care/emr/resources/base.py`), which provides `serialize` (DB object → spec) and `de_serialize` (spec → DB object), along with the `perform_extra_serialization` / `perform_extra_deserialization` hooks. `__exclude__ = ["facility"]` keeps `facility` out of every payload.
 
 | Spec class | Role | Notes |
 | --- | --- | --- |
@@ -136,26 +136,26 @@ All specs extend `EMRResource` (`care/emr/resources/base.py`), which provides `s
 
 ### Validation & server-side behaviour
 
-- **`service_type`** — coded as a `ValueSetBoundCoding`; on de-serialization the `code` is validated against the `healthcare-service-type-code` value set (`validate_valueset`). `extra="forbid"` on the underlying `Coding` rejects unknown keys.
-- **`managing_organization`** (write) — `perform_extra_deserialization` resolves the supplied UUID via `get_object_or_404(FacilityOrganization, external_id=...)` and assigns the FK; if falsy, sets `managing_organization = None`.
-- **`locations`** (write) — supplied as UUIDs; the retrieve spec resolves each PK back to a `FacilityLocation` and serializes it, silently skipping any that fail to load (`try/except … pass`).
-- **`id` / `external_id`** — never written from the body; `de_serialize` skips `id`/`external_id`, and `serialize`/`perform_extra_serialization` populate `id` from `obj.external_id`.
-- **`facility`** — excluded from all specs; assigned server-side, so it cannot be set or changed through the API body.
-- No `status` field exists on this resource, so there is no server-maintained `status_history`.
+- **`service_type`** — coded as a `ValueSetBoundCoding`. During de-serialization, the `code` is validated against the `healthcare-service-type-code` value set (`validate_valueset`). `extra="forbid"` on the underlying `Coding` rejects unknown keys.
+- **`managing_organization`** (write) — `perform_extra_deserialization` resolves the supplied UUID via `get_object_or_404(FacilityOrganization, external_id=...)` and assigns the FK; if the value is falsy, it sets `managing_organization = None`.
+- **`locations`** (write) — supplied as UUIDs. The retrieve spec resolves each PK back to a `FacilityLocation` and serializes it, silently skipping any that fail to load (`try/except … pass`).
+- **`id` / `external_id`** — never written from the body. `de_serialize` skips `id`/`external_id`, and `serialize`/`perform_extra_serialization` populate `id` from `obj.external_id`.
+- **`facility`** — excluded from all specs and assigned server-side, so it cannot be set or changed through the API body.
+- This resource has no `status` field, so there is no server-maintained `status_history`.
 
 ## Methods & save behaviour
 
 - Inherits `save()`, soft-delete (`deleted`), audit fields (`created_by`/`updated_by`), `history`/`meta`, and `external_id` from [`EMRBaseModel`](../foundation/base-model.mdx).
-- `EMRResource.serialize` / `de_serialize` drive read/write conversion; the extra (de)serialization hooks above run the FK resolution and embedded serialization.
-- `facility` and `managing_organization` use `on_delete=PROTECT`; deleting either while a service references it is blocked at the DB level.
+- `EMRResource.serialize` / `de_serialize` drive read/write conversion; the extra (de)serialization hooks above handle FK resolution and embedded serialization.
+- `facility` and `managing_organization` use `on_delete=PROTECT`, so deleting either while a service references it is blocked at the DB level.
 
 ## API integration notes
 
 - Exposed through Care's REST API. The bookable surface is built from the spec classes, not the raw model.
-- `service_type` must be a `Coding` object whose `code` is in the bound value set — supply a coding structure, not a bare string.
-- `internal_type` is one of `pharmacy`, `lab`, `scheduling`, `store` on the API boundary.
-- `locations` on write is a list of location `external_id`s (UUIDs); detail responses embed full location objects. There is no DB-level integrity check that referenced locations belong to the same `facility`.
-- `managing_organization` on write is the org `external_id`; detail responses embed the serialized organization.
+- `service_type` must be a `Coding` object whose `code` is in the bound value set. Supply a coding structure, not a bare string.
+- On the API boundary, `internal_type` is one of `pharmacy`, `lab`, `scheduling`, or `store`.
+- On write, `locations` is a list of location `external_id`s (UUIDs); detail responses embed full location objects. No DB-level integrity check confirms that referenced locations belong to the same `facility`.
+- On write, `managing_organization` is the org `external_id`; detail responses embed the serialized organization.
 - `styling_metadata` is an open JSON bag for UI hints and carries no backend semantics.
 - `facility` is never accepted in the request body.
 

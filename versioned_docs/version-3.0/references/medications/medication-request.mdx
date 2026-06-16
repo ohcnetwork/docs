@@ -12,9 +12,9 @@ Technical reference for the `MedicationRequest` module in Care EMR.
 - Spec: [`resources/medication/request_prescription/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/request_prescription/spec.py)
 - Value sets: [`resources/medication/valueset/`](https://github.com/ohcnetwork/care/tree/develop/care/emr/resources/medication/valueset)
 
-A medication request captures the prescriber's intent to supply and/or administer a medication to a patient — the FHIR [`MedicationRequest`](https://hl7.org/fhir/medicationrequest.html) resource. Requests carry the medication, dosage instructions, timing, and route as structured JSON, and are grouped under a prescription per encounter.
+A medication request captures the prescriber's intent to supply and/or administer a medication to a patient — the FHIR [`MedicationRequest`](https://hl7.org/fhir/medicationrequest.html) resource. Each request carries the medication, dosage instructions, timing, and route as structured JSON, and is grouped under a prescription per encounter.
 
-The Django model is the **storage** layer: several fields are opaque `JSONField`s whose real structure is not visible in the model. The Pydantic **resource specs** (`care/emr/resources/medication/request/`) are the API/implementation layer — they define the enums, the nested shape of those JSON fields, validation, the read/write schemas, and server-side side effects. The tables below combine both.
+The Django model is the **storage** layer: several fields are opaque `JSONField`s whose real structure the model does not expose. The Pydantic **resource specs** (`care/emr/resources/medication/request/`) form the API/implementation layer — they define the enums, the nested shape of those JSON fields, validation, the read/write schemas, and server-side side effects. The tables below combine both.
 
 ## Models
 
@@ -23,7 +23,7 @@ The Django model is the **storage** layer: several fields are opaque `JSONField`
 | `MedicationRequestPrescription` | Groups medication requests authored together for an encounter (a prescription) |
 | `MedicationRequest` | A single medication order/request for a patient within an encounter |
 
-Both models extend [`EMRBaseModel`](../foundation/base-model.mdx) — the shared Care EMR base providing `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON.
+Both models extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base that provides `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON.
 
 ## `MedicationRequest` fields
 
@@ -61,7 +61,7 @@ Both models extend [`EMRBaseModel`](../foundation/base-model.mdx) — the shared
 
 ## Enum values
 
-The spec enums use **underscored** member values (e.g. `on_hold`, `entered_in_error`, `original_order`) — not the hyphenated FHIR spellings. These are the literal strings the API accepts and returns.
+The spec enums use **underscored** member values (e.g. `on_hold`, `entered_in_error`, `original_order`), not the hyphenated FHIR spellings. These are the literal strings the API accepts and returns.
 
 ### `MedicationRequestStatus` values
 
@@ -159,7 +159,7 @@ Used by `DoseAndRate.type`.
 
 ## `DosageInstruction` nested spec
 
-Each entry of the `dosage_instruction` JSON list deserializes to a `DosageInstruction` (Pydantic, snake_case keys). This is the real structure behind the opaque `JSONField`.
+Each entry in the `dosage_instruction` JSON list deserializes to a `DosageInstruction` (Pydantic, snake_case keys) — the real structure behind the opaque `JSONField`.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
@@ -213,11 +213,11 @@ DosageQuantity {              # measured dose amount
 }
 ```
 
-Note: in storage these JSON keys are snake_case as defined by the Pydantic specs (`as_needed_boolean`, `period_unit`, `dose_and_rate`, `max_dose_per_period`, `bounds_duration`), unlike the camelCase FHIR wire format.
+Note: in storage these JSON keys are snake_case, as defined by the Pydantic specs (`as_needed_boolean`, `period_unit`, `dose_and_rate`, `max_dose_per_period`, `bounds_duration`), unlike the camelCase FHIR wire format.
 
 ## Bound value sets
 
-Coded fields bind to Care value sets via `ValueSetBoundCoding[<slug>]`; the supplied `Coding.code` is validated against the value set on write. All draw from SNOMED CT (`http://snomed.info/sct`).
+Coded fields bind to Care value sets via `ValueSetBoundCoding[<slug>]`; on write, the supplied `Coding.code` is validated against the value set. All draw from SNOMED CT (`http://snomed.info/sct`).
 
 | Field | Value set slug | SNOMED CT scope |
 | --- | --- | --- |
@@ -232,7 +232,7 @@ Coded fields bind to Care value sets via `ValueSetBoundCoding[<slug>]`; the supp
 
 ## Resource specs (API schema)
 
-All specs extend [`EMRResource`](../foundation/base-model.mdx) (`serialize` / `de_serialize`, with `perform_extra_serialization` / `perform_extra_deserialization` hooks). `MedicationRequestResource` sets `__exclude__ = [patient, encounter, requester, requested_product, prescription]` so those relations are handled explicitly rather than auto-mapped.
+All specs extend [`EMRResource`](../foundation/base-model.mdx) (`serialize` / `de_serialize`, with `perform_extra_serialization` / `perform_extra_deserialization` hooks). `MedicationRequestResource` sets `__exclude__ = [patient, encounter, requester, requested_product, prescription]`, so those relations are handled explicitly rather than auto-mapped.
 
 | Spec class | Role | Notes |
 | --- | --- | --- |
@@ -257,7 +257,7 @@ All specs extend [`EMRResource`](../foundation/base-model.mdx) (`serialize` / `d
 - `encounter` is resolved from its UUID; `patient` is set from `encounter.patient` (never client-supplied).
 - `requester` / `requested_product` resolved by `external_id`. If `requested_product.facility` is set and differs from `encounter.facility`, raises `"Product not found in facility"`.
 - `prescription` resolved by `external_id` scoped to the same `encounter`.
-- `create_prescription`: looks up an existing prescription by `(alternate_identifier, encounter)`. If found but **not** `active`, raises `"Prescription is not active"`. If not found, creates a new `MedicationRequestPrescription` (`status=active`, copying `name`/`note`, `prescribed_by=requester`). The request is then linked to it.
+- `create_prescription`: looks up an existing prescription by `(alternate_identifier, encounter)`. If found but **not** `active`, raises `"Prescription is not active"`. If not found, creates a new `MedicationRequestPrescription` (`status=active`, copying `name`/`note`, `prescribed_by=requester`), then links the request to it.
 
 ### Serialization (read)
 
@@ -267,7 +267,7 @@ All specs extend [`EMRResource`](../foundation/base-model.mdx) (`serialize` / `d
 
 ### `MedicationRequestPrescription`
 
-Groups the medication requests authored together for an encounter into a single prescription. Each request points back via `MedicationRequest.prescription`.
+Groups the medication requests authored together for an encounter into a single prescription. Each request links back via `MedicationRequest.prescription`.
 
 ```text
 encounter            → FK Encounter (CASCADE)

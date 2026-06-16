@@ -10,9 +10,9 @@ Technical reference for the `Schedule` module in Care EMR.
 - Model: [`care/emr/models/scheduling/schedule.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/scheduling/schedule.py)
 - Resource specs: [`schedule/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/scheduling/schedule/spec.py), [`availability_exception/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/scheduling/availability_exception/spec.py), [`resource/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/scheduling/resource/spec.py)
 
-A schedule is a repeatable block of time during which a resource (a practitioner, location, or healthcare service) is available for booking. A schedule carries one or more **availabilities** that describe how that time is broken into slots, and **exceptions** that block out specific dates.
+A schedule is a repeatable block of time during which a resource — a practitioner, location, or healthcare service — is available for booking. Each schedule carries one or more **availabilities** that define how the time splits into slots, plus **exceptions** that block out specific dates.
 
-The **Django model** (`care/emr/models/scheduling/schedule.py`) is the storage layer — including the opaque `Availability.availability` `JSONField`. The **Pydantic resource specs** (`care/emr/resources/scheduling/...`) are the API/implementation layer: they define the enums, the real shape of that JSON field, validation rules, and the read/write schemas. Everything below the `## Models` section reflects the specs.
+The **Django model** (`care/emr/models/scheduling/schedule.py`) is the storage layer, including the opaque `Availability.availability` `JSONField`. The **Pydantic resource specs** (`care/emr/resources/scheduling/...`) are the API and implementation layer: they define the enums, the real shape of that JSON field, the validation rules, and the read/write schemas. Everything below the `## Models` section reflects the specs.
 
 ## Models
 
@@ -23,7 +23,7 @@ The **Django model** (`care/emr/models/scheduling/schedule.py`) is the storage l
 | `Availability` | Slot configuration for a schedule (slot size, tokens, weekly recurrence) |
 | `AvailabilityException` | A date/time range that blocks a resource (leave, holidays) |
 
-All models extend [`EMRBaseModel`](../foundation/base-model.mdx) — the shared Care EMR base providing `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON.
+All models extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base that provides `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON.
 
 ## `Schedule` fields
 
@@ -38,7 +38,7 @@ All models extend [`EMRBaseModel`](../foundation/base-model.mdx) — the shared 
 
 ### Billing links
 
-Both charge links are managed only through the `set_charge_item_definition` action (see [Resource specs](#resource-specs-api-schema)), never via the create/update body.
+Both charge links are managed only through the `set_charge_item_definition` action (see [Resource specs](#resource-specs-api-schema)), never through the create/update body.
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -49,7 +49,7 @@ Both charge links are managed only through the `set_charge_item_definition` acti
 
 ### `SchedulableResourceTypeOptions`
 
-The discriminator for what kind of entity a schedule/exception is attached to. Sent as `resource_type` on write; the matching `resource_id` is the `external_id` of that entity.
+The discriminator for the kind of entity a schedule or exception attaches to. Sent as `resource_type` on write; the matching `resource_id` is the `external_id` of that entity.
 
 | Value | Resolves to |
 | --- | --- |
@@ -73,7 +73,7 @@ Type of an individual `Availability` block (`Availability.slot_type` on the mode
 
 ### `SchedulableResource`
 
-A bookable entity within a facility. Exactly one of `user`, `location`, or `healthcare_service` identifies the underlying resource; `resource_type` discriminates which. It is **never created directly via the API** — `Schedule` and `AvailabilityException` writes call `get_or_create_resource(resource_type, resource_id, facility)` server-side, validating that the target belongs to the facility.
+A bookable entity within a facility. Exactly one of `user`, `location`, or `healthcare_service` identifies the underlying resource, and `resource_type` discriminates which. It is **never created directly via the API**: `Schedule` and `AvailabilityException` writes call `get_or_create_resource(resource_type, resource_id, facility)` server-side, validating that the target belongs to the facility.
 
 ```text
 facility            → FK Facility (CASCADE)
@@ -83,7 +83,7 @@ location            → FK FacilityLocation (CASCADE, nullable)
 healthcare_service  → FK HealthcareService (CASCADE, nullable)
 ```
 
-Uniqueness is enforced per facility + `resource_type` against each target via three `UniqueConstraint`s:
+Uniqueness is enforced per facility and `resource_type` against each target through three `UniqueConstraint`s:
 
 | Constraint | Fields |
 | --- | --- |
@@ -91,11 +91,11 @@ Uniqueness is enforced per facility + `resource_type` against each target via th
 | `unique_facility_resource_location` | `facility`, `resource_type`, `location` |
 | `unique_facility_resource_healthcare_service` | `facility`, `resource_type`, `healthcare_service` |
 
-On read, a `SchedulableResource` is serialized by `serialize_resource(obj)` (`resource/spec.py`), which dispatches on `resource_type` to `UserSpec` / `HealthcareServiceReadSpec` / `FacilityLocationListSpec`.
+On read, `serialize_resource(obj)` (`resource/spec.py`) serializes a `SchedulableResource`, dispatching on `resource_type` to `UserSpec` / `HealthcareServiceReadSpec` / `FacilityLocationListSpec`.
 
 ### `Availability`
 
-Defines how a schedule's time is divided into bookable slots. A schedule can hold several availabilities (e.g. a morning block and an afternoon block).
+Defines how a schedule's time divides into bookable slots. A schedule can hold several availabilities, such as a morning block and an afternoon block.
 
 | Field | Type | Req. | Spec detail |
 | --- | --- | --- | --- |
@@ -110,7 +110,7 @@ Defines how a schedule's time is divided into bookable slots. A schedule can hol
 
 #### `availability` JSON shape — `AvailabilityDateTimeSpec`
 
-Each entry is one weekly recurrence window. The `JSONField` stores a **list** of these objects.
+Each entry is a single weekly recurrence window. The `JSONField` stores a **list** of these objects.
 
 ```text
 AvailabilityDateTimeSpec {
@@ -127,7 +127,7 @@ Validation on the list (`AvailabilityForScheduleSpec.validate_availability` + `v
 
 ### `AvailabilityException`
 
-Blocks a resource for a date/time range regardless of its schedules — used for leave, holidays, or one-off closures.
+Blocks a resource for a date/time range regardless of its schedules. Used for leave, holidays, or one-off closures.
 
 | Field | Type | Req. | Spec detail |
 | --- | --- | --- | --- |
@@ -141,7 +141,7 @@ Blocks a resource for a date/time range regardless of its schedules — used for
 
 ## Resource specs (API schema)
 
-All specs extend `EMRResource` ([`base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)), which provides `serialize()` (DB → pydantic) and `de_serialize()` (pydantic → DB) plus the `perform_extra_serialization` / `perform_extra_deserialization` hooks. `__exclude__` lists fields skipped during (de)serialization.
+All specs extend `EMRResource` ([`base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)), which provides `serialize()` (DB → pydantic) and `de_serialize()` (pydantic → DB) plus the `perform_extra_serialization` / `perform_extra_deserialization` hooks. `__exclude__` lists the fields skipped during (de)serialization.
 
 | Spec | Role | Exposes / behaviour |
 | --- | --- | --- |
@@ -160,26 +160,26 @@ All specs extend `EMRResource` ([`base.py`](https://github.com/ohcnetwork/care/b
 
 ### Server-maintained behaviour (viewset hooks)
 
-- **Resource resolution.** On schedule/exception create, `get_or_create_resource(resource_type, resource_id, facility)` validates the target is in the facility (practitioner must be a `FacilityOrganizationUser`; location/healthcare-service must belong to the facility) and gets-or-creates the `SchedulableResource`. `facility` is injected from the URL via `clean_create_data`.
+- **Resource resolution.** On schedule or exception create, `get_or_create_resource(resource_type, resource_id, facility)` validates that the target is in the facility (practitioner must be a `FacilityOrganizationUser`; location and healthcare-service must belong to the facility) and gets-or-creates the `SchedulableResource`. `facility` is injected from the URL via `clean_create_data`.
 - **Nested availability create.** `ScheduleViewSet.perform_create` (atomic) sets `resource`, saves the schedule, then de-serializes and saves each `availability` linked to it.
-- **Charge items.** `revisit_allowed_days`, `charge_item_definition`, and `revisit_charge_item_definition` are set **only** through the `set_charge_item_definition` detail action — never the create/update body.
-- **Locking + slot guards.** Update/destroy take a `Lock("booking:resource:<id>")`. Deleting a schedule or availability is rejected if future allocated `TokenSlot`s exist; otherwise availabilities and slots are soft-deleted (`deleted=True`).
+- **Charge items.** `revisit_allowed_days`, `charge_item_definition`, and `revisit_charge_item_definition` are set **only** through the `set_charge_item_definition` detail action, never the create/update body.
+- **Locking + slot guards.** Update and destroy take a `Lock("booking:resource:<id>")`. Deleting a schedule or availability is rejected if future allocated `TokenSlot`s exist; otherwise availabilities and slots are soft-deleted (`deleted=True`).
 - **Exception slot clearing.** Creating an `AvailabilityException` soft-deletes overlapping `TokenSlot`s, but rejects the request if any of them are already allocated ("There are bookings during this exception").
-- **List requires resource.** `Schedule` and `AvailabilityException` list endpoints require `resource_type` and `resource_id` query params and scope results to that `SchedulableResource`.
+- **List requires resource.** The `Schedule` and `AvailabilityException` list endpoints require `resource_type` and `resource_id` query params and scope results to that `SchedulableResource`.
 
 ## Methods & save behaviour
 
-- `Availability.slot_type` drives whether `slot_size_in_minutes` / `tokens_per_slot` survive: only `appointment` keeps them; `open` and `closed` null them out (`validate_for_slot_type`).
+- `Availability.slot_type` decides whether `slot_size_in_minutes` / `tokens_per_slot` survive: only `appointment` keeps them, while `open` and `closed` null them out (`validate_for_slot_type`).
 - Schedule validity windows are guarded both ways: they cannot start in the past, and they cannot be edited to a range that excludes already-allocated slots.
-- Slot generation is derived from `Availability` at read time, not stored as rows on the schedule.
+- Slots are generated from `Availability` at read time, not stored as rows on the schedule.
 
 ## API integration notes
 
-- Schedules, availabilities, and exceptions are exposed through Care's REST API; slot generation is derived from `Availability` rather than stored as rows.
-- A `SchedulableResource` is the join point for booking — clients send `resource_type` + `resource_id`; resolve the underlying `user`, `location`, or `healthcare_service` via `resource_type` rather than assuming one is set.
-- `ChargeItemDefinition` links are `PROTECT` — a definition referenced by a schedule cannot be deleted while the schedule exists.
-- `availability` on `Availability` is a JSON **list** of weekly recurrence windows (`AvailabilityDateTimeSpec`); treat it as the canonical source for which days/times the block covers.
-- `create_tokens` and `tokens_per_slot` drive token/queue behaviour for high-volume, precision-optional workflows; `appointment` slot types are for time-precise booking and must divide each window evenly (≤ `MAX_SLOTS_PER_AVAILABILITY`, default 30).
+- Schedules, availabilities, and exceptions are exposed through Care's REST API; slots are generated from `Availability` rather than stored as rows.
+- A `SchedulableResource` is the join point for booking. Clients send `resource_type` + `resource_id`; resolve the underlying `user`, `location`, or `healthcare_service` from `resource_type` rather than assuming one is set.
+- `ChargeItemDefinition` links use `PROTECT`: a definition referenced by a schedule cannot be deleted while the schedule exists.
+- `availability` on `Availability` is a JSON **list** of weekly recurrence windows (`AvailabilityDateTimeSpec`); treat it as the canonical source for the days and times the block covers.
+- `create_tokens` and `tokens_per_slot` drive token and queue behaviour for high-volume, precision-optional workflows. `appointment` slot types handle time-precise booking and must divide each window evenly (≤ `MAX_SLOTS_PER_AVAILABILITY`, default 30).
 
 ## Related
 

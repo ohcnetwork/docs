@@ -4,28 +4,28 @@ sidebar_position: 1
 
 # Inventory & Supply
 
-**Inventory & supply** is how Care tracks what physical items a facility stocks, how much of each is on hand, and how items move between stores, wards, suppliers, and patients. It is the operational backbone behind medications, nutritional products, and consumables — keeping stock counts accurate as goods are received, transferred, and dispensed.
+**Inventory & supply** tracks what physical items a facility stocks, how much of each is on hand, and how items move between stores, wards, suppliers, and patients. It is the operational backbone behind medications, nutritional products, and consumables, keeping stock counts accurate as goods are received, transferred, and dispensed.
 
 ## What it represents
 
 Care models supply as a small set of connected resources, each answering a different question:
 
-- **Product knowledge** — the reusable catalogue definition of an item (its name, codes, base unit, ingredients or nutrients, and storage guidelines). It is the "what is this item" record, defined once per instance or per facility.
-- **Product** — a concrete, batch-level instance of a catalogue item at a facility, carrying batch-specific detail like lot number, expiry, and purchase price.
-- **Inventory item** — the current on-hand quantity of one product at one facility location (for example, a ward pharmacy or central store).
+- **Product knowledge** — the reusable catalogue definition of an item: its name, codes, base unit, ingredients or nutrients, and storage guidelines. This is the "what is this item" record, defined once per instance or per facility.
+- **Product** — a concrete, batch-level instance of a catalogue item at a facility, carrying batch-specific detail such as lot number, expiry, and purchase price.
+- **Inventory item** — the current on-hand quantity of one product at one facility location, such as a ward pharmacy or central store.
 - **Supply request** — a request to move a quantity of a catalogue item into a destination location, grouped under an order.
-- **Supply delivery** — a record of items actually moving — into a facility from a supplier, between locations, or out to a patient — grouped under a delivery order.
+- **Supply delivery** — a record of items actually moving: into a facility from a supplier, between locations, or out to a patient, grouped under a delivery order.
 
-Stock balances are not entered by hand. Care derives the on-hand quantity for each location from the deliveries that bring stock in and the dispenses that take it out, so availability stays consistent with what actually happened.
+Stock balances are never entered by hand. Care derives each location's on-hand quantity from the deliveries that bring stock in and the dispenses that take it out, so availability always matches what actually happened.
 
 ## Catalogue vs. stock
 
 It helps to separate the *idea* of an item from the *thing on the shelf*:
 
 - **Catalogue** (product knowledge) describes an item in the abstract — paracetamol 500 mg tablets, defined once and reused everywhere.
-- **Stock** (product, then inventory item) is a specific batch of that item sitting in a specific location, with a real quantity that goes up and down.
+- **Stock** (product, then inventory item) is a specific batch of that item in a specific location, with a real quantity that rises and falls.
 
-A catalogue entry can be defined instance-wide (shared across all facilities) or scoped to a single facility. Each product references exactly one catalogue entry, so naming and coding live in one place rather than being copied onto every batch.
+A catalogue entry can be defined instance-wide, shared across all facilities, or scoped to a single facility. Each product references exactly one catalogue entry, so naming and coding live in one place instead of being copied onto every batch.
 
 ## How stock moves
 
@@ -40,7 +40,7 @@ Supply delivery:  in_progress → completed
 
 Both flows are grouped under orders. A **request order** describes items wanted at a destination location, optionally from a supplier organization or an origin location. A **delivery order** records the matching shipment and starts in `draft` or `pending` before progressing.
 
-A delivery has two shapes depending on where stock comes from:
+A delivery takes one of two shapes, depending on where stock comes from:
 
 - **External delivery** — the order has no origin location, so goods arrive from a supplier. The delivery names the product received.
 - **Intra-facility move** — the order has an origin location, so stock transfers between two locations within the facility. The delivery draws from a specific inventory item (batch).
@@ -59,7 +59,7 @@ Supply ties together several other parts of Care:
 
 ## Permissions
 
-Access to supply resources is governed by facility-scoped permissions. The complete set, grouped by resource, with the system roles that hold each by default:
+Facility-scoped permissions govern access to supply resources. The complete set follows, grouped by resource, with the system roles that hold each by default:
 
 ### Product
 
@@ -96,7 +96,7 @@ Access to supply resources is governed by facility-scoped permissions. The compl
 | Can Create Supply Delivery on Facility | Record a delivery moving stock at a facility | Facility Admin, Admin |
 | Can Create External Supply Delivery on Facility | Record a delivery of goods arriving from a supplier | Facility Admin, Admin |
 
-Roles are granted to users through organization, facility-organization, and patient memberships. Access to a location's inventory, requests, and deliveries is checked against the facility organizations that own that location, and a permission held at a parent organization cascades to its descendants in the organization tree. In practice, clinical and pharmacy staff can read stock and raise supply requests, while creating catalogue items and recording deliveries is reserved for facility administrators.
+Roles reach users through organization, facility-organization, and patient memberships. Access to a location's inventory, requests, and deliveries is checked against the facility organizations that own that location, and a permission held at a parent organization cascades to its descendants in the organization tree. In practice, clinical and pharmacy staff can read stock and raise supply requests, while creating catalogue items and recording deliveries is reserved for facility administrators.
 
 ## Related
 

@@ -12,9 +12,9 @@ Technical reference for the `MedicationDispense` module in Care EMR.
 - Spec: [`care/emr/resources/medication/dispense/dispense_order.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/dispense/dispense_order.py)
 - Viewset: [`care/emr/api/viewsets/medication_dispense.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/medication_dispense.py)
 
-`MedicationDispense` records products that have been dispensed to a patient. It both completes the workflow started by a [Medication Request](./medication-request.mdx) and drives inventory consumption within a location. It applies to inpatient settings (items dispensed and held in the room, refilled as needed) and outpatient settings (dispensed after an encounter is completed). A dispense may optionally carry a [Charge Item](../billing/charge-item.mdx) for billing.
+`MedicationDispense` records products dispensed to a patient. It completes the workflow started by a [Medication Request](./medication-request.mdx) and drives inventory consumption within a location. It covers both inpatient settings (items dispensed and held in the room, refilled as needed) and outpatient settings (dispensed after an encounter completes). A dispense may optionally carry a [Charge Item](../billing/charge-item.mdx) for billing.
 
-The Django model is the **storage** layer — several fields are opaque `JSONField`s. The Pydantic **resource specs** (`care/emr/resources/medication/dispense/`) define the API schema: enums, JSON-field shapes, validation, and the read/write contracts. Where the two disagree, the spec is the source of truth (e.g. `status` stores enum values with underscores such as `in_progress`, not the FHIR hyphenated forms).
+The Django model is the **storage** layer, where several fields are opaque `JSONField`s. The Pydantic **resource specs** (`care/emr/resources/medication/dispense/`) define the API schema: enums, JSON-field shapes, validation, and the read/write contracts. When the two disagree, the spec wins (e.g. `status` stores underscored enum values such as `in_progress`, not the FHIR hyphenated forms).
 
 ## Models
 
@@ -23,7 +23,7 @@ The Django model is the **storage** layer — several fields are opaque `JSONFie
 | `MedicationDispense` | A single dispense event: a quantity of one inventory item handed to a patient |
 | `DispenseOrder` | Groups dispense events at a location into a named order with a shared status |
 
-Both models extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, audit fields, and soft-delete semantics).
+Both models extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base that provides `external_id`, audit fields, and soft-delete semantics.
 
 ## `MedicationDispense` fields
 
@@ -64,7 +64,7 @@ Both models extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care E
 | `charge_item` | `FK → ChargeItem` | `CASCADE`, null. Server-created from the product's charge item definition when one exists |
 | `order` | `FK → DispenseOrder` | `CASCADE`, null. Parent dispense order, when grouped |
 
-`patient`, `encounter`, `authorizing_request`, `item`, and `location` are listed in `__exclude__` on the spec base — they are resolved manually in `perform_extra_deserialization` rather than copied straight off the Pydantic object.
+`patient`, `encounter`, `authorizing_request`, `item`, and `location` appear in `__exclude__` on the spec base. The viewset resolves them manually in `perform_extra_deserialization` rather than copying them straight off the Pydantic object.
 
 ## Enum values
 
@@ -83,7 +83,7 @@ From `MedicationDispenseStatus` (`spec.py`).
 | `stopped` |
 | `declined` |
 
-The set `MEDICATION_DISPENSE_CANCELLED_STATUSES = [cancelled, entered_in_error, stopped, declined]` is treated as terminal/cancelling: no updates are allowed once a dispense is in one of these, and transitioning into one triggers charge-item cancellation (see [Methods & save behaviour](#methods--save-behaviour)).
+The set `MEDICATION_DISPENSE_CANCELLED_STATUSES = [cancelled, entered_in_error, stopped, declined]` is terminal: once a dispense reaches one of these statuses, no further updates are allowed, and transitioning into one triggers charge-item cancellation (see [Methods & save behaviour](#methods--save-behaviour)).
 
 ### `MedicationDispenseNotPerformedReason` values
 
@@ -180,11 +180,11 @@ DoseRange   { low: DosageQuantity, high: DosageQuantity }
 DosageQuantity { value: Decimal(20,6), unit: Coding }
 ```
 
-`Coding@<slug>` denotes a `Coding` bound to a Care value set (`ValueSetBoundCoding`); `Coding = { system?, version?, code (required), display? }`. `TimingUnit ∈ {s, min, h, d, wk, mo, a}`; `DoseType ∈ {ordered, calculated}`. The shared `PeriodSpec` (from `base.py`) — `{ start: datetime, end: datetime }`, both tz-aware, `start ≤ end` — is the standard period shape used elsewhere; `MedicationDispense` itself does not expose a period field.
+`Coding@<slug>` denotes a `Coding` bound to a Care value set (`ValueSetBoundCoding`), where `Coding = { system?, version?, code (required), display? }`. `TimingUnit ∈ {s, min, h, d, wk, mo, a}`; `DoseType ∈ {ordered, calculated}`. The shared `PeriodSpec` (from `base.py`) — `{ start: datetime, end: datetime }`, both tz-aware, `start ≤ end` — is the standard period shape used elsewhere, but `MedicationDispense` itself exposes no period field.
 
 ## Resource specs (API schema)
 
-All specs extend `EMRResource` (`base.py`) and use its `serialize` / `de_serialize` plumbing; the `serialize`-side data is assembled in `perform_extra_serialization`, and write-side resolution/side effects happen in `perform_extra_deserialization`.
+All specs extend `EMRResource` (`base.py`) and use its `serialize` / `de_serialize` plumbing. Read-side data is assembled in `perform_extra_serialization`; write-side resolution and side effects happen in `perform_extra_deserialization`.
 
 | Spec class | Role | Notes |
 | --- | --- | --- |
@@ -214,7 +214,7 @@ All specs extend `EMRResource` (`base.py`) and use its `serialize` / `de_seriali
 
 ### `CreateDispenseOrder`
 
-Inline order payload on the write spec. When the matching order (by `alternate_identifier` + `patient` + `location`) does not exist it is created; if it exists but its status is not `draft`/`in_progress`, the request is rejected (`"Prescription is not active"`).
+Inline order payload on the write spec. If no matching order (by `alternate_identifier` + `patient` + `location`) exists, one is created. If a matching order exists but its status is not `draft`/`in_progress`, the request is rejected (`"Prescription is not active"`).
 
 ```text
 CreateDispenseOrder {
@@ -239,7 +239,7 @@ CreateDispenseOrder {
 | `route` | `system-route` |
 | `method` | `system-administration-method` |
 
-The dispense-level `not_performed_reason` aligns with the `system-medication-not-given` value set (`medication_not_given_reason.py`) but is stored/validated as the `MedicationDispenseNotPerformedReason` enum, not a bound `Coding`.
+The dispense-level `not_performed_reason` aligns with the `system-medication-not-given` value set (`medication_not_given_reason.py`), but it is stored and validated as the `MedicationDispenseNotPerformedReason` enum rather than a bound `Coding`.
 
 ## Related models
 
@@ -258,7 +258,7 @@ tags                  → ArrayField[int], default []
 alternate_identifier  → CharField(100), nullable
 ```
 
-`DispenseOrder` enforces the uniqueness constraint `unique_alternate_identifier_encounter_location` on `(alternate_identifier, patient, location)`, so an external identifier can appear at most once per patient and location.
+`DispenseOrder` enforces the uniqueness constraint `unique_alternate_identifier_encounter_location` on `(alternate_identifier, patient, location)`, so each external identifier can appear at most once per patient and location.
 
 **Source / specs:**
 - Model: `DispenseOrder` in [`medication_dispense.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/medication_dispense.py)
@@ -275,7 +275,7 @@ alternate_identifier  → CharField(100), nullable
 | `abandoned` |
 | `entered_in_error` |
 
-`MEDICATION_DISPENSE_ORDER_COMPLETED_STATUSES = [abandoned, entered_in_error, completed]` are terminal-ish. `abandoned` and `entered_in_error` are the cancel transitions.
+`MEDICATION_DISPENSE_ORDER_COMPLETED_STATUSES = [abandoned, entered_in_error, completed]` are terminal. `abandoned` and `entered_in_error` are the cancel transitions.
 
 #### `DispenseOrder` specs
 
@@ -288,7 +288,7 @@ alternate_identifier  → CharField(100), nullable
 
 ## Methods & save behaviour
 
-The model has no custom `save()`; the dispense workflow lives in the viewset (`MedicationDispenseViewSet`) inside a `transaction.atomic()` block, with side effects layered on top of the spec's `perform_extra_deserialization`.
+The model has no custom `save()`. The dispense workflow lives in the viewset (`MedicationDispenseViewSet`) inside a `transaction.atomic()` block, with side effects layered on top of the spec's `perform_extra_deserialization`.
 
 **On create (`perform_create`):**
 - Acquires an `InventoryItemLock` on `item` and rejects if `item.net_content < quantity` (`"Inventory item does not have enough stock"`).
@@ -302,17 +302,17 @@ The model has no custom `save()`; the dispense workflow lives in the viewset (`M
 - A transition **into** a cancelling status while a `charge_item` is attached cancels the charge item (`handle_charge_item_cancel`, status → `aborted`), sets the authorizing request's `dispense_status` to `incomplete`, and detaches `authorizing_request` (`SET_NULL`).
 - Re-syncs inventory and re-applies the `fully_dispensed` → `dispense_status` (`complete`/`partial`) logic.
 
-**Dispense-order cancellation (`cancel_dispense_order` in the order viewset):** moving an order to `abandoned` or `entered_in_error` cascades to every member dispense — cancels their charge items, marks each dispense `cancelled` / `entered_in_error` respectively, sets authorizing requests' `dispense_status` to `incomplete`, and detaches them. An order already `abandoned`/`entered_in_error` cannot transition; a `completed` order can only be cancelled.
+**Dispense-order cancellation (`cancel_dispense_order` in the order viewset):** moving an order to `abandoned` or `entered_in_error` cascades to every member dispense. It cancels their charge items, marks each dispense `cancelled` / `entered_in_error` respectively, sets authorizing requests' `dispense_status` to `incomplete`, and detaches them. An order already in `abandoned`/`entered_in_error` cannot transition, and a `completed` order can only be cancelled.
 
 ## API integration notes
 
 - Exposed through `MedicationDispenseViewSet` (create, retrieve, update, list, upsert) and aligns with the FHIR `MedicationDispense` resource; API field names may differ from FHIR (e.g. `authorizing_request` ≈ FHIR `authorizingPrescription`). Enum **values** use underscores (`in_progress`, `entered_in_error`), not FHIR hyphens.
 - List/summary require either a `location` or `encounter` query param (else `400`); `include_children=true` widens a location query to descendant locations via `parent_cache`. Filters: `status`, `exclude_status`, `category`, `encounter`, `patient`, `item`, `authorizing_prescription`, `authorizing_request`, `location`, `order`. A `summary` action returns per-encounter dispense counts.
-- Permissions are location-centric: creates only require write access to the dispensing `location` (pharmacists often lack encounter access); reads require either location-list or encounter-view permission.
-- Send `item` as an `InventoryItem` UUID, not a bare product code — this is what draws down stock.
-- `quantity` / `days_supply` are constrained to whole units (`decimal_places=0`) on the write spec even though the column stores 6 decimal places.
-- `charge_item` is server-managed (created from the product's charge item definition, cancelled on dispense/order cancellation) — do not set it directly.
-- Use `fully_dispensed` to roll the linked [Medication Request](./medication-request.mdx) into `complete` / `partial` so pharmacists do not re-dispense an already-fulfilled request.
+- Permissions are location-centric. Creates require only write access to the dispensing `location` (pharmacists often lack encounter access); reads require either location-list or encounter-view permission.
+- Send `item` as an `InventoryItem` UUID, not a bare product code — that is what draws down stock.
+- `quantity` and `days_supply` are constrained to whole units (`decimal_places=0`) on the write spec, even though the column stores 6 decimal places.
+- `charge_item` is server-managed (created from the product's charge item definition, cancelled on dispense/order cancellation), so do not set it directly.
+- Use `fully_dispensed` to roll the linked [Medication Request](./medication-request.mdx) into `complete` / `partial`, so pharmacists do not re-dispense an already-fulfilled request.
 - Use `create_dispense_order` to start an order inline, or `order` to attach to an existing one — never both.
 
 ## Related

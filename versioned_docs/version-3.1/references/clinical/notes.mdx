@@ -6,12 +6,12 @@ sidebar_position: 9
 
 Technical reference for the `NoteThread` and `NoteMessage` modules in Care EMR.
 
-The Django models (`care/emr/models/notes.py`) are the **storage layer**: `NoteThread`
+The Django models (`care/emr/models/notes.py`) form the **storage layer**: `NoteThread`
 groups messages for a patient (optionally scoped to an encounter), and `NoteMessage`
-stores each message body plus an opaque `message_history` `JSONField`. The structure of
-`message_history`, the read/write schemas, and the server-side edit-history behaviour are
-defined by the **Pydantic resource specs** (`care/emr/resources/notes/`), all built on
-`EMRResource`.
+stores each message body alongside an opaque `message_history` `JSONField`. The
+**Pydantic resource specs** (`care/emr/resources/notes/`), all built on `EMRResource`,
+define the structure of `message_history`, the read/write schemas, and the server-side
+edit-history behaviour.
 
 **Source:**
 
@@ -36,7 +36,7 @@ Both models extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care E
 | `patient` | `FK → Patient` | `on_delete=CASCADE`; thread is removed when the [patient](./patient) is deleted. Excluded from spec serialization (`__exclude__`); set from the URL/viewset context, not the request body |
 | `encounter` | `FK → Encounter` | Nullable, blank-allowed; `on_delete=CASCADE`. Scopes the thread to a specific [encounter](./encounter.mdx) when set. Excluded from spec serialization; on create it is resolved from a UUID in the request body (see specs below) |
 
-A `NoteThread` groups related messages for a patient. Threads with no `encounter` are patient-level; threads with an `encounter` are scoped to that visit. A `TODO` in the source notes that organization-based access restriction is planned but not yet implemented.
+A `NoteThread` groups related messages for a patient. A thread with no `encounter` is patient-level; a thread with an `encounter` is scoped to that visit. A `TODO` in the source notes that organization-based access restriction is planned but not yet implemented.
 
 ## Related models
 
@@ -72,7 +72,7 @@ each update, the **previous** message body is appended to a `history` list:
 }
 ```
 
-Clients must not set or overwrite `message_history`; it is read-only on the API and
+Clients must not set or overwrite `message_history`. It is read-only on the API and
 maintained entirely server-side (see `NoteMessageUpdateSpec` below).
 
 ## Resource specs (API schema)
@@ -80,7 +80,7 @@ maintained entirely server-side (see `NoteMessageUpdateSpec` below).
 All specs extend `EMRResource` (`resources/base.py`), which provides `serialize`
 (DB object → pydantic, via `perform_extra_serialization`) and `de_serialize`
 (pydantic → DB object, via `perform_extra_deserialization`). Fields listed in
-`__exclude__` are skipped by both directions and handled manually.
+`__exclude__` are skipped in both directions and handled manually.
 
 ### Thread specs
 
@@ -121,8 +121,8 @@ Validation / server behaviour:
 
 ## API integration notes
 
-- Note threads and messages are exposed through Care's REST API; field names in API payloads follow the spec classes above, which may differ from Django model names.
-- Threads are always anchored to a `patient` (set from request context); the `encounter` link is optional and narrows a thread to a single visit. On create, send `encounter` as the encounter's `external_id` (UUID) — it is validated to exist.
+- Note threads and messages are exposed through Care's REST API. Field names in API payloads follow the spec classes above, which may differ from Django model names.
+- Every thread is anchored to a `patient` (set from request context); the `encounter` link is optional and narrows a thread to a single visit. On create, send `encounter` as the encounter's `external_id` (UUID) — it is validated to exist.
 - `title` and `message` are required on write even though the underlying columns are permissive.
 - `message_history` is read-only and platform-maintained: each edit appends the previous body and authorship to `history`. Do not send it from clients.
 - Authorship and timestamps come from the inherited `EMRBaseModel` audit fields (`created_by`, `updated_by`, `created_date`, `modified_date`); soft deletes are handled via `deleted`.

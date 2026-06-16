@@ -4,18 +4,18 @@ sidebar_position: 2
 
 # Tokens & Queues
 
-A **token** in Care is a numbered place in a queue for a walk-in or queue-based visit. Tokens let a facility manage flow when patients are not booked into specific appointment slots — each patient draws a numbered token in a queue tied to a practitioner, location, or service, and is called in turn.
+A **token** in Care is a numbered place in a queue for a walk-in or queue-based visit. Tokens let a facility manage flow when patients are not booked into specific appointment slots. Each patient draws a numbered token in a queue tied to a practitioner, location, or service, and is called in turn.
 
 ## What it represents
 
-A token captures one patient's position in a queue, and the queue structures the waiting line around a resource:
+A token records one patient's position in a queue, and the queue structures the waiting line around a resource:
 
 - **The token** — a number issued to a patient, its category (e.g. General, Priority), an optional note, and its current status
 - **The queue** — the waiting line for one schedulable resource (practitioner, location, or healthcare service) on one date
 - **Sub-queues** — optional splits of a queue so the same resource can serve from several physical points (e.g. multiple vaccination rooms, each drawing its own tokens)
-- **Categories** — reusable labels per facility that group and prioritize tokens, each with a short code shown on displays
+- **Categories** — reusable per-facility labels that group and prioritize tokens, each with a short code shown on displays
 
-A token is for managing the live waiting line. It is distinct from a booked appointment, though a token can be linked to a booking when one exists.
+A token manages the live waiting line. It is distinct from a booked appointment, though it can link to a booking when one exists.
 
 ## Lifecycle
 
@@ -33,12 +33,12 @@ CREATED → IN_PROGRESS → FULFILLED
 - **CANCELLED** — the token was cancelled
 - **ENTERED_IN_ERROR** — applied automatically when a token is deleted (a soft delete; the record is retained)
 
-Queue progression — which token is current and who is next — is maintained by the platform as staff advance the line, not set directly by the person issuing the token.
+The platform maintains queue progression — which token is current and who is next — as staff advance the line. The person issuing the token does not set it directly.
 
 ## Classification
 
 - **By category** — every token belongs to a category (such as General or Priority). Numbering runs per category within a queue, so two categories in the same queue each count from 1.
-- **By resource type** — a queue is bound to one of three schedulable resource types: a **practitioner**, a **location**, or a **healthcare service**. This binding determines who can manage and see the queue.
+- **By resource type** — a queue binds to one of three schedulable resource types: a **practitioner**, a **location**, or a **healthcare service**. This binding determines who can manage and see the queue.
 
 ## Relationships
 
@@ -48,7 +48,7 @@ Queue progression — which token is current and who is next — is maintained b
 
 ## Permissions
 
-Token access is governed by facility-scoped permissions. Whether a user can see or manage a queue is decided by their membership in the facility organization that owns the resource the queue is bound to.
+Facility-scoped permissions govern token access. A user's membership in the facility organization that owns the resource a queue is bound to determines whether they can see or manage that queue.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
@@ -57,7 +57,7 @@ Token access is governed by facility-scoped permissions. Whether a user can see 
 | Can Create on Token Category | Create and manage token categories for a facility | Admin, Staff, Facility Admin |
 | Can list token category on Facility | View the token categories defined for a facility | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
 
-Roles are granted to users through facility-organization memberships. Access is scoped by the organization tree: a permission held at a parent organization cascades to its descendants, so a user's reach over a queue follows the organization that manages the queue's practitioner, location, or healthcare service.
+Users receive roles through facility-organization memberships. The organization tree scopes access: a permission held at a parent organization cascades to its descendants, so a user's reach over a queue follows the organization that manages the queue's practitioner, location, or healthcare service.
 
 ## Related
 

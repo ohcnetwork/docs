@@ -4,19 +4,19 @@ sidebar_position: 1
 
 # Billing & Accounts
 
-**Billing** in Care is how the cost of care is recorded, grouped, invoiced, and settled. Its anchor is the **account** — a financial bucket that aggregates everything charged to a patient within a facility — so that charges, invoices, and payments all hang together as one coherent financial history.
+**Billing** in Care records, groups, invoices, and settles the cost of care. It anchors on the **account** — a financial bucket that aggregates everything charged to a patient within a facility — so charges, invoices, and payments stay tied together as one coherent financial history.
 
 ## What it represents
 
-Billing is not a single resource but a small family of resources that work together:
+Billing is not one resource but a small family of resources that work together:
 
-- **Account** — a per-patient, per-facility bucket that aggregates charges and tracks running balances. One open account is created automatically for a patient when the first charge is raised; it can be balanced and closed once care is complete.
-- **Charge item** — a single billable line for a service or product (a consultation, a dispensed medication, a bed-day). It records what was charged, the quantity, and the resolved price.
+- **Account** — a per-patient, per-facility bucket that aggregates charges and tracks running balances. The first charge raised for a patient opens one account automatically; once care is complete, the account can be balanced and closed.
+- **Charge item** — a single billable line for a service or product: a consultation, a dispensed medication, a bed-day. It records what was charged, the quantity, and the resolved price.
 - **Charge item definition** — the reusable pricing template that answers "how much does this cost", binding a service to its base rate, surcharges, discounts, and taxes.
 - **Invoice** — a billable grouping of charge items for one account, with snapshotted line items and computed totals, issued to the patient or payer.
 - **Payment reconciliation** — a record of a payment, advance, or credit note made against an account (and optionally a specific invoice), capturing how, when, and how much was paid.
 
-Together these answer: what was charged, what it costs, what was billed, and what was paid.
+Together they answer: what was charged, what it costs, what was billed, and what was paid.
 
 ## How the pieces fit
 
@@ -28,7 +28,7 @@ Charge item definition  ──(applied to)──▶  Charge item  ──(placed 
                                              Invoice  ◀──(paid via)── Payment reconciliation
 ```
 
-A charge item is usually built from a **definition**, placed on the patient's default **account**, then grouped into an **invoice**. A **payment reconciliation** records money received against the account or invoice. Prices, totals, and balances are computed by the platform — clients record the facts, the system does the arithmetic.
+A charge item is usually built from a **definition**, placed on the patient's default **account**, then grouped into an **invoice**. A **payment reconciliation** records money received against the account or invoice. The platform computes prices, totals, and balances — clients record the facts, and the system does the arithmetic.
 
 ## Lifecycle
 
@@ -52,7 +52,7 @@ Invoice:
 draft → issued → balanced        (or → cancelled / entered_in_error)
 ```
 
-A new account opens as `active` / `open` and keeps accruing charges until billing begins and it is eventually closed. A charge starts `billable`, becomes `billed` when it lands on an invoice, and `paid` once settled. An invoice begins as a `draft` (still editable), is `issued` to the payer, and is marked `balanced` when fully settled. Totals are recomputed automatically as charges, invoices, and payments change.
+A new account opens as `active` / `open` and keeps accruing charges until billing begins and the account is eventually closed. A charge starts `billable`, becomes `billed` when it lands on an invoice, and turns `paid` once settled. An invoice begins as a `draft` (still editable), is `issued` to the payer, and is marked `balanced` when fully settled. Totals recompute automatically as charges, invoices, and payments change.
 
 ## Relationships
 
@@ -62,7 +62,7 @@ A new account opens as `active` / `open` and keeps accruing charges until billin
 
 ## Permissions
 
-Billing data is sensitive financial information, so access is governed by dedicated, facility-scoped permissions for each resource. The complete set of billing permissions and the system roles that hold them by default is listed below, grouped by resource.
+Billing data is sensitive financial information, so dedicated, facility-scoped permissions govern access to each resource. The full set of billing permissions, with the system roles that hold them by default, is listed below, grouped by resource.
 
 ### Account
 
@@ -107,7 +107,7 @@ Billing data is sensitive financial information, so access is governed by dedica
 | Can Read Payment Reconciliation | View payments and credit notes recorded against an account | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
 | Can Destroy Payment Reconciliation | Delete a recorded payment reconciliation | Facility Admin, Admin |
 
-A broad set of clinical roles can read billing and raise charges, invoices, and payments, while creating or editing accounts, editing or cancelling charges, defining prices, and destroying or unlocking invoices are reserved for administrators. Roles are granted to users through organization, facility-organization, and patient memberships, and access is scoped by the organization tree — a permission held at a parent organization cascades to its descendant facilities and locations.
+A broad set of clinical roles can read billing and raise charges, invoices, and payments. Creating or editing accounts, editing or cancelling charges, defining prices, and destroying or unlocking invoices are reserved for administrators. Users receive roles through organization, facility-organization, and patient memberships, and the organization tree scopes access — a permission held at a parent organization cascades to its descendant facilities and locations.
 
 ## Related
 

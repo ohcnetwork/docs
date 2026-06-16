@@ -21,14 +21,14 @@ Technical reference for the `User` module in Care EMR. The Django model is the *
 
 Base classes vary by model:
 
-- `User` extends Django's `AbstractUser` (adds `external_id` and a soft-delete `deleted` flag of its own; not an `EMRBaseModel`).
+- `User` extends Django's `AbstractUser`, adding its own `external_id` and a soft-delete `deleted` flag; it is not an `EMRBaseModel`.
 - `Skill`, `UserSkill`, and `MobileOTP` extend [`BaseModel`](../foundation/base-model.mdx) (`external_id`, `created_date`, `modified_date`, soft-delete via `deleted`).
-- `UserFlag` extends `BaseFlag` (a `BaseModel` subclass that adds a `flag` field plus cache-invalidating `save()`).
-- `PlugConfig` extends plain `django.db.models.Model` (no audit or soft-delete fields).
+- `UserFlag` extends `BaseFlag`, a `BaseModel` subclass that adds a `flag` field plus a cache-invalidating `save()`.
+- `PlugConfig` extends plain `django.db.models.Model`, with no audit or soft-delete fields.
 
 ## `User` fields
 
-`User` extends `AbstractUser`, so it inherits `password`, `email`, `first_name`, `last_name`, `is_staff`, `is_active`, `is_superuser`, `last_login`, and `date_joined` from Django. The fields below are Care additions or overrides. Queried through `CustomUserManager`, which filters out `deleted=True` rows by default (`get_entire_queryset()` bypasses the filter).
+`User` extends `AbstractUser`, inheriting `password`, `email`, `first_name`, `last_name`, `is_staff`, `is_active`, `is_superuser`, `last_login`, and `date_joined` from Django. The fields below are Care additions or overrides. Queries go through `CustomUserManager`, which filters out `deleted=True` rows by default (`get_entire_queryset()` bypasses the filter).
 
 ### Identity & profile
 
@@ -161,14 +161,14 @@ Plain-`BaseModel` DTOs in [`care/emr/resources/mfa/spec.py`](https://github.com/
 
 ### Server-maintained behaviour
 
-- **`role_orgs` on create** — `UserCreateSpec.perform_extra_deserialization` copies `role_orgs` onto `obj._role_orgs` for the view to apply role/organization assignments after the user is saved; it is **not** a DB column.
-- **`set_password`** — create hashes the supplied password (or sets an unusable password when `None`) via `obj.set_password(self.password)`.
-- **Cache** — `UserSpec` is `@cacheable(use_base_manager=True)`; saving a `User` invalidates the cache (via `post_save`), and `created_by` is read through `model_from_cache(UserSpec, ...)`. `use_base_manager=True` lets cached lookups resolve soft-deleted users.
+- **`role_orgs` on create** — `UserCreateSpec.perform_extra_deserialization` copies `role_orgs` onto `obj._role_orgs` so the view can apply role/organization assignments after the user is saved; it is **not** a DB column.
+- **`set_password`** — create hashes the supplied password via `obj.set_password(self.password)`, or sets an unusable password when it is `None`.
+- **Cache** — `UserSpec` is `@cacheable(use_base_manager=True)`. Saving a `User` invalidates the cache (via `post_save`), and `created_by` is read through `model_from_cache(UserSpec, ...)`. `use_base_manager=True` lets cached lookups resolve soft-deleted users.
 - **Computed read fields** — `id` (from `external_id`), `profile_picture_url` (resolved), `mfa_enabled`, `role_orgs`, `flags`, `geo_organization`, `created_by`, and the current-user `organizations`/`facilities`/`permissions` are all populated in `perform_extra_serialization`, never copied straight from columns.
 
 ## Shared spec types
 
-Referenced by the resource layer (defined under `care/emr/resources/base.py` and `care/emr/resources/common/`). User specs do not bind any coded fields, but the base period/contact types are part of the shared vocabulary:
+Referenced by the resource layer (defined under `care/emr/resources/base.py` and `care/emr/resources/common/`). User specs bind no coded fields, but the base period/contact types are part of the shared vocabulary:
 
 | Type | Shape | Source |
 | --- | --- | --- |
@@ -233,7 +233,7 @@ otp          → CharField(10)
 
 ## Methods & save behaviour
 
-`User` overrides no `save()`/`delete()` but exposes notable helpers:
+`User` overrides neither `save()` nor `delete()`, but it exposes several notable helpers:
 
 - `get_cached_role_orgs()` — returns `cached_role_orgs` if set; otherwise loads from `OrganizationUser.get_cached_role_orgs(self.id)` and persists it via `save(update_fields=["cached_role_orgs"])`. Read specs surface the result as `role_orgs`.
 - `read_profile_picture_url()` — resolves `profile_picture_url` against `FACILITY_CDN` or the S3 bucket endpoint; returns `None` when unset. Used by every read spec's `profile_picture_url`.
@@ -252,9 +252,9 @@ otp          → CharField(10)
 
 ## API integration notes
 
-- `User` is exposed through Care's REST API; `external_id` (returned as `id`) is the public identifier, never the integer PK or `username` alone.
-- `deleted` is honoured by `CustomUserManager` — soft-deleted users are excluded from normal queries, but cached `UserSpec` lookups use the base manager (`use_base_manager=True`) so they can still resolve deleted users (e.g. as `created_by`).
-- Authorization is not stored on `User`. Access is resolved through the roles/permissions/organization system; `cached_role_orgs` is a platform-maintained cache — do not write it directly from clients. New users supply `role_orgs` (organization + role UUIDs) at create time.
+- `User` is exposed through Care's REST API. `external_id` (returned as `id`) is the public identifier — never the integer PK or `username` alone.
+- `deleted` is honoured by `CustomUserManager`: soft-deleted users are excluded from normal queries, but cached `UserSpec` lookups use the base manager (`use_base_manager=True`) and can still resolve deleted users (e.g. as `created_by`).
+- Authorization is not stored on `User`. Access resolves through the roles/permissions/organization system, and `cached_role_orgs` is a platform-maintained cache — do not write it directly from clients. New users supply `role_orgs` (organization + role UUIDs) at create time.
 - `mfa_settings`, `preferences`, and `PlugConfig.meta` are open JSON bags for evolving config without migrations. `mfa_settings` is mutated by the MFA flow (`mfa/spec.py`), not by user create/update.
 - `is_service_account` distinguishes machine/integration accounts from human users.
 - Write paths use `UserCreateSpec` / `UserUpdateSpec`; read paths use `UserSpec` (list), `UserRetrieveSpec` (detail), `CurrentUserRetrieveSpec` (self), and `PublicUserReadSpec` (public). Picture URLs, MFA status, roles, flags, and nested org/creator objects are computed server-side.

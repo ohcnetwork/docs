@@ -6,7 +6,7 @@ sidebar_position: 4
 
 Technical reference for the `ResourceRequest` module in Care EMR.
 
-`ResourceRequest` models an inter-facility request for a resource (transfer, supply, or assistance), tracked from origin through approval and assignment. The Django model is the **storage layer**: `status`, `category`, and `priority` are open `CharField`/`IntegerField` columns with no model-level choices. The **API/implementation layer** lives in the Pydantic resource specs, which constrain those fields to enums, add validation, resolve foreign keys, and define the read/write schemas.
+`ResourceRequest` models an inter-facility request for a resource (transfer, supply, or assistance) and tracks it from origin through approval and assignment. The Django model is the **storage layer**: `status`, `category`, and `priority` are open `CharField`/`IntegerField` columns with no model-level choices. The **API/implementation layer** lives in the Pydantic resource specs, which constrain those fields to enums, add validation, resolve foreign keys, and define the read/write schemas.
 
 **Sources:**
 
@@ -20,7 +20,7 @@ Technical reference for the `ResourceRequest` module in Care EMR.
 | `ResourceRequest` | An inter-facility request for a resource (transfer, supply, or assistance), tracked from origin through approval and assignment |
 | `ResourceRequestComment` | A free-text comment thread entry attached to a `ResourceRequest` |
 
-Both models extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, audit fields — `created_by`, `updated_by`, `created_date`, `modified_date` — and soft-delete semantics).
+Both models extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base that adds `external_id`, audit fields (`created_by`, `updated_by`, `created_date`, `modified_date`), and soft-delete semantics.
 
 ## `ResourceRequest` fields
 
@@ -87,7 +87,7 @@ The spec layer binds `status` and `category` to string enums defined in `spec.py
 
 ## Resource specs (API schema)
 
-All specs build on `EMRResource` ([`base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)), which provides `serialize` (DB object → pydantic, read path) and `de_serialize` (pydantic → DB object, write path), with the `perform_extra_serialization` / `perform_extra_deserialization` hooks. `__exclude__` lists fields the base (de)serializer skips so they can be handled explicitly (e.g. FK resolution).
+All specs build on `EMRResource` ([`base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)), which provides `serialize` (DB object → pydantic, the read path) and `de_serialize` (pydantic → DB object, the write path), along with the `perform_extra_serialization` / `perform_extra_deserialization` hooks. `__exclude__` lists the fields the base (de)serializer skips so they can be handled explicitly (for example, FK resolution).
 
 ### `ResourceRequest` specs
 
@@ -102,11 +102,11 @@ There is no separate `UpdateSpec`: `ResourceRequestCreateSpec` handles both crea
 
 #### Validation
 
-- `validate_assigned_to_user` (model validator, `mode="after"`): if `assigned_to` is set, `assigned_facility` is **required**, and the assigned user must be a member of the assigned facility (checked via `FacilityOrganizationUser`). Otherwise raises `ValueError`.
+- `validate_assigned_to_user` (model validator, `mode="after"`): when `assigned_to` is set, `assigned_facility` is **required**, and the assigned user must be a member of the assigned facility (checked via `FacilityOrganizationUser`). Otherwise it raises `ValueError`.
 
 #### Server-side behaviour (`perform_extra_deserialization`)
 
-- `origin_facility` external id → `Facility` object, **only on create** (`is_update` false); it is not reassigned on update.
+- `origin_facility` external id → `Facility` object, **only on create** (`is_update` false); it is never reassigned on update.
 - `approving_facility`, `assigned_facility`, `assigned_to` external ids → their DB objects whenever present (create or update).
 - `related_patient` external id → `Patient` object, **only on create**.
 - Each lookup uses `get_object_or_404` on `external_id`, so an unknown id returns 404.
@@ -131,7 +131,7 @@ There is no separate `UpdateSpec`: `ResourceRequestCreateSpec` handles both crea
 
 ### `ResourceRequestComment`
 
-A comment entry on a resource request. Deleting a comment does not cascade to the request — the FK uses `PROTECT`.
+A comment entry on a resource request. Deleting a comment does not cascade to the request, because the FK uses `PROTECT`.
 
 ```text
 request → FK ResourceRequest (PROTECT, required)
@@ -147,12 +147,12 @@ comment → TextField (default "")
 ## API integration notes
 
 - `ResourceRequest` and `ResourceRequestComment` are exposed through Care's REST API; write bodies use the `CreateSpec` schema, reads use `ListSpec`/`RetrieveSpec`.
-- `status` and `category` are open `CharField`s in the database but are constrained to `StatusChoices` / `CategoryChoices` by the spec — only those values pass API validation.
+- `status` and `category` are open `CharField`s in the database but are constrained to `StatusChoices` / `CategoryChoices` by the spec, so only those values pass API validation.
 - `priority` is a required integer at the API layer even though the model column is nullable.
-- Foreign keys are sent/returned as `external_id` UUIDs in write payloads and as nested objects (`FacilityReadSpec`, `PatientListSpec`, `UserSpec`) in read payloads.
+- Foreign keys are sent and returned as `external_id` UUIDs in write payloads and as nested objects (`FacilityReadSpec`, `PatientListSpec`, `UserSpec`) in read payloads.
 - Assigning a request to a user requires `assigned_facility`, and the user must belong to that facility.
 - `referring_facility_contact_number` is validated against the shared `mobile_or_landline_number_validator`; submit numbers in a format that validator accepts.
-- `related_patient` is optional and cascades on patient deletion; `origin_facility` is `PROTECT`-ed and cannot be deleted while requests reference it, and cannot be changed after the request is created.
+- `related_patient` is optional and cascades on patient deletion. `origin_facility` is `PROTECT`-ed: it cannot be deleted while requests reference it, and it cannot be changed after the request is created.
 
 ## Related
 

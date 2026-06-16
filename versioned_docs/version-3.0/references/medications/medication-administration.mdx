@@ -6,7 +6,7 @@ sidebar_position: 2
 
 Technical reference for the `MedicationAdministration` module in Care EMR.
 
-`MedicationAdministration` records that a medication was (or was attempted to be) given to a patient — the actual administration event that fulfils a [`MedicationRequest`](./medication-request.mdx). The Django model is the storage layer; several of its fields are opaque `JSONField`s whose real structure is defined by the Pydantic **resource specs** in `care/emr/resources/medication/administration/`. This page documents both layers.
+`MedicationAdministration` records that a medication was given — or that giving it was attempted — to a patient. It is the administration event that fulfils a [`MedicationRequest`](./medication-request.mdx). The Django model is the storage layer; several of its fields are opaque `JSONField`s whose real structure comes from the Pydantic **resource specs** in `care/emr/resources/medication/administration/`. This page documents both layers.
 
 **Source:**
 - Model: [`care/emr/models/medication_administration.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/medication_administration.py)
@@ -19,11 +19,11 @@ Technical reference for the `MedicationAdministration` module in Care EMR.
 | --- | --- |
 | `MedicationAdministration` | Records that a medication was (or was attempted to be) given to a patient — the actual administration event for a [`MedicationRequest`](./medication-request.mdx) |
 
-`MedicationAdministration` extends `EMRBaseModel` (shared Care EMR base with `external_id`, audit fields, and soft-delete semantics — see [Base model](../foundation/base-model.mdx)). It maps to the FHIR [`MedicationAdministration`](https://hl7.org/fhir/medicationadministration.html) resource and closes the loop on the prescriber's intent captured in a `MedicationRequest`.
+`MedicationAdministration` extends `EMRBaseModel`, the shared Care EMR base that provides `external_id`, audit fields, and soft-delete semantics (see [Base model](../foundation/base-model.mdx)). It maps to the FHIR [`MedicationAdministration`](https://hl7.org/fhir/medicationadministration.html) resource and closes the loop on the prescriber's intent captured in a `MedicationRequest`.
 
 ## `MedicationAdministration` fields
 
-Types below reflect the **storage** column type and, where the column is a `JSONField`, the **structured shape** enforced by the resource spec.
+The types below give the **storage** column type and, where the column is a `JSONField`, the **structured shape** enforced by the resource spec.
 
 ### Status & classification
 
@@ -64,7 +64,7 @@ Types below reflect the **storage** column type and, where the column is a `JSON
 
 ### `MedicationAdministrationStatus` values
 
-`str` enum (`care/emr/resources/medication/administration/spec.py`). Note these use underscores (e.g. `not_done`), not the FHIR hyphenated forms.
+`str` enum (`care/emr/resources/medication/administration/spec.py`). These use underscores (e.g. `not_done`), not the FHIR hyphenated forms.
 
 | Value |
 | --- |
@@ -98,7 +98,7 @@ Types below reflect the **storage** column type and, where the column is a `JSON
 
 ### `Dosage` (nested spec)
 
-Structured shape of the `dosage` `JSONField`. All fields optional.
+Structured shape of the `dosage` `JSONField`. All fields are optional.
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -124,7 +124,7 @@ Element shape of the `performer` `JSONField` list.
 
 ## Bound value sets
 
-Coded fields bind to Care system value sets (SNOMED CT). Validation rejects codes outside the bound set via `ValueSetBoundCoding`.
+Coded fields bind to Care system value sets (SNOMED CT). `ValueSetBoundCoding` rejects any code outside the bound set.
 
 | Field | Value set | Slug | SNOMED CT constraint |
 | --- | --- | --- | --- |
@@ -133,11 +133,11 @@ Coded fields bind to Care system value sets (SNOMED CT). Validation rejects code
 | `dosage.route` | Route | `system-route` | `is-a 284009009` |
 | `dosage.method` | Administration Method | `system-administration-method` | `is-a 736665006` |
 
-Other medication value sets defined alongside (not referenced by this resource's specs): Medication Not Given Reason (`system-medication-not-given`, `is-a 242990004` + `is-a 182895007`), Additional Instruction (`system-additional-instruction`, `is-a 419492006`), As Needed (`system-as-needed-reason`, `is-a 404684003`).
+The following medication value sets are defined alongside these but are not referenced by this resource's specs: Medication Not Given Reason (`system-medication-not-given`, `is-a 242990004` + `is-a 182895007`), Additional Instruction (`system-additional-instruction`, `is-a 419492006`), As Needed (`system-as-needed-reason`, `is-a 404684003`).
 
 ## Resource specs (API schema)
 
-All specs build on `EMRResource` (`care/emr/resources/base.py`), which provides `serialize` (DB object → read schema) and `de_serialize` (write schema → DB object) with the `perform_extra_serialization` / `perform_extra_deserialization` hooks. `__exclude__` lists fields handled manually by those hooks rather than copied field-for-field.
+All specs build on `EMRResource` (`care/emr/resources/base.py`), which provides `serialize` (DB object → read schema) and `de_serialize` (write schema → DB object), each with a `perform_extra_serialization` / `perform_extra_deserialization` hook. `__exclude__` lists the fields those hooks handle manually rather than copying field-for-field.
 
 | Spec class | Role | Key fields / behaviour |
 | --- | --- | --- |
@@ -181,21 +181,21 @@ encounter            → FK Encounter (nullable, CASCADE)
 request              → FK MedicationRequest (nullable, CASCADE)
 ```
 
-`medication`, `dosage`, `status_reason`, and `performer` are stored inline as `JSONField`s rather than as separate tables, mirroring the FHIR `MedicationAdministration` structure; their real shape comes from the resource specs above.
+`medication`, `dosage`, `status_reason`, and `performer` are stored inline as `JSONField`s rather than in separate tables, mirroring the FHIR `MedicationAdministration` structure; their real shape comes from the resource specs above.
 
 ## Methods & save behaviour
 
-- `EMRResource.serialize(obj)` builds a read schema from a DB row, copying mapped fields then calling `perform_extra_serialization` (sets `id`, flattens FK references, serializes nested `administered_product`, adds audit users).
-- `EMRResource.de_serialize(obj?)` builds/updates a DB row from a write schema using `model_dump(exclude_defaults=True)`, then calls `perform_extra_deserialization`. On create it resolves and assigns `encounter`, `patient`, `request`, and `administered_product`.
+- `EMRResource.serialize(obj)` builds a read schema from a DB row, copying mapped fields and then calling `perform_extra_serialization` (sets `id`, flattens FK references, serializes nested `administered_product`, adds audit users).
+- `EMRResource.de_serialize(obj?)` builds or updates a DB row from a write schema using `model_dump(exclude_defaults=True)`, then calls `perform_extra_deserialization`. On create it resolves and assigns `encounter`, `patient`, `request`, and `administered_product`.
 - Audit and soft-delete fields (`external_id`, `created_by`, `created_date`, `modified_date`, `deleted`, etc.) are inherited from `EMRBaseModel` and maintained by the platform.
 
 ## API integration notes
 
 - Write requests use `MedicationAdministrationSpec` (create) and `MedicationAdministrationUpdateSpec` (update); reads return `MedicationAdministrationReadSpec`. Field names mostly match the model; `occurrence_period_start` / `occurrence_period_end` map to the FHIR `occurence[x]` period.
 - Send coded fields (`medication`, `status_reason`, `dosage.site/route/method`) as `Coding` objects (`system` / `code` / `display`) drawn from the bound value sets — free strings and out-of-set codes are rejected.
-- `status` values use underscores (`in_progress`, `not_done`, `on_hold`, `entered_in_error`) — not the FHIR hyphenated spellings.
+- `status` values use underscores (`in_progress`, `not_done`, `on_hold`, `entered_in_error`), not the FHIR hyphenated spellings.
 - Provide `encounter` and `request` as `external_id` UUIDs; `patient` is derived server-side from the encounter and must not be sent.
-- Set either `medication` or `administered_product`, never both. `administered_product` is the bridge to inventory — set it when a specific catalogued product was used so administration can be reconciled against supply.
+- Set either `medication` or `administered_product`, never both. `administered_product` is the bridge to inventory — set it when a specific catalogued product was used, so the administration can be reconciled against supply.
 - After create, only `status`, `note`, and `occurrence_period_end` are updatable; `encounter`, `request`, and `patient` are immutable.
 
 ## Related

@@ -4,7 +4,7 @@ sidebar_position: 8
 
 # Specimen
 
-A **specimen** is a physical sample — blood, tissue, a swab, urine, and so on — collected from a patient for laboratory analysis. It is the bridge between an order for a test and the result that comes back, recording what was collected, how, and the state it reached the lab in.
+A **specimen** is a physical sample — blood, tissue, a swab, urine, and so on — collected from a patient for laboratory analysis. It bridges a test order and the result that comes back, recording what was collected, how, and the state it reached the lab in.
 
 ## What it represents
 
@@ -29,7 +29,7 @@ draft → available → unavailable
 ```
 
 - **draft** — a placeholder record before the sample is confirmed (Care-specific)
-- **available** — the specimen is in hand and available for testing
+- **available** — the specimen is in hand and ready for testing
 - **unavailable** — the specimen is no longer available (consumed, lost, or disposed of)
 - **unsatisfactory** — the specimen is unsuitable for testing (e.g. clotted, insufficient, contaminated)
 - **entered_in_error** — the record was created in error and should be disregarded
@@ -39,17 +39,17 @@ draft → available → unavailable
 A specimen sits between an order and a result, and is always tied to the patient it came from:
 
 - It is usually collected to fulfill a **service request** (a lab order); one service request may yield several specimens.
-- It may be shaped by a **specimen definition** — a template describing the expected sample for a given test.
+- A **specimen definition** may shape it — a template describing the expected sample for a given test.
 - It links to the **patient** it was collected from and the **encounter** during which collection happened.
 - Findings derived from it are communicated through a **diagnostic report**.
 
 ## Identifiers
 
-Each specimen carries an **accession identifier** — the lab accession number or barcode used to track the physical sample. This identifier is indexed so a specimen can be looked up quickly by scanning or searching, for example to match a tube on the bench back to the right patient and order.
+Each specimen carries an **accession identifier** — the lab accession number or barcode that tracks the physical sample. This identifier is indexed, so a specimen can be looked up quickly by scanning or searching — for example, to match a tube on the bench back to the right patient and order.
 
 ## Permissions
 
-Access to specimens is controlled by role-based permissions, scoped to the facility. The tables below list the complete set of permissions that govern specimens and the specimen-definition templates they are based on.
+Role-based permissions control access to specimens, scoped to the facility. The tables below list the full set of permissions that govern specimens and the specimen-definition templates they are based on.
 
 ### Specimen
 
@@ -65,7 +65,7 @@ Access to specimens is controlled by role-based permissions, scoped to the facil
 | Can Read Specimen Definition | View specimen-definition templates within a facility | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
 | Can Create Specimen Definition on Facility | Create a specimen-definition template within a facility | Facility Admin, Admin |
 
-In practice, viewing and creating a specimen are also gated by access to the linked service request, so a user must be able to reach the underlying order. Roles are granted to users through organization, facility-organization, and patient memberships, and access is scoped by the organization tree — a permission held at a parent organization cascades to its descendants.
+In practice, viewing and creating a specimen also depend on access to the linked service request, so a user must be able to reach the underlying order. Roles are granted to users through organization, facility-organization, and patient memberships, and the organization tree scopes access — a permission held at a parent organization cascades to its descendants.
 
 ## Related
 
@@ -77,4 +77,4 @@ In practice, viewing and creating a specimen are also gated by access to the lin
 
 ## FHIR reference
 
-Care's specimen aligns with the FHIR **Specimen** resource. Some Care field names differ (for example, the patient and encounter are set on creation via `subject_patient` and `subject_encounter`), and Care adds a `draft` status not present in FHIR.
+Care's specimen aligns with the FHIR **Specimen** resource. Some Care field names differ — for example, the patient and encounter are set on creation via `subject_patient` and `subject_encounter` — and Care adds a `draft` status not present in FHIR.

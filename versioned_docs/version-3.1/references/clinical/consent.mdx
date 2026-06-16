@@ -6,7 +6,7 @@ sidebar_position: 8
 
 Technical reference for the `Consent` module in Care EMR.
 
-The Django model is the **storage layer**: it persists `status`, `category`, `decision` as bare `CharField`s and `period` / `verification_details` as opaque `JSONField`s. The real constraints — allowed enum values, the nested shape of those JSON fields, validation, and the read/write API schemas — live in the **Pydantic resource specs** (`care/emr/resources/consent/spec.py`), all built on `EMRResource`.
+The Django model is the **storage layer**: it persists `status`, `category`, and `decision` as bare `CharField`s, and `period` / `verification_details` as opaque `JSONField`s. The real constraints — allowed enum values, the nested shape of those JSON fields, validation, and the read/write API schemas — live in the **Pydantic resource specs** (`care/emr/resources/consent/spec.py`), all built on `EMRResource`.
 
 **Source:**
 
@@ -20,7 +20,7 @@ The Django model is the **storage layer**: it persists `status`, `category`, `de
 | --- | --- |
 | `Consent` | Records a patient's consent decision (permit/deny) for a category of activity, scoped to an encounter |
 
-`Consent` extends [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base providing `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON).
+`Consent` extends [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base that provides `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON.
 
 ## `Consent` fields
 
@@ -96,11 +96,11 @@ Validation (`PeriodSpec.validate_period`, mode `after`):
 
 - `start` must be tz-aware (else `"Start Date must be timezone aware"`).
 - `end` must be tz-aware (else `"End Date must be timezone aware"`).
-- If both set, `start ≤ end` (else `"Start Date cannot be greater than End Date"`).
+- If both are set, `start ≤ end` (else `"Start Date cannot be greater than End Date"`).
 
 ### `ConsentVerificationSpec` nested shape
 
-Each entry in `verification_details` follows this shape (write side). On read, `verified_by` is expanded — see below.
+Each entry in `verification_details` follows this shape on the write side. On read, `verified_by` is expanded — see below.
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -112,7 +112,7 @@ Each entry in `verification_details` follows this shape (write side). On read, `
 
 ## Resource specs (API schema)
 
-All specs subclass `EMRResource` via `ConsentBaseSpec`. `serialize` builds the read schema from the model; `de_serialize` writes a model from the payload (skipping `id`/`external_id` and `__exclude__` fields). `ConsentBaseSpec` sets `__exclude__ = ["encounter"]`, so the encounter FK is never round-tripped through the generic mapping and is handled by the deserialization hooks instead.
+All specs subclass `EMRResource` via `ConsentBaseSpec`. `serialize` builds the read schema from the model; `de_serialize` writes a model from the payload, skipping `id`/`external_id` and `__exclude__` fields. `ConsentBaseSpec` sets `__exclude__ = ["encounter"]`, so the encounter FK never round-trips through the generic mapping — the deserialization hooks handle it instead.
 
 | Spec class | Role | Exposes / behaviour |
 | --- | --- | --- |
@@ -140,22 +140,22 @@ Nested specs used by the schema: [`PeriodSpec`](#periodspec-nested-shape) (the `
 
 ## Related models
 
-`Consent` links to a single `Encounter`; an encounter can carry many consents via the `consents` reverse relation:
+`Consent` links to a single `Encounter`; one encounter can carry many consents via the `consents` reverse relation:
 
 ```text
 encounter → FK Encounter (CASCADE, related_name="consents")
 ```
 
-The owning patient is reached transitively through `encounter`. Coded values (`status`, `category`, `decision`) and structured JSON (`period`, `verification_details`) are validated at the API layer (Pydantic specs), not by database constraints.
+The owning patient is reached transitively through `encounter`. Coded values (`status`, `category`, `decision`) and structured JSON (`period`, `verification_details`) are validated at the API layer by the Pydantic specs, not by database constraints.
 
 Read schemas also reach into `FileUpload` (consent attachments) and `User` (verifiers) at serialize time.
 
 ## Methods & save behaviour
 
 - `EMRResource.serialize(obj)` → builds the read object: copies non-FK model fields present on the spec, runs `perform_extra_serialization` (id, encounter `external_id`, `source_attachments`, expanded `verification_details`), and stamps `version`.
-- `EMRResource.de_serialize(obj=None)` → builds/updates the model: dumps the spec (`exclude_defaults=True`), assigns matching DB fields (skipping `id`/`external_id` and `__exclude__`), then runs `perform_extra_deserialization`.
-- `encounter` is in `__exclude__`, so it is never set by the generic loop — create resolves it from `external_id`, update preserves the existing FK.
-- Status is a free field: changing `status` to `entered_in_error` (or any other value) is a plain field write — there is no server-side status-history side effect for consent.
+- `EMRResource.de_serialize(obj=None)` → builds or updates the model: dumps the spec (`exclude_defaults=True`), assigns matching DB fields (skipping `id`/`external_id` and `__exclude__`), then runs `perform_extra_deserialization`.
+- `encounter` is in `__exclude__`, so the generic loop never sets it — create resolves it from `external_id`, and update preserves the existing FK.
+- Status is a free field: changing `status` to `entered_in_error` (or any other value) is a plain field write, with no server-side status-history side effect for consent.
 
 ## API integration notes
 

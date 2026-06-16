@@ -4,9 +4,9 @@ sidebar_position: 4
 
 # Value Set
 
-Technical reference for the `ValueSet` module in Care EMR. A value set is a FHIR-aligned composition of coded concepts drawn from one or more code systems; it constrains the valid options a [questionnaire](../forms/questionnaire.mdx) can offer for a coded answer.
+Technical reference for the `ValueSet` module in Care EMR. A value set is a FHIR-aligned composition of coded concepts drawn from one or more code systems; it constrains the options a [questionnaire](../forms/questionnaire.mdx) can offer for a coded answer.
 
-The Django model is the **storage layer** — `compose` is an opaque `JSONField`. The actual structure (include/exclude clauses, filters, status enum, validation, and the read/write API schemas) lives in the Pydantic **resource specs**. This page documents both.
+The Django model is the **storage layer** — `compose` is an opaque `JSONField`. The real structure (include/exclude clauses, filters, status enum, validation, and the read/write API schemas) lives in the Pydantic **resource specs**. This page documents both.
 
 **Source:**
 - Model: [`care/emr/models/valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/valueset.py)
@@ -21,11 +21,11 @@ The Django model is the **storage layer** — `compose` is an opaque `JSONField`
 | `UserValueSetPreference` | Stores a user's favorited codes within a value set |
 | `RecentViewsManager` | Redis-backed helper for tracking a user's recently used codes (not a database model) |
 
-`ValueSet` and `UserValueSetPreference` extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, audit fields, `history`/`meta` JSON, and soft-delete semantics). `RecentViewsManager` is a plain Python class backed by Redis, not a Django model.
+`ValueSet` and `UserValueSetPreference` extend [`EMRBaseModel`](../foundation/base-model.mdx) (the shared Care EMR base with `external_id`, audit fields, `history`/`meta` JSON, and soft-delete semantics). `RecentViewsManager` is a plain Python class backed by Redis, not a Django model.
 
 ## `ValueSet` fields
 
-A value set is **not** stored as a flat list of codes. It is stored as a `compose` object describing *rules* (include/exclude clauses against code systems); the actual member codes are resolved in real time against terminology servers when the value set is searched or a code is looked up.
+A value set is **not** a flat list of codes. It stores a `compose` object that describes *rules* — include/exclude clauses against code systems. The member codes themselves are resolved in real time against terminology servers when the value set is searched or a code is looked up.
 
 | Field | Model type | Spec type | Required | Default | Notes |
 | --- | --- | --- | --- | --- | --- |
@@ -49,7 +49,7 @@ Enum (`str`) defined in `resources/valueset/spec.py`. The model column is a free
 
 ### `compose` shape
 
-`compose` holds a `ValueSetCompose` structure (`care.emr.resources.common.valueset`). All nested models set `extra="forbid"` — unknown keys are rejected. Each clause targets a `system` (code system URI) and may select concepts directly or via filters.
+`compose` holds a `ValueSetCompose` structure (`care.emr.resources.common.valueset`). All nested models set `extra="forbid"`, so unknown keys are rejected. Each clause targets a `system` (code system URI) and may select concepts directly or via filters.
 
 #### `ValueSetCompose`
 
@@ -151,11 +151,11 @@ valueset      → FK emr.ValueSet (CASCADE)
 favorite_codes → JSONField (default=list)
 ```
 
-`unique_together = ("user", "valueset")` — one preference row per user per value set. The class constant `MAX_FAVORITES` (default `50`, overridable via `settings.MAX_FAVORITES_FOR_VALUESET`) caps how many codes a user may favorite.
+`unique_together = ("user", "valueset")` enforces one preference row per user per value set. The class constant `MAX_FAVORITES` (default `50`, overridable via `settings.MAX_FAVORITES_FOR_VALUESET`) caps how many codes a user may favorite.
 
 ### `RecentViewsManager`
 
-Not a database model — a classmethod-only helper that tracks a user's recently viewed codes in a Redis list (one list per `cache_key`). Used to surface recently used codes alongside favorites in pickers.
+Not a database model — a classmethod-only helper that tracks a user's recently viewed codes in a Redis list (one list per `cache_key`). It surfaces recently used codes alongside favorites in pickers.
 
 | Member | Behaviour |
 | --- | --- |
@@ -166,23 +166,23 @@ Not a database model — a classmethod-only helper that tracks a user's recently
 | `clear_recent_views(cache_key)` | Deletes the whole list |
 | `_remove_by_code(cache_key, code)` | Internal: scans the list and `LREM`s matching entries; malformed JSON entries are skipped |
 
-`MAX_RECENT_VIEW` defaults to `20` (overridable via `settings.MAX_RECENT_VIEW_FOR_VALUESET`). Entries are JSON-encoded; malformed entries are skipped on read/remove.
+`MAX_RECENT_VIEW` defaults to `20` (overridable via `settings.MAX_RECENT_VIEW_FOR_VALUESET`). Entries are JSON-encoded, and malformed entries are skipped on read and remove.
 
 ## Methods & save behaviour
 
-`ValueSet` does not override `save()`/`delete()` (soft-delete is inherited from the base). Its notable methods drive terminology resolution:
+`ValueSet` does not override `save()`/`delete()` — soft-delete is inherited from the base. Its notable methods drive terminology resolution:
 
-- `create_composition()` — converts `compose` (dict or `ValueSetCompose`) into a per-system map of `include`/`exclude` clauses, dumping each clause with `exclude_defaults=True`.
-- `search(search="", count=10, display_language=None)` — for each system in the composition, runs `ValueSetResource().filter(...).search()` (optionally filtered by `display_language`) and concatenates the results. Codes are fetched from the terminology server at request time; nothing is materialized into the value set.
+- `create_composition()` — converts `compose` (a dict or `ValueSetCompose`) into a per-system map of `include`/`exclude` clauses, dumping each clause with `exclude_defaults=True`.
+- `search(search="", count=10, display_language=None)` — runs `ValueSetResource().filter(...).search()` for each system in the composition (optionally filtered by `display_language`) and concatenates the results. Codes are fetched from the terminology server at request time; nothing is materialized into the value set.
 - `lookup(code)` — checks whether `code` is a member of the value set by running `ValueSetResource().filter(...).lookup(code)` against each system; returns `True` if **any** system matches.
 
-Because membership is resolved live, editing `compose` immediately changes which codes the value set yields — there is no expansion/cache to rebuild.
+Because membership resolves live, editing `compose` immediately changes which codes the value set yields — there is no expansion or cache to rebuild.
 
 ## API integration notes
 
 - Value sets are exposed through Care's REST API and align with the FHIR `ValueSet` resource; writes go through `ValueSetSpec`, reads through `ValueSetReadSpec`. `search` powers code pickers and `lookup` validates submitted codes.
-- The model column `compose` is opaque JSON; always write through the `ValueSetCompose` schema (clauses, filters, `op` allowlist, `concept` xor `filter`) — `perform_extra_deserialization` re-dumps it with `exclude_defaults`/`exclude_none` so stored JSON stays normalized.
-- Value sets store composition *rules*, not expanded code lists. Members are queried in real time from terminology servers, so results can vary as upstream systems change.
+- The model column `compose` is opaque JSON; always write through the `ValueSetCompose` schema (clauses, filters, `op` allowlist, `concept` xor `filter`). `perform_extra_deserialization` re-dumps it with `exclude_defaults`/`exclude_none` so stored JSON stays normalized.
+- Value sets store composition *rules*, not expanded code lists. Members are queried in real time from terminology servers, so results can shift as upstream systems change.
 - `is_system_defined` value sets are platform-maintained; deployments should treat them as read-only and author their own value sets for local terminology. The `system-` slug prefix is reserved for system value sets.
 - `favorite_codes` (via `UserValueSetPreference`) and recent views (via `RecentViewsManager`/Redis) are per-user personalization, not part of the value set definition.
 

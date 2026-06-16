@@ -4,21 +4,21 @@ sidebar_position: 1
 
 # Roles & Permissions
 
-Care decides what each person can see and do using **role-based access control (RBAC)**. A **permission** is the right to perform one action (for example, "Can Create Patient"); a **role** is a named bundle of permissions; and a role is granted to a user *within a boundary* — a facility, an organization, or a single patient. Access is never assigned to a user directly: it always flows permission → role → membership.
+Care governs what each person can see and do through **role-based access control (RBAC)**. A **permission** is the right to perform one action (for example, "Can Create Patient"); a **role** is a named bundle of permissions; and a role is granted to a user *within a boundary* — a facility, an organization, or a single patient. Care never assigns access to a user directly: it always flows permission → role → membership.
 
 ## What it represents
 
-The access-control model captures three things working together:
+The access-control model combines three pieces that work together:
 
 - **Permissions** — the smallest unit of access, one per action, each tagged with a **context** (the kind of resource it governs). Permissions are defined in code, not edited by users.
-- **Roles** — flat, named collections of permissions (for example, *Doctor* or *Nurse*). A role is not a job title or a type; it is just "this set of permissions." Built-in roles ship with Care; deployments can add their own.
+- **Roles** — flat, named collections of permissions (for example, *Doctor* or *Nurse*). A role is not a job title or a type; it is simply "this set of permissions." Care ships with built-in roles, and deployments can add their own.
 - **Memberships** — the link that grants a role to a user inside a specific boundary. The same user can hold *Nurse* in one facility and *Administrator* in an organization at the same time.
 
 A user's effective access in any context is the **union** of all permissions from every role they hold that reaches that context.
 
 ## Standard roles
 
-Care seeds a set of built-in (system) roles. These cannot be edited or deleted, and they apply within the boundaries shown below.
+Care seeds a set of built-in (system) roles. You cannot edit or delete these roles, and each applies within the boundaries shown below.
 
 | Role | Applies in | What it is for |
 | --- | --- | --- |
@@ -46,17 +46,17 @@ GOVT_ORG → role applies within a government organization
 ROLE_ORG → role applies within a role (user-group) organization
 ```
 
-Memberships are recorded by boundary type:
+Care records memberships by boundary type:
 
 - **OrganizationUser** — a user holds a role in a government or role organization.
 - **FacilityOrganizationUser** — a user holds a role in a facility (or one of its sub-departments).
 - **PatientUser** — a user holds a role scoped to a single patient.
 
-Organizations form a **tree**: a government organization can contain sub-organizations, and a facility can contain departments. A role granted at a parent **cascades to every descendant** — if you are an Administrator of a district, you hold that access in all facilities and units beneath it, without a membership at each one. When Care checks access, it looks at the target plus all of its ancestors and collects every permission you hold along that chain.
+Organizations form a **tree**: a government organization can contain sub-organizations, and a facility can contain departments. A role granted at a parent **cascades to every descendant** — if you are an Administrator of a district, you hold that access in all facilities and units beneath it, without a membership at each one. To check access, Care looks at the target plus all of its ancestors and collects every permission you hold along that chain.
 
 ## How a permission is decided
 
-Each permission carries a **permission context** describing the resource it governs. When Care serializes a resource for a user, it only counts permissions in the relevant contexts:
+Each permission carries a **permission context** describing the resource it governs. When Care serializes a resource for a user, it counts only the permissions in the relevant contexts:
 
 | Context | Governs |
 | --- | --- |
@@ -68,7 +68,7 @@ Each permission carries a **permission context** describing the resource it gove
 | `FACILITY_ORGANIZATION` | A facility organization (department) |
 | `QUESTIONNAIRE` | Questionnaires |
 
-So a request to read a patient resolves to "which roles do I hold that reach this patient, and do any of them carry a `PATIENT`/`FACILITY` permission for this action?" The answer is computed live from the user's memberships and the organization tree.
+So a request to read a patient becomes "which roles do I hold that reach this patient, and do any of them carry a `PATIENT`/`FACILITY` permission for this action?" Care computes the answer live from the user's memberships and the organization tree.
 
 ## Permissions
 
@@ -94,7 +94,7 @@ Permissions are declared in code with a display name, a context, and the default
 | Can create User in care | Create new user accounts in Care | Admin, Facility Admin, Administrator |
 | Can list Users in Care | List user accounts in Care | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist |
 
-Roles are granted to users through organization, facility-organization, or patient memberships, and access is scoped by the organization tree: a permission held at a parent organization cascades to its descendants, and a user's effective permissions in any context are the union of all roles that reach it. Permissions themselves are platform-maintained reference data — administrators assign roles, not individual permissions.
+Roles reach users through organization, facility-organization, or patient memberships, and the organization tree scopes that access: a permission held at a parent organization cascades to its descendants, and a user's effective permissions in any context are the union of all roles that reach it. The permissions themselves are platform-maintained reference data — administrators assign roles, not individual permissions.
 
 ## Related
 
@@ -107,4 +107,4 @@ Roles are granted to users through organization, facility-organization, or patie
 
 ## FHIR reference
 
-Care's roles and permissions are an internal authorization model rather than a clinical resource, so they do not map to a single FHIR resource. They align in spirit with FHIR's access-control concepts (such as the `Permission` and `Role`/`PractitionerRole` resources), but enforcement is Care-specific.
+Care's roles and permissions form an internal authorization model rather than a clinical resource, so they do not map to a single FHIR resource. They align in spirit with FHIR's access-control concepts (such as the `Permission` and `Role`/`PractitionerRole` resources), but enforcement is Care-specific.

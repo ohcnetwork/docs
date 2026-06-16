@@ -6,7 +6,7 @@ sidebar_position: 1
 
 Technical reference for the `Questionnaire` module in Care EMR.
 
-Questionnaires (a.k.a. **forms**) are generalized, FHIR-inspired data-collection structures: a versioned tree of questions answered about a subject (a patient or an encounter). They power both clinical data capture (answers become [Observations](../clinical/observation.mdx)) and non-clinical structured data. The Django model is the **storage** layer; the Pydantic **resource specs** in `care/emr/resources/questionnaire*` define the real API schema — enums, the nested shape of the JSON fields, validation, and the read/write contracts.
+Questionnaires (a.k.a. **forms**) are generalized, FHIR-inspired data-collection structures: a versioned tree of questions answered about a subject (a patient or an encounter). They capture both clinical data (answers become [Observations](../clinical/observation.mdx)) and non-clinical structured data. The Django model is the **storage** layer; the Pydantic **resource specs** in `care/emr/resources/questionnaire*` define the actual API schema — enums, the nested shape of the JSON fields, validation, and the read/write contracts.
 
 **Source (model):** [`care/emr/models/questionnaire.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/questionnaire.py)
 
@@ -29,7 +29,7 @@ Questionnaires (a.k.a. **forms**) are generalized, FHIR-inspired data-collection
 | `QuestionnaireFacilityOrganization` | Scopes a questionnaire to a `FacilityOrganization` |
 | `QuestionnaireResponseTemplate` | Reusable prefill template for questionnaire responses |
 
-All models extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, audit fields, and soft-delete semantics).
+All models extend [`EMRBaseModel`](../foundation/base-model.mdx) (the shared Care EMR base providing `external_id`, audit fields, and soft-delete semantics).
 
 ## `Questionnaire` fields
 
@@ -52,7 +52,7 @@ The write spec also carries a `type: str` field (default `"custom"`) that is **n
 
 #### Organization scope caches
 
-These are **denormalized caches** of organization IDs maintained by the through-models below, used for access filtering without deep joins.
+These **denormalized caches** of organization IDs are maintained by the through-models below and support access filtering without deep joins.
 
 | Field | Maintained by |
 | --- | --- |
@@ -63,7 +63,7 @@ These are **denormalized caches** of organization IDs maintained by the through-
 
 ### `QuestionnaireStatus` values
 
-Status of the form definition. Inspired by FHIR publication-status; once a questionnaire is `active` it should not be edited/deleted, only `retired`.
+Status of the form definition. Modeled on FHIR publication-status; once a questionnaire is `active` it should not be edited or deleted, only `retired`.
 
 | Value |
 | --- |
@@ -280,7 +280,7 @@ The submit endpoint (`/questionnaire/<slug>/submit/`) takes a plain Pydantic req
 
 ### `FormSubmission`
 
-A submission event linking a questionnaire to a patient and (optionally) an encounter.
+A submission event linking a questionnaire to a patient and, optionally, an encounter.
 
 ```text
 questionnaire → FK Questionnaire (CASCADE)
@@ -336,11 +336,11 @@ available_keys         → ArrayField[CharField(255)] (default [])  # server-mai
 
 ### `Questionnaire.get_questions_by_id()`
 
-Walks the `questions` tree (recursing into nested `questions`) and returns a `{ str(question_id): question }` dict. The result is memoized on the instance via `_questions_by_id_cache`. If `questions` is not a list, an empty dict is returned.
+Walks the `questions` tree, recursing into nested `questions`, and returns a `{ str(question_id): question }` dict. The result is memoized on the instance via `_questions_by_id_cache`. If `questions` is not a list, it returns an empty dict.
 
 ### `QuestionnaireResponse.render_responses()`
 
-Joins stored `responses` against the live questionnaire definition. For each answer it looks up the question via `questionnaire.get_questions_by_id()` and returns a list of `{ "answer": ..., "question": ... }`. Returns an empty list when there are no responses or no linked questionnaire; answers whose `question_id` is no longer in the definition are skipped.
+Joins stored `responses` against the live questionnaire definition. For each answer it looks up the question via `questionnaire.get_questions_by_id()` and returns a list of `{ "answer": ..., "question": ... }`. It returns an empty list when there are no responses or no linked questionnaire, and skips answers whose `question_id` is no longer in the definition.
 
 ### Submission handling — `handle_response()`
 
@@ -350,7 +350,7 @@ The submit flow (`resources/questionnaire/utils.py`) runs server-side on every s
 2. Resolves `encounter` (required when `subject_type == "encounter"`) and `patient` by `external_id`.
 3. Rejects empty submissions (`questionnaire_empty`).
 4. Prunes the question tree by `enable_when` rules; answers to disabled questions raise `enable_when_failed`.
-5. Validates each answer against its `type` (type checks per [QuestionType](#questiontype-values)), `required`, `answer_value_set` (coding must belong to the value set), and `quantity` units. Any failures abort with an `errors` payload.
+5. Validates each answer against its `type` (type checks per [QuestionType](#questiontype-values)), `required`, `answer_value_set` (coding must belong to the value set), and `quantity` units. Any failure aborts with an `errors` payload.
 6. Builds `ObservationSpec` objects for coded/group questions and creates a `QuestionnaireResponse` (raw `responses` = the dumped results).
 7. When an encounter is present, bulk-creates the derived [Observations](../clinical/observation.mdx), linked back to the response.
 
@@ -370,7 +370,7 @@ Expect a **second write** to the `Questionnaire` row whenever an organization li
 - Questionnaires expose CRUD plus a submit endpoint (`/questionnaire/<slug>/submit/`). Create uses `QuestionnaireSpec` (requires ≥1 `organizations`); update uses `QuestionnaireUpdateSpec`; reads use `QuestionnaireReadSpec`.
 - `questions` and `styling_metadata` are open `JSONField`s at the DB layer, but the API validates `questions` against the recursive [`Question`](#question-nested-shape) spec (unique `link_id`/`id`, choice/quantity/group constraints, value-set existence). `styling_metadata` is never validated.
 - `organization_cache` / `internal_organization_cache` and `QuestionnaireResponseTemplate.available_keys` are platform-maintained — do not set them from clients; write through the through-models / `template_data`.
-- Submitting answers validates type/required/value-set server-side and, for clinical questions, materializes [Observations](../clinical/observation.mdx); a response can be voided by setting its status to `entered_in_error` via `QuestionnaireResponseUpdate`.
+- Submitting answers validates type/required/value-set server-side and, for clinical questions, materializes [Observations](../clinical/observation.mdx); set a response's status to `entered_in_error` via `QuestionnaireResponseUpdate` to void it.
 - `FormSubmissionWriteSpec` resolves the questionnaire by slug and, when an encounter is supplied, forces the submission's patient to the encounter's patient.
 
 ## Related

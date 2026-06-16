@@ -6,9 +6,9 @@ sidebar_position: 6
 
 Technical reference for the `ObservationDefinition` module in Care EMR.
 
-An observation definition is master data that describes *how* a particular observation is captured — its code, permitted data type, unit, method, body site, and (interpretation) reference ranges. Questionnaires reference observation definitions so the same observation (e.g. blood pressure) is collected consistently across forms, at either the instance level or a single facility. A single observation code can have multiple definitions. The model is loosely based on the [FHIR ObservationDefinition](https://build.fhir.org/observationdefinition.html) resource.
+An observation definition is master data describing *how* a particular observation is captured — its code, permitted data type, unit, method, body site, and (interpretation) reference ranges. Questionnaires reference observation definitions so the same observation (e.g. blood pressure) is collected consistently across forms, whether at the instance level or within a single facility. One observation code can have multiple definitions. The model is loosely based on the [FHIR ObservationDefinition](https://build.fhir.org/observationdefinition.html) resource.
 
-The Django model is the **storage layer**: `code`, `body_site`, `method`, `permitted_unit`, `component`, and `qualified_ranges` are opaque `JSONField`s. Their real structure, the enums, the value-set bindings, and the read/write contracts live in the **Pydantic resource specs** (`care/emr/resources/observation_definition/spec.py`), all built on the `EMRResource` base.
+The Django model is the **storage layer**: `code`, `body_site`, `method`, `permitted_unit`, `component`, and `qualified_ranges` are opaque `JSONField`s. Their real structure — the enums, the value-set bindings, and the read/write contracts — lives in the **Pydantic resource specs** (`care/emr/resources/observation_definition/spec.py`), all built on the `EMRResource` base.
 
 **Source:**
 
@@ -34,7 +34,7 @@ The Django model is the **storage layer**: `code`, `body_site`, `method`, `permi
 | `version` | `IntegerField` | Defaults to `1`; assigned version number for the definition. Read-only in the API (`...ReadSpec` only) |
 | `slug` | `CharField(255)` | Set server-side from `slug_value`; namespaced. See [slug behaviour](#slug-behaviour) |
 | `title` | `CharField(1024)` | Required. Human-friendly name for this definition |
-| `status` | `CharField(255)` | Required. Lifecycle code from `ObservationStatusChoices` — see [Status values](#status-values). Definitions are not destroyed — they are moved to `retired` instead |
+| `status` | `CharField(255)` | Required. Lifecycle code from `ObservationStatusChoices` — see [Status values](#status-values). Definitions are never destroyed; they move to `retired` instead |
 | `description` | `TextField` | Required. Natural-language (markdown) description |
 | `derived_from_uri` | `TextField` | External URI this definition was derived from. Optional in the API (`str \| None`, default `None`) |
 
@@ -160,7 +160,7 @@ QualifiedRangeSpec {
 
 Validation (`validate_categorical_or_numeric`):
 
-- Must provide either `ranges` (numeric) **or** at least one coded value set / `valueset_interpretation` (categorical) — at least one is required.
+- Provide either `ranges` (numeric) **or** at least one coded value set / `valueset_interpretation` (categorical) — at least one is required.
 - Cannot specify both numeric `ranges` and coded value sets.
 - Numeric `ranges` must not overlap (sorted by `min`, treating missing `min`/`max` as -∞/+∞).
 - Coded value-set slugs (`normal_coded_value_set`, `critical_coded_value_set`, `abnormal_coded_value_set`, and each `valueset_interpretation.valuset`) must be unique — duplicates are rejected.
@@ -225,13 +225,13 @@ Notes:
 
 - **Value-set bindings** — `code`, `body_site`, `method`, `permitted_unit` (and component equivalents) are `ValueSetBoundCoding[...]`; the submitted coding is validated against the bound value set (`system-observation`, `system-body-site-observation`, `system-collection-method`, `system-ucum-units`).
 - **Data-type guard** — `permitted_data_type` (definition and component) rejects `group`, `display`, `url`.
-- **Range consistency** — `validate_qualified_ranges_consistency`: all `qualified_ranges` on a definition must be the same kind (all numeric `ranges` or all coded value sets); mixing raises.
-- **`slug_value`** — `SlugType`: 5–50 chars, URL-safe (`[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]`), must start and end alphanumeric. Stored namespaced as `obj.slug` (see below).
+- **Range consistency** — `validate_qualified_ranges_consistency`: every `qualified_ranges` entry on a definition must be the same kind (all numeric `ranges` or all coded value sets); mixing raises.
+- **`slug_value`** — `SlugType`: 5–50 chars, URL-safe (`[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]`), starting and ending alphanumeric. Stored namespaced as `obj.slug` (see below).
 - **No metadata store** — `__store_metadata__` is `False`, so spec fields map directly to model columns rather than into `meta`.
 
 ## Methods & save behaviour
 
-`ObservationDefinition` defines no overrides of its own; slug handling is inherited from `SlugBaseModel`, and the API specs perform the create/update side effects.
+`ObservationDefinition` adds no overrides of its own: slug handling is inherited from `SlugBaseModel`, and the API specs perform the create/update side effects.
 
 ### Slug behaviour
 
@@ -251,8 +251,8 @@ The create/update specs receive the bare `slug_value` and store it on `obj.slug`
 
 - Observation definitions are master data: created at the instance level or per-facility, and referenced by questionnaires rather than embedded into them.
 - The facility binding is write-once via the create spec (`facility` UUID → resolved FK); the update spec only re-sets `slug_value`.
-- Definitions are append-only by convention — retire via `status` (`retired`) instead of hard deletion; soft-delete via the inherited `deleted` flag still applies at the ORM level.
-- `code`, `body_site`, `method`, `permitted_unit`, and component codings are FHIR `Coding` objects validated against bound value sets, so the data stays translatable to FHIR.
+- Definitions are append-only by convention — retire via `status` (`retired`) rather than deleting them; the inherited `deleted` flag still provides soft-delete at the ORM level.
+- `code`, `body_site`, `method`, `permitted_unit`, and component codings are FHIR `Coding` objects validated against bound value sets, keeping the data translatable to FHIR.
 - Units follow UCUM principles; Care does not currently convert between units at display time.
 - `qualified_ranges` supports condition-dependent numeric ranges or categorical (coded) interpretations, but a single definition must commit to one kind across all its ranges.
 - `convert_od_to_observation` (`observation.py`) builds an [`Observation`](./observation.mdx) from a definition for a given encounter, carrying over `category` and `code` and defaulting `status` to `final`.

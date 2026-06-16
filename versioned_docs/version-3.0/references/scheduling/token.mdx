@@ -4,9 +4,9 @@ sidebar_position: 3
 
 # Token
 
-Technical reference for the `Token` module in Care EMR — the token-queue subsystem of scheduling. It models walk-in / queue-based flow (a patient gets a numbered token in a queue, optionally routed to a sub-queue / room) on top of a [schedulable resource](./schedule.mdx) (practitioner, location, or healthcare service).
+Technical reference for the `Token` module in Care EMR — the token-queue subsystem of scheduling. It models walk-in and queue-based flow: a patient receives a numbered token in a queue, optionally routed to a sub-queue or room, on top of a [schedulable resource](./schedule.mdx) (practitioner, location, or healthcare service).
 
-The Django models are the **storage layer**; several constraints (status enums, the resource binding, queue progression) live only in the Pydantic **resource specs** and the API viewsets. This page documents both.
+The Django models are the **storage layer**. Several constraints — status enums, the resource binding, and queue progression — live only in the Pydantic **resource specs** and the API viewsets. This page documents both.
 
 **Source:**
 - Model: [`care/emr/models/scheduling/token.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/scheduling/token.py)
@@ -24,7 +24,7 @@ The Django models are the **storage layer**; several constraints (status enums, 
 
 All models extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, audit fields `created_by`/`updated_by`/`created_date`/`modified_date`, and soft-delete via `deleted`).
 
-The `resource` FK on `TokenQueue` / `TokenSubQueue` points at `emr.SchedulableResource` — a polymorphic binding to a practitioner (`user`), `location`, or `healthcare_service`, distinguished by `resource_type`. See [Schedule](./schedule.mdx).
+The `resource` FK on `TokenQueue` and `TokenSubQueue` points at `emr.SchedulableResource` — a polymorphic binding to a practitioner (`user`), `location`, or `healthcare_service`, distinguished by `resource_type`. See [Schedule](./schedule.mdx).
 
 ## `Token` fields
 
@@ -41,11 +41,11 @@ The `resource` FK on `TokenQueue` / `TokenSubQueue` points at `emr.SchedulableRe
 | `note` | `TextField` | optional | Nullable free-text note |
 | `booking` | `FK → emr.TokenBooking` (CASCADE) | optional | Nullable; links the token to a [booking](./booking.mdx). `related_name="booking_token"` |
 
-A patient may hold multiple tokens in a given queue. `number` is **per category within a queue**, not globally unique across the queue.
+A patient may hold multiple tokens in one queue. `number` is unique **per category within a queue**, not across the queue as a whole.
 
 ### `TokenStatusOptions` values
 
-Defined in `token/spec.py`. Bound on `Token.status` via the read/update specs.
+Defined in `token/spec.py` and bound on `Token.status` via the read and update specs.
 
 | Value | Meaning |
 | --- | --- |
@@ -71,12 +71,12 @@ date             → DateField
 system_generated → BooleanField (default False)
 ```
 
-- `is_primary` is resolved server-side on create: the first queue for a `(resource, date)` pair becomes primary, later ones do not. Re-pointed via the `set_primary` action.
-- `system_generated` queues are created implicitly by `generate_token` (name `"System Generated"`) when no primary queue exists for the date.
+- `is_primary` is resolved server-side on create: the first queue for a `(resource, date)` pair becomes primary; later ones do not. The `set_primary` action re-points it.
+- `generate_token` creates `system_generated` queues implicitly (name `"System Generated"`) when no primary queue exists for the date.
 
 ### `TokenSubQueue`
 
-Splits a resource's tokens so the same queue can route tokens to several physical points (e.g. multiple vaccination rooms, each drawing from its own sub-queue).
+Splits a resource's tokens so one queue can route them to several physical points — for example, multiple vaccination rooms, each drawing from its own sub-queue.
 
 ```text
 facility      → FK Facility (CASCADE)
@@ -93,7 +93,7 @@ current_token → FK Token (CASCADE, nullable)
 | `active` |
 | `inactive` |
 
-`current_token` is the token currently being served at that point; maintained server-side by the queue-progression actions (`set_next`, `set_next_token_to_subqueue`).
+`current_token` is the token currently being served at that point. The queue-progression actions (`set_next`, `set_next_token_to_subqueue`) maintain it server-side.
 
 ### `TokenCategory`
 
@@ -109,9 +109,9 @@ default       → BooleanField (default False)
 ```
 
 - `resource_type` is enum-bound in the spec to `SchedulableResourceTypeOptions` (`practitioner`, `location`, `healthcare_service`).
-- `shorthand` is constrained to `max_length=5` by the spec (the model column allows 255).
-- `metadata` is an open JSON bag for deployment-specific category config; exposed as `dict | None`.
-- `default` is set exclusively via the `set_default` action (which clears `default` on all other categories of the same facility + resource type); it is not a writable field on the create spec.
+- `shorthand` is constrained to `max_length=5` by the spec, though the model column allows 255.
+- `metadata` is an open JSON bag for deployment-specific category config, exposed as `dict | None`.
+- `default` is set only via the `set_default` action, which clears `default` on every other category of the same facility and resource type. It is not a writable field on the create spec.
 
 ### `SchedulableResourceTypeOptions` values
 
@@ -125,7 +125,7 @@ Defined in `scheduling/schedule/spec.py`; used by `TokenCategory.resource_type` 
 
 ## Resource specs (API schema)
 
-All specs extend `EMRResource` (`care/emr/resources/base.py`): `serialize` builds the read payload from the model (plus `perform_extra_serialization`), `de_serialize` writes a model from the payload (plus `perform_extra_deserialization`). `id` is always the model's `external_id` (UUID).
+All specs extend `EMRResource` (`care/emr/resources/base.py`): `serialize` builds the read payload from the model (plus `perform_extra_serialization`), and `de_serialize` writes a model from the payload (plus `perform_extra_deserialization`). `id` is always the model's `external_id` (UUID).
 
 ### Token
 
@@ -141,11 +141,11 @@ All specs extend `EMRResource` (`care/emr/resources/base.py`): `serialize` build
 
 Validation & server behaviour (from `perform_extra_deserialization` and the viewset):
 
-- `TokenGenerateSpec.perform_extra_deserialization`: resolves `patient`, `category`, and `sub_queue` UUIDs to model instances (404 if missing).
-- `TokenUpdateSpec.perform_extra_deserialization`: resolves `sub_queue` UUID, or sets `sub_queue = None` when omitted (so update can clear it).
-- On **create** (`perform_create`): `queue` and `facility` are set from the URL queue; category-vs-queue and sub-queue-vs-queue facility/resource matching is enforced; `number` is computed under a per-queue lock; `status` is forced to `CREATED`.
-- On **update**: changing the sub-queue clears the old sub-queue's `current_token` if it pointed at this token; a sub-queue that already has a current token cannot be reassigned.
-- On **delete** (`perform_destroy`): soft-delete — sets `status = ENTERED_IN_ERROR`, `deleted = True`.
+- `TokenGenerateSpec.perform_extra_deserialization` resolves the `patient`, `category`, and `sub_queue` UUIDs to model instances (404 if missing).
+- `TokenUpdateSpec.perform_extra_deserialization` resolves the `sub_queue` UUID, or sets `sub_queue = None` when omitted, so an update can clear it.
+- On **create** (`perform_create`), `queue` and `facility` are set from the URL queue, category-vs-queue and sub-queue-vs-queue facility/resource matching is enforced, `number` is computed under a per-queue lock, and `status` is forced to `CREATED`.
+- On **update**, changing the sub-queue clears the old sub-queue's `current_token` if it pointed at this token. A sub-queue that already has a current token cannot be reassigned.
+- On **delete** (`perform_destroy`), the token is soft-deleted: `status = ENTERED_IN_ERROR`, `deleted = True`.
 - `TokenRetrieveSpec` embeds the booking (via `TokenBookingMinimumReadSpec`), the booking's `associated_encounter` ([Encounter](../clinical/encounter.mdx)) when present, and the resolved `resource` (practitioner `UserSpec` / `HealthcareServiceReadSpec` / `FacilityLocationListSpec`) keyed by `resource_type`.
 
 ### TokenQueue
@@ -158,7 +158,7 @@ Validation & server behaviour (from `perform_extra_deserialization` and the view
 | `TokenQueueReadSpec` | read · list | adds `date`, `is_primary`, `system_generated` |
 | `TokenQueueRetrieveSpec` | read · detail | adds `created_by`, `updated_by` |
 
-`TokenQueueCreateSpec.perform_extra_deserialization` stashes `resource_type`/`resource_id` onto the instance; the viewset's `perform_create` resolves/creates the `SchedulableResource`, sets `facility`, and computes `is_primary`.
+`TokenQueueCreateSpec.perform_extra_deserialization` stashes `resource_type` and `resource_id` onto the instance. The viewset's `perform_create` then resolves or creates the `SchedulableResource`, sets `facility`, and computes `is_primary`.
 
 ### TokenSubQueue
 
@@ -168,7 +168,7 @@ Validation & server behaviour (from `perform_extra_deserialization` and the view
 | `TokenSubQueueCreateSpec` | write · create | adds `resource_type` (`SchedulableResourceTypeOptions`), `resource_id` (UUID) |
 | `TokenSubQueueReadSpec` | read | adds `current_token` (`TokenMinimalSpec`, nullable) |
 
-`TokenSubQueueCreateSpec.perform_extra_deserialization` stashes `resource_type`/`resource_id`; the viewset resolves/creates the resource on create and validates it. `current_token` is serialized only when set.
+`TokenSubQueueCreateSpec.perform_extra_deserialization` stashes `resource_type` and `resource_id`. On create, the viewset resolves or creates the resource and validates it. `current_token` is serialized only when set.
 
 ### TokenCategory
 
@@ -179,28 +179,28 @@ Validation & server behaviour (from `perform_extra_deserialization` and the view
 | `TokenCategoryReadSpec` | read · list | adds `default` |
 | `TokenCategoryRetrieveSpec` | read · detail | adds `created_by`, `updated_by` |
 
-`facility` is set from the URL on create; `default` is read-only here and toggled via the `set_default` action.
+`facility` is set from the URL on create. `default` is read-only here and toggled via the `set_default` action.
 
 ## Methods & save behaviour
 
-- **Number assignment** — `Token.number` is `count(tokens with same queue + category) + 1`, computed inside a `Lock("booking:token:{queue.id}")` + atomic transaction to avoid duplicates.
-- **Status lifecycle** — create forces `CREATED`; `set_next` / `set_next_token_to_subqueue` set `IN_PROGRESS`; delete sets `ENTERED_IN_ERROR`. There is no separate status-history table; status is a single field.
-- **Queue progression** — `current_token` (on `TokenSubQueue`) and `is_next` are maintained by the platform's custom actions, not by direct client writes:
-  - `Token` action `set_next` (`POST .../{id}/set_next`, body `{ sub_queue }`): points the sub-queue's `current_token` at this token and marks it `IN_PROGRESS`.
-  - `TokenQueue` action `set_next_token_to_subqueue` (`POST .../{queue}/set_next_token_to_subqueue`, body `{ sub_queue, category? }`): picks the oldest `CREATED` token (optionally filtered by category), assigns it to the sub-queue as `current_token`, sets `IN_PROGRESS`.
-  - `TokenQueue` action `set_primary`: makes one queue primary for its `(resource, date)`, clearing the flag on siblings.
-  - `TokenCategory` action `set_default`: makes one category default per `(facility, resource_type)`.
+- **Number assignment** — `Token.number` is `count(tokens with same queue + category) + 1`, computed inside a `Lock("booking:token:{queue.id}")` and an atomic transaction to prevent duplicates.
+- **Status lifecycle** — create forces `CREATED`; `set_next` and `set_next_token_to_subqueue` set `IN_PROGRESS`; delete sets `ENTERED_IN_ERROR`. There is no separate status-history table — status is a single field.
+- **Queue progression** — the platform's custom actions maintain `current_token` (on `TokenSubQueue`) and `is_next`; clients never write them directly:
+  - `Token` action `set_next` (`POST .../{id}/set_next`, body `{ sub_queue }`) points the sub-queue's `current_token` at this token and marks it `IN_PROGRESS`.
+  - `TokenQueue` action `set_next_token_to_subqueue` (`POST .../{queue}/set_next_token_to_subqueue`, body `{ sub_queue, category? }`) picks the oldest `CREATED` token (optionally filtered by category), assigns it to the sub-queue as `current_token`, and sets `IN_PROGRESS`.
+  - `TokenQueue` action `set_primary` makes one queue primary for its `(resource, date)`, clearing the flag on siblings.
+  - `TokenCategory` action `set_default` makes one category default per `(facility, resource_type)`.
 - **Token generation shortcut** — `TokenQueue` action `generate_token` (`POST .../generate_token`, body = `TokenGenerateWithQueueSpec`) finds or creates the primary (`system_generated`) queue for `(resource, date)` and issues a token in one call.
 - **Queue summary** — `TokenQueue` action `summary` returns per-category, per-status token counts for a queue.
 
 ## API integration notes
 
-- Tokens are created **under a queue** (`TokenGenerateSpec` — `queue`/`facility`/`number`/`status` are server-set), or via the queue's `generate_token` action (`TokenGenerateWithQueueSpec`, which also resolves/creates the queue).
-- Send `category` / `patient` / `sub_queue` as **UUIDs** (`external_id`); the server resolves them to FKs. Cross-facility and cross-resource mismatches are rejected with `400`.
-- `status` only accepts `TokenStatusOptions` values via the update spec; `TokenSubQueue.status` only accepts `TokenSubQueueStatusOptions`. The underlying columns are plain `CharField`s, so the constraint is enforced by the spec layer, not the database.
-- Do **not** set `number`, `is_next`, `current_token`, or `is_primary` directly — they are queue-progression state maintained by the viewset actions above.
+- Tokens are created **under a queue** (`TokenGenerateSpec`, where `queue`, `facility`, `number`, and `status` are server-set), or via the queue's `generate_token` action (`TokenGenerateWithQueueSpec`, which also resolves or creates the queue).
+- Send `category`, `patient`, and `sub_queue` as **UUIDs** (`external_id`); the server resolves them to FKs. Cross-facility and cross-resource mismatches are rejected with `400`.
+- Via the update spec, `status` accepts only `TokenStatusOptions` values, and `TokenSubQueue.status` accepts only `TokenSubQueueStatusOptions`. The underlying columns are plain `CharField`s, so the spec layer enforces the constraint, not the database.
+- Do **not** set `number`, `is_next`, `current_token`, or `is_primary` directly. They are queue-progression state maintained by the viewset actions above.
 - `TokenCategory.metadata` is an open JSON bag for deployment-specific config; `shorthand` is capped at 5 characters by the spec.
-- `booking` links a token back to a [`TokenBooking`](./booking.mdx); on retrieve it expands to the booking and its associated [encounter](../clinical/encounter.mdx).
+- `booking` links a token back to a [`TokenBooking`](./booking.mdx); on retrieve, it expands to the booking and its associated [encounter](../clinical/encounter.mdx).
 
 ## Related
 

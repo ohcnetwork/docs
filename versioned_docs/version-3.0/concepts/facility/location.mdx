@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # Location
 
-A **location** in Care is a physical place where care happens or where resources sit — a building, a wing, a ward, a room, or a single bed. Locations form a hierarchy inside a facility, and encounters attach to them so you always know where a patient is.
+A **location** in Care is a physical place where care happens or where resources sit — a building, a wing, a ward, a room, or a single bed. Locations form a hierarchy inside a facility, and encounters attach to them, so you always know where a patient is.
 
 ## What it represents
 
@@ -16,7 +16,7 @@ In Care's FHIR-aligned model, a location maps to the **Location** resource. It c
 - **Occupancy** — the encounter currently associated with it, used for bed and room management
 - **Operational state** — whether it is occupied, unoccupied, closed, being cleaned, contaminated, or isolated
 
-Locations are nested without limit: every location may have a parent and children, letting a deployment model its real-world geography as deep as it needs.
+Locations nest without limit: every location may have a parent and children, so a deployment can model its real-world geography as deep as it needs.
 
 ## Mode: kind vs instance
 
@@ -25,11 +25,11 @@ Every location is one of two modes, fixed when it is created:
 - **kind** — a class or type of place, such as "a ward" or "a building". A kind can contain child locations.
 - **instance** — a single, concrete place, such as "Bed 1". Instances are leaf nodes and **cannot have children**.
 
-This is why beds are just locations in `instance` mode, not a separate concept.
+This is why beds are simply locations in `instance` mode, not a separate concept.
 
 ## Lifecycle
 
-A location's administrative status moves between a small set of values:
+A location's administrative status moves through a small set of values:
 
 ```
 active → inactive → unknown
@@ -44,9 +44,9 @@ Separately, an **operational status** describes the live state of a bed or room 
 ## Relationships
 
 - **Facility** — every location belongs to exactly one [facility](./facility.mdx).
-- **Parent and children** — locations form a tree; a permission or organization grant at a parent cascades down to its descendants.
-- **Organization** — a [facility organization](./organization.mdx) can be granted access to a location, which is how users gain access to it and the encounters within.
-- **Encounter** — an [encounter](../clinical/encounter.mdx) is associated with a location over a time window (for example, a bed assignment), and the location surfaces its current encounter for occupancy views.
+- **Parent and children** — locations form a tree, and a permission or organization grant at a parent cascades down to its descendants.
+- **Organization** — a [facility organization](./organization.mdx) can be granted access to a location, which is how users gain access to it and to the encounters within.
+- **Encounter** — an [encounter](../clinical/encounter.mdx) is associated with a location over a time window (a bed assignment, for example), and the location surfaces its current encounter for occupancy views.
 
 ## Permissions
 
@@ -59,7 +59,7 @@ Access to locations is governed by the facility-location permissions:
 | Can List Facility Location Organizations | View the organizations granted access to a location | Facility Admin, Admin, Staff |
 | Can Create/Update Facility Location Organizations | Grant or update organization access to a location | Facility Admin, Admin, Staff |
 
-Roles are granted to users through facility-organization membership, and access is scoped by the organization tree: a permission held on an organization applies to the locations that organization can reach, and grants at a parent location cascade to its children. Because that cascade is computed asynchronously, newly granted access settles a moment after the change is made.
+Users receive roles through facility-organization membership, and access is scoped by the organization tree: a permission held on an organization applies to the locations that organization can reach, and grants at a parent location cascade to its children. Because that cascade is computed asynchronously, newly granted access settles a moment after the change is made.
 
 ## Related
 

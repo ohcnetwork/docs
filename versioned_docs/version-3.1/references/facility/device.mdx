@@ -6,7 +6,7 @@ sidebar_position: 7
 
 Technical reference for the `Device` module in Care EMR.
 
-The Django model is the **storage layer** — several fields are typed only loosely (`CharField` for status enums, `JSONField` for `contact`/`metadata`). The **Pydantic resource specs** under `care/emr/resources/device/` are the API/implementation layer: they define the enums those `CharField`s are constrained to, the structured shape of the JSON fields, validation rules, the read/write schemas, and server-maintained side effects.
+The Django model is the **storage layer**, and it types several fields only loosely (`CharField` for status enums, `JSONField` for `contact`/`metadata`). The **Pydantic resource specs** under `care/emr/resources/device/` form the API/implementation layer: they define the enums those `CharField`s are constrained to, the structured shape of the JSON fields, the validation rules, the read/write schemas, and the server-maintained side effects.
 
 **Source:**
 - Model: [`care/emr/models/device.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/device.py)
@@ -112,7 +112,7 @@ ContactPoint {
 
 ### `DeviceEncounterHistory`
 
-Audit trail of device-to-encounter associations. A new row is created when a device is attached to an encounter; `end` is stamped when it detaches. Read-only via the API (`EMRModelReadOnlyViewSet`), ordered by `-end`.
+Audit trail of device-to-encounter associations. Attaching a device to an encounter creates a new row; detaching it stamps `end`. Read-only via the API (`EMRModelReadOnlyViewSet`), ordered by `-end`.
 
 ```text
 device    → FK Device (CASCADE)
@@ -123,7 +123,7 @@ end       → DateTimeField (nullable)
 
 ### `DeviceLocationHistory`
 
-Audit trail of device placements. A new row is created when a device moves to a location; `end` is stamped when it leaves. Read-only via the API, ordered by `-end`.
+Audit trail of device placements. Moving a device to a location creates a new row; leaving it stamps `end`. Read-only via the API, ordered by `-end`.
 
 ```text
 device   → FK Device (CASCADE)
@@ -143,7 +143,7 @@ note         → TextField (default "")
 edit_history → JSONField (default [])
 ```
 
-`device` uses `PROTECT`, so a `Device` with service-history rows cannot be hard-deleted while they exist. `edit_history` is an append-only audit list maintained server-side on every update (see [Methods & save behaviour](#deviceservicehistory-edit-history)).
+`device` uses `PROTECT`, so a `Device` with service-history rows cannot be hard-deleted while those rows exist. `edit_history` is an append-only audit list maintained server-side on every update (see [Methods & save behaviour](#deviceservicehistory-edit-history)).
 
 ## Resource specs (API schema)
 
@@ -172,10 +172,10 @@ The viewset wires these specs as: create = `DeviceCreateSpec`, update = `DeviceU
 
 ### Validation rules
 
-- `status` and `availability_status` must be one of their enum values (request rejected otherwise).
+- `status` and `availability_status` must each be one of their enum values, or the request is rejected.
 - `registered_name` is required on every write.
 - `care_type` (create only) must be a registered device-type key or `null`; `DeviceCreateSpec.validate_care_type` calls `DeviceTypeRegistry.get_care_device_class(value)`, which raises for unknown types.
-- `care_type` cannot be changed on update (`DeviceUpdateSpec` does not expose it).
+- `care_type` cannot change on update (`DeviceUpdateSpec` does not expose it).
 - `DeviceServiceHistory.serviced_on` and `note` are required on write; updates are blocked once `edit_history` reaches 50 entries (`"Cannot Edit instance anymore"`).
 - `ContactPoint.system`, `value`, and `use` are all required for each contact entry.
 
@@ -183,17 +183,17 @@ The viewset wires these specs as: create = `DeviceCreateSpec`, update = `DeviceU
 
 ### `Device.save()` — organization cache
 
-On every save the `facility_organization_cache` is rebuilt:
+Every save rebuilds `facility_organization_cache`:
 
 1. Look up the `FacilityOrganization` with `org_type="root"` for the device's `facility`; its ID seeds the cache.
-2. If `managing_organization` is set, add its `id` and its `parent_cache` (full ancestor chain).
+2. If `managing_organization` is set, add its `id` and its `parent_cache` (the full ancestor chain).
 3. Persist the resulting set as `facility_organization_cache`.
 
-This cache lets the device be filtered by organization hierarchy without traversing joins. Treat it as platform-maintained and rely on `managing_organization` / `facility` as the writable inputs.
+This cache lets devices be filtered by organization hierarchy without traversing joins. Treat it as platform-maintained, and use `managing_organization` / `facility` as the writable inputs.
 
 ### `care_type` plugin hooks
 
-When `care_type` is set, the matching `DeviceTypeBase` subclass from `DeviceTypeRegistry` is invoked inside the create/update/delete transaction:
+When `care_type` is set, the matching `DeviceTypeBase` subclass from `DeviceTypeRegistry` runs inside the create/update/delete transaction:
 
 | Stage | Hook | Effect |
 | --- | --- | --- |
@@ -205,19 +205,19 @@ When `care_type` is set, the matching `DeviceTypeBase` subclass from `DeviceType
 
 ### `DeviceServiceHistory` edit history
 
-On `perform_update`, the viewset snapshots the **current** DB row and appends `{serviced_on, note, updated_by}` to `edit_history` before saving the new values — so `edit_history` is a server-maintained, append-only trail of previous states. Updates are refused once it holds 50 entries.
+On `perform_update`, the viewset snapshots the **current** DB row and appends `{serviced_on, note, updated_by}` to `edit_history` before saving the new values, making `edit_history` a server-maintained, append-only trail of previous states. Updates are refused once it holds 50 entries.
 
 ## API integration notes
 
-- `facility` is taken from the URL (`facility_external_id`) on create — not from the body.
-- `current_location`, `current_encounter`, and `managing_organization` are **not** writable through the device create/update body. They are mutated through dedicated detail actions, each of which closes the open history row (stamps `end`) and opens a new one:
-  - `POST associate_encounter` — `{ encounter: uuid | null }`; closes the open `DeviceEncounterHistory`, sets `current_encounter`, opens a new history row (returns it). `null` detaches.
+- `facility` comes from the URL (`facility_external_id`) on create, not from the body.
+- `current_location`, `current_encounter`, and `managing_organization` are **not** writable through the device create/update body. Dedicated detail actions mutate them, and each one closes the open history row (stamps `end`) and opens a new one:
+  - `POST associate_encounter` — `{ encounter: uuid | null }`; closes the open `DeviceEncounterHistory`, sets `current_encounter`, and opens a new history row (which it returns). `null` detaches.
   - `POST associate_location` — `{ location: uuid | null }`; same pattern against `DeviceLocationHistory`.
   - `POST add_managing_organization` — `{ managing_organization: uuid }`.
   - `POST remove_managing_organization` — clears `managing_organization`.
 - When an encounter reaches a completed status, `disassociate_device_from_encounter` clears `current_encounter` on all attached devices and stamps `end` on their open `DeviceEncounterHistory` rows.
-- `metadata` (model column) is plugin-owned; clients read deployment-specific data back through the `care_metadata` virtual field, not `metadata`.
-- `facility_organization_cache` is maintained by the platform — do not set it directly. The list endpoint scopes results to devices whose cache overlaps the requesting user's facility-organization memberships (or, when `?location=` is supplied, by location permission / `parent_cache` with `?include_children=`).
+- `metadata` (the model column) is plugin-owned; clients read deployment-specific data back through the `care_metadata` virtual field, not `metadata`.
+- `facility_organization_cache` is platform-maintained — do not set it directly. The list endpoint scopes results to devices whose cache overlaps the requesting user's facility-organization memberships (or, when `?location=` is supplied, by location permission / `parent_cache` with `?include_children=`).
 
 ## Related
 

@@ -4,10 +4,10 @@ sidebar_position: 1
 
 # Base models & conventions
 
-Technical reference for the shared base layer that every Care EMR resource is built on. There are **two layers**:
+Technical reference for the shared base layer that every Care EMR resource builds on. It has **two layers**:
 
 - **Storage layer** — abstract Django models in `care/emr/models` and `care/utils/models`. They supply opaque IDs, audit fields, soft-delete, history, slugs, and feature flags. Several columns are opaque `JSONField`s whose real structure is *not* visible in the model.
-- **API / implementation layer** — Pydantic resource specs built on `EMRResource` (`care/emr/resources/base.py`). They define enums, field validation, the structured shape of those JSON fields (via nested specs), and the read/write schemas. The shared structured types live in `care/emr/resources/common/` and are reused across nearly every resource.
+- **API / implementation layer** — Pydantic resource specs built on `EMRResource` (`care/emr/resources/base.py`). They define enums, field validation, the read/write schemas, and the structured shape of those JSON fields (via nested specs). The shared structured types live in `care/emr/resources/common/` and are reused across nearly every resource.
 
 This page documents both layers and the shared common spec types. Concrete resources (for example [Patient](../clinical/patient)) inherit a storage base and define their own resource specs on top of `EMRResource`.
 
@@ -28,7 +28,7 @@ This page documents both layers and the shared common spec types. Concrete resou
 | `SlugBaseModel` | storage | EMR base that adds facility-scoped or instance-scoped slug helpers |
 | `EMRResource` | API | Pydantic base for all resource specs — `serialize` / `de_serialize` between DB objects and API schemas |
 
-All five storage models are `abstract = True`: they define no database table of their own. Concrete resource models inherit one of them and contribute the columns described below to their own table.
+All five storage models are `abstract = True`: none defines a database table of its own. A concrete resource model inherits one of them and contributes the columns described below to its own table.
 
 The storage inheritance chain is:
 
@@ -40,7 +40,7 @@ models.Model
             └─ SlugBaseModel
 ```
 
-The API specs are a parallel hierarchy rooted at `pydantic.BaseModel`:
+The API specs form a parallel hierarchy rooted at `pydantic.BaseModel`:
 
 ```text
 pydantic.BaseModel
@@ -63,11 +63,11 @@ The root abstract model. Every other base — and therefore every persisted Care
 | `modified_date` | `DateTimeField` | no | `auto_now` | nullable, `db_index`. Updated on every save |
 | `deleted` | `BooleanField` | yes | `False` | `db_index`. Soft-delete marker |
 
-`objects` is overridden to a [`BaseManager`](#basemanager) instance, so the default queryset only returns live rows.
+`objects` is overridden to a [`BaseManager`](#basemanager) instance, so the default queryset returns only live rows.
 
 #### Soft delete
 
-`BaseModel.delete()` does not issue a SQL `DELETE`. It flips the flag and persists only that column:
+`BaseModel.delete()` issues no SQL `DELETE`. It flips the flag and persists only that column:
 
 ```python
 def delete(self, *args):
@@ -79,7 +79,7 @@ Rows are therefore retained for audit and referential integrity. To read deleted
 
 ### `EMRBaseModel` fields
 
-The standard base for EMR resource models. Extends `BaseModel`, so it also carries `external_id`, the timestamps, and `deleted`, plus the following:
+The standard base for EMR resource models. It extends `BaseModel`, so it also carries `external_id`, the timestamps, and `deleted`, plus the following:
 
 | Field | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |
@@ -88,7 +88,7 @@ The standard base for EMR resource models. Extends `BaseModel`, so it also carri
 | `created_by` | `FK → users.User` | no | `None` | `on_delete=SET_NULL`, nullable. `related_name="%(app_label)s_%(class)s_created_by"` |
 | `updated_by` | `FK → users.User` | no | `None` | `on_delete=SET_NULL`, nullable. `related_name="%(app_label)s_%(class)s_updated_by"` |
 
-The `%(app_label)s_%(class)s_…` `related_name` templating lets every concrete subclass reuse the same FK definitions without reverse-accessor collisions.
+The `%(app_label)s_%(class)s_…` `related_name` template lets every concrete subclass reuse the same FK definitions without reverse-accessor collisions.
 
 ### `SlugBaseModel` helpers
 
@@ -116,7 +116,7 @@ instance-scoped:  i-<slug>
 
 ### `BaseManager`
 
-Default manager applied as `objects` on `BaseModel`. It filters out soft-deleted rows at the queryset level:
+The default manager applied as `objects` on `BaseModel`. It filters out soft-deleted rows at the queryset level:
 
 ```python
 def get_queryset(self):
@@ -127,7 +127,7 @@ Any query through `Model.objects` is implicitly scoped to `deleted=False`.
 
 ### `BaseFlag`
 
-Abstract base for per-entity feature-flag tables (for example facility or organization flags). It extends `BaseModel` and stores a single validated flag name, with all lookups served from the cache.
+Abstract base for per-entity feature-flag tables (for example facility or organization flags). It extends `BaseModel`, stores a single validated flag name, and serves all lookups from the cache.
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -178,7 +178,7 @@ The Pydantic base class (`care/emr/resources/base.py`) that every resource spec 
 | `to_json()` | — | `model_dump(mode="json", exclude=["meta"])` |
 | `get_database_mapping()` | — | Lists the model's non-FK column names, used to decide which spec fields map to columns |
 
-**Spec naming convention.** Concrete resources expose a small set of specs built on `EMRResource`. Read these as a table per resource:
+**Spec naming convention.** Each concrete resource exposes a small set of specs built on `EMRResource`. Read them as one table per resource:
 
 | Spec class | Kind | Role |
 | --- | --- | --- |
@@ -188,7 +188,7 @@ The Pydantic base class (`care/emr/resources/base.py`) that every resource spec 
 | `<X>ListSpec` | read · list | Lightweight response for list endpoints |
 | `<X>ReadSpec` / `<X>RetrieveSpec` | read · detail | Full response for the detail endpoint (often resolving nested/coded fields in `perform_extra_serialization`) |
 
-Coded fields commonly bind to a **value set** (a `system`/`code` allow-list). Resource specs declare the binding (e.g. via `json_schema_extra={"slug": "<valueset-slug>"}` on the field) and validate the submitted `Coding` against it in `perform_extra_deserialization`. Status fields commonly maintain a server-side `status_history` appended on create/update. See each resource page for the exact bindings and side effects.
+Coded fields commonly bind to a **value set** (a `system`/`code` allow-list). The resource spec declares the binding (e.g. via `json_schema_extra={"slug": "<valueset-slug>"}` on the field) and validates the submitted `Coding` against it in `perform_extra_deserialization`. Status fields commonly maintain a server-side `status_history` appended on create/update. See each resource page for its exact bindings and side effects.
 
 ### `PeriodSpec`
 
@@ -322,7 +322,7 @@ Validation rules (model validators):
 
 `MonetaryComponentsWithoutBase` (a `RootModel` over `list[MonetaryComponent]`) adds: no duplicate `code.code` values across the list; and, when a base component declares `tax_included_amount`, the sum of tax-component amounts (or `base.amount * factor`) plus `tax_included_amount` must equal the base amount. `MonetaryComponents` extends it with: at most **one** `base` component.
 
-`MonetaryComponentDefinition` extends `MonetaryComponent` for definition-time use: adds a **required** `title: str`, disables the duplicate-code / amount-or-factor checks, and forbids a `base` component entirely.
+`MonetaryComponentDefinition` extends `MonetaryComponent` for definition-time use: it adds a **required** `title: str`, disables the duplicate-code / amount-or-factor checks, and forbids a `base` component entirely.
 
 `DiscountConfiguration`:
 

@@ -4,18 +4,18 @@ sidebar_position: 1
 
 # Medication
 
-A **medication** in Care is how the system tracks a drug across its whole journey for a patient — from the prescriber's intent, through what the pharmacy hands over, to what is actually given at the bedside and what the patient reports taking at home. It is not one record but a small family of related records that together describe the medication story for an encounter.
+A **medication** in Care tracks a drug across its whole journey for a patient — from the prescriber's intent, through what the pharmacy hands over, to what is given at the bedside and what the patient reports taking at home. It is not a single record but a small family of related records that together tell the medication story for an encounter.
 
 ## What it represents
 
 Care models medication as four distinct but connected resources, each answering a different question:
 
 - **Medication request** — what a prescriber *intends*: the drug, dose, route, timing, and PRN rules, grouped into a prescription for an encounter
-- **Medication administration** — what was actually *given* (or attempted) to the patient, fulfilling a request
+- **Medication administration** — what was actually *given* (or attempted), fulfilling a request
 - **Medication dispense** — what the pharmacy *handed over*, drawing down inventory and optionally raising a charge
 - **Medication statement** — what the patient *reports* taking, has taken, or intends to take, as told by the patient, a relative, or a clinician (not actively prescribed)
 
-Keeping these separate lets Care distinguish "ordered" from "given" from "dispensed" from "reported" — the difference that matters for medication reconciliation and safety.
+Keeping these separate lets Care distinguish "ordered" from "given" from "dispensed" from "reported" — the distinction that matters for medication reconciliation and safety.
 
 ## The four resources
 
@@ -26,11 +26,11 @@ Keeping these separate lets Care distinguish "ordered" from "given" from "dispen
 | Dispense | Hand-over of stock | An inventory item at a location |
 | Statement | Patient-reported medication use | Patient and encounter |
 
-A request can lead to many administrations (each scheduled dose) and many dispenses (refills). A statement stands on its own — it documents medication history, not an active order.
+One request can lead to many administrations (one per scheduled dose) and many dispenses (refills). A statement stands on its own — it documents medication history, not an active order.
 
 ## Lifecycle
 
-Each resource carries its own status. Drawn from the same plain-language strings the API uses:
+Each resource carries its own status, drawn from the same plain-language strings the API uses:
 
 ```
 Request:        draft → active → on_hold → completed / stopped / cancelled
@@ -39,7 +39,7 @@ Dispense:       preparation → in_progress → completed / declined / cancelled
 Statement:      active → on_hold → completed / stopped / not_taken / intended
 ```
 
-A few terminal states (`entered_in_error`, plus `stopped` / `cancelled` / `declined` depending on the resource) close a record out. Cancelling a dispense automatically reverses its inventory draw-down and any attached charge, so stock and billing stay consistent.
+A few terminal states close a record out: `entered_in_error`, plus `stopped` / `cancelled` / `declined` depending on the resource. Cancelling a dispense automatically reverses its inventory draw-down and any attached charge, so stock and billing stay consistent.
 
 ## Relationships
 
@@ -52,9 +52,9 @@ Drugs and dose units are coded against SNOMED CT value sets, so "amoxicillin 500
 
 ## Permissions
 
-Medication access splits along two access models.
+Medication access splits across two access models.
 
-**Dispense** has dedicated, location-centric permissions — pharmacists work in the pharmacy and often have no encounter access, so dispensing keys off the dispensing location instead:
+**Dispense** has dedicated, location-centric permissions. Pharmacists work in the pharmacy and often have no encounter access, so dispensing keys off the dispensing location instead:
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
@@ -62,14 +62,14 @@ Medication access splits along two access models.
 | Medication Dispense Read | Allows reading medication dispense records | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
 | Write Medication Dispense | Allows creating and updating medication dispense records | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
 
-**Requests, administrations, and statements** are clinical data on the encounter, so they are governed by the encounter clinical-data permissions:
+**Requests, administrations, and statements** are clinical data on the encounter, so the encounter clinical-data permissions govern them:
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
 | Can Read encounter related clinical data | Allows reading clinical data recorded on an encounter | Admin, Doctor, Nurse, Facility Admin |
 | Update Encounter related clinical data | Allows creating and updating clinical data on an encounter | Admin, Doctor, Nurse, Facility Admin |
 
-Roles are granted to users through organization, facility-organization, and patient memberships. Access is scoped by the organization tree — a permission held at a parent organization cascades to its descendants — and dispense access is checked against the location's facility-organization rather than the encounter.
+Roles are granted to users through organization, facility-organization, and patient memberships. The organization tree scopes access — a permission held at a parent organization cascades to its descendants — and dispense access is checked against the location's facility-organization rather than the encounter.
 
 ## Related
 

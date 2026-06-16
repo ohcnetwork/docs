@@ -6,7 +6,7 @@ sidebar_position: 1
 
 Technical reference for the `Account` module in Care EMR.
 
-`Account` is a financial bucket aggregating all transactions made against a patient within a facility. The Django model is the **storage layer** — several fields are opaque `JSONField`s whose real structure lives in the Pydantic **resource specs** (`care/emr/resources/account/`). This doc enriches the model fields with the spec-defined enums, JSON shapes, validation, and the API read/write schemas.
+An `Account` is a financial bucket that aggregates every transaction made against a patient within a facility. The Django model is the **storage layer** — several fields are opaque `JSONField`s whose real structure lives in the Pydantic **resource specs** (`care/emr/resources/account/`). This doc enriches the model fields with the spec-defined enums, JSON shapes, validation, and API read/write schemas.
 
 **Source:**
 - Model: [`care/emr/models/account.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/account.py)
@@ -23,7 +23,7 @@ Technical reference for the `Account` module in Care EMR.
 
 `Account` extends [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, audit fields `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON).
 
-An account is perpetual by default: a charge item is placed on the default account for a patient within a facility, and to start with only one active+open account exists per patient per facility (see [`get_default_account`](#default-account)). Accounts can be balanced and closed once a patient is discharged, and invoices are created against accounts or items within them.
+An account is perpetual by default. Charge items are placed on the patient's default account within a facility, and initially only one active+open account exists per patient per facility (see [`get_default_account`](#default-account)). Once a patient is discharged, accounts can be balanced and closed. Invoices are created against accounts or against the items within them.
 
 ## `Account` fields
 
@@ -112,11 +112,11 @@ PeriodSpec {
 Validation (`PeriodSpec.validate_period`):
 - `start`, if present, **must be timezone-aware** (naive datetimes raise `"Start Date must be timezone aware"`).
 - `end`, if present, **must be timezone-aware** (`"End Date must be timezone aware"`).
-- If both present, `start <= end` (`"Start Date cannot be greater than End Date"`).
+- If both are present, `start <= end` (`"Start Date cannot be greater than End Date"`).
 
 The default account is created with only `start` set, formatted as `"%Y-%m-%dT%H:%M:%S.%fZ"` (`care_now()`).
 
-The FHIR-style [`Period`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/period.py) common type (`{ id?, start?, end? }`, `extra="forbid"`) is a related shape but `Account` binds `service_period` to `PeriodSpec`, not `Period`.
+The FHIR-style [`Period`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/period.py) common type (`{ id?, start?, end? }`, `extra="forbid"`) is a related shape, but `Account` binds `service_period` to `PeriodSpec`, not `Period`.
 
 ### `MonetaryComponent` shape
 
@@ -134,7 +134,7 @@ MonetaryComponent {
 }
 ```
 
-Key `MonetaryComponent` validation: `tax_included_amount` only allowed on a `base` component; a `base` component must have an `amount`, no `factor`, and no `conditions`; `amount` and `factor` are mutually exclusive; exactly one of `amount`/`factor` is required unless it is a `global_component` with a `code`.
+Key `MonetaryComponent` validation: `tax_included_amount` is only allowed on a `base` component; a `base` component must have an `amount`, no `factor`, and no `conditions`; `amount` and `factor` are mutually exclusive; exactly one of `amount`/`factor` is required unless it is a `global_component` with a `code`.
 
 ## Resource specs (API schema)
 
@@ -151,22 +151,22 @@ The API layer is defined in [`resources/account/spec.py`](https://github.com/ohc
 
 ### Validation & server-side behaviour
 
-- **Create** (`AccountCreateSpec`): mixes in `ExtensionValidator` (validates `extensions`) and requires `patient` as a UUID. `perform_extra_deserialization` resolves it via `get_object_or_404(Patient, external_id=...)` and assigns `obj.patient`. `patient` is otherwise excluded from the base serialize loop.
-- **Update** (`AccountUpdateSpec`): mixes in `ExtensionValidator`; `primary_encounter` is optional. If supplied, `perform_extra_deserialization` resolves it via `get_object_or_404(Encounter, external_id=...)` and assigns `obj.primary_encounter`.
-- **Status / billing_status** are validated against `AccountStatusOptions` / `AccountBillingStatusOptions` — invalid values are rejected by the Pydantic enums.
-- **Read serialization**: `perform_extra_serialization` sets `mapping["id"] = obj.external_id`; `AccountReadSpec` additionally serializes the patient (`PatientListSpec`) and renders tags via `SingleFacilityTagManager`; `AccountRetrieveSpec` serializes the full patient (`PatientRetrieveSpec`, scoped to `obj.facility`) and the primary encounter (`EncounterRetrieveSpec`) when present.
-- **Totals are read-only**: balance/aggregate fields appear only on read specs; they are recomputed by `sync_account_items`, never set from client payloads.
+- **Create** (`AccountCreateSpec`): mixes in `ExtensionValidator` (which validates `extensions`) and requires `patient` as a UUID. `perform_extra_deserialization` resolves it via `get_object_or_404(Patient, external_id=...)` and assigns `obj.patient`. `patient` is otherwise excluded from the base serialize loop.
+- **Update** (`AccountUpdateSpec`): mixes in `ExtensionValidator`; `primary_encounter` is optional. When supplied, `perform_extra_deserialization` resolves it via `get_object_or_404(Encounter, external_id=...)` and assigns `obj.primary_encounter`.
+- **Status / billing_status** are validated against `AccountStatusOptions` / `AccountBillingStatusOptions`; the Pydantic enums reject invalid values.
+- **Read serialization**: `perform_extra_serialization` sets `mapping["id"] = obj.external_id`. `AccountReadSpec` also serializes the patient (`PatientListSpec`) and renders tags via `SingleFacilityTagManager`; `AccountRetrieveSpec` serializes the full patient (`PatientRetrieveSpec`, scoped to `obj.facility`) and, when present, the primary encounter (`EncounterRetrieveSpec`).
+- **Totals are read-only**: balance/aggregate fields appear only on read specs. `sync_account_items` recomputes them; they are never set from client payloads.
 
 <a id="default-account"></a>
 ### Default account
 
-`get_default_account(patient, facility)` ([`default_account.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/account/default_account.py)) returns the first account for that `patient` + `facility` with `status = active` and `billing_status = open`. If none exists it creates one with:
+`get_default_account(patient, facility)` ([`default_account.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/account/default_account.py)) returns the first account for that `patient` + `facility` with `status = active` and `billing_status = open`. If none exists, it creates one with:
 
 - `status = active`, `billing_status = open`
 - `service_period = { "start": care_now() }` (start only)
 - `name = "{patient.name} {YYYY-MM-DD}"`
 
-This is how the default account is materialized when the first charge item is added — clients normally do not create accounts directly.
+This materializes the default account when the first charge item is added — clients normally do not create accounts directly.
 
 <a id="balance-sync"></a>
 ### Balance sync
@@ -179,11 +179,11 @@ This is how the default account is materialized when the first charge item is ad
 - `total_balance` = `total_gross − total_paid`
 - `calculated_at` = `care_now()`
 
-All sums use `care_round`. `total_net`, `cached_items`, and `total_price_components` are currently **not** updated (their logic is commented out), so they remain at their defaults. `rebalance_account_task(account_id)` is the Celery task wrapper that runs the sync and saves.
+All sums use `care_round`. `total_net`, `cached_items`, and `total_price_components` are currently **not** updated (their logic is commented out), so they stay at their defaults. `rebalance_account_task(account_id)` is the Celery task wrapper that runs the sync and saves.
 
 ## Related models
 
-The `Account` model is the only class defined in `account.py`. Its relationships are:
+`Account` is the only class defined in `account.py`. Its relationships are:
 
 ```text
 facility          → FK facility.Facility (PROTECT)
@@ -191,7 +191,7 @@ patient           → FK emr.Patient (PROTECT)
 primary_encounter → FK emr.Encounter (SET_NULL, nullable)
 ```
 
-[Charge items](./charge-item.mdx) refer back to the account they belong to and drive its totals; [invoices](./invoice.mdx) and [payment reconciliations](./payment-reconciliation.mdx) are created against the account or its items.
+[Charge items](./charge-item.mdx) reference the account they belong to and drive its totals; [invoices](./invoice.mdx) and [payment reconciliations](./payment-reconciliation.mdx) are created against the account or its items.
 
 ## API integration notes
 

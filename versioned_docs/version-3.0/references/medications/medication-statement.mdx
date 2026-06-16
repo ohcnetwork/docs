@@ -8,7 +8,7 @@ Technical reference for the `MedicationStatement` module in Care EMR.
 
 A `MedicationStatement` records a medication the patient **is taking, has taken, or intends to take** — as *reported* (by the patient, a relative, or a clinician) rather than actively prescribed or dispensed. It aligns with the FHIR `MedicationStatement` resource.
 
-The Django model is the **storage** layer: `medication` and `effective_period` are opaque `JSONField`s whose real structure lives in the Pydantic **resource specs** (`care/emr/resources/medication/statement/`). The specs define the enums, the nested JSON shapes, validation, the value-set binding on `medication`, and the read/write API schemas. This page documents both.
+The Django model handles **storage**: `medication` and `effective_period` are opaque `JSONField`s whose real structure lives in the Pydantic **resource specs** (`care/emr/resources/medication/statement/`). The specs define the enums, the nested JSON shapes, validation, the value-set binding on `medication`, and the read/write API schemas. This page documents both.
 
 **Source:**
 
@@ -26,7 +26,7 @@ The Django model is the **storage** layer: `medication` and `effective_period` a
 
 ## `MedicationStatement` fields
 
-The **Type** column gives the Django storage type; the **Spec shape** column gives the structured shape enforced by the Pydantic resource spec when reading/writing over the API.
+The **Type** column gives the Django storage type; the **Spec shape** column gives the structured shape the Pydantic resource spec enforces when reading and writing over the API.
 
 ### Statement details
 
@@ -52,7 +52,7 @@ patient   → FK Patient   (CASCADE)
 encounter → FK Encounter (CASCADE)
 ```
 
-Both foreign keys cascade on delete, so removing a patient or encounter removes the associated medication statements.
+Both foreign keys cascade on delete, so removing a patient or encounter also removes the associated medication statements.
 
 ## Enum values
 
@@ -96,9 +96,9 @@ From `MedicationStatementInformationSourceType(str, Enum)` in `spec.py`. Bound t
 
 #### Bound value set
 
-`medication` is declared as `ValueSetBoundCoding[CARE_MEDICATION_VALUESET.slug]`. On write, the `code` is validated against the **`system-medication`** value set ([`medication.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/valueset/medication.py)), which includes SNOMED CT concepts under the constraint `<< 763158003 |Medicinal product|`. An out-of-set code is rejected.
+`medication` is declared as `ValueSetBoundCoding[CARE_MEDICATION_VALUESET.slug]`. On write, the `code` is validated against the **`system-medication`** value set ([`medication.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/valueset/medication.py)), which includes SNOMED CT concepts under the constraint `<< 763158003 |Medicinal product|`. Any code outside the set is rejected.
 
-> The `care/emr/resources/medication/valueset/` directory holds additional value sets used by other medication resources (route, body site, administration method, additional instruction, as-needed reason, medication-not-given reason). `MedicationStatement` itself only binds `medication` → `system-medication`.
+> The `care/emr/resources/medication/valueset/` directory holds additional value sets used by other medication resources (route, body site, administration method, additional instruction, as-needed reason, medication-not-given reason). `MedicationStatement` itself binds only `medication` → `system-medication`.
 
 ### `PeriodSpec` shape
 
@@ -113,7 +113,7 @@ Validation (`validate_period`, mode `after`): a naive `start`/`end` raises an er
 
 ## Resource specs (API schema)
 
-All specs subclass `EMRResource` (`care/emr/resources/base.py`), which provides `serialize` (DB object → pydantic) and `de_serialize` (pydantic → DB object). `__model__ = MedicationStatement`; `__exclude__ = ["patient", "encounter"]` means those fields are never written/read by the generic field copy and are instead handled by the extra hooks.
+All specs subclass `EMRResource` (`care/emr/resources/base.py`), which provides `serialize` (DB object → pydantic) and `de_serialize` (pydantic → DB object). `__model__ = MedicationStatement`; `__exclude__ = ["patient", "encounter"]` keeps those fields out of the generic field copy so the extra hooks handle them instead.
 
 | Spec class | Role | Fields exposed |
 | --- | --- | --- |
@@ -126,12 +126,12 @@ Key validation and server-maintained behaviour:
 
 - **`encounter` existence** — `MedicationStatementSpec.validate_encounter_exists` (a `field_validator` on `encounter`) raises `"Encounter not found"` unless an `Encounter` with that `external_id` exists.
 - **`patient` derived server-side** — `MedicationStatementSpec.perform_extra_deserialization` runs only on create (`is_update` false): it resolves the `Encounter` from the supplied UUID and sets `obj.patient = obj.encounter.patient`. Clients never send `patient`.
-- **Update is restricted** — `MedicationStatementUpdateSpec` only accepts `status`, `effective_period`, and `note`; `medication`, `reason`, `dosage_text`, `information_source`, and `encounter` are not updatable through it.
+- **Update is restricted** — `MedicationStatementUpdateSpec` accepts only `status`, `effective_period`, and `note`; `medication`, `reason`, `dosage_text`, `information_source`, and `encounter` are not updatable through it.
 - **Read serialization** — `MedicationStatementReadSpec.perform_extra_serialization` sets `id = obj.external_id`, `encounter = obj.encounter.external_id`, and serializes audit users via `serialize_audit_users` (`created_by`/`updated_by` as `UserSpec`).
 - **`medication` value-set check** — enforced at validation time on the `Coding.code` (see [Bound value set](#bound-value-set)).
 - **`effective_period` tz-awareness / ordering** — enforced by `PeriodSpec` (see [`PeriodSpec` shape](#periodspec-shape)).
 
-There is **no** `status_history` on this resource — status is a single current value, not an appended log.
+This resource has **no** `status_history` — status is a single current value, not an appended log.
 
 ## Methods & save behaviour
 
@@ -145,7 +145,7 @@ There is **no** `status_history` on this resource — status is a single current
 - `medication` is a single SNOMED CT `Coding` object whose `code` must be in the `system-medication` value set — **not** a free CodeableConcept and not a scalar string.
 - `effective_period` datetimes must be timezone-aware and ordered (`start ≤ end`).
 - `encounter` is supplied as a UUID; `patient` is derived from it server-side and must not be sent.
-- Updates go through `MedicationStatementUpdateSpec` and can only change `status`, `effective_period`, and `note`.
+- Updates go through `MedicationStatementUpdateSpec` and can change only `status`, `effective_period`, and `note`.
 - `information_source` distinguishes a self-reported or third-party statement from an actively managed prescription ([`MedicationRequest`](medication-request.mdx)).
 - `external_id` (UUID), `created_by`/`updated_by`, `created_date`/`modified_date`, `history`, and `meta` are platform-maintained — do not set them directly from clients.
 

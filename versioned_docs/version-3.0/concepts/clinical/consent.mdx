@@ -4,7 +4,7 @@ sidebar_position: 9
 
 # Consent
 
-A **consent** in Care records a patient's decision — to permit or deny — for a defined category of activity, such as treatment, research participation, or sharing of their information. It captures what the patient agreed to, when it applies, and who verified it, so that care teams have an auditable record of the patient's wishes.
+A **consent** in Care records a patient's decision — to permit or deny — for a defined category of activity, such as treatment, research participation, or information sharing. It captures what the patient agreed to, when it applies, and who verified it, giving care teams an auditable record of the patient's wishes.
 
 ## What it represents
 
@@ -15,9 +15,9 @@ Consent maps to the FHIR **Consent** resource. Each record captures:
 - **Validity** — the date it was recorded and the period during which it applies
 - **Verification** — who confirmed the consent and how (for example, by a family member)
 - **Supporting documents** — scanned or uploaded consent forms attached to the record
-- **Encounter linkage** — the visit the consent was captured during
+- **Encounter linkage** — the visit during which the consent was captured
 
-A consent is always anchored to an encounter, and the owning patient is reached through that encounter. The patient's history is the container that makes their consents coherent over time.
+A consent is always anchored to an encounter, and the owning patient is reached through that encounter. The patient's history is the container that keeps their consents coherent over time.
 
 ## Decision
 
@@ -28,7 +28,7 @@ Every consent states one of two outcomes:
 
 ## Types
 
-The category describes what kind of activity the consent governs:
+The category describes the kind of activity the consent governs:
 
 | Category | Meaning |
 | --- | --- |
@@ -56,7 +56,7 @@ draft → active → inactive
 - **not_done** — the consent activity did not take place
 - **entered_in_error** — recorded by mistake; kept for audit but disregarded
 
-Status is recorded directly on the consent; there is no automatic state machine, so a record can be marked `entered_in_error` or `inactive` as a plain update while the history remains auditable.
+Status is recorded directly on the consent. There is no automatic state machine, so a record can be marked `entered_in_error` or `inactive` as a plain update while the history remains auditable.
 
 ## Relationships
 
@@ -64,7 +64,7 @@ A consent belongs to a single **encounter**, and an encounter can carry many con
 
 ## Permissions
 
-Consent is patient clinical data, so it has no dedicated permission of its own — access is governed by the complete patient permission set defined in `PatientPermissions`. Reading consents requires the clinical-data permission; creating or updating them requires patient write access. The full set of patient permissions is listed below.
+Consent is patient clinical data, so it has no dedicated permission of its own — access is governed by the full patient permission set defined in `PatientPermissions`. Reading consents requires the clinical-data permission; creating or updating them requires patient write access. The full set of patient permissions is listed below.
 
 ### Patient
 
@@ -77,7 +77,7 @@ Consent is patient clinical data, so it has no dedicated permission of its own �
 | Can view questionnaire responses on patient | View questionnaire responses recorded for a patient | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator, Pharmacist |
 | Can submit questionnaire about patients | Submit a questionnaire about a patient | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator |
 
-Roles are granted to users through organization, facility-organization, and patient memberships. Access to a specific consent is decided by the roles a user holds on its patient — gathered through the patient's encounters, locations, owning organizations, and any direct patient association. Because access is scoped by the organization tree, a permission held at a parent organization cascades to its descendants.
+Users receive roles through organization, facility-organization, and patient memberships. Access to a specific consent depends on the roles a user holds on its patient — gathered through the patient's encounters, locations, owning organizations, and any direct patient association. Because access is scoped by the organization tree, a permission held at a parent organization cascades to its descendants.
 
 ## Related
 

@@ -6,7 +6,7 @@ sidebar_position: 4
 
 Technical reference for the `AllergyIntolerance` module in Care EMR. Care aligns this resource to FHIR `AllergyIntolerance`.
 
-The Django model is the **storage layer** — several fields are opaque `JSONField`s whose real structure is defined only in the Pydantic **resource specs** (the API/implementation layer). The specs define the enums, the JSON-field shapes, validation, the bound value set, and the read/write API schemas. This page documents both.
+The Django model is the **storage layer**. Several of its fields are opaque `JSONField`s whose real structure lives only in the Pydantic **resource specs** (the API/implementation layer). The specs define the enums, the JSON-field shapes, validation, the bound value set, and the read/write API schemas. This page documents both layers.
 
 **Source:**
 - Model: [`care/emr/models/allergy_intolerance.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/allergy_intolerance.py)
@@ -19,7 +19,7 @@ The Django model is the **storage layer** — several fields are opaque `JSONFie
 | --- | --- |
 | `AllergyIntolerance` | Records a patient's allergy or intolerance to a substance, scoped to an encounter |
 
-`AllergyIntolerance` extends [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base providing `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON).
+`AllergyIntolerance` extends [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base that provides `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON.
 
 ## `AllergyIntolerance` fields
 
@@ -117,11 +117,11 @@ The Django model is the **storage layer** — several fields are opaque `JSONFie
 | --- | --- | --- | --- |
 | `CARE_ALLERGY_CODE_VALUESET` ("Allergy") | `system-allergy-code` | SNOMED CT (`http://snomed.info/sct`) | `active` |
 
-The `code` field on write binds to this value set via `ValueSetBoundCoding[...slug]`, which validates the submitted `Coding` against the value set (`validate_valueset`). The compose includes SNOMED CT concepts that are `is-a` descendants of: `105590001`, `418038007`, `267425008`, `29736007`, `340519003`, `190753003`, `413427002`, `716186003`. The value set is also registered as a system (`register_as_system()`).
+On write, the `code` field binds to this value set via `ValueSetBoundCoding[...slug]`, which validates the submitted `Coding` against the value set (`validate_valueset`). The compose includes SNOMED CT concepts that are `is-a` descendants of: `105590001`, `418038007`, `267425008`, `29736007`, `340519003`, `190753003`, `413427002`, `716186003`. The value set is also registered as a system (`register_as_system()`).
 
 ## Resource specs (API schema)
 
-All specs extend `EMRResource` (`care/emr/resources/base.py`), which provides `serialize` (DB object → pydantic, via `model_construct`) and `de_serialize` (pydantic → DB object), plus the `perform_extra_serialization` / `perform_extra_deserialization` hooks. `BaseAllergyIntoleranceSpec` sets `__model__ = AllergyIntolerance` and `__exclude__ = ["patient", "encounter"]` (these are not auto-mapped; they are handled by the hooks). `meta` is carried on every spec via the base.
+Every spec extends `EMRResource` (`care/emr/resources/base.py`), which provides `serialize` (DB object → pydantic, via `model_construct`) and `de_serialize` (pydantic → DB object), plus the `perform_extra_serialization` / `perform_extra_deserialization` hooks. `BaseAllergyIntoleranceSpec` sets `__model__ = AllergyIntolerance` and `__exclude__ = ["patient", "encounter"]`; these two fields are not auto-mapped and are handled by the hooks instead. The base also carries `meta` on every spec.
 
 | Spec class | Role | Fields exposed |
 | --- | --- | --- |
@@ -133,34 +133,34 @@ All specs extend `EMRResource` (`care/emr/resources/base.py`), which provides `s
 
 Notes on the spec set:
 
-- **Create vs update surface differs.** `category`, `code`, `onset`, and `recorded_date` are write-only on **create** (`AllergyIntoleranceWriteSpec`) and are **not** present on `AllergyIntoleranceUpdateSpec` — they cannot be changed after creation through the update path.
-- **Read uses relaxed types.** `AllergyIntoleranceReadSpec` types the coded fields as plain `str` and `code` as `Coding` (no value-set re-validation on read, for performance — it relies on `model_construct`).
+- **Create vs update surface differs.** `category`, `code`, `onset`, and `recorded_date` are write-only on **create** (`AllergyIntoleranceWriteSpec`) and are absent from `AllergyIntoleranceUpdateSpec`, so they cannot be changed after creation through the update path.
+- **Read uses relaxed types.** `AllergyIntoleranceReadSpec` types the coded fields as plain `str` and `code` as `Coding`. It skips value-set re-validation on read for performance, relying on `model_construct`.
 
 ### Validation
 
 - `encounter` (both write specs): `validate_encounter_exists` — rejects with `"Encounter not found"` if no `Encounter` has that `external_id`.
 - `code` (create): validated against value set `system-allergy-code` (must be a permitted SNOMED CT allergy concept).
 - `onset.note` is required whenever an `onset` object is supplied.
-- Any `datetime` fields are stored as-is; tz-aware handling for period-style values is enforced by `PeriodSpec` in the base (start ≤ end, both tz-aware) — `AllergyIntolerance` itself uses scalar datetimes, not a `PeriodSpec`.
+- `datetime` fields are stored as-is. The base enforces tz-aware handling for period-style values through `PeriodSpec` (start ≤ end, both tz-aware), but `AllergyIntolerance` uses scalar datetimes rather than a `PeriodSpec`.
 
 ### Server-side side effects
 
 - **Create** (`AllergyIntoleranceWriteSpec.perform_extra_deserialization`): resolves `encounter` by `external_id` and sets `obj.encounter`, then sets `obj.patient = obj.encounter.patient`. The client never sends `patient` directly.
-- **Update** (`AllergyIntoleranceUpdateSpec.perform_extra_deserialization`): if `encounter` is present, re-resolves and sets `obj.encounter`.
+- **Update** (`AllergyIntoleranceUpdateSpec.perform_extra_deserialization`): when `encounter` is present, re-resolves it and sets `obj.encounter`.
 - **Read** (`AllergyIntoleranceReadSpec.perform_extra_serialization`): sets `mapping["id"] = obj.external_id`, sets `encounter` to `obj.encounter.external_id`, and serializes audit users (`created_by` / `updated_by`) via `serialize_audit_users`.
 
 ## Methods & save behaviour
 
-- `serialize` / `de_serialize` are inherited from `EMRResource`. `de_serialize` maps only DB fields not in `__exclude__` and not `id`/`external_id`, then calls `perform_extra_deserialization` for the encounter/patient wiring described above.
-- `patient` is **always** derived from the encounter on create — there is no path to set it from a client payload.
+- `serialize` / `de_serialize` are inherited from `EMRResource`. `de_serialize` maps only DB fields that are not in `__exclude__` and not `id`/`external_id`, then calls `perform_extra_deserialization` for the encounter/patient wiring described above.
+- `patient` is **always** derived from the encounter on create; there is no path to set it from a client payload.
 - `copied_from` is platform-maintained for propagated/copied records and is not part of any spec.
 - `patient` and `encounter` are both `CASCADE`-deleted, so an allergy record never outlives its patient or encounter.
 
 ## API integration notes
 
-- Exposed through Care's REST API and aligned to the FHIR `AllergyIntolerance` resource; API field names follow the spec classes above (e.g. `encounter` is sent/returned as a UUID `external_id`, not a numeric FK).
+- Exposed through Care's REST API and aligned to the FHIR `AllergyIntolerance` resource. API field names follow the spec classes above — for example, `encounter` is sent and returned as a UUID `external_id`, not a numeric FK.
 - Submit `code` as a `Coding` from the bound value set `system-allergy-code` rather than free text, so allergies can be matched against medications and other business logic.
-- The coded status fields (`clinical_status`, `verification_status`, `category`, `criticality`) accept only their enum values listed above; invalid values are rejected on write.
+- The coded status fields (`clinical_status`, `verification_status`, `category`, `criticality`) accept only the enum values listed above; invalid values are rejected on write.
 - Do not send `patient` or `copied_from`; both are server-maintained.
 
 ## Related

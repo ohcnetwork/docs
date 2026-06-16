@@ -4,7 +4,7 @@ sidebar_position: 10
 
 # Clinical Notes
 
-**Clinical notes** are threaded discussions attached to a patient's record. They let care teams capture narrative context — handover notes, observations, and coordination — that does not fit into structured fields, and keep that conversation tied to the right patient and, when relevant, the right visit.
+**Clinical notes** are threaded discussions attached to a patient's record. They let care teams capture narrative context — handover notes, observations, and coordination — that does not fit structured fields, while keeping that conversation tied to the right patient and, where relevant, the right visit.
 
 ## What it represents
 
@@ -28,15 +28,15 @@ Within a thread, every message belongs to that thread and inherits the same pati
 
 ## Edit history
 
-Messages can be edited, but earlier versions are never lost. On each edit, the platform appends the previous message body and its author to the message's history automatically — clients cannot set or overwrite this. The current text shows in the thread; the prior versions remain auditable.
+Messages can be edited, but earlier versions are never lost. On each edit, the platform automatically appends the previous message body and its author to the message's history — clients cannot set or overwrite this. The current text shows in the thread; the prior versions remain auditable.
 
-Editing is also restricted to the original author: a user can revise their own messages, but not someone else's.
+Editing is also restricted to the original author: a user can revise their own messages, but not anyone else's.
 
 ## Permissions
 
-Notes do not have a dedicated permission set — access is governed by the same **patient** and **encounter** clinical-data permissions that protect the rest of the record. Whether a thread is patient-level or encounter-scoped decides which one applies.
+Notes have no dedicated permission set. Access is governed by the same **patient** and **encounter** clinical-data permissions that protect the rest of the record, and whether a thread is patient-level or encounter-scoped decides which one applies.
 
-Because there is no notes-specific permission set, the complete set that can govern note access is the patient and encounter permissions below.
+Because there is no notes-specific permission set, the patient and encounter permissions below are the complete set that can govern note access.
 
 ### Patient permissions
 
@@ -61,9 +61,9 @@ Because there is no notes-specific permission set, the complete set that can gov
 | Can Read encounter related clinical data | Read clinical data on an encounter, including notes | Admin, Doctor, Nurse, Facility Admin |
 | Can submit questionnaire about patient encounters | Submit a questionnaire response for an encounter | Staff, Doctor, Nurse, Admin, Facility Admin |
 
-In practice: reading notes requires clinical-data read access on the patient (or, for encounter-scoped threads, on the encounter). Posting or editing a message in a patient-level thread requires permission to update the patient's data; in an encounter-scoped thread it requires permission to update the encounter's clinical data, and is blocked once the encounter is closed.
+In practice: reading notes requires clinical-data read access on the patient, or — for encounter-scoped threads — on the encounter. Posting or editing a message in a patient-level thread requires permission to update the patient's data; in an encounter-scoped thread it requires permission to update the encounter's clinical data, and is blocked once the encounter is closed.
 
-Roles are granted to users through organization, facility-organization, and patient memberships. Access is scoped by the organization tree — a permission held at a parent organization cascades to its descendants — so a user sees and edits notes only for patients and encounters within their reach.
+Roles reach users through organization, facility-organization, and patient memberships. Access follows the organization tree — a permission held at a parent organization cascades to its descendants — so a user sees and edits notes only for patients and encounters within their reach.
 
 ## Related
 

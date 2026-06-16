@@ -6,7 +6,7 @@ sidebar_position: 1
 
 Technical reference for the `Product` module in Care EMR.
 
-`Product` is the STORAGE layer (Django model). The API/implementation layer lives in the Pydantic **resource specs**, which define the enums, the structured shape of the model's opaque `JSONField`s, validation rules, and the read/write schemas. Several model fields are opaque `JSONField`s whose real structure is only visible in the specs — see [Resource specs (API schema)](#resource-specs-api-schema).
+`Product` is the STORAGE layer (Django model). The API/implementation layer lives in the Pydantic **resource specs**, which define the enums, the structured shape of the model's opaque `JSONField`s, the validation rules, and the read/write schemas. Several model fields are opaque `JSONField`s whose real structure surfaces only in the specs — see [Resource specs (API schema)](#resource-specs-api-schema).
 
 **Source:**
 - Model: [`care/emr/models/product.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/product.py)
@@ -18,9 +18,9 @@ Technical reference for the `Product` module in Care EMR.
 | --- | --- |
 | `Product` | A concrete, batch-level instantiation of a `ProductKnowledge` definition at a facility (medication, nutritional product, or consumable) |
 
-`Product` extends [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, audit fields, and soft-delete semantics).
+`Product` extends [`EMRBaseModel`](../foundation/base-model.mdx) (the shared Care EMR base providing `external_id`, audit fields, and soft-delete semantics).
 
-A `Product` carries only the data that is unique to a particular batch — lot number, expiry, purchase price. All catalogue-level detail (name, codes, dosage form) lives on the linked [`ProductKnowledge`](../supply/product-knowledge.mdx); a `Product` is its instantiation at a facility.
+A `Product` carries only the data unique to a particular batch — lot number, expiry, purchase price. All catalogue-level detail (name, codes, dosage form) lives on the linked [`ProductKnowledge`](../supply/product-knowledge.mdx); a `Product` instantiates that catalogue entry at a facility.
 
 ## `Product` fields
 
@@ -28,8 +28,8 @@ A `Product` carries only the data that is unique to a particular batch — lot n
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `facility` | `FK → facility.Facility` (`PROTECT`) | Facility the product belongs to. Required at storage; not a spec field — set by the viewset from the URL context, not from the request body. |
-| `product_knowledge` | `FK → emr.ProductKnowledge` (`PROTECT`) | Catalogue definition this product instantiates. On write the spec accepts a `slug` string and resolves it; on read it is serialized to the nested [`ProductKnowledge`](../supply/product-knowledge.mdx) read object. |
+| `facility` | `FK → facility.Facility` (`PROTECT`) | Facility the product belongs to. Required at storage; not a spec field — the viewset sets it from the URL context rather than the request body. |
+| `product_knowledge` | `FK → emr.ProductKnowledge` (`PROTECT`) | Catalogue definition this product instantiates. On write the spec accepts a `slug` string and resolves it; on read it serializes to the nested [`ProductKnowledge`](../supply/product-knowledge.mdx) read object. |
 | `charge_item_definition` | `FK → emr.ChargeItemDefinition` (`PROTECT`, nullable) | Used to create charge items when the product is billed. Write accepts a `slug` string; read serializes to the nested [`ChargeItemDefinition`](../billing/charge-item-definition.mdx) read object. |
 
 ### Classification & status
@@ -53,7 +53,7 @@ A `Product` carries only the data that is unique to a particular batch — lot n
 
 ### `ProductStatusOptions` values
 
-Defined in [`spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/product/spec.py); bound to the model `status` field.
+Defined in [`spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/product/spec.py) and bound to the model `status` field.
 
 | Value | Meaning |
 | --- | --- |
@@ -88,14 +88,14 @@ All specs derive from `EMRResource` ([`care/emr/resources/base.py`](https://gith
 | Spec class | Role | Fields beyond the base | Behaviour |
 | --- | --- | --- | --- |
 | `BaseProductSpec` | shared | `id`, `status`, `batch`, `expiration_date`, `extensions`, `standard_pack_size`, `purchase_price` | `__model__ = Product`. `__exclude__ = ["product_knowledge", "charge_item_definition"]` (these FKs are handled by the hooks, not by automatic field mapping). `___extension_resource_type__ = ExtensionResource.product`. |
-| `ProductWriteSpec` | write · create | adds `product_knowledge: str` (slug), `charge_item_definition: str \| None` (slug) | Mixes in `ExtensionValidator`. `perform_extra_deserialization` resolves `product_knowledge` via `get_object_or_404(ProductKnowledge, slug=...)` and, if present, `charge_item_definition` via `get_object_or_404(ChargeItemDefinition, slug=...)`. |
+| `ProductWriteSpec` | write · create | adds `product_knowledge: str` (slug), `charge_item_definition: str \| None` (slug) | Mixes in `ExtensionValidator`. `perform_extra_deserialization` resolves `product_knowledge` via `get_object_or_404(ProductKnowledge, slug=...)` and, when present, `charge_item_definition` via `get_object_or_404(ChargeItemDefinition, slug=...)`. |
 | `ProductUpdateSpec` | write · update | adds `charge_item_definition: str \| None` (slug) | Mixes in `ExtensionValidator`. `perform_extra_deserialization` resolves `charge_item_definition` via `ChargeItemDefinition.objects.get(slug=...)` when supplied. Does **not** re-bind `product_knowledge` (immutable after create). |
 | `ProductReadSpec` | read · list & detail | adds `product_knowledge: dict`, `charge_item_definition: dict \| None` | `perform_extra_serialization` sets `id = external_id`, serializes `product_knowledge` via `ProductKnowledgeReadSpec` and (when set) `charge_item_definition` via `ChargeItemDefinitionReadSpec`, both inlined as JSON. A single read spec serves both list and detail. |
 
 Notes:
 - **`product_type` and `facility` are not request/response fields** of the product spec. `facility` is set server-side from the route; `product_type` lives on `ProductKnowledge`.
 - **Slug-based references**: `product_knowledge` and `charge_item_definition` are written as slug strings and read back as fully serialized nested objects.
-- **Extension validation**: `extensions` on write passes through `ExtensionValidator.validate_extensions` against the JSON schemas registered for `ExtensionResource.product`; keys with no registered handler are silently dropped (current behaviour, marked TODO to become an error).
+- **Extension validation**: on write, `extensions` passes through `ExtensionValidator.validate_extensions` against the JSON schemas registered for `ExtensionResource.product`; keys with no registered handler are silently dropped (current behaviour, marked TODO to become an error).
 - **No status history**: unlike some EMR resources, `Product` does not maintain a server-side `status_history`.
 - The base `de_serialize` dumps with `exclude_defaults=True`, so unset optional fields are not written to the model.
 
@@ -109,9 +109,9 @@ Notes:
 ## API integration notes
 
 - A `Product` is a batch-level instantiation of [`ProductKnowledge`](../supply/product-knowledge.mdx); catalogue detail (name, codes, dosage form, `product_type`) is read from the linked knowledge record, not duplicated here.
-- On write, send `product_knowledge` and `charge_item_definition` as **slugs**; on read they are returned as full nested objects.
-- `charge_item_definition` links the product to billing, so charge items can be created automatically when the product is billed.
-- `batch` is a structured object (`{ lot_number }`), not a free-form dict, despite the model storing it as a `JSONField`.
+- On write, send `product_knowledge` and `charge_item_definition` as **slugs**; on read they return as full nested objects.
+- `charge_item_definition` links the product to billing, so charge items are created automatically when the product is billed.
+- `batch` is a structured object (`{ lot_number }`), not a free-form dict, even though the model stores it as a `JSONField`.
 - `extensions` is the supported place for deployment-specific key-value data without schema migrations; values are validated against schemas registered for the `product` extension resource.
 
 ## Related

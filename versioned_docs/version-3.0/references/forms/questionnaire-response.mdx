@@ -4,9 +4,9 @@ sidebar_position: 2
 
 # Questionnaire Response
 
-Technical reference for the `QuestionnaireResponse` and `FormSubmission` modules in Care EMR — the **submitted answers** to a [questionnaire](./questionnaire.mdx) for a patient, and the submission envelope that carries a draft/finalised payload.
+Technical reference for the `QuestionnaireResponse` and `FormSubmission` modules in Care EMR — the **submitted answers** to a [questionnaire](./questionnaire.mdx) for a patient, plus the submission envelope that carries a draft or finalised payload.
 
-The Django models are the **storage** layer; the Pydantic **resource specs** define the submit payload, the answer structure, status enums, and the read/write API schemas.
+The Django models are the **storage** layer. The Pydantic **resource specs** define the submit payload, the answer structure, the status enums, and the read/write API schemas.
 
 **Source:**
 - Model: [`care/emr/models/questionnaire.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/questionnaire.py)
@@ -19,7 +19,7 @@ The Django models are the **storage** layer; the Pydantic **resource specs** def
 | `QuestionnaireResponse` | A completed set of answers to a `Questionnaire` for a subject (patient/encounter) |
 | `FormSubmission` | A submission envelope (draft → submitted) holding a raw response dump for a questionnaire |
 
-Both extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, audit fields, soft-delete via `deleted`, and `history`/`meta` JSON).
+Both extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base that provides `external_id`, audit fields, soft-delete via `deleted`, and `history`/`meta` JSON.
 
 ## `QuestionnaireResponse` fields
 
@@ -37,7 +37,7 @@ Both extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base
 
 ### `render_responses()`
 
-Joins each entry in `responses` with the matching question definition from `questionnaire.get_questions_by_id()`, producing a list of `{ "answer": <response>, "question": <question> }` — a human-readable view of the answers against the current questionnaire. Returns `[]` when there are no responses or no linked questionnaire.
+Joins each entry in `responses` with its matching question definition from `questionnaire.get_questions_by_id()`, producing a list of `{ "answer": <response>, "question": <question> }` — a human-readable view of the answers against the current questionnaire. Returns `[]` when there are no responses or no linked questionnaire.
 
 ## `FormSubmission` fields
 
@@ -112,7 +112,7 @@ All specs extend `EMRResource` (`resources/base.py`).
 | `QuestionnaireResponseUpdate` | write · update | Only `status` (`QuestionnaireResponseStatusChoices`, default `completed`) — used to mark a response `entered_in_error` |
 | `QuestionnaireResponseReadSpec` | read | `id`, `status`, `questionnaire` (nested `QuestionnaireReadSpec`), `subject_id`, `responses`, `encounter` (external id or `null`), `structured_responses`, `structured_response_type`, `created_by`/`updated_by` (`UserSpec`), `created_date`/`modified_date` |
 
-New responses are created via the questionnaire submit flow (`QuestionnaireSubmitRequest`), not a generic create spec.
+New responses are created through the questionnaire submit flow (`QuestionnaireSubmitRequest`), not a generic create spec.
 
 ### `FormSubmission` (`resources/form_submission/spec.py`)
 
@@ -125,9 +125,9 @@ New responses are created via the questionnaire submit flow (`QuestionnaireSubmi
 
 ## API integration notes
 
-- Both align loosely with the FHIR `QuestionnaireResponse` resource; `responses` holds the raw answers, while `structured_responses` is the extracted, query-friendly form.
-- A `QuestionnaireResponse` is normally created by submitting a `QuestionnaireSubmitRequest`; the update spec exists mainly to flag responses `entered_in_error`.
-- `FormSubmission` supports a draft→submitted lifecycle; `response_dump` is an opaque JSON payload validated by the questionnaire definition, not by the model.
+- Both align loosely with the FHIR `QuestionnaireResponse` resource: `responses` holds the raw answers, while `structured_responses` is the extracted, query-friendly form.
+- A `QuestionnaireResponse` is normally created by submitting a `QuestionnaireSubmitRequest`. The update spec exists mainly to flag responses `entered_in_error`.
+- `FormSubmission` supports a draft→submitted lifecycle. Its `response_dump` is an opaque JSON payload validated by the questionnaire definition, not by the model.
 - Audit users (`created_by`/`updated_by`) are platform-maintained.
 
 ## Related

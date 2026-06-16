@@ -4,7 +4,7 @@ sidebar_position: 5
 
 # Observation
 
-An **observation** in Care is a single named, coded data point recorded about a patient — a blood pressure reading, a temperature, a lab result, or a coded answer captured through a questionnaire. Each observation says *what* was measured and holds the recorded *value*, anchored to a patient and the encounter in which it was taken.
+An **observation** in Care is a single named, coded data point recorded about a patient — a blood pressure reading, a temperature, a lab result, or a coded answer captured through a questionnaire. Each observation records *what* was measured and the resulting *value*, anchored to a patient and the encounter in which it was taken.
 
 ## What it represents
 
@@ -16,7 +16,7 @@ In Care's FHIR-aligned model, an observation maps to the **Observation** resourc
 - **Clinical qualifiers** — body site, collection method, reference range, and interpretation (high / low / normal)
 - **Context** — links to the patient, the encounter, and the questionnaire response that produced it
 
-Observations are the granular clinical readings that build up a patient's record over time. Care favours **structured** observations — coded, machine-readable values — because downstream logic such as allergy and medication checks relies on them rather than on free text.
+Observations are the granular clinical readings that accumulate into a patient's record over time. Care favours **structured** observations — coded, machine-readable values — because downstream logic such as allergy and medication checks depends on them rather than on free text.
 
 ## Types and structure
 
@@ -40,7 +40,7 @@ final → entered_in_error
 - **amended** — a previously final observation that was later corrected
 - **entered_in_error** — recorded by mistake and should be disregarded
 
-Observations are not deleted to "undo" them; marking an entry as `entered_in_error` keeps the history auditable.
+Observations are never deleted to "undo" them; marking an entry as `entered_in_error` keeps the history auditable.
 
 ## Relationships
 

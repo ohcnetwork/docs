@@ -4,11 +4,11 @@ sidebar_position: 1
 
 # Questionnaires & Structured Data
 
-A **questionnaire** (also called a **form**) is a reusable, versioned definition of questions that Care presents to capture structured data about a patient or an encounter. It is how Care turns clinical and operational data entry — vitals, intake forms, assessments, checklists — into consistent, query-friendly records instead of free text.
+A **questionnaire** (also called a **form**) is a reusable, versioned definition of questions that Care presents to capture structured data about a patient or an encounter. It turns clinical and operational data entry — vitals, intake forms, assessments, checklists — into consistent, query-friendly records rather than free text.
 
 ## What it represents
 
-A questionnaire and its answers together capture:
+Together, a questionnaire and its answers capture:
 
 - **The form definition** — a titled, versioned tree of questions (groups, text, numbers, dates, choices, quantities) with display rules and validation
 - **The subject** — whether the form is answered about a **patient** or an **encounter**
@@ -16,7 +16,7 @@ A questionnaire and its answers together capture:
 - **Derived clinical data** — coded answers can automatically become [observations](../clinical/observation.mdx) on the encounter, so a vitals form populates the clinical record directly
 - **Reusable templates** — saved "favourites" or order sets that pre-fill a response, optionally bundling medication requests and service orders
 
-A questionnaire is the blueprint; a response is one filled-out copy. One questionnaire can be answered many times, by many people, for many subjects.
+The questionnaire is the blueprint; a response is one filled-out copy. A single questionnaire can be answered many times, by many people, for many subjects.
 
 ## Lifecycle
 
@@ -34,18 +34,18 @@ Only **active** questionnaires accept submissions. A submitted response is norma
 
 ## Types of question
 
-Questions are typed, which is what makes the captured data structured. Common types include groups (containers), text, numbers (integer, decimal), booleans, dates and times, single- or multi-select **choices**, **quantities** with units, and display-only notes. Choice and quantity questions draw their allowed answers from a [value set](./valueset.mdx), and conditional rules can show or hide a question based on earlier answers.
+Typed questions are what make the captured data structured. Common types include groups (containers), text, numbers (integer, decimal), booleans, dates and times, single- or multi-select **choices**, **quantities** with units, and display-only notes. Choice and quantity questions draw their allowed answers from a [value set](./valueset.mdx), and conditional rules show or hide a question based on earlier answers.
 
 ## Relationships
 
 - **Patient / encounter** — every response is anchored to a [patient](../clinical/patient), and to an [encounter](../clinical/encounter.mdx) when answered during a visit
 - **Observations** — coded answers materialise as [observations](../clinical/observation.mdx) linked back to the response
 - **Value sets** — choice and quantity questions reference a [value set](./valueset.mdx) for their allowed answers
-- **Organizations** — a questionnaire is scoped to one or more [organizations](../facility/organization.mdx), which controls who can see and submit it
+- **Organizations** — a questionnaire is scoped to one or more [organizations](../facility/organization.mdx), which control who can see and submit it
 
 ## Permissions
 
-Access to questionnaires is governed by a dedicated permission set; response templates have their own. The complete set of permissions and the system roles that hold them by default:
+A dedicated permission set governs access to questionnaires; response templates have their own. The complete set of permissions, with the system roles that hold them by default:
 
 ### Questionnaire
 
@@ -64,7 +64,7 @@ Access to questionnaires is governed by a dedicated permission set; response tem
 | Can Read Questionnaire Response Templates | View saved response templates and order sets | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist |
 | Can Create/Update Questionnaire Response Templates | Create and edit reusable response templates | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist |
 
-Roles are granted to users through organization, facility-organization, and patient memberships. A questionnaire is attached to organizations, and access is decided by checking the user's roles against those organizations. Because permissions cascade down the organization tree, a role held at a parent organization also applies to the questionnaires scoped to its descendants.
+Roles reach users through organization, facility-organization, and patient memberships. A questionnaire is attached to organizations, and access is decided by checking the user's roles against those organizations. Because permissions cascade down the organization tree, a role held at a parent organization also applies to questionnaires scoped to its descendants.
 
 ## Related
 

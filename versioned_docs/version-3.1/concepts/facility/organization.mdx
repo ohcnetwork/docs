@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Organizations
 
-An **organization** in Care is a grouping used to structure people and resources into a nested tree. It is how Care decides who can do what: roles are granted to users on an organization, and the permissions that come with those roles flow down to everything inside that branch of the tree.
+An **organization** in Care groups people and resources into a nested tree. It drives access control: roles are granted to users on an organization, and the permissions those roles carry flow down to everything inside that branch of the tree.
 
 ## What it represents
 
@@ -15,14 +15,14 @@ In Care's FHIR-aligned model, an organization maps to the **Organization** resou
 - **Tree position** — a parent organization, so groups nest into a hierarchy with roots, branches, and descendants
 - **Membership** — links between users and the organization, each carrying a role that defines what those users can do
 
-An organization is not a single person or a single facility. It is the container that groups them, and the place where access is anchored.
+An organization is neither a single person nor a single facility. It is the container that groups them and the place where access is anchored.
 
 ## Two kinds of organization
 
 Care has two organization trees that work the same way but live at different scopes:
 
 - **Organization** — instance-wide. This is the governance and permissions backbone for the whole deployment: geography, administrative units, supplier groups, and role groups that exist independently of any one facility.
-- **Facility organization** — scoped to a single facility. This is how a facility is divided internally into departments and teams (for example, `Cardiology` or an emergency ward) with their own staff and access.
+- **Facility organization** — scoped to a single facility. This is how a facility divides internally into departments and teams (for example, `Cardiology` or an emergency ward) with their own staff and access.
 
 Every facility has a single **root** facility organization at the top of its internal tree; departments and teams hang off it.
 
@@ -41,7 +41,7 @@ Governance, role, and root organizations are restricted to superadmin management
 
 ## The tree and how access cascades
 
-Organizations nest into a tree. The key idea is **inheritance**: a permission held on an organization applies not just there but to every organization beneath it. If a user is an admin of a region, they are effectively an admin of every district, facility group, and team inside that region — without being added to each one individually.
+Organizations nest into a tree, and the key idea is **inheritance**: a permission held on an organization applies not just there but to every organization beneath it. An admin of a region is effectively an admin of every district, facility group, and team inside that region, without being added to each one individually.
 
 ```
 Root organization
@@ -52,11 +52,11 @@ Root organization
 
 A user added near the top of the tree carries their role's permissions all the way down. A user added to a single team has access only within that team. This makes the tree the natural unit for delegating administration as a deployment grows.
 
-Membership is also deliberate: belonging to an organization does not automatically grant access to everything it owns — only to the resources actually assigned to it and to what the user's role allows.
+Membership is also deliberate: belonging to an organization grants access to the resources actually assigned to it and to what the user's role allows, not to everything the organization owns.
 
 ## Permissions
 
-Access to organizations is governed by two permission sets — `OrganizationPermissions` for the instance-wide tree and `FacilityOrganizationPermissions` for facility-scoped organizations. The tables below list the complete set of permissions in each, with the system roles that hold them by default.
+Two permission sets govern access to organizations: `OrganizationPermissions` for the instance-wide tree and `FacilityOrganizationPermissions` for facility-scoped organizations. The tables below list every permission in each set, along with the system roles that hold them by default.
 
 ### Organization permissions
 
@@ -83,7 +83,7 @@ Access to organizations is governed by two permission sets — `OrganizationPerm
 | Can List Users in a Facility Organizations | List the users who belong to a facility organization | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse |
 | Can Manage Users in a Facility Organization | Add, remove, and assign roles to users in a facility organization | Facility Admin, Administrator |
 
-Roles are granted to users through organization and facility-organization memberships. Access is then scoped by the tree: a permission held at a parent organization cascades to all of its descendants, so checks walk the chain of ancestors above a given organization. Geo admins are a special case — they can manage and view facility organizations within the geography they administer, regardless of facility membership. When assigning a role to another user, an admin can only grant a role whose permissions are a subset of their own.
+Roles reach users through organization and facility-organization memberships, and the tree then scopes access: a permission held at a parent organization cascades to all of its descendants, so checks walk the chain of ancestors above a given organization. Geo admins are a special case — they can manage and view facility organizations within the geography they administer, regardless of facility membership. When assigning a role to another user, an admin can only grant a role whose permissions are a subset of their own.
 
 ## Related
 
@@ -95,4 +95,4 @@ Roles are granted to users through organization and facility-organization member
 
 ## FHIR reference
 
-Organizations align with the FHIR **Organization** resource — a nested grouping used to organize people and resources and to anchor permissions. Both the instance-wide and facility-scoped trees follow this model.
+Organizations align with the FHIR **Organization** resource — a nested grouping that organizes people and resources and anchors permissions. Both the instance-wide and facility-scoped trees follow this model.
