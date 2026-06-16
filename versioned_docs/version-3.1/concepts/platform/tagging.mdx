@@ -1,0 +1,70 @@
+---
+sidebar_position: 1
+---
+
+# Tagging
+
+A **tag** in Care is a reusable label you attach to a record — a patient, an encounter, an order — to classify it and find it again later. Tagging is how a deployment layers its own vocabulary on top of Care's clinical model: priority flags, dietary restrictions, drug categories, safety alerts, and any other grouping a workflow needs.
+
+## What it represents
+
+A tag is not free text typed onto a record. Each label is a controlled definition — the `TagConfig` resource — created ahead of time, then reused across many records. That separation is the whole point: because every "Penicillin Allergy" tag traces back to one definition, you can filter, count, and report on it reliably instead of chasing a dozen spellings.
+
+A definition carries the things that make a label usable: a human-readable name and category (`diet`, `drug`, `lab`, `admin`, `clinical`, `safety`, `advance_directive`, and a few more), display hints like a color and icon, an ordering priority, the one resource type it targets, the owner that governs it, and its place in the tag tree. The sections below cover the three of those that shape how tags behave: target, ownership, and hierarchy.
+
+## How it connects
+
+A tag never lives inside the thing it labels. The definition is created once and then *applied* to records of its target type, and each tagged record simply stores which tags it carries:
+
+- A **patient** can carry instance-wide tags and facility-specific tags.
+- An **encounter** carries its own set of tags.
+- Orders and financial records — service requests, prescriptions, charge items, supply requests, accounts, and more — each accept tags scoped to their resource type.
+
+Because a definition declares exactly **one** target resource, a patient tag can never be applied to an encounter, and vice versa. This is a deliberate guardrail: it keeps each resource type's vocabulary clean and stops one sprawling, mixed-up pile of labels from forming.
+
+Ownership works the same way — a tag belongs to exactly one scope: an instance-wide organization, a facility-scoped organization, or a single facility. Instance tags give a deployment shared vocabulary everywhere; facility-scoped tags let a site add labels that only make sense locally.
+
+## Tree structure
+
+Tags form a hierarchy, so a deployment can model a vocabulary from broad to narrow:
+
+```text
+Allergy → Drug Allergy → Penicillin Allergy
+```
+
+A tag with no parent is a **root** — the top of a vocabulary. A **child** narrows its parent, and must target the **same resource type**, so a branch never mixes patient labels with encounter labels. The hierarchy lets you filter at any depth: ask for everything under "Allergy," or drill into just "Penicillin Allergy." You only choose each tag's parent; the platform maintains the tree positions behind it.
+
+## Lifecycle
+
+```text
+active → archived
+```
+
+- **active** — the tag can be applied to new records.
+- **archived** — the tag is retired from new use but kept for history, so records labelled in the past stay correctly classified and auditable.
+
+Archiving rather than deleting is what lets a vocabulary evolve without rewriting the past.
+
+## Permissions
+
+Access to tags separates three actions: defining them, applying them, and reading them.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create Tag Config on Facility | Define new tags and edit their definitions within a facility | Facility Admin, Admin |
+| Can Apply Tag Config to Resources | Attach existing tags to patients, encounters, and other records | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| Can Read Tag Config | View tag definitions and the tags applied to records | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+
+Permissions cascade down the organization tree, so curating the shared vocabulary stays with administrators while frontline clinical staff can apply and read tags during care.
+
+## Related
+
+- Reference: [Tag Config (technical)](../../references/platform/tag-config.mdx)
+- Concept: [Patient](../clinical/patient) — carries instance and facility tags
+- Concept: [Encounter](../clinical/encounter.mdx) — carries its own tags
+- Concept: [Organization](../facility/organization.mdx) — tags can be org-scoped and reuse its tree pattern
+- Concept: [Facility](../facility/facility.mdx) — facility-scoped tags
+
+## FHIR reference
+
+Care's tagging is a platform extension rather than a single FHIR resource. It plays the role FHIR fills with coded `tag` and `category` elements on a resource's `meta` — a controlled, hierarchical vocabulary applied to records for classification and filtering.

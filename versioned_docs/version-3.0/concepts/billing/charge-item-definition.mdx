@@ -1,0 +1,76 @@
+---
+sidebar_position: 3
+---
+
+# Charge Item Definition
+
+A **charge item definition** is the reusable price list entry that answers one question: "how much does this billable thing cost?" It is the template a facility maintains so that, whenever a service is delivered, the system already knows the base rate, the surcharges, the discounts, and the taxes to apply.
+
+## What it represents
+
+In Care's FHIR-aligned model, a charge item definition maps to the **ChargeItemDefinition** resource. It holds:
+
+- **Identity** — a title, a facility-scoped slug used to look it up, and a version number
+- **Pricing** — a stack of price components: a base rate plus any surcharges, discounts, taxes, and informational lines
+- **Rules** — how discounts are applied, and whether a charge raised from it can still be edited afterwards
+- **Classification** — an optional category and tags that organise the facility's catalogue
+
+The key distinction is that a charge item definition is the *template*, not the bill. It describes what something should cost in general; the actual money owed for a specific patient on a specific day lives on a [charge item](./charge-item.mdx). Think of the definition as the menu price and the charge item as the line on the receipt.
+
+## Lifecycle
+
+A definition moves through a small set of states that control whether it can drive real billing.
+
+```text
+draft → active → retired
+```
+
+- **draft** — being prepared or reviewed; excluded from live billing, so it never produces charges by accident
+- **active** — in use; only active definitions should generate new charge items
+- **retired** — withdrawn from the catalogue; kept for history and audit but excluded from new billing
+
+Definitions are versioned, so a price can be revised over time while older charges retain the rate that applied when they were raised.
+
+## Price components
+
+The cost is not a single number. Each definition holds a list of components that stack together to produce the final price:
+
+| Component | What it does |
+| --- | --- |
+| Base | The starting rate. Exactly one per definition; it carries the core amount |
+| Surcharge | An additional charge layered on top of the base |
+| Discount | A reduction applied to the base |
+| Tax | A tax line evaluated against the chargeable amount |
+| Informational | A non-priced line shown for clarity, not added to the total |
+
+Components can carry billing codes and conditions, so a surcharge or discount can apply only when certain criteria are met. Discount behaviour (how many discounts may apply, and in what order) is configured separately on the definition.
+
+## How it connects
+
+A charge item definition sits at the start of the billing chain and is owned entirely by a facility:
+
+- **Facility** — every definition belongs to one [facility](../facility/facility.mdx). The same human-readable slug (for example `consultation-fee`) can exist in many facilities without clashing, because slugs are namespaced per facility
+- **Charge item** — when a service is delivered, the definition is applied to create a [charge item](./charge-item.mdx), copying its pricing into an actual chargeable line
+- **Account & invoice** — those charge items later accumulate on an [account](./account.mdx) and are collected onto an [invoice](./invoice.mdx) for payment
+
+This makes the definition the single place to update a price: change it once, and every future charge item picks up the new rate, while past bills stay untouched.
+
+## Permissions
+
+Access to charge item definitions is governed at the facility level — who may read the price catalogue, and who may build or change it.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Read Charge Item Definition | View the facility's charge item definitions and their pricing | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Create Charge Item Definition on Facility | Create a new charge item definition for the facility | Facility Admin, Admin |
+| Can Set Charge Item Definition on Facility | Update or configure an existing charge item definition | Facility Admin, Admin |
+
+Roles are granted through facility and organization memberships rather than assigned per definition, and permissions cascade down the organization tree, so an administrator higher up inherits access to the facilities beneath them.
+
+## Related
+
+- Reference: [Charge Item Definition (technical)](../../references/billing/charge-item-definition.mdx)
+- Concept: [Charge Item](./charge-item.mdx)
+- Concept: [Account](./account.mdx)
+- Concept: [Invoice](./invoice.mdx)
+- Concept: [Facility](../facility/facility.mdx)

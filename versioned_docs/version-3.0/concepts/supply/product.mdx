@@ -1,0 +1,68 @@
+---
+sidebar_position: 1
+---
+
+# Product
+
+A **product** in Care is a specific batch of a stockable item — a medication, nutritional product, or consumable — as it physically exists at one facility. It is the bridge between your catalogue ("we carry Paracetamol 500mg") and your shelves ("this box, lot A1234, expiring next March").
+
+## What it represents
+
+In Care's FHIR-aligned model, a product maps loosely to the **Medication** / supply resource family, but Care treats it as the concrete, batch-level instance of a catalogue definition. It captures:
+
+- **Batch detail** — the lot number and expiry date that make one delivery distinct from the next
+- **Pricing & packing** — the purchase price for this batch and the number of units in a standard pack
+- **Catalogue link** — which product definition this batch instantiates
+- **Billing link** — an optional charge definition so the item can be billed when it is used
+- **Status** — whether this batch is in use, retired, or was recorded in error
+
+The key distinction: a product is neither the catalogue entry nor your stock count. The catalogue entry describes *what* an item is in the abstract; a product describes *this particular batch* at a facility; the running quantity on hand is tracked separately by inventory. One catalogue entry can have many products underneath it — one per batch received.
+
+## How it connects
+
+A product sits in the middle of the supply chain, pointing up at the catalogue and down at the stock:
+
+- **[Product knowledge](./product-knowledge.mdx)** — the catalogue definition the product instantiates. Name, codes, dosage form, and product type are read from here, never copied onto the product. A product cannot exist without one.
+- **[Inventory item](./inventory-item.mdx)** — tracks the quantity of a product on hand at a location. The product says *what batch*; the inventory item says *how much, and where*.
+- **[Facility](../facility/facility.mdx)** — every product belongs to exactly one facility, scoped to where it was received rather than shared across your network.
+- **[Charge item definition](../billing/charge-item-definition.mdx)** — an optional link that raises a charge automatically when the product is billed.
+
+## Types
+
+A product's type comes from its catalogue definition, not from the product itself, so you classify an item once and every batch you receive inherits that classification. Care recognises three kinds:
+
+- **Medication** — a drug or therapeutic agent
+- **Nutritional product** — feeds, supplements, and similar items
+- **Consumable** — gloves, syringes, dressings, and other single-use supplies
+
+## Lifecycle
+
+```text
+active → inactive
+active → entered_in_error
+```
+
+- **active** — the batch is in use and can be dispensed, consumed, or billed
+- **inactive** — the batch is no longer in use but is retained for history (for example, stock that is fully consumed or expired)
+- **entered_in_error** — the record was created by mistake; it is kept for auditability rather than deleted
+
+Unlike some clinical resources, a product keeps no server-side status history — it simply reflects its current status.
+
+## Permissions
+
+Access to products is granted per facility, so who can see or change a batch depends on the roles a user holds there.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create Product on Facility | Create or update products (batches) at a facility | Facility Admin, Admin |
+| Can Read Product | View products at a facility | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+
+Roles are assigned through facility and organization memberships, and permissions cascade down the organization tree — a role granted on a parent organization is inherited by the facilities beneath it. Creating or editing products is limited to administrators, while a broad set of clinical and pharmacy roles can read them.
+
+## Related
+
+- Reference: [Product (technical)](../../references/supply/product.mdx)
+- Concept: [Product knowledge](./product-knowledge.mdx)
+- Concept: [Inventory item](./inventory-item.mdx)
+- Concept: [Supply request](./supply-request.mdx)
+- Concept: [Charge item definition](../billing/charge-item-definition.mdx)

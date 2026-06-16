@@ -1,0 +1,69 @@
+---
+sidebar_position: 4
+---
+
+# Medication Statement
+
+A **medication statement** is a record of what a patient is actually taking, has taken, or intends to take — as *reported*, not as ordered by your facility. It captures the real-world medication picture: drugs started at another hospital, over-the-counter products, and what a patient or relative tells you during a visit.
+
+## What it represents
+
+In Care's FHIR-aligned model, a medication statement maps to the **MedicationStatement** resource. The key distinction is its source of truth: a statement is a *snapshot of reality*, not an instruction. It does not order, supply, or administer anything.
+
+So every statement carries two things a prescription does not: a single coded drug taken from a SNOMED CT value set rather than free text, and an explicit account of *who said so* — the patient, a relative, or a clinician. Around that core it records the status, the period the drug is or was taken, free-text dosage instructions, and the encounter it was recorded in.
+
+If your facility is actively prescribing a drug, that belongs in a [medication request](./medication-request.mdx). Reach for a statement when the source of truth lives outside that order — a home medication list, a drug started elsewhere, or a patient's own account of what they take.
+
+## Lifecycle
+
+A statement carries a single current status that reflects the patient's relationship to the medication. It is not a running log — updating the status replaces the previous value, and only the status, period, and notes can change after creation.
+
+```text
+intended → active → on_hold → completed / stopped
+                              not_taken / unknown / entered_in_error
+```
+
+- **intended** — the patient plans to take the medication but has not started
+- **active** — the medication is currently being taken
+- **on_hold** — taking has been paused
+- **completed** — the course has finished as expected
+- **stopped** — the medication was stopped before completion
+- **not_taken** — the patient is not taking the medication
+- **unknown** — the status could not be determined
+- **entered_in_error** — the record was created by mistake and should be disregarded
+
+## Information source
+
+Because a statement is reported rather than ordered, it always names its source. This is what separates a self-reported or second-hand account from a managed prescription, and it tells a clinician how much to trust the entry.
+
+| Source | Meaning |
+| --- | --- |
+| Patient | The patient self-reported it |
+| Related person | A relative or carer reported it |
+| Practitioner | A clinician recorded it on the patient's behalf |
+
+## How it connects
+
+- **Patient** — every statement is about one [patient](../clinical/patient). The patient is derived automatically from the encounter, so it is never set by hand.
+- **Encounter** — a statement is recorded within an [encounter](../clinical/encounter.mdx), anchoring it to a specific visit and clinician.
+- **Medication request** — the active-order counterpart. Use a [medication request](./medication-request.mdx) when your facility is the one prescribing; use a statement to capture everything else.
+
+## Permissions
+
+Access to medication data is governed by facility-scoped permissions. The permissions below come from Care's medication permission set; they cover the pharmacist capability and the dispense actions that share the medication workflow.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Pharmacist in Care | Pharmacists in Care have access to all medication requests and can create dispenses for patients | Facility Admin, Admin, Pharmacist |
+| Medication Dispense Read | Users can read medication dispenses | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| Write Medication Dispense | Users can write medication dispenses | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+
+Roles are granted through a user's organization and facility memberships, and permissions cascade down the organization tree — a role held at a parent organization applies to the facilities and patients beneath it.
+
+## Related
+
+- Reference: [Medication Statement (technical)](../../references/medications/medication-statement.mdx)
+- Concept: [Medication Request](./medication-request.mdx)
+- Concept: [Medication Administration](./medication-administration.mdx)
+- Concept: [Patient](../clinical/patient)
+- Concept: [Encounter](../clinical/encounter.mdx)

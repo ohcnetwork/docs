@@ -1,0 +1,69 @@
+---
+sidebar_position: 3
+---
+
+# Inventory Item
+
+An **inventory item** is the live stock count of one product at one place in your facility — how many units of a specific medicine, consumable, or device are on hand in a particular store, ward, or pharmacy right now. It is the answer to the everyday question "do we have it, and how much?"
+
+## What it represents
+
+In Care's FHIR-aligned model, an inventory item maps to the **InventoryItem** resource. Each row captures:
+
+- **What** — the product being counted (a specific medicine, consumable, or supply)
+- **Where** — the single facility location that holds that stock (central store, ward pharmacy, OT cupboard)
+- **How much** — the current on-hand quantity, kept up to date by the system
+- **Availability** — whether the line is live, retired, or recorded in error
+
+An inventory item is not a catalogue entry and not a single transaction. The catalogue says *what a product is*; deliveries and dispenses say *what moved*; the inventory item is the running balance that ties them together. There is exactly one inventory item per product-per-location pair, so "Paracetamol in the ward pharmacy" is always a single, authoritative number.
+
+## How quantity is maintained
+
+You do not type stock counts into Care by hand. The system creates and updates inventory items for you as supply events happen, so the count always reflects what actually moved rather than what someone remembered to enter.
+
+- **Deliveries in** raise the count — completed [supply deliveries](./supply-delivery.mdx) arriving at the location add to the balance
+- **Deliveries out** lower the count — stock sent onward to another location is subtracted
+- **Dispenses** lower the count — each [medication dispense](../medications/medication-dispense.mdx) drawn from the line removes units
+
+Because the count is recomputed from these source records, it can read negative if more was dispensed or shipped out than the system recorded coming in — a useful signal that a delivery was missed or a count is off, rather than a number to overwrite.
+
+## Lifecycle
+
+```text
+active → inactive
+active → entered_in_error
+```
+
+- **active** — the stock line is live and dispensable; this is the state every newly tracked product starts in
+- **inactive** — no longer actively dispensed, for example when stock is damaged or a product is being phased out at that location
+- **entered_in_error** — the line was created by mistake and should be disregarded
+
+Changing the status is the one thing people do to an inventory item directly; the quantity itself is always system-maintained.
+
+## How it connects
+
+An inventory item sits at the centre of the supply picture, linking the catalogue to real-world movement:
+
+- It points to a [product](./product.mdx), which in turn describes the substance or device through [product knowledge](./product-knowledge.mdx)
+- It belongs to a [location](../facility/location.mdx) inside a facility — the physical place the stock lives
+- Its balance is driven by [supply deliveries](./supply-delivery.mdx) (replenishment and transfers) and [medication dispenses](../medications/medication-dispense.mdx) (consumption at the bedside)
+
+Because a location or product cannot be deleted while stock rows still reference it, the inventory layer protects the integrity of your supply history.
+
+## Permissions
+
+Access to inventory items is governed at the facility level by role-based permissions.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Read Inventory Item | View the stock lines and on-hand quantities at a facility location | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+
+Roles are granted through a user's facility and organization memberships, and permissions cascade down the organization tree — so a user with facility access sees the inventory for the locations that fall under it.
+
+## Related
+
+- Reference: [Inventory Item (technical)](../../references/supply/inventory-item.mdx)
+- Concept: [Product](./product.mdx)
+- Concept: [Supply Delivery](./supply-delivery.mdx)
+- Concept: [Medication Dispense](../medications/medication-dispense.mdx)
+- Concept: [Location](../facility/location.mdx)

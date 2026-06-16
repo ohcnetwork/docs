@@ -1,0 +1,71 @@
+---
+sidebar_position: 4
+---
+
+# Supply Request
+
+A **supply request** is a line item asking for a specific quantity of a catalogue product to be moved into a facility location. It is how a ward, pharmacy, or store says "we need this much of this item here" — the demand signal that drives stock movement across your facility.
+
+## What it represents
+
+In Care's FHIR-aligned model, a supply request maps to the **SupplyRequest** resource. A single request captures just three things: the catalogue item wanted (a [product knowledge](./product-knowledge.mdx) entry), the quantity, and where it sits in its workflow.
+
+The key distinction to hold is that a supply request is not the handover of goods. It expresses demand only; the matching movement of physical stock is recorded separately as a [supply delivery](./supply-delivery.mdx). A request can be raised, fulfilled, or cancelled without anything having physically moved — which is why the request and the delivery are kept as separate records.
+
+## How it connects
+
+Supply requests rarely travel alone. Care groups them under a **request order**, which is the unit people actually act on:
+
+- A **request order** describes a movement of items into a **destination** facility location — for example, "restock the ICU pharmacy."
+- One order fans out to **many supply requests**, one per catalogue item being asked for ("50 of these gloves, 20 of that saline").
+- An order can name a **supplier** organization it is sourcing from and an **origin** location it is drawing from, but only the destination is required.
+
+This is the mental model to hold: the **order** answers "where is this going and roughly why," while each **supply request** inside it answers "which item, how much." Because origin and destination are tracked separately, the same physical location can appear as the origin on orders it sends out and the destination on orders it receives.
+
+## Order classification
+
+A request order carries a few coded attributes that help staff triage and route it — guidance values that shape how an order is read and prioritised, not actions that move stock by themselves:
+
+| Attribute | Plain meaning | Example values |
+| --- | --- | --- |
+| Priority | How urgently it is needed | `routine`, `urgent`, `asap`, `stat` |
+| Intent | How firm the request is | `proposal`, `plan`, `order` |
+| Reason | Why the stock is needed | `patient_care`, `ward_stock` |
+| Category | Where it is sourced from | `central` (central store), `nonstock` (special order) |
+
+## Lifecycle
+
+A supply request moves through its own status as it is worked, from preparation to fulfilment:
+
+```text
+draft → active → processed → completed
+```
+
+- **draft** — being prepared, not yet acted on
+- **active** — submitted and open for fulfilment
+- **suspended** — temporarily paused
+- **processed** — picked up and being acted on
+- **completed** — fully fulfilled
+- **cancelled** — withdrawn before fulfilment
+- **entered_in_error** — recorded by mistake and voided
+
+The parent request order tracks a parallel status of its own — `draft`, `pending`, `in_progress`, `completed`, `abandoned`, or `entered_in_error` — so you can read the state of the whole order independently of any single line item, with the last three treated as closed. Note that status is a workflow label, not an enforced state machine: Care does not block a transition, so the lifecycle reflects how teams agree to work rather than a hard rule.
+
+## Permissions
+
+Access to supply requests is controlled by two role-based permissions scoped to a facility.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create Supply Request on Facility | Create and update supply requests within a facility | Facility Admin, Admin, Staff, Doctor, Nurse |
+| Can Read Supply Request | View supply requests within a facility | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+
+Roles are granted through a user's membership in a facility or organization, and permissions cascade down the organization tree — so a role held higher up applies to the facilities beneath it.
+
+## Related
+
+- Reference: [Supply Request (technical)](../../references/supply/supply-request.mdx)
+- Concept: [Product Knowledge](./product-knowledge.mdx)
+- Concept: [Supply Delivery](./supply-delivery.mdx)
+- Concept: [Inventory Item](./inventory-item.mdx)
+- Concept: [Location](../facility/location.mdx)

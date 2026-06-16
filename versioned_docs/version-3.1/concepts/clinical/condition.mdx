@@ -4,97 +4,75 @@ sidebar_position: 3
 
 # Condition
 
-A **condition** in Care records a clinical problem, diagnosis, or symptom for a patient — a chronic illness on the problem list, a diagnosis made during a visit, or a presenting complaint. It belongs to the patient's longitudinal clinical record and is always captured in the context of an encounter. In the Care product UI, conditions appear as **Symptoms**.
+A **condition** is a clinical problem recorded for a patient — a diagnosis, a chronic illness, or a presenting symptom. It is how a patient's diagnoses and problem list are captured, giving every clinician a shared, durable view of what the patient is being treated for.
+
+In the Care product UI, conditions are surfaced as **Symptoms**.
 
 ## What it represents
 
-A condition captures, in plain terms:
+A condition is a *standing statement* about a patient's health, not a one-time reading. A blood pressure value or a lab result is an [observation](./observation.mdx) — true at the moment it was taken. A condition is a claim the care team is making and tracking: "this patient has diabetes," "this patient presented with chest pain." That claim persists across visits until someone changes its status, which is why a condition needs two things an observation does not — a statement of **how certain** the team is, and a statement of **how the condition is progressing**.
 
-- **What the problem is** — a coded clinical finding (drawn from SNOMED CT), not free text, so it can be searched, summarized, and exchanged
-- **How certain it is** — whether the condition is confirmed, provisional, suspected, or refuted
-- **What kind of problem it is** — a problem-list item, an encounter diagnosis, or a chronic condition
-- **How serious it is** — an optional severity (mild, moderate, severe)
-- **When it started and stopped** — onset and abatement, given as a date, an age, or a description
-- **Where it belongs** — the patient it concerns and the encounter it was recorded in, plus an optional clinical note
-
-A condition differs from an allergy or an observation: it is a problem the patient *has*, recorded and tracked over time, rather than a measurement or a reaction.
+To keep problems comparable across patients and facilities, the condition itself is recorded as a coded clinical finding (drawn from a SNOMED CT vocabulary) rather than free text. Onset, optional severity, the encounter it was noted in, and a free-text note round out the record.
 
 ## Classification
 
-Every condition is classified so it appears in the right place in the record:
+The **category** answers "what kind of problem is this, and where does it live in the record?" Every condition is one of:
 
-| Category | What it means |
-| --- | --- |
-| Problem list item | An ongoing problem tracked on the patient's problem list |
-| Encounter diagnosis | A diagnosis made during a specific visit |
-| Chronic condition | A long-term condition carried across encounters |
+- **Problem-list item** — an ongoing problem the care team is tracking for this patient
+- **Encounter diagnosis** — a diagnosis made or confirmed during a specific visit
+- **Chronic condition** — a long-term condition such as diabetes or hypertension, carried across encounters
+
+Running alongside the category is a separate axis — the **verification status** — that records certainty. A symptom under investigation might be `unconfirmed`, `provisional`, or `differential`; a settled diagnosis is `confirmed`; something logged in error is `refuted` or `entered_in_error`. Care always requires a verification status, so the record never blurs a working hypothesis with an established fact.
 
 ## Lifecycle
 
-A condition's **clinical status** describes where the problem stands now; its **verification status** describes how sure the clinician is. The two move independently.
+The **clinical status** tracks where a condition stands over time. It is distinct from verification — that is about how sure the team is; this is about the condition's actual course:
 
-Clinical status:
-
-```
-active → inactive → resolved
-active → remission
-active → recurrence / relapse
-(unknown when not yet established)
+```text
+active → inactive → remission → resolved
+   ↑         |
+   └─ recurrence / relapse ─┘
 ```
 
-Verification status:
+- **active** — currently present and being managed
+- **recurrence** — returned after a symptom-free period
+- **relapse** — returned after being in remission
+- **inactive** — no longer active, but not formally resolved
+- **remission** — symptoms have abated, but the condition may return
+- **resolved** — fully cleared
+- **unknown** — current state is not known
 
-```
-unconfirmed → provisional → differential → confirmed
-(refuted or entered_in_error when ruled out or mistaken)
-```
+This is not a one-way pipeline. A chronic condition can cycle through active, remission, and recurrence many times over a patient's history.
 
-Verification status must always be set; a condition is never recorded without stating how certain it is.
+## How it connects
 
-## Relationships
+A condition never stands alone — it is always anchored to a patient and the visit where it was noted:
 
-- **Patient** — every condition belongs to one patient and forms part of their clinical history.
-- **Encounter** — a condition is always recorded within an encounter. Care derives the patient from that encounter, so clinicians never attach a condition to a patient directly.
+- **Patient** — the person the condition describes. Care derives this automatically from the encounter, so the condition is always attached to the right record; clients never set it directly.
+- **Encounter** — the visit during which the condition was recorded. Every condition is created in the context of an encounter; chronic conditions can later be re-associated with a new encounter as care continues.
 
-Because the patient is taken from the encounter, conditions stay tied to the visit where they were documented while still rolling up into the patient's overall record.
+Conditions sit alongside the patient's other clinical records — most closely [allergies and intolerances](./allergy-intolerance.mdx), which capture a different kind of standing risk, and [observations](./observation.mdx), which capture point-in-time measurements and findings.
 
 ## Permissions
 
-Conditions are clinical data. There is no separate "condition" permission — access is governed by the **patient** and **encounter** permission sets, since every condition lives inside an encounter for a patient. The full set of permissions from both resources is listed below.
-
-### Patient permissions
+A condition has no permission file of its own — as patient clinical data, it is governed by the **patient** and **encounter** permissions a user holds in the relevant facility. Recording a condition is gated by write access to the patient; reading and editing it fall back to the patient's clinical-data or the encounter's read/write permissions. Conditions can also be captured by submitting a symptom questionnaire.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Create Patient | Create a new patient record | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
-| Can Update a Patient's data | Modify an existing patient's demographic and record data | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
-| Can list patients | View the list of patients | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer, Pharmacist |
-| Can view clinical data about patients | Read a patient's clinical data, including conditions | Staff, Doctor, Nurse, Admin, Facility Admin |
-| Can view questionnaire responses on patient | Read questionnaire responses recorded for a patient | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator, Pharmacist |
-| Can submit questionnaire about patients | Submit a questionnaire against a patient | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator |
+| `can_write_patient` | Create a condition record (the create path checks write access to the patient) | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
+| `can_view_clinical_data` | View a patient's clinical data, including their conditions | Staff, Doctor, Nurse, Admin, Facility Admin |
+| `can_read_encounter` | Read an encounter and its clinical data — used to reach conditions when patient-level clinical access is absent | Admin, Doctor, Nurse, Staff, Facility Admin |
+| `can_write_encounter` | Update a condition record (the update path checks write access to its encounter) | Admin, Doctor, Nurse, Staff, Facility Admin |
+| `can_list_patients` | List patients in scope (the entry point to reach a patient's record) | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer, Pharmacist |
+| `can_submit_patient_questionnaire` | Submit a questionnaire about a patient, which can record conditions | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator |
+| `can_submit_encounter_questionnaire` | Submit a questionnaire about a patient encounter, which can record conditions | Staff, Doctor, Nurse, Admin, Facility Admin |
 
-### Encounter permissions
-
-| Permission | Description | System Roles |
-| --- | --- | --- |
-| Can Create encounter | Start a new encounter for a patient | Admin, Doctor, Nurse, Facility Admin |
-| Can list encounters | View the list of encounters (no clinical data exposed) | Admin, Doctor, Nurse, Facility Admin |
-| Update Encounter non clinical | Edit an encounter's non-clinical fields | Admin, Doctor, Nurse, Facility Admin |
-| Update Encounter related clinical data | Write clinical data on an encounter, including conditions | Admin, Doctor, Nurse, Facility Admin |
-| Can Read encounter | View an encounter's details | Admin, Doctor, Nurse, Facility Admin |
-| Can Read encounter related clinical data | Read clinical data on an encounter, including conditions | Admin, Doctor, Nurse, Facility Admin |
-| Can submit questionnaire about patient encounters | Submit a questionnaire against a patient encounter | Staff, Doctor, Nurse, Admin, Facility Admin |
-
-Roles are granted to users through organization, facility-organization, and patient memberships. Access is scoped by the organization tree: a permission held at a parent organization cascades to its descendants, and a user's effective roles on a patient are resolved across their organization, the patient's encounters and locations, and any direct patient assignment. Reading or writing a condition therefore requires the right clinical-data permission on the patient or the encounter it belongs to.
+Roles are granted to users through facility, organization, or patient memberships, and they cascade down the organization tree — a role held high in the hierarchy applies to the facilities and patients beneath it.
 
 ## Related
 
 - Reference: [Condition (technical)](../../references/clinical/condition.mdx)
 - Concept: [Patient](../clinical/patient)
-- Concept: [Encounter](../clinical/encounter.mdx)
-- Concept: [Allergy / intolerance](../clinical/allergy-intolerance.mdx)
-- Concept: [Observation](../clinical/observation.mdx)
-
-## FHIR reference
-
-A condition aligns with the FHIR **Condition** resource. Its coded `code` is bound to a SNOMED CT clinical-finding value set, and its clinical-status, verification-status, category, and severity values follow the corresponding FHIR concepts.
+- Concept: [Encounter](./encounter.mdx)
+- Concept: [Allergy / intolerance](./allergy-intolerance.mdx)
+- Concept: [Observation](./observation.mdx)

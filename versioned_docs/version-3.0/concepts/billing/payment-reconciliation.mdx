@@ -1,0 +1,84 @@
+---
+sidebar_position: 5
+---
+
+# Payment Reconciliation
+
+A **payment reconciliation** in Care is the record of a single payment made toward a patient's account — how much was paid, how, when, and by whom. It is how money received at the counter, online, or as a deposit becomes a traceable entry against what the patient owes.
+
+## What it represents
+
+In Care's FHIR-aligned model, a payment reconciliation maps to the **PaymentReconciliation** resource. It captures:
+
+- **Who paid and how** — whether the payer is the patient or an insurer, and the payment method (cash, card, cheque, direct deposit, and similar)
+- **What it applies to** — the account being paid against, and optionally the single invoice this payment settles
+- **How much** — the amount tendered, any amount returned as change, and the net amount that lands on the account
+- **Context** — when the payment happened, where it was taken (e.g. a billing counter), and references such as a cheque or authorization number
+
+A payment reconciliation is not a bill. The [invoice](./invoice.mdx) states what is owed; the payment reconciliation records what was actually paid. Several payments can be recorded against one account over time, and a payment can also be a refund or credit note rather than money coming in.
+
+## How money is calculated
+
+Care does not simply trust a single "amount" field. Each payment carries two figures, and the net is derived from them:
+
+- **Tendered amount** — what the payer handed over
+- **Returned amount** — what was given back (typically change)
+- **Amount** — the net that posts to the account, always computed as `tendered − returned`
+
+This keeps cash handling honest: the returned amount must be smaller than the tendered amount, and the net is calculated server-side rather than taken at face value. A record can also be flagged as a **credit note**, which inverts the meaning — money owed back to the payer rather than money received.
+
+## Classification
+
+Each payment is tagged so it can be reported and audited consistently. The tags answer a few plain questions:
+
+- **Why** — its `type`: a normal `payment`, an `adjustment` (a correction), or an `advance` (paid ahead of charges)
+- **How it arrived** — its `kind`: `deposit`, `periodic_payment`, `online`, or `kiosk`
+- **Who is paying** — its `issuer_type`: the `patient` or an `insurer`
+- **What instrument** — its `method`: cash, credit card, cheque, debit card, direct deposit, and similar, drawn from standard HL7 payment-method codes
+- **Where processing landed** — its `outcome`: `queued`, `complete`, `partial`, or `error`
+
+## Lifecycle
+
+A payment moves through a small set of states that mirror real-world handling:
+
+```text
+draft → active → cancelled / entered_in_error
+```
+
+- **draft** — being prepared, not yet a final record of money received
+- **active** — a confirmed payment that counts against the account
+- **cancelled** — a once-valid payment that has been voided
+- **entered_in_error** — recorded by mistake; kept for audit but excluded from balances
+
+## How it connects
+
+A payment reconciliation always sits inside the billing picture for one patient:
+
+- It is recorded against an **[account](./account.mdx)** — the running ledger for a patient, which is always required.
+- It may optionally be allocated to one **[invoice](./invoice.mdx)**, settling that specific bill. With no invoice, the payment simply credits the account balance.
+- It is anchored to a **[facility](../facility/facility.mdx)** and may record the location where the payment was taken (e.g. a billing counter).
+
+Because it points at an account and, through that account, at the [patient](../clinical/patient), a payment reconciliation ties financial activity back to the same person whose [encounters](../clinical/encounter.mdx) and orders drove the charges.
+
+## Permissions
+
+Access to payment records is governed by facility-scoped role-based permissions.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Write Payment Reconciliation | Create or update a payment record | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| Can Read Payment Reconciliation | View payment records | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Destroy Payment Reconciliation | Delete a payment record | Facility Admin, Admin |
+
+Roles are granted through a user's facility and organization memberships, and permissions cascade down the organization tree, so a role held higher up applies to the facilities beneath it.
+
+## Related
+
+- Reference: [Payment Reconciliation (technical)](../../references/billing/payment-reconciliation.mdx)
+- Concept: [Account](./account.mdx)
+- Concept: [Invoice](./invoice.mdx)
+- Concept: [Charge item](./charge-item.mdx)
+
+## FHIR reference
+
+This concept aligns with the FHIR [PaymentReconciliation](https://build.fhir.org/paymentreconciliation.html) resource, which records the outcome of payment processing against accounts and invoices.

@@ -1,0 +1,74 @@
+---
+sidebar_position: 2
+---
+
+# Product Knowledge
+
+**Product Knowledge** is the master definition of a thing your facility stocks — a medication, a nutritional product, or a consumable — described once so every batch, shelf, and order can point back to it. It is the catalogue's source of truth for what a product *is*, kept separate from the physical units on hand.
+
+## What it represents
+
+Product Knowledge answers a single question: what is this product? It is the definition, not the stock. A typical entry records:
+
+- **Identity** — a primary name, alternate or trade names, and a product code
+- **Type** — whether it is a medication, a nutritional product, or a consumable
+- **Unit** — how the product is measured and counted (tablets, mL, mg, and so on)
+- **Make-up** — for medications, the form, routes, and ingredients with their strengths; for nutritional products, the nutrient content
+- **Handling** — how to store it and how long it stays usable
+
+Product Knowledge is not the same as a [Product](./product.mdx) or an [Inventory Item](./inventory-item.mdx). Knowledge is the abstract definition (what "Paracetamol 500 mg tablet" *is*); a Product is a concrete stockable form of it; an Inventory Item is the physical quantity sitting in a particular location. One Knowledge entry underpins many Products and countless Inventory Items — define it once, reuse it everywhere.
+
+In Care's FHIR-aligned model, Product Knowledge draws on the **MedicationKnowledge** and **NutritionProduct** resources — the reference definitions of a substance, kept distinct from the resources that track physical stock and dispensing.
+
+## Types
+
+A product's type decides what it means and which details matter:
+
+- **Medication** — a drug, with a dosage form, routes, ingredients, and characteristics like shape, colour, or imprint
+- **Nutritional product** — feeds and supplements, described by their nutrient content
+- **Consumable** — supplies that are used up but are neither drug nor food (gloves, syringes, dressings)
+
+## Scope
+
+A Knowledge entry lives at one of two levels:
+
+- **Instance-level** — shared across the whole deployment, so common drugs and supplies are defined once for everyone
+- **Facility-scoped** — owned by a single facility, for items local to one site
+
+This lets a deployment maintain a shared formulary while individual facilities add their own entries without polluting the global catalogue.
+
+## Lifecycle
+
+```text
+draft → active → retired
+```
+
+- **draft** — being prepared; not yet ready for general use
+- **active** — approved and available to be stocked and ordered against
+- **retired** — withdrawn from use; kept for history but not offered for new stock
+
+Retiring a definition does not erase it — past records that referenced it stay intact and auditable.
+
+## How it connects
+
+- **Product** — every [Product](./product.mdx) references exactly one Product Knowledge entry for its definition
+- **Inventory Item** — physical [Inventory Items](./inventory-item.mdx) trace back through their Product to this definition
+- **Supply requests and deliveries** — what gets ordered and moved between locations is ultimately a quantity of a known product
+- **Medication orders** — when a clinician prescribes, the drug being prescribed is anchored in this catalogue
+
+## Permissions
+
+Access to Product Knowledge is governed at the facility level.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create Product Knowledge on Facility | Create and edit product definitions for a facility | Facility Admin, Admin |
+| Can Read Product Knowledge | View the product catalogue and its definitions | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+
+Roles are granted through a user's organization, facility, or patient memberships, and permissions cascade down the organization tree — a role held higher up applies to the facilities and resources beneath it.
+
+## Related
+
+- Reference: [Product Knowledge (technical)](../../references/supply/product-knowledge.mdx)
+- Concept: [Product](./product.mdx)
+- Concept: [Inventory Item](./inventory-item.mdx)

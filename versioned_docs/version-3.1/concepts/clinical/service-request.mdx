@@ -1,73 +1,75 @@
 ---
-sidebar_position: 7
+sidebar_position: 8
 ---
 
 # Service Request
 
-A **service request** in Care is an order or proposal to perform an action — a lab test, an imaging study, a procedure, counselling — for a patient. It is the instruction that sets clinical work in motion: the specimens collected, the reports produced, and the observations recorded all trace back to the request that asked for them.
+A **service request** is an order to do something for a patient — run a lab test, take an X-ray, book a counselling session, perform a procedure. It turns a clinician's "please do this" into a tracked item that another team can pick up and that later results can attach to.
 
 ## What it represents
 
 In Care's FHIR-aligned model, a service request maps to the **ServiceRequest** resource. It captures:
 
-- **What is being asked for** — a human-readable title and a coded service or procedure
-- **Why and how** — its category (laboratory, imaging, counselling, surgical, education), priority, and whether it is a firm order or a proposal
-- **Clinical context** — the patient and encounter it belongs to, optional notes, patient instructions, and a target body site
-- **Who and where** — the requesting clinician, the healthcare service expected to fulfil it, and the facility locations it applies to
-- **Downstream linkage** — the specimens and diagnostic reports generated in response
+- **What is being asked for** — a coded service or procedure, an optional body site, and a free-text title
+- **Why and how** — the category of work, the priority, and any notes or patient instructions
+- **Where it sits in care** — the patient and encounter it was raised in, the facility, and optionally the service, locations, or clinician fulfilling it
+- **Its standing** — an intent (firm order or mere proposal?) and a lifecycle status everyone can see
 
-A service request is the ask, not the result. The findings it produces live in separate observation, specimen, and diagnostic report records that point back to it.
+The key thing to hold onto: a service request is the *order*, not the *result*. The specimen that gets collected, the diagnostic report that comes back, the observations that get recorded — those are separate records that each point back to the originating request. One request can spawn several of them.
+
+## Intent — how binding is it?
+
+Every request carries an **intent** that says how committed the order is, so the same record can represent anything from a tentative idea to a confirmed instruction: a `proposal` is a suggestion someone has put forward; a `plan` is part of an agreed plan of care; a `directive` is a standing instruction; an `order` is a firm request to actually carry the work out. Intent answers "is this real yet?" — distinct from status, which answers "where has it got to?"
+
+## Category and priority
+
+Two coded fields route and rank the work. **Category** decides which team picks it up — `laboratory`, `imaging`, `counselling`, `surgical_procedure`, or `education`. **Priority** sets how soon — `routine`, `urgent`, `asap`, or `stat`. Together they let a busy department triage a queue of requests without reading every one in full.
 
 ## Lifecycle
 
-A request moves through a small set of statuses, from draft to a terminal state:
+A request always sits in exactly one status — there is deliberately no "unknown". The active states are on the left; the four on the right are terminal.
 
-```
+```text
 draft → active → on_hold → completed
-                       ↘ ended / revoked / entered_in_error
+                        ↘ ended / revoked / entered_in_error
 ```
 
-- **draft** — being prepared, not yet actionable
-- **active** — placed and in progress
-- **on_hold** — temporarily paused
-- **completed** — fulfilled
-- **ended**, **revoked**, **entered_in_error** — terminal closures (ended, cancelled, or logged as a mistake)
+- **draft** — being written, not yet actionable
+- **active** — live and ready to be worked on
+- **on_hold** — paused for now, expected to resume
+- **completed** — the work has been fulfilled
+- **ended** — stopped before completion, with no intent to resume
+- **revoked** — cancelled or withdrawn
+- **entered_in_error** — created by mistake; kept for audit, treated as void
 
-## Intent and priority
+## How it connects
 
-Two fields shape how a request is read and acted on:
+A service request is the hub that ties an order to the rest of the record:
 
-- **Intent** — how binding the request is: `proposal`, `plan`, `directive`, or `order`. A proposal is a suggestion; an order is a committed instruction.
-- **Priority** — how urgently it should be handled: `routine`, `urgent`, `asap`, or `stat`.
-
-## Relationships
-
-A service request never stands alone. It is always created within an **encounter**, and the patient is taken from that encounter rather than set directly — you cannot file a request without a clinical context. From there it connects outward:
-
-- The **encounter** supplies the patient and the clinical setting.
-- A **healthcare service** and one or more **locations** describe who fulfils the request and where.
-- **Specimens** and **diagnostic reports** are produced in response and reference the request as their origin.
-- A request can be created from an activity-definition template, which supplies its category and the value set its code is drawn from.
+- It is always raised inside an **encounter**, and the patient is inherited from that encounter — you never set the patient directly.
+- It can be created from an **activity definition**, a reusable template that supplies the category and the catalogue of valid service codes.
+- Once work begins, a **specimen** may be collected against it, and a **diagnostic report** and its **observations** are produced for it — all linking back to this request.
+- It can name the **healthcare service** that fulfils it and the **locations** within the facility where it applies, plus the **requester** who placed it.
 
 ## Permissions
 
-A dedicated permission set governs access to service requests. The table below lists every permission and the system roles that hold each by default:
+Access to service requests is governed by two facility-scoped permissions.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Write Service Request on Facility | Create or update service requests within a facility | Facility Admin, Admin, Doctor, Nurse |
-| Can Read Service Request | View service requests for a facility's patients | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Write Service Request on Facility | Create and update service requests within a facility | Facility Admin, Admin, Doctor, Nurse |
+| Can Read Service Request | View service requests within a facility | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
 
-Roles are granted to users through organization, facility-organization, and patient memberships, and access is scoped by the organization tree — a permission held at a parent organization cascades to its descendants. A user reaches a specific request either through their membership in the encounter's facility organization (and its current location) or through the facility organizations of the locations the request is attached to.
+Roles are granted through a user's facility, organization, or patient memberships, and permissions cascade down the organization tree — a role given high in the tree applies to the facilities beneath it.
 
 ## Related
 
 - Reference: [Service Request (technical)](../../references/clinical/service-request.mdx)
-- Concept: [Encounter](../clinical/encounter.mdx)
-- Concept: [Specimen](../clinical/specimen.mdx)
-- Concept: [Diagnostic Report](../clinical/diagnostic-report.mdx)
-- Concept: [Observation](../clinical/observation.mdx)
+- Concept: [Encounter](./encounter.mdx) — the context every request is raised in
+- Concept: [Activity Definition](./activity-definition.mdx) — the template a request can be built from
+- Concept: [Specimen](./specimen.mdx) — collected to fulfil a request
+- Concept: [Diagnostic Report](./diagnostic-report.mdx) — the result produced for a request
 
 ## FHIR reference
 
-The service request aligns with the FHIR **ServiceRequest** resource, implementing a focused subset. Care follows its own conventions for some values — statuses, intents, and priorities are snake_case rather than the hyphenated FHIR codes.
+This concept aligns with the FHIR **ServiceRequest** resource. Care implements a minimal, opinionated subset and uses snake_case values for status, intent, and priority rather than FHIR's hyphenated codes.

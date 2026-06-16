@@ -1,65 +1,57 @@
 ---
-sidebar_position: 2
+sidebar_position: 4
 ---
 
-# Value Sets & Coded Data
+# Value Set
 
-A **value set** is a named, curated list of coded answers — the menu of valid options a form question can offer. It is how Care keeps coded data consistent: rather than free text, a question draws its allowed answers from a value set, so everyone records the same concept the same way and the data stays query-friendly.
+A **value set** is a curated, named list of the answer options allowed for a coded field — the menu of choices behind a dropdown in a form. It is how Care keeps clinical data consistent: instead of free text, a question pulls from an agreed set of codes, so the same finding is recorded the same way every time.
 
 ## What it represents
 
-A value set captures the *rules* for which coded concepts are valid, not a frozen list:
+In Care's FHIR-aligned model, a value set maps to the **ValueSet** resource. It captures:
 
-- **A named collection** — a slug, display name, and description that questionnaires and clinical fields reference by name
-- **Composition rules** — `include` and `exclude` clauses that pull concepts from one or more code systems (such as SNOMED CT, LOINC, or ICD), either by pinning specific codes or by filtering a system (for example, "all descendants of this code")
-- **Coded answers** — each member concept is a code plus a human-readable display, drawn live from terminology servers rather than copied in
-- **Provenance** — whether the value set is shipped and maintained by the platform or authored locally by a deployment
+- **A set of allowed concepts** — the codes a field may use, drawn from one or more standard code systems such as SNOMED CT, LOINC, or ICD
+- **Composition rules** — clauses that *include* or *exclude* whole branches of a code system, rather than spelling out every code by hand
+- **Publication status** — whether the set is a draft, in active use, or retired
+- **Origin** — whether it ships with the platform or was authored for your deployment
 
-A value set does not store a list of codes in one place. It stores the *rules* for membership, and the actual codes are resolved in real time when a picker is searched or a submitted code is validated. Editing the rules immediately changes which codes the value set yields — there is nothing to rebuild.
+A value set is not a list of codes frozen in a column. It stores the *rules* for what belongs, and the member codes are resolved live against a terminology server each time the set is searched. Edit the rules and the available choices change immediately — there is nothing to rebuild. This is also what separates it from a [questionnaire](./questionnaire.mdx): the questionnaire decides *which questions are asked*; the value set decides *what answers each coded question accepts*.
 
 ## Lifecycle
 
-A value set moves through a small set of publication states:
+A value set moves through publication states that signal how much to trust it:
 
-```
+```text
 draft → active → retired
+                 (unknown)
 ```
 
-- **draft** — authored but not yet in use
-- **active** — published and available to questionnaires and coded fields
-- **retired** — no longer recommended for use; existing data that used it stays readable
+- **draft** — authored but not yet ready for use; safe to edit and refine
+- **active** — published and in use by forms and coded fields
+- **retired** — no longer recommended; kept for history but not chosen for new work
+- **unknown** — status has not been established
 
-A fourth state, **unknown**, covers value sets whose status is not established.
+## Types
 
-## System vs. local value sets
+Value sets come in two kinds, and the distinction decides who may change them:
 
-Value sets come in two flavours:
+- **System-defined** — shipped and maintained by the platform as shared terminology. Deployments treat these as read-only, and their identifiers are reserved with a `system-` prefix.
+- **Deployment-authored** — created locally to capture terminology specific to your facility or program. This is where a deployment adds its own pick-lists.
 
-- **System-defined** — shipped and maintained by the platform as shared terminology. Deployments should treat these as read-only. Their slugs use a reserved `system-` prefix.
-- **Locally authored** — created by a deployment for its own terminology needs, using any non-reserved slug.
+## How it connects
 
-This split lets the platform ship sensible defaults while each site extends coded data for its local workflows.
-
-## Relationships
-
-- **Questionnaires** — choice and quantity questions in a [questionnaire](./questionnaire.mdx) reference a value set for their allowed answers, which is the main place coded data is captured
-- **Clinical fields** — coded fields on resources such as [conditions](../clinical/condition.mdx), [allergies](../clinical/allergy-intolerance.mdx), and [observations](../clinical/observation.mdx) bind to value sets so their codes stay consistent
-- **Personalization** — individual users can favourite codes within a value set and see recently used codes surfaced in pickers; this is per-user convenience, not part of the value set definition
+- **Forms** — a [questionnaire](./questionnaire.mdx) references a value set to constrain a coded answer, so the form only accepts valid options.
+- **Definitions** — clinical definitions such as an [observation definition](../clinical/observation-definition.mdx) bind their coded fields to a value set, anchoring what counts as a valid result.
+- **Code systems** — a value set does not invent codes; it selects from external standard vocabularies, keeping Care interoperable with the wider health ecosystem.
+- **Personalization** — users can favorite frequently used codes, and Care remembers recently picked ones. This speeds up data entry, but it sits on top of the value set as personal preference, not part of its definition.
 
 ## Permissions
 
-Value sets are **shared terminology**, so they have no dedicated permission context the way patients or encounters do. There is no value-set permission enum to enumerate: any authenticated user can read and search value sets — that is what powers the code pickers throughout the product — while authoring (creating or changing value sets) is gated to administrators, and system-defined value sets are read-only for everyone.
-
-Roles are granted to users through organization, facility-organization, and patient memberships, and access is scoped by the organization tree — a role held at a parent organization cascades to its descendants. Because value sets are global reference data rather than patient- or encounter-scoped, read access is universal; the administrative roles above control who may author or change them, and system-defined value sets are read-only for everyone.
+Value sets are shared terminology, so any authenticated user can read them — they power the code pickers everyone relies on while documenting care. Authoring and editing are administrator-gated, and system-defined value sets are not editable by deployments at all.
 
 ## Related
 
 - Reference: [Value Set (technical)](../../references/forms/valueset.mdx)
-- Concept: [Questionnaires & Structured Data](./questionnaire.mdx)
-- Concept: [Observation](../clinical/observation.mdx)
-- Concept: [Condition](../clinical/condition.mdx)
-- Concept: [Access control](../access/access-control.mdx)
-
-## FHIR reference
-
-Value sets align with the FHIR **ValueSet** resource: a composition of coded concepts drawn from one or more code systems, expressed as `include` / `exclude` clauses against those systems. This keeps Care's coded data interoperable with external terminology services and FHIR-based systems.
+- Concept: [Questionnaire](./questionnaire.mdx) — uses value sets to constrain coded answers
+- Concept: [Questionnaire Response](./questionnaire-response.mdx) — the captured answers those choices feed into
+- Concept: [Observation Definition](../clinical/observation-definition.mdx) — binds coded result fields to value sets

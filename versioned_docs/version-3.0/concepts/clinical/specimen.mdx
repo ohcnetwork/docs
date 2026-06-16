@@ -1,80 +1,64 @@
 ---
-sidebar_position: 8
+sidebar_position: 9
 ---
 
 # Specimen
 
-A **specimen** is a physical sample — blood, tissue, a swab, urine, and so on — collected from a patient for laboratory analysis. It bridges a test order and the result that comes back, recording what was collected, how, and the state it reached the lab in.
+A **specimen** is a physical sample — blood, tissue, a swab, urine — collected from a patient so a laboratory can analyse it. It is the bridge between a lab order and a result: the order asks for a test, the specimen is the material that gets tested, and the report carries back what the lab found.
 
 ## What it represents
 
 In Care's FHIR-aligned model, a specimen maps to the **Specimen** resource. It captures:
 
-- **What was collected** — the kind of material (e.g. blood, swab, tissue), identified by a coded specimen type
-- **How it was collected** — the collector, method, body site, quantity, and the patient's fasting status at collection
-- **Where it came from** — the patient it belongs to and the encounter during which it was taken
-- **Its journey through the lab** — when it was received, its condition on arrival, and any processing steps applied
-- **Identification** — an accession identifier or barcode used to find the sample quickly
+- **The material** — what kind of sample was collected and its condition on arrival at the lab
+- **The collection** — who took it, when, by what method, from which body site, and the patient's fasting status
+- **Its identity** — an accession identifier (the lab barcode) used to find the sample fast
+- **Its links** — the patient it came from, the encounter it was collected in, and the order it fulfils
 
-A specimen is not the test result itself. It is the sample; the findings derived from it are reported separately.
+The distinction worth holding onto: a specimen is neither the order nor the result. The order asks for work; the specimen is the tangible thing that work is performed on; the findings return separately through a diagnostic report. One order can yield several specimens, and a single specimen can pass through several processing steps before it is tested.
 
 ## Lifecycle
 
-A specimen moves through these statuses as it travels from collection to the lab:
+A specimen sits in exactly one status as it moves from collection to testing. The first two are working states; the last three are terminal.
 
-```
-draft → available → unavailable
-                 → unsatisfactory
-(any) → entered_in_error
+```text
+draft → available → unavailable / unsatisfactory / entered_in_error
 ```
 
-- **draft** — a placeholder record before the sample is confirmed (Care-specific)
-- **available** — the specimen is in hand and ready for testing
-- **unavailable** — the specimen is no longer available (consumed, lost, or disposed of)
-- **unsatisfactory** — the specimen is unsuitable for testing (e.g. clotted, insufficient, contaminated)
-- **entered_in_error** — the record was created in error and should be disregarded
+- **draft** — a Care-specific starting state for a record still being prepared
+- **available** — present at the lab and suitable for testing
+- **unavailable** — no longer available, having been consumed, lost, or discarded
+- **unsatisfactory** — reached the lab but unfit to test (contaminated, too little), so a recollection is usually needed
+- **entered_in_error** — created by mistake; kept for audit, treated as void
 
-## Relationships
+## How it connects
 
-A specimen sits between an order and a result, and is always tied to the patient it came from:
+A specimen is the pivot of the lab workflow, and almost everything about it is borrowed from the records around it:
 
-- It is usually collected to fulfill a **service request** (a lab order); one service request may yield several specimens.
-- A **specimen definition** may shape it — a template describing the expected sample for a given test.
-- It links to the **patient** it was collected from and the **encounter** during which collection happened.
-- Findings derived from it are communicated through a **diagnostic report**.
-
-## Identifiers
-
-Each specimen carries an **accession identifier** — the lab accession number or barcode that tracks the physical sample. This identifier is indexed, so a specimen can be looked up quickly by scanning or searching — for example, to match a tube on the bench back to the right patient and order.
+- It is always collected from a **patient**, during an **encounter** that gives the sample its clinical context.
+- It exists to fulfil a **service request** — the lab order. One order may produce several specimens, and that order is also what governs who may read or write the specimen.
+- It can be shaped by a **specimen definition**, an optional template describing the expected container and preparation.
+- Once tested, its results surface through a **diagnostic report**, closing the loop back to the clinician who placed the order.
 
 ## Permissions
 
-Role-based permissions control access to specimens, scoped to the facility. The tables below list the full set of permissions that govern specimens and the specimen-definition templates they are based on.
-
-### Specimen
+Access to specimens is governed by two facility-scoped permissions.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
+| Can Create Specimen on Facility | Create and update specimens within a facility — record collection, processing, and status changes | Facility Admin, Admin, Doctor, Nurse |
 | Can Read Specimen | View specimen records within a facility | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Pharmacist |
-| Can Create Specimen on Facility | Register a new specimen within a facility | Facility Admin, Admin, Doctor, Nurse |
 
-### Specimen Definition
-
-| Permission | Description | System Roles |
-| --- | --- | --- |
-| Can Read Specimen Definition | View specimen-definition templates within a facility | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| Can Create Specimen Definition on Facility | Create a specimen-definition template within a facility | Facility Admin, Admin |
-
-In practice, viewing and creating a specimen also depend on access to the linked service request, so a user must be able to reach the underlying order. Roles are granted to users through organization, facility-organization, and patient memberships, and the organization tree scopes access — a permission held at a parent organization cascades to its descendants.
+Both permissions are checked against the specimen's linked service request rather than the specimen alone. Roles are granted through a user's facility, organization, or patient memberships, and permissions cascade down the organization tree — a role given high in the tree applies to the facilities beneath it.
 
 ## Related
 
 - Reference: [Specimen (technical)](../../references/clinical/specimen.mdx)
-- Concept: [Service Request](../clinical/service-request.mdx)
-- Concept: [Diagnostic Report](../clinical/diagnostic-report.mdx)
-- Concept: [Patient](../clinical/patient)
-- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Service Request](./service-request.mdx) — the order a specimen fulfils
+- Concept: [Specimen Definition](./specimen-definition.mdx) — the template a specimen can be derived from
+- Concept: [Diagnostic Report](./diagnostic-report.mdx) — where a specimen's results surface
+- Concept: [Patient](../clinical/patient) — the person every specimen belongs to
 
 ## FHIR reference
 
-Care's specimen aligns with the FHIR **Specimen** resource. Some Care field names differ — for example, the patient and encounter are set on creation via `subject_patient` and `subject_encounter` — and Care adds a `draft` status not present in FHIR.
+This concept aligns with the FHIR **Specimen** resource. Care implements an opinionated subset: the patient, encounter, and order links are set on creation as `subject_patient`, `subject_encounter`, and `request`, and the status set adds a Care-specific `draft` value not present in FHIR.

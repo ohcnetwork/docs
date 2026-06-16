@@ -1,56 +1,67 @@
 ---
-sidebar_position: 6
+sidebar_position: 7
 ---
 
 # Diagnostic Report
 
-A **diagnostic report** in Care holds the results and interpretation of a diagnostic test or investigation — a lab panel, an imaging study, or a similar workup. It closes the loop on an order: every report fulfils exactly one [service request](./service-request.mdx) and is anchored to the patient and encounter that order was raised under.
+A **diagnostic report** is the formal result of a diagnostic test or investigation — the lab panel, imaging study, or pathology workup that answers a clinical question. It closes the loop on an order: each report fulfils a single request and carries the findings, and the clinician's interpretation of them, back into the patient's record.
 
 ## What it represents
 
 In Care's FHIR-aligned model, a diagnostic report maps to the **DiagnosticReport** resource. It captures:
 
-- **What was tested** — a coded category (the diagnostic service section, e.g. laboratory, radiology) and an optional coded report name or panel
-- **The results** — the individual measurements and findings, recorded as observations linked to the report
-- **The interpretation** — a free-text conclusion summarising what the results mean, plus optional notes
-- **Provenance** — the service request it fulfils, and the patient and encounter it belongs to
+- **What was investigated** — the service section it belongs to (for example, laboratory or radiology) and the specific test or panel performed
+- **The findings** — the individual measured results, which live as observations attached to the report
+- **The interpretation** — a clinician's conclusion summarising what the results mean, plus any free-text notes
+- **The clinical context** — the patient, the encounter it was produced under, and the order it answers
 
-A report is not the order itself. The order (service request) asks for the work; the diagnostic report is the verified outcome that comes back.
+A diagnostic report is not the raw measurement itself. The individual values — a glucose level, a haemoglobin count — are **observations**; the report is the container that groups them under one investigation, names it, and adds the human interpretation on top. That layering is the point: the observations are facts, and the report is the clinically signed-off reading of those facts taken together.
 
 ## Lifecycle
 
-A report moves through statuses as results are produced and verified:
+A report moves through a sequence of result-readiness states as findings come in and are verified.
 
-```
+```text
 registered → partial → preliminary → final
 ```
 
-- **registered** — the report exists but no results are attached yet
+- **registered** — the report exists in the system but no results have been attached yet
 - **partial** — some results are in, but the report is still incomplete
-- **preliminary** — provisional results are available but not yet verified
-- **final** — the report is verified and complete
+- **preliminary** — results are present but not yet verified or signed off
+- **final** — the report is complete and verified; it is the authoritative answer
 
-Not every report passes through every step; a straightforward result can move from `registered` to `final` directly.
+Not every report passes through every state — a simple report may go straight from `registered` to `final`. The status describes how trustworthy and complete the results are at any moment, which matters when a clinician acts on a preliminary value before final sign-off.
 
-## Relationships
+## How it connects
 
-A diagnostic report sits downstream of an order and pulls together the data around it:
+A diagnostic report never stands alone — it sits at the centre of an ordering-and-results chain:
 
-- **Service request** — the order being fulfilled; a report belongs to exactly one request, chosen when the report is created
-- **Patient** and **encounter** — set from the context of the originating order, not entered by hand
-- **Observations** — the individual result rows (values, findings) collected under the report
-- **Specimen** — when a sample is involved, it is collected against the service request that this report fulfils
+- **Service request** — every report fulfils exactly one request. The order is placed first; the report is the answer to it, and it cannot exist without the request it resolves.
+- **Observation** — the individual results that make up the report. One report typically groups many observations.
+- **Specimen** — for lab work, the sample the investigation was run on is tracked through the request and feeds the report.
+- **Patient and encounter** — the report is anchored to the patient it concerns and the encounter it was produced under. Both are inherited from the originating order, not chosen on the report.
+
+This is why you create a [Service Request](./service-request.mdx) before a report can be filed against it, and why deleting the patient, encounter, or originating request also removes the reports tied to them.
+
+## Classification
+
+Two coded fields describe what the report is, drawn from standard terminologies so reports stay comparable across facilities:
+
+- **Category** — the diagnostic service section the report belongs to, such as laboratory, radiology, or pathology. Required, and it groups reports by the kind of investigation.
+- **Code** — the specific test or panel performed, named using LOINC. Optional, but it lets a report be identified precisely (a particular metabolic panel rather than just "laboratory").
+
+Because these are coded concepts rather than free text, the same test means the same thing everywhere — which is what makes reports searchable and comparable across a deployment.
 
 ## Permissions
 
-A dedicated permission enum governs access to diagnostic reports:
+Access to diagnostic reports is governed by two facility-scoped permissions.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Create Diagnostic Report on Facility | Create diagnostic reports for a facility's patients | Facility Admin, Admin, Doctor, Nurse |
+| Can Create Diagnostic Report on Facility | Create and update diagnostic reports within a facility | Facility Admin, Admin, Doctor, Nurse |
 | Can Read Diagnostic Report | View diagnostic reports and their results | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer |
 
-Users receive roles through organization, facility-organization, and patient memberships. The organization tree then scopes access: a permission held at a parent organization cascades to its descendants. In practice, Care decides report access through the originating service request — a user can act on a report if they hold the matching permission on the encounter (or on a facility organization tied to the request's locations) that the report belongs to.
+Roles are granted through a user's membership in an organization, facility, or patient, and permissions cascade down the organization tree — so a role held higher up applies to the facilities and reports beneath it.
 
 ## Related
 
@@ -59,7 +70,4 @@ Users receive roles through organization, facility-organization, and patient mem
 - Concept: [Observation](./observation.mdx)
 - Concept: [Specimen](./specimen.mdx)
 - Concept: [Encounter](./encounter.mdx)
-
-## FHIR reference
-
-Care's diagnostic report aligns with the FHIR **DiagnosticReport** resource. The coded `category` and `code` fields bind to value sets (HL7 diagnostic service sections and LOINC), and `status` follows the FHIR report-status vocabulary.
+- Concept: [Patient](../clinical/patient)

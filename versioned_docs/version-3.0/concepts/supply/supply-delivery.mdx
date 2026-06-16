@@ -1,0 +1,76 @@
+---
+sidebar_position: 5
+---
+
+# Supply Delivery
+
+A **supply delivery** records stock actually moving — a product arriving at a location, whether shipped in from an outside supplier or transferred between rooms inside a facility. It is the "stock in" side of inventory: everything delivered, minus everything dispensed, equals what is on the shelf right now.
+
+## What it represents
+
+In Care's FHIR-aligned model, a supply delivery maps to the **SupplyDelivery** resource. Each delivery is a single line of received goods, capturing:
+
+- **What moved** — the product, or a specific batch already in stock, and how much, counted as whole units or as packs times pack-size
+- **Condition** — whether the items arrived `normal` or `damaged`
+- **Where it came from and went** — carried by the delivery order it belongs to, which names a source and a destination
+- **Why** — an optional link to the supply request this delivery fulfils, and to a billing invoice when stock is handed to a patient
+- **Cost** — the total purchase price of the line
+
+The key distinction is between a request and a delivery. A request is someone *asking* for stock; a delivery is stock *changing hands*. They are not one-to-one: a single request can be met by several deliveries, and a delivery can also happen with no prior request at all — so Care treats the delivery, not the request, as the event that moves inventory.
+
+## How it connects
+
+A delivery never stands alone — each one belongs to a **delivery order**, the shipment that gives it context. The order answers a single question, *where is this stock coming from and going to*, and its answer shapes everything underneath it:
+
+- **Origin and destination** — an order always names a destination. If it also names an origin location, it is an internal transfer between two places in the facility. If it has no origin, the stock is entering from outside, and the order names an external **supplier** organization instead.
+- **Internal vs. external** — this one distinction decides what each delivery line must carry. An internal move draws down a specific inventory item, a known batch already on hand; an external delivery names a product being received for the first time. A line is one or the other, never both.
+- **Patient dispense** — an order can instead be aimed at a patient, optionally tied to a billing invoice. An order is either a location-to-location move or a patient dispense, never both — so an order with a patient has no origin.
+
+## Lifecycle
+
+A delivery moves through a short lifecycle as goods are received and reconciled:
+
+```text
+in_progress → completed
+in_progress → abandoned
+in_progress → entered_in_error
+```
+
+- **in_progress** — the delivery is being recorded but not yet finalized
+- **completed** — goods are received and counted into stock; only completed lines contribute to inventory totals
+- **abandoned** — started but will not be finished
+- **entered_in_error** — created by mistake and should be disregarded
+
+The delivery order that groups these lines has its own status track. Every order begins as `draft` or `pending`, moves to `in_progress`, and settles into one terminal state: `completed`, `abandoned`, or `entered_in_error`.
+
+## Condition
+
+Each line records the state the goods arrived in, so damaged stock is flagged rather than silently counted:
+
+- **normal** — items arrived intact and usable
+- **damaged** — items arrived compromised; the flag supports returns, write-offs, and supplier follow-up
+
+## Permissions
+
+Access to supply deliveries is governed by facility-scoped permissions.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create Supply Delivery on Facility | Record a delivery and add its lines within the facility | Facility Admin, Admin |
+| Can Read Supply Delivery | View deliveries and their delivery orders | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Create External Supply Delivery on Facility | Record a delivery of stock arriving from an outside supplier | Facility Admin, Admin |
+
+Roles are granted to users through their facility and organization memberships, and permissions cascade down the organization tree — so a role held at a parent organization carries to the facilities beneath it.
+
+## Related
+
+- Reference: [Supply Delivery (technical)](../../references/supply/supply-delivery.mdx)
+- Concept: [Supply Request](./supply-request.mdx)
+- Concept: [Inventory Item](./inventory-item.mdx)
+- Concept: [Product](./product.mdx)
+- Concept: [Location](../facility/location.mdx)
+- Concept: [Invoice](../billing/invoice.mdx)
+
+## FHIR reference
+
+This concept aligns with the FHIR **SupplyDelivery** resource, which records the dispatch and receipt of supplies. Care stores coded values (status, condition) as plain snake_case enums rather than FHIR URIs.

@@ -1,0 +1,68 @@
+---
+sidebar_position: 4
+---
+
+# Invoice
+
+An **invoice** is the bill Care produces for a patient: it gathers the charges raised on an account into a single, numbered statement of what is owed. It is the moment billing becomes official — the point where running charges are frozen into a document the patient or payer can be asked to settle.
+
+## What it represents
+
+In Care's FHIR-aligned model, an invoice maps to the **Invoice** resource. It pulls together three things: the **charge items** being billed (each a service, medication, or product the patient received), the **money** they add up to (net and gross totals, built from base amounts, surcharges, discounts, and taxes), and the **account** it settles. The patient is inherited from that account, never set by hand.
+
+The key distinction is that an invoice is not a payment. It states what is owed; the act of paying it down — and any credit notes against it — lives in [payment reconciliation](../../references/billing/payment-reconciliation.mdx). One account can produce several invoices over time as new charges accumulate, and the invoice's detail view reports what has been paid against each so you can always see the remaining balance.
+
+## How it connects
+
+An invoice sits at the meeting point of several billing primitives:
+
+- **[Account](../../references/billing/account.mdx)** — every invoice settles exactly one account, and takes its patient from there.
+- **[Charge items](../../references/billing/charge-item.mdx)** — the line items. A charge item is each individual billable thing; the invoice is the envelope that totals them up.
+- **[Charge item definitions](../../references/billing/charge-item-definition.mdx)** — the priced catalogue entries charge items are built from, used when Care generates a refund invoice automatically.
+- **[Payment reconciliation](../../references/billing/payment-reconciliation.mdx)** — the payments and credit notes recorded against the invoice once it is issued.
+
+## Lifecycle
+
+An invoice moves through a small set of statuses, and a crucial thing happens partway through. While an invoice is still a `draft` it shows the live charges — edit a charge item and the invoice follows. The instant it is **issued**, Care takes a frozen snapshot of those line items and computes the totals once. From then on the invoice shows that snapshot, not the live charges. This is deliberate: a bill the patient was handed must not silently change if someone later edits an underlying charge.
+
+```text
+draft → issued → balanced
+  └────────────→ cancelled / entered_in_error
+```
+
+- **draft** — being assembled; charges and totals are still live and editable
+- **issued** — finalised and presented to the patient or payer; line items and totals are now snapshotted
+- **balanced** — fully settled, with payments matching what was owed
+- **cancelled** — voided after issue; no longer collectible
+- **entered_in_error** — recorded by mistake and retracted
+
+`cancelled` and `entered_in_error` are the two terminal void states. Drive these transitions through the billing workflow rather than editing records directly, since each one also adjusts the linked charge items and the account.
+
+## Refunds
+
+A normal invoice has positive totals. When goods are returned or a charge is reversed, Care creates a separate **refund invoice** with negative totals. These are flagged as refunds, and Care refuses to save a negative-total invoice that is not marked as one — a guardrail that keeps refunds from being mistaken for ordinary bills.
+
+## Locking
+
+An issued invoice can be **locked** to freeze it against any further edits — useful once a bill has been formally closed out or handed to an external system. Locking is a privileged action, separate from everyday read and write access.
+
+## Permissions
+
+Access to invoices is governed by facility-scoped permissions:
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Write Invoice | Create and update invoices, including assembling charge items and issuing them | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| Can Read Invoice | View invoices, their line items, totals, and reconciliation history | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Destroy Invoice | Delete an invoice | Facility Admin, Admin |
+| Can Manage Locked Invoice | Lock and unlock invoices to freeze or reopen them | Facility Admin, Admin |
+
+Roles are granted through a user's facility and organization memberships, and permissions cascade down the organization tree, so access at a parent organization carries to the facilities beneath it.
+
+## Related
+
+- Reference: [Invoice (technical)](../../references/billing/invoice.mdx)
+- Reference: [Account](../../references/billing/account.mdx)
+- Reference: [Charge Item](../../references/billing/charge-item.mdx)
+- Reference: [Payment Reconciliation](../../references/billing/payment-reconciliation.mdx)
+- Concept: [Patient](../clinical/patient)

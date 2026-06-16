@@ -1,91 +1,85 @@
 ---
-sidebar_position: 9
+sidebar_position: 12
 ---
 
 # Consent
 
-A **consent** in Care records a patient's decision — to permit or deny — for a defined category of activity, such as treatment, research participation, or information sharing. It captures what the patient agreed to, when it applies, and who verified it, giving care teams an auditable record of the patient's wishes.
+A **consent** records a patient's decision to permit or refuse a category of activity — treatment, research participation, sharing of their information, or a directive about end-of-life care. It is the auditable proof that a choice was made, by or for the patient, before that activity went ahead.
 
 ## What it represents
 
-Consent maps to the FHIR **Consent** resource. Each record captures:
+In Care's FHIR-aligned model, a consent maps to the **Consent** resource. Each record answers four questions:
 
-- **Decision** — whether the patient permits or denies the activity
-- **Category** — what the consent is about (treatment, privacy, research, advance directives, and so on)
-- **Validity** — the date it was recorded and the period during which it applies
-- **Verification** — who confirmed the consent and how (for example, by a family member)
-- **Supporting documents** — scanned or uploaded consent forms attached to the record
-- **Encounter linkage** — the visit during which the consent was captured
+- **What is being decided** — a category such as treatment, research, privacy of information, or an advance directive like a do-not-resuscitate order
+- **What was decided** — a single decision to *permit* or *deny* it
+- **When it applies** — the date it was recorded, plus an optional validity window
+- **How it was confirmed** — who witnessed the decision and how, with any signed form attached alongside
 
-A consent is always anchored to an encounter, and the owning patient is reached through that encounter. The patient's history is the container that keeps their consents coherent over time.
-
-## Decision
-
-Every consent states one of two outcomes:
-
-- **Permit** — the patient grants consent for the activity
-- **Deny** — the patient refuses consent for the activity
-
-## Types
-
-The category describes the kind of activity the consent governs:
-
-| Category | Meaning |
-| --- | --- |
-| Treatment | Consent to receive treatment |
-| Patient privacy | Disclosure or sharing of patient information |
-| Research | Participation in research |
-| DNR | Do-not-resuscitate directive |
-| Comfort care | Comfort / palliative care directive |
-| Advance care directive | A patient's advance care directive |
-| Advance directive (other) | Other advance directive |
+The key thing to understand is that a consent is *not* a permission setting. It does not grant anyone access to the system. It documents the **patient's** clinical and legal choice — a fact about the patient's care, not a rule about staff. Who can act in Care is governed separately by the [permission model](../../references/access/permission.mdx).
 
 ## Lifecycle
 
-A consent moves through a small set of statuses that describe whether it is in force:
+A consent's status mirrors whether its decision is currently in force:
 
-```
+```text
 draft → active → inactive
-              ↘ not_done
-              ↘ entered_in_error
+         ↘ not_done
+         ↘ entered_in_error
 ```
 
-- **draft** — being prepared, not yet in force
-- **active** — currently in force
-- **inactive** — no longer in force
-- **not_done** — the consent activity did not take place
+- **draft** — recorded but not yet in force
+- **active** — in force; the decision currently governs the activity
+- **inactive** — no longer in force, for example once its validity window has passed
+- **not_done** — the consent activity never took place
 - **entered_in_error** — recorded by mistake; kept for audit but disregarded
 
-Status is recorded directly on the consent. There is no automatic state machine, so a record can be marked `entered_in_error` or `inactive` as a plain update while the history remains auditable.
+Status is a plain field on the record. Moving a consent to `entered_in_error` corrects the history without deleting it, and changing status has no automatic side effect elsewhere in the chart — nothing downstream is unlocked or revoked.
 
-## Relationships
+## Categories
 
-A consent belongs to a single **encounter**, and an encounter can carry many consents. The **patient** is reached through that encounter, so a consent is part of the patient's longitudinal record. Verification entries reference the **user** who confirmed the consent, and uploaded consent forms are linked as supporting attachments.
+The category names what the patient is deciding about. Care recognises seven:
+
+| Category | What it covers |
+| --- | --- |
+| Treatment | Consent to a clinical treatment or procedure |
+| Research | Consent to take part in research |
+| Patient privacy | Consent to disclose or share the patient's information |
+| DNR | A do-not-resuscitate directive |
+| Comfort care | A comfort or palliative care directive |
+| Advance care directive | A directive about future care while the patient can still decide |
+| Advance directive (other) | Any other advance directive |
+
+Every consent carries exactly one decision — **permit** or **deny** — so a refusal is captured with the same weight and auditability as an approval. A documented "no" is as much a part of the record as a "yes".
+
+## How it connects
+
+A consent is always attached to a single [encounter](./encounter.mdx), and the owning [patient](../clinical/patient) is reached through that encounter. The encounter is fixed at creation and cannot be moved to a different visit later — this is deliberate, because it preserves *when and in what context* the decision was made.
+
+Two neighbouring records hang off a consent:
+
+- **Documents** — a signed consent form or scanned file can be attached, so the paper trail lives beside the structured record
+- **Verifiers** — each verification names the user who confirmed the consent, so a reviewer can later see exactly who witnessed it
 
 ## Permissions
 
-Consent is patient clinical data, so it has no dedicated permission of its own — access is governed by the full patient permission set defined in `PatientPermissions`. Reading consents requires the clinical-data permission; creating or updating them requires patient write access. The full set of patient permissions is listed below.
-
-### Patient
+There is no separate consent permission set. Consents are governed by the **patient** permission set, because a consent belongs to a patient's clinical record.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Create Patient | Register a new patient record | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
-| Can Update a Patient's data | Modify an existing patient's data, including their consents | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
-| Can list patients | List and search patient records | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer, Pharmacist |
-| Can view clinical data about patients | View a patient's clinical data, including their consents | Staff, Doctor, Nurse, Admin, Facility Admin |
-| Can view questionnaire responses on patient | View questionnaire responses recorded for a patient | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator, Pharmacist |
-| Can submit questionnaire about patients | Submit a questionnaire about a patient | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator |
+| Can view clinical data | View a patient's clinical record, including their consents | Staff, Doctor, Nurse, Admin, Facility Admin |
+| Can update a patient's data | Create or update a patient's clinical record, including recording consents | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
+| Can create patient | Register a patient whose record can then hold consents | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
+| Can list patients | Find patients to reach their consents | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer, Pharmacist |
 
-Users receive roles through organization, facility-organization, and patient memberships. Access to a specific consent depends on the roles a user holds on its patient — gathered through the patient's encounters, locations, owning organizations, and any direct patient association. Because access is scoped by the organization tree, a permission held at a parent organization cascades to its descendants.
+Roles are granted through organization, facility, or patient memberships, and permissions cascade down the organization tree — a role held higher up applies to the patients and consents beneath it.
 
 ## Related
 
 - Reference: [Consent (technical)](../../references/clinical/consent.mdx)
+- Concept: [Encounter](./encounter.mdx)
 - Concept: [Patient](../clinical/patient)
-- Concept: [Encounter](../clinical/encounter.mdx)
-- Concept: [User](../access/user.mdx)
+- Reference: [Permission](../../references/access/permission.mdx)
 
 ## FHIR reference
 
-Consent aligns with the FHIR **Consent** resource: `status`, `category`, `decision`, and `period` map to their FHIR counterparts.
+Care's consent aligns with the FHIR **Consent** resource: its status, category, decision, and validity period map to their FHIR counterparts, modelling a patient's recorded choice to permit or deny a category of activity.

@@ -4,61 +4,57 @@ sidebar_position: 1
 
 # Facility
 
-A **facility** in Care is a care site — a hospital, clinic, lab, or telemedicine endpoint — and the root of a deployment's administrative hierarchy. It anchors users, locations, patients, and clinical activity: nearly everything in Care happens within the context of a facility.
+A **facility** in Care is a single care site — a hospital, clinic, lab, or telemedicine endpoint — and the boundary that everything inside a deployment is scoped to. Patients are registered, staff are organized, locations and devices are added, and billing is configured all within one facility.
 
 ## What it represents
 
-In Care's FHIR-aligned model, a facility holds:
+In Care's FHIR-aligned model, a facility maps to the **Organization** resource, specialized as a physical or virtual care site. It captures:
 
-- **Identity & classification** — name, description, and a facility type (for example, Private Hospital, Primary Health Centre, or Govt Labs)
-- **Location & contact** — address, pincode, geo-coordinates, and phone number
-- **Capabilities** — features the site offers, such as CT scan, maternity care, X-ray, neonatal care, operation theater, or blood bank
-- **Geographic placement** — a link to a government organization in the geographic hierarchy (state → district → ward)
-- **Presentation & billing config** — a cover image, print templates, and per-facility discount, tax, and invoice-numbering rules
+- **Identity** — a name, description, and a facility type (Private Hospital, Primary Health Centres, Govt Labs, TeleMedicine, and many more)
+- **Place** — address, pincode, latitude/longitude, and a contact number
+- **Capabilities** — what the site can offer, such as CT Scan, Maternity Care, X-Ray, Neonatal Care, Operation Theater, or Blood Bank
+- **Geographic placement** — the government/administrative region it sits under, which is how deployments roll facilities up into districts and states
+- **Billing** — its own discount codes, tax components, and invoice-number format
 
-A facility is more than a name on a map. When one is created, Care provisions its root **Administration** organization and makes the creator a facility administrator, giving the site an internal structure to which teams, departments, locations, and users attach.
+A facility is not a department or a ward — those are [locations](../../references/facility/location.mdx) and [facility organizations](./facility-organization.mdx) *within* it. The facility is the outer container; the same [patient](../clinical/patient) can be seen across many facilities while remaining one person, but staff roles, inventory, and invoices never cross the facility line.
 
-## Types & classification
+## Lifecycle
 
-Every facility has a single **facility type** drawn from a fixed list spanning private and government hospitals, primary/community/family health centres, labs, telemedicine, NGOs, and community-based organizations. The type is descriptive: it categorizes the site for reporting and discovery but does not by itself change behaviour.
+A facility comes with its administrative scaffolding pre-built — you never assemble the hierarchy by hand.
 
-Separately, a facility advertises zero or more **features** (CT scan, maternity care, X-ray, neonatal care, operation theater, blood bank) so that referrals and search can locate sites with the right capabilities.
+```text
+Create → Administration org provisioned → Active → (soft) Deleted
+```
 
-## Relationships
+- **Create** — the record is created with its name, type, address, and the geographic region it belongs under
+- **Administration org provisioned** — Care automatically creates a root `Administration` organization inside the facility and grants the creator the Facility Admin role over it, so the site has a working tree from day one
+- **Active** — patients are registered, staff are assigned, locations and devices are added, and encounters happen
+- **Deleted** — removal is a soft delete; the facility and its child organizations are kept for history and audit, never erased
 
-A facility sits at the centre of a deployment's structure:
+## How it connects
 
-- **Organizations** — each facility has an internal facility-organization tree (rooted at its auto-created Administration org) for teams and departments, plus a link out to the geographic organization tree for administrative placement
-- **Locations** — physical places inside the facility (wards, beds, rooms) live under it
-- **Users** — staff gain access by being given roles within a facility's organizations
-- **Patients & encounters** — registration and care activity are scoped to the facility
-- **Healthcare services & devices** — services offered and equipment are registered against the facility
+The facility is the hub most other primitives hang off of:
 
-## Billing configuration
-
-Each facility can carry its own monetary configuration: facility-defined discount codes, selectable discount line items, a rule for how discounts stack, and an expression that generates invoice numbers. This config layers on top of instance-wide catalogs, so a site can add its own discounts without redefining the ones shared across the deployment.
+- **People** — staff gain access through the facility's organizations; every role and permission is scoped to a facility
+- **Places & equipment** — [locations](../../references/facility/location.mdx) (wards, beds, rooms), [healthcare services](../../references/facility/healthcare-service.mdx), and [devices](../../references/facility/device.mdx) are registered under it
+- **Care delivery** — [encounters](../clinical/encounter.mdx) take place at a facility, anchoring where care was given
+- **Geography** — each facility sits under a geographic [organization](./organization.mdx), the bridge that connects it to the wider administrative map
+- **Billing** — discounts, taxes, and invoice numbering are set per facility (see [Facility config](../../references/facility/facility-config.mdx))
 
 ## Permissions
 
-Access to facilities is governed by the `FacilityPermissions` enum. The complete set of permissions, what each allows, and the system roles that hold them by default:
+Access to a facility is governed by a small set of permissions, granted to staff through their facility organization roles.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Create on Facility | Register a new facility in the deployment | Administrator, Admin, Facility Admin |
-| Can Read on Facility | View a facility's details and configuration | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer |
+| Can Create on Facility | Create a new facility | Administrator, Admin, Facility Admin |
+| Can Read on Facility | View a facility's details | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer |
 | Can Update on Facility | Edit a facility's details and configuration | Facility Admin, Administrator, Admin, Staff |
 
-Roles reach users through organization memberships — a user holds a role within a facility's root organization, a facility sub-organization (team or department), or the geographic organization tree. That tree then scopes access: a permission held at a parent organization cascades to its descendants, so a role granted high in the geographic hierarchy can authorize action on the facilities beneath it, while a role on a facility's own root org governs that site directly.
+Permissions cascade down the organization tree: a role held at a parent organization applies to the facilities and sub-organizations beneath it.
 
 ## Related
 
 - Reference: [Facility (technical)](../../references/facility/facility.mdx)
-- Reference: [Facility config (technical)](../../references/facility/facility-config.mdx)
+- Reference: [Facility config](../../references/facility/facility-config.mdx)
 - Concept: [Organization](./organization.mdx)
-- Concept: [Location](./location.mdx)
-- Concept: [User](../access/user.mdx)
-- Concept: [Access control](../access/access-control.mdx)
-
-## FHIR reference
-
-Care's facility model aligns with FHIR. A facility broadly corresponds to a combination of the FHIR **Organization** and **Location** resources — it names the care provider and anchors the physical and administrative structure beneath it.

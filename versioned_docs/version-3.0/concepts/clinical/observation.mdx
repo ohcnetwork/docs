@@ -4,88 +4,66 @@ sidebar_position: 5
 
 # Observation
 
-An **observation** in Care is a single named, coded data point recorded about a patient — a blood pressure reading, a temperature, a lab result, or a coded answer captured through a questionnaire. Each observation records *what* was measured and the resulting *value*, anchored to a patient and the encounter in which it was taken.
+An **observation** is a single recorded fact about a patient — a blood pressure of 120/80, a body temperature, a coded answer to a screening question. It is the smallest unit of clinical data in Care: the structured building block that, gathered over time, becomes a patient's chart.
 
 ## What it represents
 
-In Care's FHIR-aligned model, an observation maps to the **Observation** resource. It captures:
+In Care's FHIR-aligned model, an observation maps to the **Observation** resource. Each one captures:
 
-- **What was observed** — a primary code (typically LOINC) describing the measurement, finding, or question
-- **The result** — the recorded value, with a unit for quantities or a coded answer for choices
-- **When and by whom** — the effective time of the measurement and who performed or entered it
-- **Clinical qualifiers** — body site, collection method, reference range, and interpretation (high / low / normal)
-- **Context** — links to the patient, the encounter, and the questionnaire response that produced it
+- **What was observed** — a coded concept, typically a LOINC code, that names the thing, such as "systolic blood pressure" or "body temperature"
+- **The result** — the value itself: a number, a piece of text, a yes/no, or a coded answer, with a unit where one applies
+- **Context** — the patient it belongs to, the encounter it was recorded in, when it was effective, and who recorded it
+- **Clinical qualifiers** — optional detail such as the body site, the collection method, a reference range, and an interpretation of high, low, or normal
 
-Observations are the granular clinical readings that accumulate into a patient's record over time. Care favours **structured** observations — coded, machine-readable values — because downstream logic such as allergy and medication checks depends on them rather than on free text.
+An observation is a snapshot, not a running tally. It records one fact at one point in time. A trend — a patient's temperature over a week — is many observations read together, never a single record that gets updated in place.
 
-## Types and structure
+## How it is captured
 
-A single observation usually holds one value, but observations can be composed:
+Observations are rarely entered field by field. Most are produced as a side effect of submitting a [questionnaire](../forms/questionnaire.mdx): each answer on the form becomes an observation, and that observation keeps a link back to the questionnaire response that produced it. This is also why every observation carries both a *value* and a *value type* — the value type tells any reader how to interpret what the form captured, whether it was a number, a date, a yes/no, or a coded choice.
 
-- **Grouped (panel) observations** mark a parent that holds several child observations sharing a context — for example, a vitals panel or a lab panel.
-- **Components** are sub-readings recorded together under one observation, each with its own code and value (for example, the systolic and diastolic parts of a blood pressure).
+Care strongly prefers **structured, coded** observations over free text. Downstream safety logic — allergy checks, medication interactions, alerting — reads coded values, so a temperature stored as a number with a LOINC code is far more useful than the same reading typed into a note.
 
-Most observations are created automatically when a questionnaire is submitted, so the value and its type mirror the questionnaire answer, and the originating questionnaire response is recorded for provenance.
+## Status lifecycle
 
-## Lifecycle
+An observation's `status` signals how much to trust the record:
 
-An observation's status reflects how trustworthy the recorded value is:
-
-```
+```text
 final → amended
 final → entered_in_error
 ```
 
-- **final** — recorded, complete, and verified; the default for questionnaire-sourced observations
-- **amended** — a previously final observation that was later corrected
-- **entered_in_error** — recorded by mistake and should be disregarded
+- **final** — recorded, complete, and verified. Observations created from a questionnaire start here.
+- **amended** — was final, then corrected. The earlier value is superseded, but the change stays auditable.
+- **entered_in_error** — recorded by mistake; readers should disregard it. Care keeps the row rather than deleting it, so the audit trail stays intact.
 
-Observations are never deleted to "undo" them; marking an entry as `entered_in_error` keeps the history auditable.
+## How it connects
 
-## Relationships
+An observation rarely stands alone. It links to the primitives around it:
 
-An observation always belongs to a **patient** and is normally recorded within an **encounter**. It may also link to:
-
-- the **questionnaire response** that produced it (provenance for questionnaire-sourced data)
-- a **diagnostic report** it forms part of, such as a lab or imaging report
-- an **observation definition** — a facility-level template that standardises codes, units, and reference ranges for a kind of observation
+- **Patient** — every observation belongs to one [patient](../clinical/patient); this anchor is what makes it part of a chart.
+- **Encounter** — it is normally recorded within an [encounter](../clinical/encounter.mdx), tying the fact to a specific visit or admission.
+- **Observation definition** — an [observation definition](../clinical/observation-definition.mdx) can act as the template, supplying expected codes, units, and reference ranges.
+- **Diagnostic report** — lab and imaging results are observations grouped under a [diagnostic report](../clinical/diagnostic-report.mdx).
+- **Other observations** — observations can nest. A panel such as a blood-pressure reading is a grouping observation whose components each carry their own code and value.
 
 ## Permissions
 
-Observation instances are clinical data, so access is governed by the **patient** permission set rather than a dedicated observation permission. Whether a user can record or read observations depends on the roles they hold for that patient. The **observation definitions** that template these readings are a separate resource, governed at the facility level by their own permission set.
-
-### Patient clinical data permissions
-
-These are the complete patient-context permissions that govern observation instances and the surrounding patient record.
+Observations are clinical data, so access is governed by the **patient** permission set rather than one of their own. Whether someone can read or record observations follows from their patient permissions.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Create Patient | Register a new patient record | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
-| Can Update a Patient's data | Edit an existing patient's details | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
-| Can list patients | View the list of patients in scope | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer, Pharmacist |
-| Can view clinical data about patients | Read a patient's clinical data, including observations | Staff, Doctor, Nurse, Admin, Facility Admin |
-| Can view questionnaire responses on patient | Read questionnaire responses recorded for a patient | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator, Pharmacist |
-| Can submit questionnaire about patients | Submit questionnaires that create patient observations | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator |
+| Can view clinical data | View clinical data about patients, including observations | Staff, Doctor, Nurse, Admin, Facility Admin |
+| Can view questionnaire responses | View questionnaire responses on a patient, which carry the observations they produced | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator, Pharmacist |
+| Can submit patient questionnaire | Submit a questionnaire about a patient, the action that records new observations | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator |
+| Can list patients | List patients in scope, a prerequisite for reaching their clinical data | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer, Pharmacist |
 
-### Observation definition permissions
-
-These facility-context permissions govern the definitions that standardise codes, units, and reference ranges for observations — distinct from the observation instances above.
-
-| Permission | Description | System Roles |
-| --- | --- | --- |
-| Can Create Observation Definition on Facility | Create observation definition templates for a facility | Facility Admin, Admin |
-| Can Read Observation Definition | Read a facility's observation definition templates | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-
-Roles are granted to users through organization, facility-organization, encounter, and direct patient memberships. Access is scoped by the organization tree: a permission held at a parent organization cascades to its descendants, so a role granted at a facility flows down to the patients and encounters beneath it.
+Roles are granted through a user's organization, facility, or patient memberships, and permissions cascade down the organization tree — so access to a patient's observations follows from access to the patient.
 
 ## Related
 
 - Reference: [Observation (technical)](../../references/clinical/observation.mdx)
-- Concept: [Patient](../clinical/patient)
-- Concept: [Encounter](../clinical/encounter.mdx)
-- Concept: [Diagnostic report](../clinical/diagnostic-report.mdx)
+- Concept: [Observation Definition](../clinical/observation-definition.mdx)
+- Concept: [Diagnostic Report](../clinical/diagnostic-report.mdx)
 - Concept: [Questionnaire](../forms/questionnaire.mdx)
-
-## FHIR reference
-
-Care's observation aligns with the FHIR **Observation** resource. Codes bind to standard terminologies — primary codes to LOINC, and body site and collection method to SNOMED CT — though API and FHIR field names may differ from Care's internal model.
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Patient](../clinical/patient)

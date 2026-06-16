@@ -1,0 +1,84 @@
+---
+sidebar_position: 1
+---
+
+# Medication Request
+
+A **medication request** is a prescriber's instruction to supply and/or administer a medication to a patient. It is the starting point of the medication journey in Care — the order that everything downstream (dispensing, administration, the patient's medication history) refers back to.
+
+## What it represents
+
+In Care's FHIR-aligned model, a medication request maps to the **MedicationRequest** resource. It captures:
+
+- **What to give** — a coded drug from a managed list, or a specific product from your facility's catalogue
+- **How to give it** — structured dosage instructions: dose, route, body site, timing and frequency, and whether the medication is taken only as needed (PRN)
+- **Why and how urgently** — the intent (a proposal, a plan, or a firm order), the care setting (inpatient, outpatient, community, or discharge), and the priority (routine through stat)
+- **Who and where** — the patient, the encounter it was written during, the prescriber, and when it was authored
+
+A medication request records the *intent* to medicate — it is not proof that the drug was handed over or taken. Handing the drug out is a [medication dispense](./medication-dispense.mdx), giving it to the patient is a [medication administration](./medication-administration.mdx), and what the patient reports actually taking is a [medication statement](./medication-statement.mdx). The request is the order; the others are the follow-through.
+
+## How it connects
+
+A medication request never stands alone. It is always tied to a clinical context:
+
+- **Patient** — every request belongs to one patient. The patient is taken from the encounter, never supplied directly, so a request can never point at someone who wasn't actually seen.
+- **Encounter** — the visit or admission the order was written during. This anchors the order in time and place and decides who is allowed to touch it.
+- **Prescription** — requests authored together in one sitting are grouped under a single **prescription** for the encounter. Think of the prescription as the sheet of paper and each medication request as one line on it.
+- **Requester** — the clinician who authored the order.
+
+Grouping by prescription is what lets a pharmacist review or act on a whole prescribing event at once, rather than one drug at a time.
+
+## Lifecycle
+
+A medication request moves through a status that reflects where the order stands:
+
+```text
+draft → active → (on_hold) → completed / stopped / ended / cancelled
+```
+
+- **draft** — written but not yet finalised or acted on
+- **active** — the live order; this is the default for a real prescription
+- **on_hold** — temporarily suspended (for example, paused before surgery), expected to resume
+- **completed** — the course has run as intended
+- **stopped** — deliberately discontinued before completion (for example, an adverse reaction)
+- **ended** — the order's validity period has lapsed
+- **cancelled** — withdrawn before it took effect
+- **entered_in_error** — recorded by mistake and retracted; kept for audit, not treatment
+- **unknown** — status cannot be determined
+
+When a request is stopped or changed, a **status reason** can record *why* — for example an allergy, a suspected drug interaction, a duplicate therapy, or the patient being scheduled for surgery. Once a request is created, only a narrow set of things can change: its status, its note, and its dispensing progress. The clinical substance of the order — the drug and the dosage — is fixed at authoring.
+
+## Classification
+
+Two coded fields shape how a request is read and routed:
+
+- **Intent** — how firm the order is, from a loose `proposal`, to a `plan`, to a true `order`. This separates "we're thinking about this drug" from "give this drug."
+- **Category** — the care setting the order applies to: `inpatient`, `outpatient`, `community`, or `discharge`. Discharge medications, for instance, are what the patient goes home with.
+
+A request can also be marked **do not perform** — an explicit instruction that a medication must *not* be given, which is a clinical statement in its own right, not merely the absence of an order.
+
+## Permissions
+
+Access to a medication request follows the encounter it belongs to, with one addition: pharmacists get a facility-wide grant so they can fill orders across the floor. Authoring an order requires write access on the encounter; reading one requires clinical-data access for the patient, or read access on the specific encounter.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Pharmacist in Care | Pharmacists have access to all medication requests and can create dispenses for patients | Facility Admin, Admin, Pharmacist |
+| Update Encounter and Create all associated datapoints | Author, update, or discontinue a medication request on an encounter | Admin, Doctor, Nurse, Staff, Facility Admin |
+| Can view clinical data about patients | View the medication requests recorded for a patient | Admin, Doctor, Nurse, Staff, Facility Admin |
+| Can Read encounter and related data | View the medication requests on a specific encounter | Admin, Doctor, Nurse, Staff, Facility Admin |
+
+Roles are granted to a user through their membership in an organization, facility, or patient's care team; permissions cascade down the organization tree, so access granted higher up flows to the facilities and encounters beneath it.
+
+## Related
+
+- Reference: [Medication Request (technical)](../../references/medications/medication-request.mdx)
+- Concept: [Medication Dispense](./medication-dispense.mdx)
+- Concept: [Medication Administration](./medication-administration.mdx)
+- Concept: [Medication Statement](./medication-statement.mdx)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Patient](../clinical/patient)
+
+## FHIR reference
+
+This concept aligns with the HL7 FHIR [MedicationRequest](https://hl7.org/fhir/medicationrequest.html) resource, which represents an order or instruction for a medication for a patient. Care uses underscored status and intent values (for example `on_hold`, `original_order`) rather than the hyphenated FHIR spellings.

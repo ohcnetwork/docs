@@ -1,0 +1,86 @@
+---
+sidebar_position: 3
+---
+
+# Medication Dispense
+
+A **medication dispense** is the record of a product being handed over to a patient — the moment a prescription turns into medicine in someone's hands. It closes the loop between what was ordered and what the patient received, and it draws the dispensed quantity down from your pharmacy's stock.
+
+## What it represents
+
+In Care's FHIR-aligned model, a medication dispense maps to the **MedicationDispense** resource. Each dispense captures:
+
+- **What was given** — the inventory item handed over and the quantity, optionally with how many days it should last
+- **When and how** — when the product was prepared, when it was handed over, and any dosage instructions or notes
+- **Why it may not have happened** — a coded reason when a dispense is declined or cannot be completed (out of stock, allergy, drug interaction, and similar)
+- **Substitution** — whether a different product was supplied in place of the one prescribed, and why
+- **Context** — the patient, encounter, location it was dispensed from, and the prescription it fulfils
+
+A dispense is not a prescription, and it is not an administration. A [medication request](./medication-request.mdx) is the *intent* to give a drug; a dispense is the *act* of supplying it; a [medication administration](./medication-administration.mdx) records the drug actually entering the body. One prescription can be filled by several dispenses over time, which is why these three are kept distinct.
+
+## How it connects
+
+A dispense sits where clinical orders, pharmacy stock, and billing meet:
+
+- **Authorizing request** — the [medication request](./medication-request.mdx) it fulfils. Marking a dispense as fully or partially dispensed updates the prescription so it is not filled again by mistake.
+- **Inventory item** — the specific stock item consumed. Dispensing draws its quantity down, and Care blocks the dispense when there is not enough stock.
+- **Charge item** — when the product is priced, Care automatically creates a [charge item](../../references/billing/charge-item.mdx) so the dispense flows through to billing. Cancelling the dispense cancels its charge.
+- **Encounter, patient, and location** — every dispense belongs to a patient's [encounter](../clinical/encounter.mdx) and is supplied from a [location](../../references/facility/location.mdx) within the facility.
+
+## Categories
+
+A dispense is classified by where care is happening, which shapes how the workflow runs:
+
+- **Inpatient** — dispensed to a patient in a bed or room, often refilled as the stay continues
+- **Outpatient** — dispensed at the pharmacy counter, typically after an encounter wraps up
+- **Discharge** — supplied as a patient leaves, to continue treatment at home
+- **Community** — dispensed in a field or community setting, outside the facility walls
+
+## Dispense orders
+
+Individual dispenses at a location can be grouped into a **dispense order** — a named bundle that carries one shared status. This lets a pharmacy treat a batch of items as a single unit of work: filling them together, tracking them together, and cancelling them together. Cancelling an order cascades to every dispense inside it, releasing their charges and reopening the prescriptions they were filling.
+
+## Lifecycle
+
+A dispense moves through a status that reflects where the product is on its way to the patient:
+
+```text
+preparation → in_progress → completed
+                  ↓
+   on_hold / cancelled / stopped / declined / entered_in_error
+```
+
+- **preparation** — being readied, not yet handed over
+- **in_progress** — actively being dispensed
+- **on_hold** — paused, can resume later
+- **completed** — handed over to the patient; the dispense is done
+- **declined** — the patient or staff declined the dispense
+- **stopped** — halted before completion and will not resume
+- **cancelled** — called off
+- **entered_in_error** — recorded by mistake and voided
+
+The last four — **cancelled**, **stopped**, **declined**, and **entered_in_error** — are terminal. Once a dispense reaches one of them it can no longer be edited, any attached charge item is cancelled, and the prescription it was filling is reopened so it can be dispensed again.
+
+## Permissions
+
+Dispensing is gated by facility-level permissions. Pharmacists are granted dedicated access so they can fill prescriptions even without broader clinical access to the encounter.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Pharmacist in Care | Pharmacists have access to all medication requests and can create dispenses for patients | Facility Admin, Admin, Pharmacist |
+| Medication Dispense Read | View medication dispenses | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| Write Medication Dispense | Create and update medication dispenses | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+
+Roles are granted through a user's facility and organization memberships, and they cascade down the organization tree — a role held high in the hierarchy carries to the facilities and locations beneath it.
+
+## Related
+
+- Reference: [Medication Dispense (technical)](../../references/medications/medication-dispense.mdx)
+- Reference: [Medication Request](../../references/medications/medication-request.mdx)
+- Concept: [Medication Administration](./medication-administration.mdx)
+- Concept: [Inventory Item](../supply/inventory-item.mdx)
+- Reference: [Charge Item](../../references/billing/charge-item.mdx)
+
+## FHIR reference
+
+This concept aligns with the FHIR [MedicationDispense](https://www.hl7.org/fhir/medicationdispense.html) resource. Care uses underscored status values (for example `in_progress`, `entered_in_error`) rather than the FHIR hyphenated forms, and some field names differ — Care's authorizing request corresponds to FHIR's `authorizingPrescription`.

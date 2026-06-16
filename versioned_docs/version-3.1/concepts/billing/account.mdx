@@ -1,0 +1,69 @@
+---
+sidebar_position: 1
+---
+
+# Account
+
+An **account** is the financial ledger that gathers everything billable done for one patient at one facility into a single running balance. Charges flow into it, invoices are raised from it, and payments are settled against it — it is where the platform answers "what does this patient owe here, and what has been paid?"
+
+## What it represents
+
+In Care's FHIR-aligned model, an account maps to the **Account** resource. Think of it as a folder, not a bill: it holds the totals and the context, while the actual line items, invoices, and receipts live elsewhere and point back to it.
+
+- **Whose money** — the patient who incurred the costs and the facility where the account lives
+- **What it covers** — a name, an optional description, and a service period (the time window of transactions it spans)
+- **Where it stands** — a lifecycle status (is the account open and usable?) and a separate billing status (where it sits in the billing process)
+- **The running totals** — gross charges, amounts paid, outstanding balance, and charges still waiting to be billed, all maintained by the platform rather than entered by hand
+
+An account is not an invoice and not a single visit. It is a long-lived container: one patient at one facility normally has a single open account that accumulates charges across many encounters, with invoices drawn from it later. The same patient at a different facility gets a separate account, so two facilities' money never mixes.
+
+## How it connects
+
+The account sits between a patient's clinical activity and the money owed for it:
+
+- **Patient and facility** — every account belongs to exactly one [patient](../clinical/patient) at one [facility](../facility/facility.mdx).
+- **Charge items** — each billable line item ([charge item](./charge-item.mdx)) is placed on the patient's account, and those items are what actually drive the totals.
+- **Encounters** — charges accumulate across many [encounters](../clinical/encounter.mdx), but an account can optionally be tied to one primary encounter for reporting and insurance paperwork.
+- **Invoices and payments** — [invoices](./invoice.mdx) are raised against an account (or against specific items in it), and [payment reconciliations](./payment-reconciliation.mdx) record what has been settled.
+
+In practice, clients rarely create an account by hand. The platform materializes a patient's default account automatically the first time a charge item is added for that patient at a facility.
+
+## Lifecycle
+
+An account moves along two parallel tracks. The **activity status** is the coarse one — it answers "can this account still be used?"
+
+```text
+active → on_hold → inactive
+        (active → entered_in_error if created by mistake)
+```
+
+- **active** — open and in use; the default state for a patient's working account
+- **on_hold** — temporarily paused, not accepting new activity for now
+- **inactive** — retired from active use but kept for history
+- **entered_in_error** — created by mistake and should be disregarded
+
+The **billing status** is the finer track, following the account from open to settled. It begins at `open` (accruing charges), passes through `carecomplete_notbilled` and `billing` as work wraps up and invoicing starts, and ends in one of several closed states: `closed_completed` (billing finished), `closed_voided`, `closed_baddebt`, or `closed_combined` (merged into another account). A default account starts at `active` / `open`; after discharge it is typically balanced and moved toward a closed billing status while the activity status stays usable until the books are settled.
+
+## Permissions
+
+Accounts hold financial information, so access is gated by facility-scoped permissions that keep it visible only to authorized staff.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create Account | Create a new account for a patient at the facility | Facility Admin, Admin |
+| Can Update Account | Edit an account — its name, status, billing status, service period, or primary encounter | Facility Admin, Admin |
+| Can Read Account | View an account and its balances and totals | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+
+Roles are granted to users through their organization and facility memberships, and permissions cascade down the organization tree — a role held higher up applies to the facilities and patients beneath it.
+
+## Related
+
+- Reference: [Account (technical)](../../references/billing/account.mdx)
+- Concept: [Charge item](./charge-item.mdx)
+- Concept: [Invoice](./invoice.mdx)
+- Concept: [Payment reconciliation](./payment-reconciliation.mdx)
+- Concept: [Patient](../clinical/patient)
+
+## FHIR reference
+
+The account aligns with the FHIR [Account](https://www.hl7.org/fhir/account.html) resource, which represents a financial tool for tracking value accrued for a particular purpose. Care follows this shape closely, though some values differ in spelling — for example, status values use underscores rather than the hyphenated FHIR forms.

@@ -1,0 +1,69 @@
+---
+sidebar_position: 2
+---
+
+# Charge Item
+
+A **charge item** is a single billable line for one service or product given to a patient — a consultation fee, a lab test, a dispensed medicine, a bed-day. It is the atom of billing in Care: the smallest unit that records *what was charged, how much, and why*, before anything is grouped onto an invoice.
+
+## What it represents
+
+In Care's FHIR-aligned model, a charge item maps to the **ChargeItem** resource. Each one ties four things together:
+
+- **What** — the service or product, named by a title and an optional billing code
+- **How much** — the quantity and a full price breakdown that resolves to a total
+- **Why** — the activity that produced it, such as a service request, a dispensed medication, an appointment, or a bed stay, and who performed it
+- **Where** — the patient and the account it sits on, and optionally the encounter it relates to
+
+The key idea is that a charge item is *self-contained*: it carries its own pricing rather than looking up a live rate, so the cost is locked at the moment of charging and never drifts when the catalogue changes later. And a charge item is not an invoice. Charges accumulate on an account as care happens; an [invoice](./invoice.mdx) is the separate, later act of selecting some of them and presenting them for payment.
+
+## How it connects
+
+A charge item never floats on its own — it always points back at the records around it:
+
+- **Account** — every charge item lives on exactly one [account](./account.mdx), the running ledger for a patient. Omit the account and it lands on the patient's default one.
+- **Patient** — the person being billed. Charge against an [encounter](../clinical/encounter.mdx) and the patient is inherited from it automatically.
+- **Encounter** — the visit or admission the charge relates to. Optional: charges can also exist outside any single encounter.
+- **Charge item definition** — an optional template. Applying a [charge item definition](./charge-item-definition.mdx) builds a fully-priced charge item from the facility's catalogue, so staff never re-key prices by hand.
+- **Invoice** — once a charge is billed and settled, it links back to the [invoice](./invoice.mdx) that paid it.
+
+## Pricing model
+
+Price is never a single number. A charge item holds a list of **monetary components** that stack up to the total: a **base** per-unit price (exactly one, multiplied by quantity), **surcharges** added on top, **discounts** subtracted (optionally capped by a discount rule), and **tax** applied to what remains. A component can also be marked **informational** — shown for reference but excluded from the total.
+
+Care recomputes this breakdown on the server every time a charge is created or edited; clients never set the total themselves. When a price departs from the catalogue rate, an override reason can be recorded alongside it.
+
+## Lifecycle
+
+A charge item moves through billing states as it is priced, invoiced, and settled:
+
+```text
+billable → billed → paid
+```
+
+- **billable** — priced and ready to be placed on an invoice
+- **billed** — included on an invoice (set by the platform, not by hand)
+- **paid** — settled, with a link to the invoice and the date it cleared (also platform-set)
+
+Off to the side, a charge can instead be cancelled — recorded but never billed (`not_billable`), called off before billing (`aborted`), or withdrawn as a mistake (`entered_in_error`). Cancelling a charge that was sitting on a draft invoice pulls it off and rebalances that invoice; a charge already on a finalised invoice cannot be cancelled at all. The `billed` and `paid` states are never set manually — they only ever reflect what billing has actually done. Cancellation is free for a short window after creation; after that it requires an explicit permission.
+
+## Permissions
+
+Access to charge items is governed by facility-scoped permissions.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Read Charge Item | View charge items and their pricing | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Create Charge Item | Create a new charge item for a patient | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| Can Create Negative Charge Item | Create a reversal (credit) charge item | Facility Admin, Admin |
+| Can Update Charge Item | Edit an existing charge item | Facility Admin, Admin |
+| Can Cancel Charge Item | Cancel a charge item after the free-cancel window | Facility Admin, Admin |
+
+Roles are granted to users through facility and organization memberships, and permissions cascade down the organization tree — a role held higher up applies to the facilities and patients beneath it.
+
+## Related
+
+- Reference: [Charge Item (technical)](../../references/billing/charge-item.mdx)
+- Concept: [Account](./account.mdx)
+- Concept: [Charge Item Definition](./charge-item-definition.mdx)
+- Concept: [Invoice](./invoice.mdx)

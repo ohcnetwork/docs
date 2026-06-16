@@ -1,0 +1,56 @@
+---
+sidebar_position: 3
+---
+
+# Facility Organization
+
+A **facility organization** is a department or team inside a single facility — Cardiology, the Emergency Ward, the night-shift nursing team. It is how one facility is divided internally so that staff, patients, and resources can be grouped, and so that access can be granted to a part of the facility rather than the whole of it.
+
+## What it represents
+
+In Care's FHIR-aligned model, a facility organization is the facility-scoped form of the **Organization** resource (`FacilityOrganization`). Each unit carries a name and description, a place in the facility's internal tree, a type, and a list of member users with the role each one holds.
+
+The key distinction is from an instance-wide [organization](./organization.mdx). An instance organization is a deployment-level grouping — a hospital network, a governance body, a role group — that lives above any single facility. A facility organization exists only inside one facility and is deleted with it. Think of the instance organization as "who operates across the system" and the facility organization as "how one building is divided up inside."
+
+## How it is structured
+
+Facility organizations form a tree. Every facility is created with a single **root** organization, and departments and teams hang beneath it as nested children — a department can itself contain sub-teams, several levels deep.
+
+```text
+Facility root → Department (team) → Sub-team (team)
+```
+
+- **Facility root** (`root`) — the system-generated top node, one per facility, created automatically with the facility; it cannot be edited or deleted
+- **Department** (`team`) — a working unit such as Cardiology or the Emergency Ward, created beneath the root
+- **Sub-team** (`team`) — a finer grouping nested under a department, for as many levels as a facility needs
+
+A unit's name must be unique among its siblings — units sharing the same parent — but the same name can be reused in a different branch of the tree.
+
+The tree is what makes access manageable: anything attached to a node sits implicitly within every ancestor above it. So a permission granted high in the tree reaches everything below it without being re-granted at each level — and a department "sees" only its own caseload because patients and resources are attached at or below that department's node.
+
+## How it connects
+
+- **Facility** — every facility organization belongs to exactly one [facility](./facility.mdx) and shares its lifetime
+- **Users** — staff are added as members with a role, which is how the platform decides what each person may do within that unit and the units beneath it
+- **Locations** — physical [locations](./location.mdx) such as wards and beds are modeled separately; a facility organization groups people and access, not rooms
+
+## Permissions
+
+Access to facility organizations is governed by the permissions below. The roles listed are the system (default) roles that carry each permission; a deployment may bind these to its own roles. Because the tree cascades downward, a permission held on a parent unit applies to every unit nested under it.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create Facility Organizations | Create a new department or team beneath an existing unit | Facility Admin |
+| Can Create Facility Organizations Root | Create a root organization for a facility (normally done automatically when the facility is created) | Facility Admin |
+| Can View Facility Organizations | See a facility's organizations and where they sit in the tree | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer |
+| Can Delete Facility Organizations | Remove a facility organization | Facility Admin |
+| Can Manage Facility Organizations | Change a unit's name, description, metadata, and similar details | Facility Admin, Administrator |
+| Can List Users in a Facility Organizations | See who belongs to a facility organization | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse |
+| Can Manage Users in a Facility Organization | Add, remove, and assign roles to users in a facility organization | Facility Admin, Administrator |
+
+## Related
+
+- Reference: [Organization (technical)](../../references/facility/organization.mdx)
+- Concept: [Organization](./organization.mdx)
+- Concept: [Facility](./facility.mdx)
+- Concept: [Location](./location.mdx)

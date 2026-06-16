@@ -1,0 +1,70 @@
+---
+sidebar_position: 1
+---
+
+# Schedule & Availability
+
+A **schedule** is a named, date-bounded block of time during which a bookable resource — a practitioner, a location, or a healthcare service — accepts appointments. It is the supply side of scheduling: a schedule declares when care can be booked, so the rest of the platform knows which slots to offer patients.
+
+## What it represents
+
+In Care's FHIR-aligned model, a schedule maps to the **Schedule** resource, and the way it produces bookable times mirrors how FHIR derives **Slot**s from a schedule's planning horizon. A schedule captures:
+
+- **The resource** — who or what is being booked: a practitioner, a physical location, or a named healthcare service
+- **The effective window** — the dates between which this schedule applies, for example a doctor's roster for one quarter
+- **Availabilities** — one or more recurring time blocks (a morning OPD, an afternoon clinic) that say which days and hours are open and how that time divides into slots
+- **Exceptions** — specific dates and times when the resource is unavailable, such as leave or a public holiday
+
+A schedule is not a list of appointments. It is the rule that *generates* bookable slots; the actual reservations live in [bookings](./booking.mdx) and, where queues are used, in [tokens](./token.mdx). Slots are never stored as rows — they are computed on demand from a schedule's availabilities with exceptions subtracted, so the schedule is always the single source of truth for what is bookable. Editing a schedule changes what *can* be booked going forward; it does not touch appointments that already exist.
+
+## How a schedule is built up
+
+Three pieces work together. The schedule is the container; availabilities and exceptions shape the slots it offers.
+
+- **Schedule** — the named, dated block attached to one resource. Holds the effective window and any billing charge that applies to bookings made against it.
+- **Availability** — a recurring time block inside a schedule. It sets the slot type, how long each slot is, how many people each slot can hold, and which weekdays and hours it repeats on. A schedule can carry several, for example a morning and an afternoon block.
+- **Availability exception** — a one-off date range that blocks the resource regardless of its schedules. Used for leave, holidays, and unplanned closures.
+
+## Availability types
+
+Each availability block has a **slot type** that decides how its time behaves:
+
+```text
+appointment → open → closed
+```
+
+- **appointment** — time-precise booking. The block is divided into fixed-length slots (for example, 15-minute slots), each holding a set number of people. Use this when patients book a specific time.
+- **open** — a block with no fixed slot size, suited to walk-in or queue-style flows where order matters more than an exact minute. Often paired with token generation.
+- **closed** — a block that is explicitly not bookable, used to carve a gap out of an otherwise open period.
+
+An appointment or open block can also issue a **token** for each booking, feeding the queue and token-display workflows that high-volume, walk-in clinics depend on.
+
+## How it connects
+
+A schedule sits at the center of the booking flow and links outward to several other primitives:
+
+- **Resource** — every schedule attaches to exactly one practitioner ([user](../access/user.mdx)), [location](../facility/location.mdx), or [healthcare service](../facility/healthcare-service.mdx) within a [facility](../facility/facility.mdx).
+- **Bookings** — patients reserve generated slots, creating [bookings](./booking.mdx) against the schedule.
+- **Tokens** — in queue-based clinics, a booking can also issue a [token](./token.mdx) for the waiting line.
+- **Billing** — a schedule can carry a charge that applies to its bookings, with an optional reduced charge for follow-up visits within a configured window, drawn from a [charge item definition](../billing/charge-item-definition.mdx).
+
+## Permissions
+
+Access to schedules and the bookings made against them is governed by the facility-level permissions below.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create on Schedule | Create and edit schedules and availabilities for a resource | Admin, Staff, Facility Admin, Doctor, Nurse |
+| Can list schedule on Object | View the schedules and availability defined for a resource | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
+| Can list bookings on Object | View the bookings made against a resource's schedule | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
+| Can update bookings on Object | Create or update bookings against a schedule | Admin, Staff, Facility Admin, Doctor, Nurse |
+| Can reschedule bookings on Object | Move an existing booking to a different slot | Doctor, Staff, Nurse, Administrator, Facility Admin, Admin |
+
+Roles are granted through a user's facility and organization memberships, and permissions cascade down the organization tree — a role held on a parent organization applies to the facilities and resources beneath it.
+
+## Related
+
+- Reference: [Schedule & Availability (technical)](../../references/scheduling/schedule.mdx)
+- Concept: [Booking](./booking.mdx)
+- Concept: [Token](./token.mdx)
+- Concept: [Healthcare service](../facility/healthcare-service.mdx)

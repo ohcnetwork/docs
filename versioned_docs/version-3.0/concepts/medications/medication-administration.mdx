@@ -1,0 +1,79 @@
+---
+sidebar_position: 2
+---
+
+# Medication Administration
+
+A **medication administration** is the record that a dose was actually given to a patient — or that giving it was attempted and did not happen. It is the moment an order becomes a real event at the bedside, closing the loop on what a clinician prescribed.
+
+## What it represents
+
+In Care's FHIR-aligned model, this maps to the **MedicationAdministration** resource. A single record answers four questions about one dose: what was given, how and when it was given, who gave it, and — if it was not given — why.
+
+The distinction that matters most is between the administration and the order behind it. The order ([Medication Request](./medication-request.mdx)) is the plan: *what should be given*. The administration is the event: *was this dose actually given?* One order produces many administrations over time, one for each scheduled dose, so the two together tell you whether the plan was followed.
+
+This is also why recording a "not given" event matters as much as recording a completed one. It makes a gap in the patient's medication history explicit and auditable, rather than leaving it silent.
+
+## Lifecycle
+
+The `status` field tracks what happened to a single dose. A normal administration moves through the active path:
+
+```text
+in_progress → completed
+            → on_hold → in_progress
+            → stopped
+            → not_done
+```
+
+- **in_progress** — the dose has started but is not finished (typical for an infusion still running)
+- **on_hold** — administration was paused and may resume
+- **completed** — the dose was fully given
+- **stopped** — administration was halted before completion
+- **not_done** — the dose was deliberately not given, recorded with a reason
+
+Three further statuses are administrative rather than clinical: **cancelled** (the planned dose was called off), **entered_in_error** (the record was a mistake and should be disregarded), and **unknown** (the outcome cannot be determined).
+
+## Classification
+
+The `category` marks the setting in which the dose was given, which drives reporting and reconciliation:
+
+- **inpatient** — given to an admitted patient on a ward
+- **outpatient** — given during a clinic or day visit
+- **community** — given outside the facility, such as a home or field setting
+- **discharge** — supplied or given as the patient leaves
+
+## How it connects
+
+A medication administration sits at the centre of the medication workflow and ties together several other records:
+
+- **Patient** — every administration belongs to a [patient](../clinical/patient). The patient is derived automatically from the encounter, never entered directly, so the record can never drift from the visit it happened in.
+- **Encounter** — the [encounter](../clinical/encounter.mdx) during which the dose was given anchors it in time and place.
+- **Medication Request** — the [order](./medication-request.mdx) this administration fulfils, which is what turns a list of given doses back into "did we follow the plan?".
+- **Product** — when a specific catalogued item was used, the administration points to that [product knowledge](../supply/product-knowledge.mdx) entry so the dose can be reconciled against supply.
+
+A record names either a coded medication or a specific product, never both. The coded form describes the substance; the product form ties the dose to a real item that left your stores.
+
+## Permissions
+
+Access to recording and viewing administrations is governed by facility-scoped permissions.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Write Medication Dispense | Record and update medication administration and dispense events | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| Medication Dispense Read | View medication administration and dispense records | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| Pharmacist in Care | Pharmacists have access to all medication requests and can create dispenses for patients | Facility Admin, Admin, Pharmacist |
+
+Roles are granted through a user's facility and organization memberships, and permissions cascade down the organization tree — a role held high in the hierarchy carries to the facilities beneath it.
+
+## Related
+
+- Reference: [Medication Administration (technical)](../../references/medications/medication-administration.mdx)
+- Concept: [Medication Request](./medication-request.mdx)
+- Concept: [Medication Dispense](./medication-dispense.mdx)
+- Concept: [Medication Statement](./medication-statement.mdx)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Product Knowledge](../supply/product-knowledge.mdx)
+
+## FHIR reference
+
+This concept aligns with the FHIR [MedicationAdministration](https://hl7.org/fhir/medicationadministration.html) resource, which records the consumption or administration of a medication to a patient.
