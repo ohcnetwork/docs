@@ -4,11 +4,9 @@ sidebar_position: 4
 
 # Supply Request
 
-Technical reference for the `SupplyRequest` module in Care EMR.
+A `SupplyRequest` is a single line item: a quantity of one catalogue item (`ProductKnowledge`) that someone wants moved. Requests never stand alone — each belongs to a `RequestOrder` that groups them and describes the movement into a destination facility location, optionally from a supplier organization and/or an origin location. You create requests when an order needs stock; you read them back as part of the order they hang off.
 
-A `SupplyRequest` is a line item asking for a quantity of a catalogue item (`ProductKnowledge`). Each request belongs to a `RequestOrder`, which groups requests that describe the movement of items into a destination facility location — optionally from a supplier organization and/or an origin location.
-
-The Django model is the **storage** layer: `status`, `priority`, `intent`, `reason`, `category`, and `supplied_item_condition` are stored as plain `CharField`s with no DB-level constraint. The **real allowed values, validation, and API request/response shapes** live in the Pydantic resource specs (`care/emr/resources/inventory/supply_request/`), documented below.
+The Django model is only storage. `status`, `priority`, `intent`, `reason`, `category`, and `supplied_item_condition` are plain `CharField`s with no DB-level constraint, so the database will hold any string. The allowed values, validation, and request/response shapes live in the Pydantic resource specs under `care/emr/resources/inventory/supply_request/`, covered below.
 
 **Source:**
 
@@ -23,21 +21,21 @@ The Django model is the **storage** layer: `status`, `priority`, `intent`, `reas
 | `SupplyRequest` | A request for a quantity of a catalogue item (product knowledge), grouped under an order |
 | `RequestOrder` | An order that groups supply requests for movement of items into a destination facility location |
 
-Both models extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base providing `external_id`, audit fields (`created_date`/`modified_date`/`created_by`/`updated_by`), soft-delete via `deleted`, and `history`/`meta` JSON.
+Both extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base providing `external_id`, audit fields (`created_date`/`modified_date`/`created_by`/`updated_by`), soft-delete via `deleted`, and `history`/`meta` JSON.
 
 ## `SupplyRequest` fields
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `status` | `CharField(255)` | Lifecycle status. Spec-bound to `SupplyRequestStatusOptions` (see below). Required on write. |
-| `quantity` | `DecimalField` | Nullable in DB; `max_digits=20`, `decimal_places=6`. Quantity requested. The write spec accepts a `Decimal` (`max_digits=20`, `decimal_places=0`); the read spec returns it as an `int`. |
-| `supplied_item_condition` | `CharField(255)` | Condition of the supplied item. Not exposed by any current spec (model-only field). |
-| `item` | `FK → ProductKnowledge` | `CASCADE`; the catalogue item being requested. Required on create; resolved server-side from an `external_id`. |
-| `order` | `FK → RequestOrder` | `CASCADE`, nullable in DB. The parent order. Required on both create and update in the spec; resolved server-side from an `external_id`. |
+| `status` | `CharField(255)` | Lifecycle status, spec-bound to `SupplyRequestStatusOptions` (see below). Required on write. |
+| `quantity` | `DecimalField` | `max_digits=20`, `decimal_places=6`, nullable in DB. The write spec accepts a `Decimal` capped to `decimal_places=0` (whole numbers); the read spec returns it as an `int`. |
+| `supplied_item_condition` | `CharField(255)` | Model-only — no current spec reads or writes it, so it's unreachable through the API. |
+| `item` | `FK → ProductKnowledge` | `CASCADE`. The catalogue item being requested. Required on create, resolved server-side from an `external_id`. Cannot be changed afterwards. |
+| `order` | `FK → RequestOrder` | `CASCADE`, nullable in DB but required by the spec on both create and update. Resolved server-side from an `external_id`. |
 
 ### `SupplyRequestStatusOptions` values
 
-Enum class `SupplyRequestStatusOptions` (`spec.py`). Bound to `SupplyRequest.status`.
+Defined in `spec.py` and bound to `SupplyRequest.status`.
 
 | Value |
 | --- |
@@ -53,7 +51,7 @@ Enum class `SupplyRequestStatusOptions` (`spec.py`). Bound to `SupplyRequest.sta
 
 ### `RequestOrder`
 
-Groups one or more `SupplyRequest` rows into a single order and describes the movement of items into a `destination` facility location, optionally from a `supplier` organization and/or an `origin` location.
+The order is the unit you actually work with. It collects one or more `SupplyRequest` rows and carries the routing: a required `destination` facility location, plus an optional `supplier` organization and `origin` location.
 
 ```text
 supplier    → FK Organization (nullable, CASCADE)
@@ -63,23 +61,23 @@ destination → FK FacilityLocation (CASCADE, related_name="destination_request_
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `name` | `CharField(255)` | Order name/label. Required. |
-| `status` | `CharField(255)` | Order lifecycle status. Spec-bound to `SupplyRequestOrderStatusOptions`. |
-| `note` | `TextField` | Nullable; free-text note. Optional (`str \| None`). |
-| `tags` | `ArrayField[int]` | Default `list`; tag IDs attached to the order. Rendered on read via `SingleFacilityTagManager`. |
-| `priority` | `CharField(255)` | Order priority. Spec-bound to `SupplyRequestPriorityOptions`. |
-| `intent` | `CharField(255)` | Intent of the order. Spec-bound to `SupplyRequestIntentOptions`. |
-| `reason` | `CharField(255)` | Reason for the order. Spec-bound to `SupplyRequestReason`. |
-| `category` | `CharField(255)` | Order category. Spec-bound to `SupplyRequestCategoryOptions`. |
-| `supplier` | `FK → Organization` | Nullable `CASCADE`. On write, must be an organization of `org_type == "product_supplier"` (validated server-side). |
-| `origin` | `FK → FacilityLocation` | Nullable `CASCADE`, `related_name="origin_request_orders"`. Sending location. |
-| `destination` | `FK → FacilityLocation` | `CASCADE`, `related_name="destination_request_orders"`. Receiving location. Required. |
+| `name` | `CharField(255)` | Required. |
+| `status` | `CharField(255)` | Spec-bound to `SupplyRequestOrderStatusOptions`. |
+| `note` | `TextField` | Optional (`str \| None`). |
+| `tags` | `ArrayField[int]` | Default `list`; tag IDs, not a relational join. Expanded to tag objects on read via `SingleFacilityTagManager`. |
+| `priority` | `CharField(255)` | Spec-bound to `SupplyRequestPriorityOptions`. |
+| `intent` | `CharField(255)` | Spec-bound to `SupplyRequestIntentOptions`. |
+| `reason` | `CharField(255)` | Spec-bound to `SupplyRequestReason`. |
+| `category` | `CharField(255)` | Spec-bound to `SupplyRequestCategoryOptions`. |
+| `supplier` | `FK → Organization` | Nullable `CASCADE`. On write, must be an organization with `org_type == "product_supplier"` — the server rejects anything else. |
+| `origin` | `FK → FacilityLocation` | Nullable `CASCADE`, `related_name="origin_request_orders"`. The sending location. |
+| `destination` | `FK → FacilityLocation` | `CASCADE`, `related_name="destination_request_orders"`. The receiving location. Required. |
 
-`SupplyRequest.order` points back to a `RequestOrder`, so a single order fans out to many supply requests. Both `origin` and `destination` target `FacilityLocation` but use distinct `related_name`s, so a location can surface both the orders it sends (`origin_request_orders`) and the orders it receives (`destination_request_orders`).
+`origin` and `destination` both point at `FacilityLocation` but carry distinct `related_name`s, so one location can list the orders it sends (`origin_request_orders`) separately from the orders it receives (`destination_request_orders`).
 
 ### `RequestOrder` enum values
 
-Enums from `request_order.py`. Each binds to the matching `RequestOrder` `CharField`.
+From `request_order.py`. Each binds to the matching `RequestOrder` `CharField`.
 
 #### `SupplyRequestOrderStatusOptions` (→ `status`)
 
@@ -92,7 +90,7 @@ Enums from `request_order.py`. Each binds to the matching `RequestOrder` `CharFi
 | `abandoned` |
 | `entered_in_error` |
 
-`SUPPLY_REQUEST_ORDER_COMPLETED_STATUSES` = `[abandoned, entered_in_error, completed]` — the terminal/closed statuses.
+`SUPPLY_REQUEST_ORDER_COMPLETED_STATUSES` = `[abandoned, entered_in_error, completed]` marks the terminal/closed statuses.
 
 #### `SupplyRequestIntentOptions` (→ `intent`)
 
@@ -132,47 +130,47 @@ Enums from `request_order.py`. Each binds to the matching `RequestOrder` `CharFi
 
 ## Resource specs (API schema)
 
-All specs extend [`EMRResource`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py) (`serialize` / `de_serialize`, with `perform_extra_serialization` / `perform_extra_deserialization` hooks). Write specs resolve foreign keys from `external_id` values in `perform_extra_deserialization`; read specs expand related objects in `perform_extra_serialization`.
+Every spec extends [`EMRResource`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py) (`serialize` / `de_serialize`, with `perform_extra_serialization` / `perform_extra_deserialization` hooks). Write specs resolve foreign keys from `external_id` values in `perform_extra_deserialization`; read specs expand related objects in `perform_extra_serialization`.
 
 ### Supply request specs (`spec.py`)
 
 | Spec class | Role | Fields | Notes |
 | --- | --- | --- | --- |
 | `BaseSupplyRequestSpec` | shared | `id`, `status`, `quantity` | `__model__ = SupplyRequest`, `__exclude__ = ["item"]`. `quantity: Decimal(max_digits=20, decimal_places=0)`. `status: SupplyRequestStatusOptions`. |
-| `SupplyRequestWriteSpec` | write · create | base + `item: UUID4`, `order: UUID4` | Resolves `item` → `ProductKnowledge` and `order` → `RequestOrder` by `external_id` (404 if missing). |
-| `SupplyRequestUpdateSpec` | write · update | base + `order: UUID4` | Resolves `order` → `RequestOrder` by `external_id`. Does **not** accept `item` (item is fixed after create). |
-| `SupplyRequestReadSpec` | read · detail/list | base + `quantity: int`, `item: dict`, `order: dict` | `id` = `external_id`. `item` expanded via `ProductKnowledgeReadSpec`; `order` expanded via `SupplyRequestOrderReadSpec`. |
+| `SupplyRequestWriteSpec` | write · create | base + `item: UUID4`, `order: UUID4` | Resolves `item` → `ProductKnowledge` and `order` → `RequestOrder` by `external_id`; 404 if either is missing. |
+| `SupplyRequestUpdateSpec` | write · update | base + `order: UUID4` | Resolves `order` → `RequestOrder` by `external_id`. Omits `item` — the catalogue item is fixed once created. |
+| `SupplyRequestReadSpec` | read · detail/list | base + `quantity: int`, `item: dict`, `order: dict` | `id` = `external_id`. `item` expanded via `ProductKnowledgeReadSpec`; `order` via `SupplyRequestOrderReadSpec`. |
 
 ### Request order specs (`request_order.py`)
 
 | Spec class | Role | Fields | Notes |
 | --- | --- | --- | --- |
-| `BaseSupplyRequestOrderSpec` | shared | `id`, `status`, `name`, `note`, `intent`, `category`, `priority`, `reason` | `__model__ = RequestOrder`. Coded fields bound to their respective enums; `note` optional. |
-| `SupplyRequestOrderWriteSpec` | write · create/update | base + `supplier: UUID4 \| None`, `origin: UUID4 \| None`, `destination: UUID4` | Resolves `supplier`/`origin`/`destination` by `external_id`. Validates `supplier.org_type == "product_supplier"`, else raises `ValidationError`. |
-| `SupplyRequestOrderReadSpec` | read · detail/list | base + `supplier`, `origin: dict \| None`, `destination: dict`, `tags: list[dict]`, `created_date`, `modified_date`, `created_by`, `updated_by` | `id` = `external_id`. `supplier` expanded via `OrganizationReadSpec`; `origin`/`destination` via `FacilityLocationListSpec`; `tags` rendered via `SingleFacilityTagManager`; audit users via `serialize_audit_users`. |
+| `BaseSupplyRequestOrderSpec` | shared | `id`, `status`, `name`, `note`, `intent`, `category`, `priority`, `reason` | `__model__ = RequestOrder`. Coded fields bound to their enums; `note` optional. |
+| `SupplyRequestOrderWriteSpec` | write · create/update | base + `supplier: UUID4 \| None`, `origin: UUID4 \| None`, `destination: UUID4` | Resolves `supplier`/`origin`/`destination` by `external_id`. Raises `ValidationError` unless `supplier.org_type == "product_supplier"`. |
+| `SupplyRequestOrderReadSpec` | read · detail/list | base + `supplier`, `origin: dict \| None`, `destination: dict`, `tags: list[dict]`, `created_date`, `modified_date`, `created_by`, `updated_by` | `id` = `external_id`. `supplier` expanded via `OrganizationReadSpec`; `origin`/`destination` via `FacilityLocationListSpec`; `tags` via `SingleFacilityTagManager`; audit users via `serialize_audit_users`. |
 
-### Validation & server-maintained behaviour
+### Validation and server-maintained behaviour
 
-- **FK resolution:** all foreign keys on write are supplied as `external_id` UUIDs and resolved server-side with `get_object_or_404` (`item`, `order`, `supplier`, `origin`, `destination`).
-- **Supplier type guard:** `SupplyRequestOrderWriteSpec` rejects any `supplier` whose `org_type` is not `product_supplier`.
-- **`id` handling:** read specs set `id` to `external_id`; `de_serialize` never writes `id`/`external_id` back to the row.
-- **`quantity`:** write accepts a `Decimal` constrained to `decimal_places=0` (whole numbers) even though the DB column allows `decimal_places=6`; read returns an `int`.
-- **`item` immutability:** create accepts `item`; update (`SupplyRequestUpdateSpec`) omits it, so the requested catalogue item cannot be changed after creation.
+- **FK resolution.** Every foreign key on write comes in as an `external_id` UUID and is resolved server-side with `get_object_or_404`: `item`, `order`, `supplier`, `origin`, `destination`.
+- **Supplier type guard.** `SupplyRequestOrderWriteSpec` rejects any `supplier` whose `org_type` is not `product_supplier`.
+- **`id` handling.** Read specs set `id` to `external_id`; `de_serialize` never writes `id` or `external_id` back to the row.
+- **`quantity`.** Write accepts a `Decimal` pinned to `decimal_places=0` (whole numbers) even though the DB column allows `decimal_places=6`; read returns an `int`.
+- **`item` immutability.** Create takes `item`; `SupplyRequestUpdateSpec` drops it, so the requested catalogue item can't change after creation.
 
-## Methods & save behaviour
+## Methods and save behaviour
 
 - Neither model overrides `save()`; standard `EMRBaseModel` audit and soft-delete behaviour applies.
-- Status is free-text at the DB layer; the lifecycle is enforced only by the spec enums at the API boundary. These models do no automatic `status_history` tracking.
-- Deleting a `RequestOrder` cascades to its `SupplyRequest` rows (`order` FK is `CASCADE`); deleting a referenced `ProductKnowledge` cascades to the request.
+- Status is free-text at the DB layer — the lifecycle is enforced only by the spec enums at the API boundary. Neither model tracks `status_history`.
+- Deleting a `RequestOrder` cascades to its `SupplyRequest` rows (the `order` FK is `CASCADE`); deleting a referenced `ProductKnowledge` cascades to the request.
 
 ## API integration notes
 
-- Field names in API payloads follow the spec field names above; foreign keys are exchanged as `external_id` UUIDs on write and as expanded objects on read.
-- `status`, `priority`, `intent`, `reason`, and `category` are validated against the spec enums — send the exact string values listed above.
-- `supplied_item_condition` exists on the model but is not surfaced by any current spec.
-- `quantity` is sent and returned as a whole number through the specs, while the DB column itself retains six decimal places.
-- `tags` on `RequestOrder` is an integer array of tag IDs, not a relational join; on read it is rendered to tag objects via the facility tag manager.
-- `external_id` (from `EMRBaseModel`) is the stable public identifier used in API URLs — not the internal primary key.
+- Payload field names match the spec fields above. Foreign keys go out as `external_id` UUIDs on write and come back as expanded objects on read.
+- Send `status`, `priority`, `intent`, `reason`, and `category` as the exact strings listed above — they're validated against the spec enums.
+- `supplied_item_condition` lives on the model but no current spec surfaces it.
+- `quantity` travels as a whole number through the specs; the DB column keeps six decimal places regardless.
+- `tags` on `RequestOrder` is an integer array of tag IDs, rendered to tag objects on read by the facility tag manager.
+- `external_id` (from `EMRBaseModel`) is the stable public identifier in API URLs — never the internal primary key.
 
 ## Related
 

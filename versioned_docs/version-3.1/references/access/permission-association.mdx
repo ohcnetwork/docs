@@ -4,11 +4,9 @@ sidebar_position: 4
 
 # Permission Association
 
-Technical reference for the `RoleAssociation` module in Care EMR.
+`RoleAssociation` grants a [`RoleModel`](./role.mdx) to a [`User`](./user.mdx) inside a specific context — an organization or facility. A role is a named collection of [permissions](./permission.mdx); the association scopes that collection to one user in one context. A user can hold many roles across different contexts, one association per grant.
 
-`RoleAssociation` is the binding that grants a [`RoleModel`](./role.mdx) to a [`User`](./user.mdx) within a specific context (for example, an organization or facility). A role is a named collection of [permissions](./permission.mdx); the association scopes that collection to a user inside a context. One user can hold multiple roles across different contexts.
-
-The Django model (`care/security/models/permission_association.py`) is the **storage** layer: the `user`/`role` foreign keys, the generic `context`/`context_id` pair, and `expiry`. `RoleAssociation` has **no resource spec of its own** — it is a platform-internal authorization join, not a client-writable EMR resource. Two sets of Pydantic **resource specs** matter here: those that govern the [`role`](./role.mdx) it points at (`care/emr/resources/role/spec.py`), and the permission-resolution mixins (`care/emr/resources/permissions.py`) that *read* these rows to compute a user's effective permissions in a context.
+The Django model (`care/security/models/permission_association.py`) is the storage layer: the `user`/`role` foreign keys, the generic `context`/`context_id` pair, and `expiry`. It has no resource spec of its own — it is a platform-internal authorization join, not a client-writable EMR resource. Two sets of Pydantic resource specs surround it: those that govern the [`role`](./role.mdx) it points at (`care/emr/resources/role/spec.py`), and the permission-resolution mixins (`care/emr/resources/permissions.py`) that read these rows to compute a user's effective permissions in a context.
 
 **Source:**
 - Model: [`care/security/models/permission_association.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/models/permission_association.py)
@@ -23,9 +21,9 @@ The Django model (`care/security/models/permission_association.py`) is the **sto
 | --- | --- |
 | `RoleAssociation` | Grants a `RoleModel` to a `User` within a named context, with optional expiry |
 
-`RoleAssociation` extends `BaseModel` — the lightweight Care base that provides `external_id` (UUID), `created_date`, `modified_date`, and soft-delete via `deleted` (the overridden `delete()` sets `deleted=True` instead of removing the row). See [Base model](../foundation/base-model.mdx).
+`RoleAssociation` extends `BaseModel` — the lightweight Care base providing `external_id` (UUID), `created_date`, `modified_date`, and soft-delete via `deleted` (the overridden `delete()` sets `deleted=True` instead of removing the row). See [Base model](../foundation/base-model.mdx).
 
-It does **not** extend `EMRBaseModel`, so it has no `created_by` / `updated_by` audit fields, no `history`/`meta` JSON, and no `external_id`-routed EMR API. There is no `RoleAssociationCreateSpec`/`...ReadSpec`; rows are created and removed through Care's access-control flows, not through a Pydantic serializer.
+It does not extend `EMRBaseModel`, so there are no `created_by` / `updated_by` audit fields, no `history`/`meta` JSON, and no `external_id`-routed EMR API. There is no `RoleAssociationCreateSpec`/`...ReadSpec`; rows are created and removed through Care's access-control flows, not through a Pydantic serializer.
 
 ## `RoleAssociation` fields
 
@@ -38,22 +36,22 @@ It does **not** extend `EMRBaseModel`, so it has no `created_by` / `updated_by` 
 
 ### Context
 
-The context identifies *where* the role applies. Storing it as a type/id pair rather than a typed foreign key lets one association table scope roles to any kind of context (organization, facility, and so on). The pair carries **no DB-level referential integrity**.
+The context identifies where the role applies. Storing it as a type/id pair rather than a typed foreign key lets one table scope roles to any kind of context — organization, facility, and so on. The pair has no DB-level referential integrity, so nothing stops `context_id` from pointing at a row that no longer exists.
 
 | Field | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |
-| `context` | `CharField(1024)` | yes | — | Context type — the name of the entity the role is scoped to. Free-form string at the model layer; not bound to an enum |
-| `context_id` | `BigIntegerField` | yes | — | Integer primary key of the context entity (not a UUID/`external_id`) |
+| `context` | `CharField(1024)` | yes | — | Context type — the name of the entity the role is scoped to. Free-form string at the model layer, not bound to an enum |
+| `context_id` | `BigIntegerField` | yes | — | Integer primary key of the context entity, not a UUID/`external_id` |
 
 ### Lifecycle
 
 | Field | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |
-| `expiry` | `DateTimeField` | no | `null` | `null=True`, `blank=True`. When set, the role allocation is *intended* to lapse after this time. It is a single timestamp, **not** a `PeriodSpec`/start–end range, and the model does not enforce it |
+| `expiry` | `DateTimeField` | no | `null` | `null=True`, `blank=True`. A single timestamp after which the grant is meant to lapse — not a `PeriodSpec`/start–end range. Stored but not enforced by the model |
 
 ## Related models
 
-The role granted by an association resolves to permissions through these models. None of them belong to `RoleAssociation` itself, but every effective-permission lookup walks through them.
+The granted role resolves to permissions through the models below. None belong to `RoleAssociation`, but every effective-permission lookup walks through them.
 
 ### `RoleModel`
 
@@ -96,7 +94,7 @@ temp_deleted → BooleanField (default False)
 
 ### `RoleContext` values
 
-Each element of the granted role's `contexts` array is validated against this enum (`care/security/roles/role.py`). These are the **organizational boundary** types a role can apply to — distinct from `PermissionContext`. The free-form `RoleAssociation.context` column usually names an entity of one of these boundary types.
+Each element of the granted role's `contexts` array is validated against this enum (`care/security/roles/role.py`). These are the organizational boundary types a role can apply to — distinct from `PermissionContext`. The free-form `RoleAssociation.context` column names an entity of one of these boundary types.
 
 | Value | Meaning |
 | --- | --- |
@@ -120,7 +118,7 @@ Each element of the granted role's `contexts` array is validated against this en
 
 ### `PermissionEnum` (role write field)
 
-When a role is written through `RoleCreateSpec`, its `permissions` field is typed against `PermissionController.get_enum()` — a `str` enum built at runtime from every registered permission `name` across all permission handlers (for example `can_create_patient`, `can_write_patient`, `can_list_patients`, `can_view_clinical_data`). The set is deployment-dependent (internal handlers plus any plugin-registered ones), not a fixed list.
+When a role is written through `RoleCreateSpec`, its `permissions` field is typed against `PermissionController.get_enum()` — a `str` enum built at runtime from every registered permission `name` across all permission handlers (for example `can_create_patient`, `can_write_patient`, `can_list_patients`, `can_view_clinical_data`). The set is deployment-dependent: internal handlers plus any plugin-registered ones, not a fixed list.
 
 ### Built-in (`is_system`) roles
 
@@ -142,7 +140,7 @@ Seeded by `RoleController` (`care/security/roles/role.py`). Associations often b
 
 ## Resource specs (API schema)
 
-`RoleAssociation` has **no dedicated `...CreateSpec`/`...UpdateSpec`/`...ListSpec`/`...RetrieveSpec`** — it is not exposed as an EMR resource. Its relevant Pydantic surface is twofold: the specs that define the **role** an association grants, and the mixins that **consume** associations to expose a user's effective permissions on another resource. All extend `EMRResource` (`care/emr/resources/base.py`), which provides `serialize` (DB → Pydantic via `perform_extra_serialization`) and `de_serialize` (Pydantic → DB via `perform_extra_deserialization`).
+`RoleAssociation` has no dedicated `...CreateSpec`/`...UpdateSpec`/`...ListSpec`/`...RetrieveSpec` — it is not exposed as an EMR resource. Its Pydantic surface is twofold: the specs that define the role an association grants, and the mixins that consume associations to expose a user's effective permissions on another resource. All extend `EMRResource` (`care/emr/resources/base.py`), which provides `serialize` (DB → Pydantic via `perform_extra_serialization`) and `de_serialize` (Pydantic → DB via `perform_extra_deserialization`).
 
 ### Specs for the granted role
 
@@ -154,7 +152,7 @@ Seeded by `RoleController` (`care/security/roles/role.py`). Associations often b
 | `RoleReadMinimalSpec` | read · minimal/embedded | base fields only |
 | `PermissionSpec` | nested (read) | `name`, `description`, `slug` (`SlugType`), `context` |
 
-`RoleBaseSpec.contexts` is `list[RoleContext]` — bound to the `RoleContext` enum at the API layer even though the model column is an open string array. `PermissionSpec.slug` is a `SlugType`: `str`, length 5–50, pattern `^[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]$`. Core role validation (`RoleCreateSpec.validate_role`, mode="after") enforces a non-blank unique name (`name__iexact`), rejects `is_system=True`, rejects updating a system role, and requires ≥ 1 permission. See [Role](./role.mdx) for the full spec breakdown.
+`RoleBaseSpec.contexts` is `list[RoleContext]` — bound to the `RoleContext` enum at the API layer even though the model column is an open string array. `PermissionSpec.slug` is a `SlugType`: `str`, length 5–50, pattern `^[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]$`. Core role validation (`RoleCreateSpec.validate_role`, mode="after") requires a non-blank unique name (`name__iexact`), rejects `is_system=True`, rejects updating a system role, and requires ≥ 1 permission. See [Role](./role.mdx) for the full spec breakdown.
 
 ### Permission-resolution mixins (`care/emr/resources/permissions.py`)
 
@@ -173,17 +171,17 @@ Permission slugs are resolved via `RolePermission.objects.filter(role_id__in=rol
 
 `RoleAssociation` defines no model methods, validators, or `save()`/`delete()` overrides of its own. It inherits soft-delete from `BaseModel`: calling `delete()` sets `deleted=True` and persists with `save(update_fields=["deleted"])`, and the default manager filters out soft-deleted rows.
 
-A source `TODO` notes that a composite index on `user`, `context`, and `context_id` is planned but not yet present; lookups by those fields are not index-backed today.
+A source `TODO` flags a planned composite index on `user`, `context`, and `context_id` that does not yet exist; lookups by those fields are not index-backed today.
 
 `expiry` is a stored timestamp only — the model does not enforce it. Expiry-based revocation falls to the authorization layer that reads these associations.
 
-`RoleAssociation` has no `perform_extra_serialization` / `perform_extra_deserialization` (it has no spec). The serialization hooks that matter live on the role specs and the permission mixins described above.
+`RoleAssociation` has no `perform_extra_serialization` / `perform_extra_deserialization`, since it has no spec. The serialization hooks that matter live on the role specs and the permission mixins above.
 
 ## API integration notes
 
 - `RoleAssociation` is a platform-maintained authorization record, not a client-writable EMR resource. It is created and removed through Care's access-control flows, not through FHIR, a Pydantic spec, or direct REST writes.
-- The `context` / `context_id` pair is a generic (non-FK) reference. `context` is a free-form string (typically naming an entity in one of the `RoleContext` boundary types) and `context_id` is the entity's **integer PK** — not its `external_id` UUID. Integrators must pair the right type string with the matching PK; the context has no database-level referential integrity.
-- A user may have many `RoleAssociation` rows — one per (role, context) grant. The `permissions` mixins compute effective permissions in a given context by unioning the active permission slugs of all resolved roles, filtered by `PermissionContext`.
+- The `context` / `context_id` pair is a generic (non-FK) reference. `context` is a free-form string naming an entity in one of the `RoleContext` boundary types, and `context_id` is that entity's integer PK, not its `external_id` UUID. Pair the right type string with the matching PK; nothing at the database level enforces it.
+- A user may have many `RoleAssociation` rows, one per (role, context) grant. The `permissions` mixins compute effective permissions in a given context by unioning the active permission slugs of all resolved roles, filtered by `PermissionContext`.
 - `expiry` is advisory at the model layer; do not assume the row is automatically deactivated once it passes.
 - The granted `role` is written and read through the role specs (`RoleCreateSpec` / `RoleReadSpec`), and each role's `contexts` is bound to the `RoleContext` enum rather than an open string at the API layer.
 

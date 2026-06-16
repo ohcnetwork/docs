@@ -4,9 +4,9 @@ sidebar_position: 2
 
 # Encounter
 
-Technical reference for the `Encounter` module in Care EMR. An `Encounter` is a single interaction between a patient and a facility — a visit, admission, or consultation — and aligns with the FHIR `Encounter` resource.
+An `Encounter` records a single interaction between a patient and a facility — a visit, admission, or consultation — and maps to the FHIR `Encounter` resource. You create one when a patient presents, drive it through its status lifecycle, and read it back to render the clinical timeline.
 
-The Django model is the **storage** layer: several fields are opaque `JSONField`s whose real structure lives in the Pydantic **resource specs**. This page documents both — the model fields and the API request/response schemas, including enums, JSON-field shapes, validation, and server-side side effects.
+The Django model is only the storage layer: several fields are opaque `JSONField`s whose real shape lives in the Pydantic resource specs, so the model alone won't tell you what a write must look like. The spec tables below carry that detail.
 
 **Source:**
 - Model: [`care/emr/models/encounter.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/encounter.py)
@@ -19,7 +19,7 @@ The Django model is the **storage** layer: several fields are opaque `JSONField`
 | `Encounter` | A single interaction between a patient and a facility (visit, admission, consultation) |
 | `EncounterOrganization` | Links an `Encounter` to a `FacilityOrganization` for access control |
 
-Both models extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base that provides `external_id`, audit fields, and soft-delete semantics.
+Both extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base that provides `external_id`, audit fields, and soft-delete semantics.
 
 ## `Encounter` fields
 
@@ -77,7 +77,7 @@ Defined in [`resources/base.py`](https://github.com/ohcnetwork/care/blob/develop
 | `start` | `datetime \| None` | Must be timezone-aware if provided |
 | `end` | `datetime \| None` | Must be timezone-aware if provided |
 
-Validation (`validate_period`): naive datetimes are rejected, and when both `start` and `end` are set, `start` must not exceed `end`.
+`validate_period` rejects naive datetimes, and when both `start` and `end` are set it requires `start` not to exceed `end`.
 
 ### `HospitalizationSpec` (`hospitalization`)
 
@@ -183,7 +183,7 @@ Defined in `spec.py`. All fields optional/nullable.
 
 ## Resource specs (API schema)
 
-All specs build on `EMRResource`, which provides `serialize` / `de_serialize` along with the `perform_extra_serialization` / `perform_extra_deserialization` hooks. `EncounterSpecBase` sets `__exclude__ = [patient, organizations, facility, appointment, current_location, care_team]`; those fields are handled by hooks or dedicated endpoints rather than direct assignment.
+All specs build on `EMRResource`, which provides `serialize` / `de_serialize` plus the `perform_extra_serialization` / `perform_extra_deserialization` hooks. `EncounterSpecBase` sets `__exclude__ = [patient, organizations, facility, appointment, current_location, care_team]`; those fields move through hooks or dedicated endpoints rather than direct assignment, which is why the create and read schemas diverge from the raw model.
 
 | Spec | Role | Notes |
 | --- | --- | --- |
@@ -198,11 +198,11 @@ All specs build on `EMRResource`, which provides `serialize` / `de_serialize` al
 
 ### Server-maintained behaviour
 
-- **Status history**: on create, `status_history` is initialized to `{ "history": [{ status, moved_at }] }` with the initial status; on update, a new entry is appended only when `status` changes. The same pattern applies to `encounter_class_history` / `encounter_class`.
-- **FK resolution (create)**: `patient`, `facility`, and `appointment` are resolved from `external_id` (404 if not found). The appointment must belong to the same patient and to a slot whose resource is in the same facility.
-- **Organizations (create)**: `organizations`, a deduplicated list of UUIDs, is stashed on `obj._organizations`, and `EncounterOrganization` rows drive `facility_organization_cache`.
-- **Discharge advice (update)**: when `discharge_summary_advice` is omitted on update, it is explicitly set to `None`.
-- **Care team**: `role` binds to the `PRACTITIONER_ROLE_VALUESET` (slug `system-practitioner-role-code`), a SNOMED CT value set composed of descendants of `223366009` (healthcare professional) and `224930009` (healthcare-related occupation).
+- **Status history**: on create, `status_history` starts as `{ "history": [{ status, moved_at }] }` carrying the initial status; on update, a new entry is appended only when `status` changes. `encounter_class_history` / `encounter_class` follow the same rule.
+- **FK resolution (create)**: `patient`, `facility`, and `appointment` resolve from `external_id` (404 if not found). The appointment must belong to the same patient and to a slot whose resource sits in the same facility.
+- **Organizations (create)**: `organizations`, deduplicated to a list of UUIDs, is stashed on `obj._organizations`, and the resulting `EncounterOrganization` rows drive `facility_organization_cache`.
+- **Discharge advice (update)**: omitting `discharge_summary_advice` on update clears it to `None` rather than leaving the prior value.
+- **Care team**: `role` binds to the `PRACTITIONER_ROLE_VALUESET` (slug `system-practitioner-role-code`), a SNOMED CT value set of descendants of `223366009` (healthcare professional) and `224930009` (healthcare-related occupation).
 
 ## Related models
 
@@ -215,13 +215,13 @@ encounter    → FK Encounter (CASCADE)
 organization → FK FacilityOrganization (CASCADE)
 ```
 
-Saving an `EncounterOrganization` calls `encounter.sync_organization_cache()`, rebuilding the encounter's `facility_organization_cache`.
+Saving an `EncounterOrganization` calls `encounter.sync_organization_cache()`, which rebuilds the encounter's `facility_organization_cache`.
 
 ## Methods & save behaviour
 
 ### `sync_care_team_users_cache()`
 
-When `care_team` is a list, populates `care_team_users` with `int(entry["user_id"])` for each entry, defaulting to `-1` when a `user_id` is missing. The result is a flat integer array that supports fast querying without JSON traversal.
+When `care_team` is a list, fills `care_team_users` with `int(entry["user_id"])` for each entry, falling back to `-1` when a `user_id` is missing. The flat integer array lets queries skip JSON traversal.
 
 ### `sync_organization_cache()`
 
@@ -237,21 +237,21 @@ Persists the result with `super().save(update_fields=["facility_organization_cac
 On every save:
 
 1. `sync_care_team_users_cache()` runs, refreshing `care_team_users`.
-2. If the record has no `pk`, it is flagged as newly `created`.
+2. A record with no `pk` is flagged as newly `created`.
 3. Inside a single `transaction.atomic()` block, the base `save()` runs. For newly created encounters, `evaluate_patient_facility_default_values(patient, facility)` then generates facility-scoped patient identifier defaults.
-4. After the transaction, `sync_organization_cache()` runs, performing a **second write** (`update_fields=["facility_organization_cache"]`).
+4. After the transaction, `sync_organization_cache()` runs, performing a second write (`update_fields=["facility_organization_cache"]`).
 
-Integrators should expect **two write passes** when creating or updating encounters through the ORM, plus identifier-default generation on creation.
+Expect two write passes per create or update through the ORM, plus identifier-default generation on creation.
 
 ## API integration notes
 
-- Encounters are exposed through Care's REST API and align with the FHIR `Encounter` resource. Reads use `EncounterListSpec` / `EncounterRetrieveSpec`; writes use `EncounterCreateSpec` / `EncounterUpdateSpec`.
-- `status`, `encounter_class`, and `priority` are **required** on write and validated against their enums, even though the DB columns are nullable.
-- `status_history`, `encounter_class_history`, `care_team_users`, and `facility_organization_cache` are **platform-maintained** — do not set them directly from clients. Status and class history are appended server-side on create and update; the caches are derived from `care_team` and `EncounterOrganization`.
-- The care team is **not** writable through create or update. Use the dedicated care-team endpoint with `EncounterCareTeamMemberWriteSpec`, where each member's `role` must resolve within the `system-practitioner-role-code` value set.
-- `period` and `hospitalization` carry structured JSON; follow the nested-spec shapes above. `period.start` and `period.end` must be timezone-aware.
-- `current_location` is a cached convenience field; the authoritative location history is `location_history` (from `FacilityLocationEncounter`).
-- `extensions` is the supported place for custom key-value data without schema migrations, and it is validated by `ExtensionValidator`.
+- Reads use `EncounterListSpec` / `EncounterRetrieveSpec`; writes use `EncounterCreateSpec` / `EncounterUpdateSpec`.
+- `status`, `encounter_class`, and `priority` are required on write and validated against their enums, even though the DB columns are nullable.
+- Never set `status_history`, `encounter_class_history`, `care_team_users`, or `facility_organization_cache` from a client; the server appends history on create and update and derives the caches from `care_team` and `EncounterOrganization`.
+- Create and update don't touch the care team. Replace it through the dedicated care-team endpoint with `EncounterCareTeamMemberWriteSpec`, where each member's `role` must resolve within the `system-practitioner-role-code` value set.
+- `period` and `hospitalization` carry structured JSON matching the nested-spec shapes above; `period.start` and `period.end` must be timezone-aware.
+- `current_location` is a cached convenience field. The authoritative record is `location_history`, from `FacilityLocationEncounter`.
+- `extensions` holds custom key-value data without a schema migration, validated by `ExtensionValidator`.
 
 ## Related
 

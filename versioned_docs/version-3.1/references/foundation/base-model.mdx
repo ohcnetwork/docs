@@ -4,12 +4,12 @@ sidebar_position: 1
 
 # Base models & conventions
 
-Technical reference for the shared base layer that every Care EMR resource builds on. It has **two layers**:
+Every Care EMR resource inherits a shared base that supplies opaque IDs, audit fields, soft-delete, history, slugs, and feature flags. A resource author writes domain fields and validation; the base handles the rest. It spans two layers:
 
-- **Storage layer** — abstract Django models in `care/emr/models` and `care/utils/models`. They supply opaque IDs, audit fields, soft-delete, history, slugs, and feature flags. Several columns are opaque `JSONField`s whose real structure is *not* visible in the model.
-- **API / implementation layer** — Pydantic resource specs built on `EMRResource` (`care/emr/resources/base.py`). They define enums, field validation, the read/write schemas, and the structured shape of those JSON fields (via nested specs). The shared structured types live in `care/emr/resources/common/` and are reused across nearly every resource.
+- **Storage layer** — abstract Django models in `care/emr/models` and `care/utils/models`. Several of their columns are opaque `JSONField`s whose structure lives elsewhere; the model alone won't tell you what goes inside them.
+- **API layer** — Pydantic resource specs built on `EMRResource` (`care/emr/resources/base.py`). These define enums, field validation, the read/write schemas, and the structured shapes that fill those JSON columns via nested specs. The structured types in `care/emr/resources/common/` are reused across nearly every resource.
 
-This page documents both layers and the shared common spec types. Concrete resources (for example [Patient](../clinical/patient)) inherit a storage base and define their own resource specs on top of `EMRResource`.
+Come here for the rules a resource gets for free: the soft-delete contract, what `serialize`/`de_serialize` do, how write and read schemas diverge, and the common spec types behind the JSON fields. Concrete resources such as [Patient](../clinical/patient) inherit a storage base and define their own specs on top of `EMRResource`.
 
 **Source:**
 [`care/emr/models/base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/base.py),
@@ -28,9 +28,9 @@ This page documents both layers and the shared common spec types. Concrete resou
 | `SlugBaseModel` | storage | EMR base that adds facility-scoped or instance-scoped slug helpers |
 | `EMRResource` | API | Pydantic base for all resource specs — `serialize` / `de_serialize` between DB objects and API schemas |
 
-All five storage models are `abstract = True`: none defines a database table of its own. A concrete resource model inherits one of them and contributes the columns described below to its own table.
+All five storage models are `abstract = True` — none owns a database table. A concrete resource model inherits one and contributes its own columns.
 
-The storage inheritance chain is:
+The storage models inherit in one chain:
 
 ```text
 models.Model
@@ -40,7 +40,7 @@ models.Model
             └─ SlugBaseModel
 ```
 
-The API specs form a parallel hierarchy rooted at `pydantic.BaseModel`:
+The API specs form a parallel hierarchy under `pydantic.BaseModel`:
 
 ```text
 pydantic.BaseModel
@@ -54,16 +54,16 @@ pydantic.BaseModel
 
 ### `BaseModel` fields
 
-The root abstract model. Every other base — and therefore every persisted Care resource — inherits these columns.
+The root abstract model. Every other base — and so every persisted Care resource — carries these four columns.
 
 | Field | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |
 | `external_id` | `UUIDField` | yes | `uuid4` | `unique`, `db_index`. The opaque public identifier used in URLs and API payloads — never expose the integer `pk` |
 | `created_date` | `DateTimeField` | no | `auto_now_add` | nullable, `db_index`. Set once on insert |
-| `modified_date` | `DateTimeField` | no | `auto_now` | nullable, `db_index`. Updated on every save |
+| `modified_date` | `DateTimeField` | no | `auto_now` | nullable, `db_index`. Bumped on every save |
 | `deleted` | `BooleanField` | yes | `False` | `db_index`. Soft-delete marker |
 
-`objects` is overridden to a [`BaseManager`](#basemanager) instance, so the default queryset returns only live rows.
+`objects` is overridden to a [`BaseManager`](#basemanager), so the default queryset returns only live rows.
 
 #### Soft delete
 
@@ -75,15 +75,15 @@ def delete(self, *args):
     self.save(update_fields=["deleted"])
 ```
 
-Rows are therefore retained for audit and referential integrity. To read deleted rows, bypass the default manager (for example via `Model._base_manager` or an unfiltered queryset).
+Rows stay put for audit and referential integrity. To reach deleted rows, bypass the default manager — for example via `Model._base_manager` or an unfiltered queryset.
 
 ### `EMRBaseModel` fields
 
-The standard base for EMR resource models. It extends `BaseModel`, so it also carries `external_id`, the timestamps, and `deleted`, plus the following:
+The standard base for EMR resource models. On top of the `BaseModel` columns it adds audit, history, and metadata:
 
 | Field | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |
-| `history` | `JSONField` | no | `dict` | Flattened JSON array of every version of the resource with its performer. **Not** returned by regular endpoints — served on request through a dedicated history API (audit / point-in-time reconstruction) |
+| `history` | `JSONField` | no | `dict` | Flattened JSON array of every version of the resource with its performer. **Not** returned by regular endpoints — served on request through a dedicated history API for audit and point-in-time reconstruction |
 | `meta` | `JSONField` | no | `dict` | Open metadata bag. `EMRResource` writes spec fields here when `__store_metadata__ = True` (see below) |
 | `created_by` | `FK → users.User` | no | `None` | `on_delete=SET_NULL`, nullable. `related_name="%(app_label)s_%(class)s_created_by"` |
 | `updated_by` | `FK → users.User` | no | `None` | `on_delete=SET_NULL`, nullable. `related_name="%(app_label)s_%(class)s_updated_by"` |
@@ -92,7 +92,7 @@ The `%(app_label)s_%(class)s_…` `related_name` template lets every concrete su
 
 ### `SlugBaseModel` helpers
 
-Extends `EMRBaseModel` for resources that expose a human-readable, scoped slug (for example value sets and definitions). It adds no new columns — concrete subclasses provide their own `slug` and, when facility-scoped, `facility` fields. It sets the class flag `FACILITY_SCOPED = True`.
+Extends `EMRBaseModel` for resources that expose a human-readable, scoped slug — value sets and definitions, for instance. It adds no columns of its own; concrete subclasses supply their own `slug` and, when facility-scoped, `facility` fields. It sets the class flag `FACILITY_SCOPED = True`.
 
 | Method | Behaviour |
 | --- | --- |
@@ -116,18 +116,16 @@ instance-scoped:  i-<slug>
 
 ### `BaseManager`
 
-The default manager applied as `objects` on `BaseModel`. It filters out soft-deleted rows at the queryset level:
+The default manager set as `objects` on `BaseModel`. Every query through `Model.objects` is implicitly scoped to `deleted=False`:
 
 ```python
 def get_queryset(self):
     return super().get_queryset().filter(deleted=False)
 ```
 
-Any query through `Model.objects` is implicitly scoped to `deleted=False`.
-
 ### `BaseFlag`
 
-Abstract base for per-entity feature-flag tables (for example facility or organization flags). It extends `BaseModel`, stores a single validated flag name, and serves all lookups from the cache.
+Abstract base for per-entity feature-flag tables (facility or organization flags, for example). It extends `BaseModel`, stores one validated flag name, and serves all lookups from cache.
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -158,7 +156,7 @@ Helper properties and classmethods:
 
 ### `EMRResource`
 
-The Pydantic base class (`care/emr/resources/base.py`) that every resource spec extends. It converts between Django model instances and the API schema in both directions and centralises the create/read serialization rules.
+The Pydantic base (`care/emr/resources/base.py`) that every resource spec extends. It moves data both ways between Django model instances and the API schema, and holds the serialization rules in one place.
 
 | Class attribute | Default | Role |
 | --- | --- | --- |
@@ -178,7 +176,7 @@ The Pydantic base class (`care/emr/resources/base.py`) that every resource spec 
 | `to_json()` | — | `model_dump(mode="json", exclude=["meta"])` |
 | `get_database_mapping()` | — | Lists the model's non-FK column names, used to decide which spec fields map to columns |
 
-**Spec naming convention.** Each concrete resource exposes a small set of specs built on `EMRResource`. Read them as one table per resource:
+Each concrete resource exposes a small set of specs built on `EMRResource`, named by convention:
 
 | Spec class | Kind | Role |
 | --- | --- | --- |
@@ -188,28 +186,28 @@ The Pydantic base class (`care/emr/resources/base.py`) that every resource spec 
 | `<X>ListSpec` | read · list | Lightweight response for list endpoints |
 | `<X>ReadSpec` / `<X>RetrieveSpec` | read · detail | Full response for the detail endpoint (often resolving nested/coded fields in `perform_extra_serialization`) |
 
-Coded fields commonly bind to a **value set** (a `system`/`code` allow-list). The resource spec declares the binding (e.g. via `json_schema_extra={"slug": "<valueset-slug>"}` on the field) and validates the submitted `Coding` against it in `perform_extra_deserialization`. Status fields commonly maintain a server-side `status_history` appended on create/update. See each resource page for its exact bindings and side effects.
+Coded fields commonly bind to a **value set** — a `system`/`code` allow-list. The resource spec declares the binding (e.g. via `json_schema_extra={"slug": "<valueset-slug>"}` on the field) and validates the submitted `Coding` against it in `perform_extra_deserialization`. Status fields commonly maintain a server-side `status_history` appended on create/update. Each resource page documents its exact bindings and side effects.
 
 ### `PeriodSpec`
 
-Defined alongside `EMRResource` in `base.py`. The validated period type used by write specs (distinct from the looser [`Period`](#period) read type in `common/`).
+Defined alongside `EMRResource` in `base.py`. The validated period type used by write specs — distinct from the looser [`Period`](#period) read type in `common/`.
 
 | Field | Type | Required | Default | Validation |
 | --- | --- | --- | --- | --- |
 | `start` | `datetime` | no | `None` | must be timezone-aware |
 | `end` | `datetime` | no | `None` | must be timezone-aware |
 
-Cross-field rule: when both are set, `start` must be ≤ `end`. Naive datetimes are rejected with `"Start/End Date must be timezone aware"`.
+When both are set, `start` must be ≤ `end`. Naive datetimes are rejected with `"Start/End Date must be timezone aware"`.
 
 ### `PhoneNumber`
 
-An `Annotated` type exported from `base.py`: a phone string validated by `PhoneNumberValidator` with `number_format="E164"`, no default region, and no region restriction. Used wherever a spec field accepts a phone number.
+An `Annotated` type exported from `base.py`: a phone string validated by `PhoneNumberValidator` with `number_format="E164"`, no default region, and no region restriction. Use it wherever a spec field accepts a phone number.
 
 ---
 
 ## Shared common specs
 
-`care/emr/resources/common/` holds the structured types reused across resources. These are the real shapes behind many of the opaque `JSONField`s in the storage layer.
+`care/emr/resources/common/` holds the structured types reused across resources — the actual shapes behind many of the opaque `JSONField`s in the storage layer.
 
 ### `Coding`
 
@@ -234,7 +232,7 @@ A concept expressed as one or more codings plus free text. `extra="forbid"`.
 
 ### `Period`
 
-The read/storage period shape (looser than `PeriodSpec` — no timezone or ordering validation). `extra="forbid"`.
+The read/storage period shape — looser than `PeriodSpec`, with no timezone or ordering validation. `extra="forbid"`.
 
 | Field | Type | Required | Default |
 | --- | --- | --- | --- |
@@ -303,7 +301,7 @@ Pricing line components used by billing resources (see [Charge Item Definition](
 | `global_component` | `bool` | no | `False` | |
 | `conditions` | `list[EvaluatorConditionSpec]` | no | `[]` | Must be empty for `base` components |
 
-Validation rules (model validators):
+Model validators enforce:
 
 - `tax_included_amount` is only allowed when `monetary_component_type == base`.
 - A `base` component must have no `conditions` and must set `amount`.
@@ -320,7 +318,7 @@ Validation rules (model validators):
 | `tax` |
 | `informational` |
 
-`MonetaryComponentsWithoutBase` (a `RootModel` over `list[MonetaryComponent]`) adds: no duplicate `code.code` values across the list; and, when a base component declares `tax_included_amount`, the sum of tax-component amounts (or `base.amount * factor`) plus `tax_included_amount` must equal the base amount. `MonetaryComponents` extends it with: at most **one** `base` component.
+`MonetaryComponentsWithoutBase` (a `RootModel` over `list[MonetaryComponent]`) adds two list-level rules: no duplicate `code.code` values across the list; and, when a base component declares `tax_included_amount`, the sum of tax-component amounts (or `base.amount * factor`) plus `tax_included_amount` must equal the base amount. `MonetaryComponents` extends it with one more: at most **one** `base` component.
 
 `MonetaryComponentDefinition` extends `MonetaryComponent` for definition-time use: it adds a **required** `title: str`, disables the duplicate-code / amount-or-factor checks, and forbids a `base` component entirely.
 
@@ -373,8 +371,8 @@ Defined in `common/mail_type.py`.
 
 ## Methods & save behaviour
 
-- `BaseModel.delete()` performs a soft delete (sets `deleted=True`, saves only that field) instead of a hard `DELETE`.
-- `BaseFlag.save()` validates `flag` against `FlagRegistry`, then deletes the single-flag and all-flags cache entries for the entity before persisting, keeping the cached lookups consistent.
+- `BaseModel.delete()` soft-deletes: sets `deleted=True` and saves only that field, never a hard `DELETE`.
+- `BaseFlag.save()` validates `flag` against `FlagRegistry`, then evicts the single-flag and all-flags cache entries for the entity before persisting, so cached lookups stay consistent.
 - `BaseFlag.check_entity_has_flag` / `get_all_flags` populate those caches on read with a 1-day TTL (`FLAGS_CACHE_TTL = 60 * 60 * 24`).
 - `SlugBaseModel` exposes slug encode/parse helpers but does not override `save()`; subclasses decide when to call `calculate_slug()`.
 - `EMRResource.de_serialize` is where write-time side effects happen — subclasses override `perform_extra_deserialization` to append to status histories, resolve FKs from `external_id`, and validate coded fields against bound value sets.
@@ -383,11 +381,11 @@ Defined in `common/mail_type.py`.
 ## API integration notes
 
 - `external_id` (UUID) is the identifier used across Care's REST API and FHIR resources; the integer primary key is internal and never exposed. `EMRResource.serialize` surfaces it as `id`, and `de_serialize` refuses to write `id` / `external_id` from request bodies.
-- Deletes are soft — a resource removed through the API still exists in the database with `deleted=True` and is hidden by the default manager.
+- Deletes are soft — a resource removed through the API still exists in the database with `deleted=True`, hidden by the default manager.
 - `history` is not returned by standard endpoints; every version (including migration-time changes) is stored flattened with its performer and served through a separate, on-request audit API.
-- `meta` is the supported place for system metadata without schema migrations; specs with `__store_metadata__ = True` round-trip extra fields through it. `created_by` / `updated_by` are platform-maintained audit fields and should not be set directly by clients.
+- `meta` is the supported way to attach system metadata without a schema migration; specs with `__store_metadata__ = True` round-trip extra fields through it. `created_by` / `updated_by` are platform-maintained audit fields — clients must not set them directly.
 - Periods sent on write (`PeriodSpec`) must be timezone-aware and ordered (`start ≤ end`); the read-side `Period` type does not enforce this.
-- Feature-flag state (`BaseFlag` subclasses) is read through the cached classmethods rather than queried row-by-row.
+- Feature-flag state (`BaseFlag` subclasses) is read through the cached classmethods, not queried row-by-row.
 
 ## Related
 

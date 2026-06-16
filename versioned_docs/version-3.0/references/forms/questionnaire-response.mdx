@@ -4,9 +4,9 @@ sidebar_position: 2
 
 # Questionnaire Response
 
-Technical reference for the `QuestionnaireResponse` and `FormSubmission` modules in Care EMR — the **submitted answers** to a [questionnaire](./questionnaire.mdx) for a patient, plus the submission envelope that carries a draft or finalised payload.
+A `QuestionnaireResponse` is the set of answers a patient gives to a [questionnaire](./questionnaire.mdx); a `FormSubmission` is the envelope that carries that payload through a draft-to-finalised lifecycle. You touch these when reading back what was answered or when submitting new answers.
 
-The Django models are the **storage** layer. The Pydantic **resource specs** define the submit payload, the answer structure, the status enums, and the read/write API schemas.
+The Django models are the storage; the Pydantic resource specs define the submit payload, answer structure, status enums, and read/write API schemas.
 
 **Source:**
 - Model: [`care/emr/models/questionnaire.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/questionnaire.py)
@@ -31,13 +31,13 @@ Both extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR 
 | `structured_responses` | `JSONField` | `default=dict`. Extracted/structured representation of the answers |
 | `structured_response_type` | `CharField` | Nullable. Discriminator for the structured payload |
 | `patient` | `FK → Patient` | `CASCADE`. The patient |
-| `encounter` | `FK → Encounter` | `CASCADE`, nullable. The encounter, when answered in a visit context |
+| `encounter` | `FK → Encounter` | `CASCADE`, nullable. Set when the response is captured in a visit context |
 | `form_submission` | `FK → FormSubmission` | `CASCADE`, nullable. The submission this response came from |
 | `status` | `CharField(255)` | `default="completed"`. One of `QuestionnaireResponseStatusChoices` (see [enum](#questionnaire-response-status)) |
 
 ### `render_responses()`
 
-Joins each entry in `responses` with its matching question definition from `questionnaire.get_questions_by_id()`, producing a list of `{ "answer": <response>, "question": <question> }` — a human-readable view of the answers against the current questionnaire. Returns `[]` when there are no responses or no linked questionnaire.
+Joins each entry in `responses` with its matching question definition from `questionnaire.get_questions_by_id()`, returning a list of `{ "answer": <response>, "question": <question> }` for display. Returns `[]` when `responses` is empty or no questionnaire is linked.
 
 ## `FormSubmission` fields
 
@@ -72,7 +72,7 @@ Joins each entry in `responses` with its matching question definition from `ques
 
 ## Submit payload (nested shapes)
 
-Answers are submitted through the questionnaire submit endpoint, whose body is `QuestionnaireSubmitRequest`:
+Answers go through the questionnaire submit endpoint, whose body is `QuestionnaireSubmitRequest`. Group questions nest via `sub_results`, and each answer can carry multiple values:
 
 ```text
 QuestionnaireSubmitRequest {
@@ -106,13 +106,13 @@ All specs extend `EMRResource` (`resources/base.py`).
 
 ### `QuestionnaireResponse` (`resources/questionnaire_response/spec.py`)
 
+There is no generic create spec — new responses come from the questionnaire submit flow (`QuestionnaireSubmitRequest`). The update spec carries `status` only, so the one write you make directly is flagging a response `entered_in_error`.
+
 | Spec class | Role | Notes |
 | --- | --- | --- |
 | `EMRQuestionnaireResponseBase` | shared | `__model__ = QuestionnaireResponse` |
 | `QuestionnaireResponseUpdate` | write · update | Only `status` (`QuestionnaireResponseStatusChoices`, default `completed`) — used to mark a response `entered_in_error` |
 | `QuestionnaireResponseReadSpec` | read | `id`, `status`, `questionnaire` (nested `QuestionnaireReadSpec`), `subject_id`, `responses`, `encounter` (external id or `null`), `structured_responses`, `structured_response_type`, `created_by`/`updated_by` (`UserSpec`), `created_date`/`modified_date` |
-
-New responses are created through the questionnaire submit flow (`QuestionnaireSubmitRequest`), not a generic create spec.
 
 ### `FormSubmission` (`resources/form_submission/spec.py`)
 
@@ -125,10 +125,10 @@ New responses are created through the questionnaire submit flow (`QuestionnaireS
 
 ## API integration notes
 
-- Both align loosely with the FHIR `QuestionnaireResponse` resource: `responses` holds the raw answers, while `structured_responses` is the extracted, query-friendly form.
-- A `QuestionnaireResponse` is normally created by submitting a `QuestionnaireSubmitRequest`. The update spec exists mainly to flag responses `entered_in_error`.
-- `FormSubmission` supports a draft→submitted lifecycle. Its `response_dump` is an opaque JSON payload validated by the questionnaire definition, not by the model.
-- Audit users (`created_by`/`updated_by`) are platform-maintained.
+- Both map loosely onto the FHIR `QuestionnaireResponse` resource: `responses` holds the raw answers, and `structured_responses` is the extracted, query-friendly form.
+- Create a `QuestionnaireResponse` by submitting a `QuestionnaireSubmitRequest`. The update spec exists to flag responses `entered_in_error`.
+- `FormSubmission` runs a draft→submitted lifecycle. Its `response_dump` is opaque JSON — the questionnaire definition validates it, the model does not.
+- The server maintains the audit users (`created_by`/`updated_by`); don't set them on write.
 
 ## Related
 

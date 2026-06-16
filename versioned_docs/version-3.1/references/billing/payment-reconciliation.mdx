@@ -4,15 +4,13 @@ sidebar_position: 5
 
 # Payment Reconciliation
 
-Technical reference for the `PaymentReconciliation` module in Care EMR.
+A `PaymentReconciliation` is a single payment recorded against an `Account`, and optionally allocated to one `Invoice`. It captures how much was paid, by what method, when, and by whom — mirroring the FHIR [`PaymentReconciliation`](https://build.fhir.org/paymentreconciliation.html) resource. Reach for it whenever you post a payment, refund, credit note, or adjustment to a patient or insurer account.
 
 **Source:**
 - Model: [`care/emr/models/payment_reconciliation.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/payment_reconciliation.py)
 - Resource spec: [`care/emr/resources/payment_reconciliation/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/payment_reconciliation/spec.py)
 
-`PaymentReconciliation` records a payment made against an `Account` — and, optionally, against a specific `Invoice`. It captures how, when, by whom, and how much was paid, mirroring the FHIR [`PaymentReconciliation`](https://build.fhir.org/paymentreconciliation.html) resource.
-
-The Django **model** is the storage layer: it stores several constrained fields as plain `CharField`s and holds `extensions` as an opaque `JSONField`. The real shape — enum values, amount computation, validation, and the read/write API schemas — lives in the Pydantic **resource specs** (`care/emr/resources/payment_reconciliation/spec.py`), built on `EMRResource`. This page documents both layers.
+The model is thin storage: enum-constrained fields are plain `CharField`s and `extensions` is an opaque `JSONField`. The behaviour you integrate against — enum constraints, amount computation, validation, and the read/write schema split — lives in the Pydantic resource specs (`care/emr/resources/payment_reconciliation/spec.py`), built on `EMRResource`.
 
 ## Models
 
@@ -20,7 +18,7 @@ The Django **model** is the storage layer: it stores several constrained fields 
 | --- | --- |
 | `PaymentReconciliation` | A single payment (or credit note / adjustment) recorded against an account or invoice |
 
-The model extends `EMRBaseModel`, the shared Care EMR base that supplies `external_id`, audit fields, and soft-delete semantics — see [Base model](../foundation/base-model.mdx).
+The model extends `EMRBaseModel`, the shared Care EMR base supplying `external_id`, audit fields, and soft-delete semantics — see [Base model](../foundation/base-model.mdx).
 
 ## `PaymentReconciliation` fields
 
@@ -29,20 +27,20 @@ The model extends `EMRBaseModel`, the shared Care EMR base that supplies `extern
 | Field | Type | Notes |
 | --- | --- | --- |
 | `facility` | `FK → Facility` (PROTECT) | Facility where the payment is recorded |
-| `target_invoice` | `FK → Invoice` (PROTECT) | Nullable (`default=None`); the invoice this payment is allocated to. A single allocation is supported. On write, supplied as the invoice `external_id` (UUID) |
-| `account` | `FK → Account` (PROTECT) | The account being paid against. Required even when `target_invoice` is set. On write, supplied as the account `external_id` (UUID) |
-| `location` | `FK → FacilityLocation` (PROTECT) | Nullable; physical location (e.g. counter) where payment was taken. On write, supplied as the location `external_id` (UUID) |
+| `target_invoice` | `FK → Invoice` (PROTECT) | The invoice this payment is allocated to. Nullable (`default=None`); one allocation per record. On write, pass the invoice `external_id` (UUID) |
+| `account` | `FK → Account` (PROTECT) | The account being paid. Required even when `target_invoice` is set. On write, pass the account `external_id` (UUID) |
+| `location` | `FK → FacilityLocation` (PROTECT) | Physical location (e.g. the counter) where payment was taken. Nullable. On write, pass the location `external_id` (UUID) |
 
 ### Classification
 
-These string columns map to fixed enums defined in the resource spec. The model stores them as free-form `CharField(100)`; the enum constraint is enforced at the schema/API layer, not by the database. See [enum values](#enum-values) for the full lists.
+Six columns map to fixed enums defined in the resource spec. Each is stored as a free-form `CharField(100)`; the enum is enforced at the schema/API layer, not by the database. Full value lists are under [enum values](#enum-values).
 
 | Field | Type | Spec enum | Notes |
 | --- | --- | --- | --- |
 | `reconciliation_type` | `CharField(100)` | `PaymentReconciliationTypeOptions` | Required. `payment` \| `adjustment` \| `advance` |
 | `status` | `CharField(100)` | `PaymentReconciliationStatusOptions` | Required. `active` \| `cancelled` \| `draft` \| `entered_in_error` |
 | `kind` | `CharField(100)` | `PaymentReconciliationKindOptions` | Required. `deposit` \| `periodic_payment` \| `online` \| `kiosk` |
-| `issuer_type` | `CharField(100)` | `PaymentReconciliationIssuerTypeOptions` | Required. `patient` \| `insurer` |
+| `issuer_type` | `CharField(100)` | `PaymentReconciliationIssuerTypeOptions` | Required. Who paid — `patient` \| `insurer` |
 | `outcome` | `CharField(100)` | `PaymentReconciliationOutcomeOptions` | Required. `queued` \| `complete` \| `error` \| `partial` |
 | `method` | `CharField(100)` | `PaymentReconciliationPaymentMethodOptions` | Required. HL7 [v2-0570](https://terminology.hl7.org/6.2.0/ValueSet-v2-0570.html) payment-method codes — `cash` \| `ccca` \| `cchk` \| `cdac` \| `chck` \| `ddpo` \| `debc` |
 
@@ -50,28 +48,28 @@ These string columns map to fixed enums defined in the resource spec. The model 
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `payment_datetime` | `DateTimeField` → `datetime \| None` | Optional (default `None`); when the payment was issued |
-| `reference_number` | `CharField(1024)` → `str \| None` | Optional; cheque number or payment reference |
-| `authorization` | `CharField(1024)` → `str \| None` | Optional; authorization number |
-| `disposition` | `TextField` → `str \| None` | Optional; disposition message describing the outcome |
-| `note` | `TextField` → `str \| None` | Optional; free-text note |
+| `payment_datetime` | `DateTimeField` → `datetime \| None` | When the payment was issued. Optional (default `None`) |
+| `reference_number` | `CharField(1024)` → `str \| None` | Cheque number or payment reference. Optional |
+| `authorization` | `CharField(1024)` → `str \| None` | Authorization number. Optional |
+| `disposition` | `TextField` → `str \| None` | Message describing the outcome. Optional |
+| `note` | `TextField` → `str \| None` | Free-text note. Optional |
 
 ### Amounts
 
-All amounts are `DecimalField(max_digits=20, decimal_places=6)` (spec: `Decimal`, `max_digits=20`, `decimal_places=6`). Six decimal places give sub-currency precision.
+Every amount is a `DecimalField(max_digits=20, decimal_places=6)`. Six decimal places allow sub-currency precision.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `tendered_amount` | `Decimal(20, 6)` | **Required on write.** Amount offered by the issuer |
-| `returned_amount` | `Decimal(20, 6)` | **Required on write.** Amount returned by the receiver (e.g. change). Validated `returned_amount < tendered_amount` |
-| `amount` | `Decimal(20, 6)` | **Server-computed.** `amount = tendered_amount - returned_amount`; any client-supplied value is overwritten by the write validator |
+| `tendered_amount` | `Decimal(20, 6)` | Required on write. Amount offered by the issuer |
+| `returned_amount` | `Decimal(20, 6)` | Required on write. Amount returned to the issuer (e.g. change). Must be strictly less than `tendered_amount`, or the write is rejected |
+| `amount` | `Decimal(20, 6)` | Net payment, computed server-side as `tendered_amount - returned_amount`. A client-supplied value is always overwritten |
 
 ### Flags & extensions
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `is_credit_note` | `BooleanField` → `bool` | Defaults to `False`; marks the record as a credit note rather than an inbound payment |
-| `extensions` | `JSONField` → `dict` | Defaults to `{}`. Open extension bag. On write, each key is validated against the registered extension handler for resource type `payment_reconciliation` (unknown keys are currently dropped); on read (retrieve), rendered through the registered handlers |
+| `is_credit_note` | `BooleanField` → `bool` | Default `False`. Marks the record as a credit note rather than an inbound payment |
+| `extensions` | `JSONField` → `dict` | Default `{}`. Open extension bag. On write, each key is validated against the registered handler for resource type `payment_reconciliation` — unknown keys are currently dropped. On retrieve, rendered through those handlers |
 
 ## Enum values
 
@@ -147,14 +145,14 @@ Defined in [`care/emr/resources/payment_reconciliation/spec.py`](https://github.
 
 ### Write validation & side effects
 
-`PaymentReconciliationWriteSpec`:
+`PaymentReconciliationWriteSpec` runs three steps:
 
-- **Amount validator** (`model_validator(mode="after")`, `check_amount_or_factor`): raises `"Returned amount cannot be greater than tendered amount"` when `returned_amount >= tendered_amount`, then sets `amount = tendered_amount - returned_amount`. The write spec's `amount` field is therefore advisory — it is always recomputed.
-- **`perform_extra_deserialization(is_update, obj)`** resolves the FK UUIDs to model instances:
+- The amount validator (`model_validator(mode="after")`, `check_amount_or_factor`) raises `"Returned amount cannot be greater than tendered amount"` when `returned_amount >= tendered_amount`, then sets `amount = tendered_amount - returned_amount`. The spec's `amount` field is advisory and always recomputed.
+- `perform_extra_deserialization(is_update, obj)` resolves the FK UUIDs to model instances:
   - `target_invoice` (if provided) → `Invoice.objects.get(external_id=...)`
   - `account` (required) → `Account.objects.get(external_id=...)`
   - `location` (if provided) → `FacilityLocation.objects.get(external_id=...)`
-- **`extensions`** are validated by `ExtensionValidator.validate_extensions` against the `payment_reconciliation` extension registry before save.
+- `ExtensionValidator.validate_extensions` checks `extensions` against the `payment_reconciliation` extension registry before save.
 
 ### Read serialization side effects
 
@@ -164,7 +162,7 @@ Defined in [`care/emr/resources/payment_reconciliation/spec.py`](https://github.
 
 ## Related models
 
-`PaymentReconciliation` is a single, self-contained model. Its foreign keys reach into the broader billing and facility domains:
+`PaymentReconciliation` is self-contained; its foreign keys reach into the billing and facility domains:
 
 ```text
 facility       → FK Facility (PROTECT)
@@ -173,22 +171,23 @@ account        → FK Account (PROTECT)
 location       → FK FacilityLocation (PROTECT, nullable)
 ```
 
-Every foreign key uses `on_delete=PROTECT`, so a payment record blocks deletion of the facility, invoice, account, or location it references.
+Each foreign key uses `on_delete=PROTECT`, so a payment record blocks deletion of the facility, invoice, account, or location it references.
 
 ## Methods & save behaviour
 
-- **No custom model `save()`** — `PaymentReconciliation` inherits `EMRBaseModel` behaviour (audit fields, `external_id`, soft delete).
-- **Amount is derived, not stored as sent**: on every create/update the write spec computes `amount = tendered_amount - returned_amount` and rejects `returned_amount >= tendered_amount`. Clients should send `tendered_amount` and `returned_amount`; `amount` is informational.
-- **FK resolution** happens in `perform_extra_deserialization`: clients pass `external_id` UUIDs for `account`, `target_invoice`, and `location`, and these resolve to instances at de-serialization time.
-- **Extensions lifecycle**: validated on write against the `payment_reconciliation` extension registry; rendered on retrieve through registered handlers.
+`PaymentReconciliation` defines no custom `save()`; it inherits `EMRBaseModel` behaviour (audit fields, `external_id`, soft delete). Everything below happens in the write spec, not the model:
+
+- `amount` is derived, not stored as sent. On every create and update the write spec computes `amount = tendered_amount - returned_amount` and rejects `returned_amount >= tendered_amount`.
+- FK resolution happens in `perform_extra_deserialization`: `external_id` UUIDs for `account`, `target_invoice`, and `location` resolve to instances at de-serialization time.
+- `extensions` are validated against the `payment_reconciliation` registry on write and rendered through registered handlers on retrieve.
 
 ## API integration notes
 
-- Exposed through Care's REST API. Write requests use `PaymentReconciliationWriteSpec` for both create and update; list responses use `PaymentReconciliationMinimalReadSpec`, and detail/retrieve responses use `PaymentReconciliationReadSpec` / `PaymentReconciliationRetrieveSpec`.
-- `account` is always required; `target_invoice` is optional and represents a single allocation of the payment to one invoice. Both, plus `location`, are passed as `external_id` UUIDs.
-- Classification fields (`reconciliation_type`, `status`, `kind`, `issuer_type`, `outcome`, `method`) are constrained to the fixed enums above by the Pydantic schema — the API rejects invalid values even though the column is a plain `CharField`.
-- Send `tendered_amount` and `returned_amount` (both required, `Decimal(20, 6)`); do **not** rely on a client-supplied `amount` — the server overwrites it with `tendered_amount - returned_amount`.
-- `extensions` is the supported place for custom key-value data without schema migrations, validated against registered extension handlers.
+- Create and update use `PaymentReconciliationWriteSpec`; list responses use `PaymentReconciliationMinimalReadSpec`; detail and retrieve responses use `PaymentReconciliationReadSpec` / `PaymentReconciliationRetrieveSpec`.
+- `account` is always required; `target_invoice` is optional and allocates the payment to one invoice. Pass `account`, `target_invoice`, and `location` as `external_id` UUIDs.
+- The Pydantic schema constrains the six classification fields (`reconciliation_type`, `status`, `kind`, `issuer_type`, `outcome`, `method`) to the enums above and rejects invalid values, even though each column is a plain `CharField`.
+- Send `tendered_amount` and `returned_amount` (both required); the server derives `amount`, so any value you send for it is ignored.
+- `extensions` holds custom key-value data without a schema migration, validated against registered handlers.
 
 ## Related
 

@@ -4,11 +4,9 @@ sidebar_position: 11
 
 # Specimen Definition
 
-Technical reference for the `SpecimenDefinition` module in Care EMR.
+A `SpecimenDefinition` is a reusable, facility-scoped template for a *kind* of specimen: what material to collect, how to prepare the patient, how to collect it, and how it's held in a container for testing. A lab maintains a repository of these, and an [Activity Definition](activity-definition.mdx) or [Service Request](service-request.mdx) references one so the same container and handling rules apply every time. When a concrete [Specimen](specimen.mdx) is instantiated from a definition, the link is kept and the specimen copies the definition's data for history and integrity.
 
-A `SpecimenDefinition` is a reusable, facility-scoped template that describes a *kind* of specimen — what material to collect, how to prepare the patient, how to collect it, and how it is held in a container for testing. A lab uses it to maintain a repository of specimen kinds, and an [Activity Definition](activity-definition.mdx) or [Service Request](service-request.mdx) can reference it so the same container and handling rules apply consistently. A concrete [Specimen](specimen.mdx) can be instantiated from a definition; the link is preserved, and the specimen keeps a copy of the definition's data for history and integrity.
-
-The Django model is the **storage** layer: `type_collected`, `patient_preparation`, `collection`, and `type_tested` are opaque `JSONField`s. Their real structure — the enums, value-set bindings, and read/write API schemas — lives in the **Pydantic resource specs** documented below.
+The Django model is only the storage layer: `type_collected`, `patient_preparation`, `collection`, and `type_tested` are opaque `JSONField`s. Their real structure — the enums, value-set bindings, and read/write API schemas — lives in the Pydantic resource specs documented below.
 
 **Source:**
 
@@ -22,9 +20,9 @@ The Django model is the **storage** layer: `type_collected`, `patient_preparatio
 
 | Model | Purpose |
 | --- | --- |
-| `SpecimenDefinition` | Reusable definition of a kind of specimen to be collected and processed — what to collect, how to prepare the patient, how to collect it, and how it is contained and tested |
+| `SpecimenDefinition` | Reusable definition of a kind of specimen: what to collect, how to prepare the patient, how to collect it, and how it is contained and tested |
 
-`SpecimenDefinition` extends [`SlugBaseModel`](../foundation/base-model.mdx) (the Care EMR base augmented with `FACILITY_SCOPED = True`, a facility-scoped `slug`, plus `external_id`, `history`/`meta` JSON, audit fields, and soft-delete semantics).
+`SpecimenDefinition` extends [`SlugBaseModel`](../foundation/base-model.mdx): the Care EMR base with `FACILITY_SCOPED = True`, a facility-scoped `slug`, `external_id`, `history`/`meta` JSON, audit fields, and soft-delete semantics.
 
 ## `SpecimenDefinition` fields
 
@@ -32,12 +30,12 @@ The Django model is the **storage** layer: `type_collected`, `patient_preparatio
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `facility` | `FK → facility.Facility` (PROTECT) | model: optional | `null=True`, `blank=True`, `default=None`. In the API it is **never client-supplied** — the ViewSet sets it server-side from the `facility_external_id` URL kwarg, so every API-created definition is facility-scoped. Excluded from both spec schemas (`__exclude__ = ["facility"]`) |
-| `version` | `IntegerField` | default `1` | Definition version. Read-only over the API (exposed by `SpecimenDefinitionReadSpec` only, never accepted on write) |
-| `slug` | `CharField(255)` | yes (server-built) | Stored as the **fully-qualified** slug `f-<facility_external_id>-<slug_value>` (see [Methods & save behaviour](#methods--save-behaviour)). Clients send the bare `slug_value`, not this |
+| `facility` | `FK → facility.Facility` (PROTECT) | model: optional | `null=True`, `blank=True`, `default=None`. Never client-supplied — the ViewSet sets it from the `facility_external_id` URL kwarg, so every API-created definition is facility-scoped. Excluded from both spec schemas (`__exclude__ = ["facility"]`) |
+| `version` | `IntegerField` | default `1` | Definition version. Read-only over the API — exposed by `SpecimenDefinitionReadSpec`, never accepted on write |
+| `slug` | `CharField(255)` | yes (server-built) | Stored fully-qualified as `f-<facility_external_id>-<slug_value>` (see [Methods & save behaviour](#methods--save-behaviour)). Clients send the bare `slug_value` instead |
 | `title` | `CharField(1024)` | yes | Human-readable name |
 | `derived_from_uri` | `TextField` | optional | `null=True`, `blank=True`. URI of the canonical/external definition this was derived from |
-| `status` | `CharField(255)` | yes | Lifecycle status. Constrained by `SpecimenDefinitionStatusOptions` — see [enum](#specimendefinitionstatusoptions-values) |
+| `status` | `CharField(255)` | yes | Lifecycle status, constrained by `SpecimenDefinitionStatusOptions` — see [enum](#specimendefinitionstatusoptions-values) |
 | `description` | `TextField` | yes | Natural-language description (markdown) |
 
 ### Collection & testing detail (JSON fields)
@@ -47,35 +45,35 @@ The model stores these as raw JSON; the spec defines their true shape and value-
 | Field | Model type | Spec type | Notes |
 | --- | --- | --- | --- |
 | `type_collected` | `JSONField` (`null=True`) | `Coding` bound to **Specimen Type Code** value set | Required on write. The kind of material collected. See [value sets](#bound-value-sets) |
-| `patient_preparation` | `JSONField` (`default=list`) | `list[Coding]` bound to **Prepare Patient Prior Specimen Code** value set | Defaults to `[]`. Preparation steps the patient follows before collection |
+| `patient_preparation` | `JSONField` (`default=list`) | `list[Coding]` bound to **Prepare Patient Prior Specimen Code** value set | Defaults to `[]`. Steps the patient follows before collection |
 | `collection` | `JSONField` (`null=True`) | `Coding` bound to **Specimen Collection Code** value set, optional | The specimen collection procedure |
-| `type_tested` | `JSONField` (`default=dict`) | `TypeTestedSpec` (nested), optional | The container, handling, and testing detail. See [`TypeTestedSpec`](#typetestedspec) |
+| `type_tested` | `JSONField` (`default=dict`) | `TypeTestedSpec` (nested), optional | Container, handling, and testing detail. See [`TypeTestedSpec`](#typetestedspec) |
 
-> Each bound coded field accepts a `Coding` object (`{ system, version?, code, display? }`); the `code` is validated against the bound value set at de-serialization time via `ValueSetBoundCoding`.
+> Each bound coded field accepts a `Coding` object (`{ system, version?, code, display? }`); `ValueSetBoundCoding` validates the `code` against the bound value set at de-serialization time.
 
 ## Related models
 
 | Type | Where | Shape |
 | --- | --- | --- |
 | `Coding` | [`resources/common/coding.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/coding.py) | `{ system: str?, version: str?, code: str (required), display: str? }`, `extra="forbid"` |
-| `QuantitySpec` | spec.py | `{ value: Decimal (max_digits=20, decimal_places=0), unit: Coding }` — note `decimal_places=0`, i.e. integer-valued |
-| `MinimumVolumeSpec` | spec.py | `{ quantity: QuantitySpec?, string: str? }`; validator forbids supplying **both** |
+| `QuantitySpec` | spec.py | `{ value: Decimal (max_digits=20, decimal_places=0), unit: Coding }` — `decimal_places=0`, so integer-valued |
+| `MinimumVolumeSpec` | spec.py | `{ quantity: QuantitySpec?, string: str? }`; a validator forbids supplying both |
 | `ContainerSpec` | spec.py | `{ description: str?, capacity: QuantitySpec?, minimum_volume: MinimumVolumeSpec?, cap: Coding? (bound to Container Cap), preparation: str? }` |
-| `DurationSpec` | spec.py | `{ value: Decimal (max_digits=20, decimal_places=0), unit: Coding }` (`unit` not yet restricted to datetime units) |
+| `DurationSpec` | spec.py | `{ value: Decimal (max_digits=20, decimal_places=0), unit: Coding }` — `unit` not yet restricted to datetime units |
 | `RangeSpec` | spec.py | `{ low: QuantitySpec?, high: QuantitySpec? }` |
 | `HandlingSpec` | spec.py | `{ temperature_qualifier: HandlingConditionOptions?, temperature_range: RangeSpec?, max_duration: DurationSpec?, instruction: str? }` |
 | `TypeTestedSpec` | spec.py | see [`TypeTestedSpec`](#typetestedspec) below |
 
 ### `TypeTestedSpec`
 
-The structured shape of the `type_tested` JSON field. Care currently supports **a single container per definition** — for multiple containers per test, repeat the definition in the [Activity Definition](activity-definition.mdx) spec.
+The structured shape of the `type_tested` JSON field. A definition holds a single container; for multiple containers per test, repeat the definition in the [Activity Definition](activity-definition.mdx) spec.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `is_derived` | `bool` | yes | Primary (`false`) vs secondary/derived (`true`) specimen |
+| `is_derived` | `bool` | yes | `false` for a primary specimen, `true` for a secondary/derived one |
 | `preference` | `PreferenceOptions` | yes | `preferred` / `alternate` — see [enum](#preferenceoptions-values) |
-| `container` | `ContainerSpec` | optional | The specimen's container (description, capacity, minimum volume, cap, preparation) |
-| `requirement` | `str` | optional | Requirements for delivery / special handling (markdown) |
+| `container` | `ContainerSpec` | optional | The specimen's container — description, capacity, minimum volume, cap, preparation |
+| `requirement` | `str` | optional | Delivery requirements / special handling (markdown) |
 | `retention_time` | `DurationSpec` | optional | Usual time this kind of specimen is retained |
 | `single_use` | `bool` | optional | Specimen for single use only |
 | `handling` | `HandlingSpec` | optional | Temperature qualifier/range, max duration, instruction |
@@ -86,9 +84,9 @@ The structured shape of the `type_tested` JSON field. Care currently supports **
 
 | Value | Meaning |
 | --- | --- |
-| `draft` | Definition is being authored, not yet in use |
-| `active` | Definition is in use |
-| `retired` | Definition is withdrawn from use |
+| `draft` | Being authored, not yet in use |
+| `active` | In use |
+| `retired` | Withdrawn from use |
 
 ### `PreferenceOptions` values
 
@@ -107,23 +105,23 @@ The structured shape of the `type_tested` JSON field. Care currently supports **
 
 ## Resource specs (API schema)
 
-All specs build on `EMRResource` (`serialize`/`de_serialize`, `perform_extra_serialization`/`perform_extra_deserialization`). `__exclude__ = ["facility"]` keeps `facility` out of both directions. The ViewSet wires `pydantic_model = SpecimenDefinitionWriteSpec` (create/update) and `pydantic_read_model = SpecimenDefinitionReadSpec` (list/retrieve).
+All specs build on `EMRResource` (`serialize`/`de_serialize`, `perform_extra_serialization`/`perform_extra_deserialization`). `__exclude__ = ["facility"]` keeps `facility` out of both directions. The ViewSet wires `pydantic_model = SpecimenDefinitionWriteSpec` for create/update and `pydantic_read_model = SpecimenDefinitionReadSpec` for list/retrieve.
 
 | Spec class | Role | Fields / behaviour |
 | --- | --- | --- |
 | `BaseSpecimenDefinitionSpec` | shared base | `id`, `title`, `derived_from_uri`, `status`, `description`, `type_collected`, `patient_preparation`, `collection`, `type_tested`. Holds the coded-field value-set bindings and the nested `type_tested` shape |
-| `SpecimenDefinitionWriteSpec` | write · create & update | Base fields **plus** `slug_value: SlugType`. `perform_extra_deserialization` copies `slug_value` → `obj.slug` (ViewSet then fully-qualifies it). `facility`, `version`, and the stored `slug` are never client-supplied |
-| `SpecimenDefinitionReadSpec` | read · list & detail | Base fields **plus** `version: int?`, `slug: str`, `slug_config: dict`. `perform_extra_serialization` sets `id = obj.external_id` and `slug_config = obj.parse_slug(obj.slug)` (decomposes the qualified slug into `{ facility, slug_value }`) |
+| `SpecimenDefinitionWriteSpec` | write · create & update | Base fields **plus** `slug_value: SlugType`. `perform_extra_deserialization` copies `slug_value` → `obj.slug` (the ViewSet then fully-qualifies it). `facility`, `version`, and the stored `slug` are never client-supplied |
+| `SpecimenDefinitionReadSpec` | read · list & detail | Base fields **plus** `version: int?`, `slug: str`, `slug_config: dict`. `perform_extra_serialization` sets `id = obj.external_id` and `slug_config = obj.parse_slug(obj.slug)`, decomposing the qualified slug into `{ facility, slug_value }` |
 
 Nested specs used by the schemas: `TypeTestedSpec`, `ContainerSpec`, `MinimumVolumeSpec`, `QuantitySpec`, `DurationSpec`, `RangeSpec`, `HandlingSpec` (see [Related models](#related-models)).
 
 ### Validation rules
 
-- `slug_value` (`SlugType`): string, length 5–50, must match `^[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]$` (URL-safe; starts and ends alphanumeric).
-- `type_collected`, `patient_preparation[*]`, `collection`, `container.cap`: during de-serialization, `ValueSetBoundCoding` validates each `Coding.code` against its bound value set and rejects an unknown code.
+- `slug_value` (`SlugType`): string, length 5–50, matching `^[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]$` (URL-safe; starts and ends alphanumeric).
+- Coded fields `type_collected`, `patient_preparation[*]`, `collection`, and `container.cap`: `ValueSetBoundCoding` validates each `Coding.code` against its bound value set during de-serialization and rejects unknown codes.
 - `MinimumVolumeSpec`: `quantity` and `string` are mutually exclusive — supplying both raises `"Only one of quantity or string should be provided"`.
 - `QuantitySpec` / `DurationSpec` `value`: `Decimal`, `max_digits=20`, `decimal_places=0` (integer-valued).
-- Slug uniqueness (ViewSet `validate_data`): the fully-qualified `f-<facility>-<slug_value>` must be unique within the facility (case-insensitive); otherwise `"Specimen Definition with this slug already exists."` On update, the current record is excluded from the check.
+- Slug uniqueness (ViewSet `validate_data`): the fully-qualified `f-<facility>-<slug_value>` must be unique within the facility (case-insensitive), else `"Specimen Definition with this slug already exists."` On update, the current record is excluded from the check.
 
 ### Bound value sets
 
@@ -136,21 +134,21 @@ Nested specs used by the schemas: `TypeTestedSpec`, `ContainerSpec`, `MinimumVol
 
 ## Methods & save behaviour
 
-`SpecimenDefinition` defines no overridden `save()`/`delete()` or custom methods. Slug helpers, audit fields, and soft-delete are inherited from [`SlugBaseModel`](../foundation/base-model.mdx). The side effects below live in the resource spec and the ViewSet, not the model:
+`SpecimenDefinition` overrides no `save()`/`delete()` and defines no custom methods. Slug helpers, audit fields, and soft-delete come from [`SlugBaseModel`](../foundation/base-model.mdx). The side effects below live in the resource spec and the ViewSet, not the model:
 
-- **Slug qualification (write).** Clients send a bare `slug_value`. `SpecimenDefinitionWriteSpec.perform_extra_deserialization` sets `obj.slug = slug_value`, then the ViewSet's `perform_create`/`perform_update` rewrites it to `SpecimenDefinition.calculate_slug_from_facility(facility.external_id, slug)` → `f-<facility_external_id>-<slug_value>`.
+- **Slug qualification (write).** Clients send a bare `slug_value`. `SpecimenDefinitionWriteSpec.perform_extra_deserialization` sets `obj.slug = slug_value`; then the ViewSet's `perform_create`/`perform_update` rewrites it via `SpecimenDefinition.calculate_slug_from_facility(facility.external_id, slug)` → `f-<facility_external_id>-<slug_value>`.
 - **Facility binding (create).** `perform_create` sets `instance.facility` from the `facility_external_id` URL kwarg before saving.
 - **Slug decomposition (read).** `SpecimenDefinitionReadSpec.perform_extra_serialization` exposes `slug_config = obj.parse_slug(obj.slug)`, splitting the stored slug back into `{ facility, slug_value }`.
-- **Specimen instantiation.** `convert_sd_to_specimen` ([`specimen.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/specimen_definition/specimen.py)) builds a [`Specimen`](specimen.mdx) from a definition with `status="available"`, `specimen_type = definition.type_collected`, and `specimen_definition = <definition>` — preserving the link and a copy of the type.
+- **Specimen instantiation.** `convert_sd_to_specimen` ([`specimen.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/specimen_definition/specimen.py)) builds a [`Specimen`](specimen.mdx) from a definition with `status="available"`, `specimen_type = definition.type_collected`, and `specimen_definition = <definition>`, preserving the link and a copy of the type.
 
 ## API integration notes
 
-- **Endpoints are facility-scoped.** The ViewSet supports create, retrieve, update, list, and upsert; `lookup_field = "slug"`. All operations require `facility_external_id` in the URL.
+- **Endpoints are facility-scoped.** The ViewSet supports create, retrieve, update, list, and upsert with `lookup_field = "slug"`. Every operation requires `facility_external_id` in the URL.
 - **Authorization.** Writes require `can_write_facility_specimen_definition`; list/retrieve require `can_list_facility_specimen_definition` on the facility — otherwise `403 PermissionDenied`. The queryset is filtered to the URL facility.
 - **Filtering / ordering.** `status` (iexact) and `title` (icontains) filters; ordering by `created_date` / `modified_date`.
-- **Write payload** (`SpecimenDefinitionWriteSpec`): send `slug_value`, `title`, `status`, `description`, the coded fields (`type_collected`, `patient_preparation`, `collection`) as `Coding` objects, and `type_tested`. Do **not** send `facility`, `version`, or the qualified `slug` — they are server-managed.
+- **Write payload** (`SpecimenDefinitionWriteSpec`): send `slug_value`, `title`, `status`, `description`, the coded fields (`type_collected`, `patient_preparation`, `collection`) as `Coding` objects, and `type_tested`. Don't send `facility`, `version`, or the qualified `slug` — they're server-managed.
 - **Read payload** (`SpecimenDefinitionReadSpec`): adds `id` (= `external_id`), `version`, the qualified `slug`, and `slug_config`.
-- The model maps to the FHIR `SpecimenDefinition` resource. Care's spec is intentionally minimal: a single container per definition, and a `version` bump rather than mutation of published records when behaviour changes.
+- The model maps to the FHIR `SpecimenDefinition` resource. Care's spec is intentionally minimal: one container per definition, and behaviour changes bump `version` rather than mutate published records.
 
 ## Related
 

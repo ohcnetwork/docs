@@ -4,7 +4,7 @@ sidebar_position: 5
 
 # Location
 
-Technical reference for the `FacilityLocation` module in Care EMR.
+`FacilityLocation` is a node in a facility's building/ward/room/bed tree — where resources sit and where care happens. You work with it when you place an encounter somewhere, scope organization access to part of a facility, or model a site's physical layout.
 
 **Source:**
 
@@ -13,9 +13,9 @@ Technical reference for the `FacilityLocation` module in Care EMR.
 - Base resource: [`care/emr/resources/base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)
 - Coding type: [`care/emr/resources/common/coding.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/coding.py)
 
-Locations are abstract, hierarchical entities (buildings, wards, rooms, beds) that describe where resources sit and where care is delivered. Nesting is unbounded: every location may have a parent and children. Encounters and organizations attach to locations, and location-level access resolves through an async cascade rather than synchronously. The model derives from the [FHIR Location](https://build.fhir.org/location.html) resource.
+Nodes nest without limit: every node may have a parent and children, so one tree can run from a campus down to a single bed. Encounters and organizations attach to nodes, and access granted at a node cascades to its descendants asynchronously rather than resolving on each request. The model maps to the [FHIR Location](https://build.fhir.org/location.html) resource.
 
-The Django model is the **storage** layer. Several fields (`location_type`, `metadata`, `cached_parent_json`) are opaque `JSONField`s whose real shape comes from the Pydantic **resource specs** (`care/emr/resources/location/spec.py`). The specs also define every enum/choice and the read/write API schemas. See [Resource specs (API schema)](#resource-specs-api-schema).
+The Django model is only the storage layer. `location_type`, `metadata`, and `cached_parent_json` are opaque `JSONField`s; their real shape lives in the Pydantic resource specs (`care/emr/resources/location/spec.py`), which also define every enum and the read/write schema split. See [Resource specs (API schema)](#resource-specs-api-schema).
 
 ## Models
 
@@ -25,7 +25,7 @@ The Django model is the **storage** layer. Several fields (`location_type`, `met
 | `FacilityLocationOrganization` | Grants a `FacilityOrganization` access to a location |
 | `FacilityLocationEncounter` | Records how/when an encounter occupied a location (e.g. a bed) |
 
-All models extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, audit fields, and soft-delete semantics).
+All three extend [`EMRBaseModel`](../foundation/base-model.mdx), which supplies `external_id`, audit fields, and soft-delete semantics.
 
 ## `FacilityLocation` fields
 
@@ -33,41 +33,41 @@ All models extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EM
 
 | Field | Type | Spec values / shape | Notes |
 | --- | --- | --- | --- |
-| `name` | `CharField(255)` | `str`, required | Location name; unique within its level under a root (see [validation](#methods--save-behaviour)) |
-| `description` | `CharField(255)` | `str`, required | Free-text description |
-| `status` | `CharField(255)` | `StatusChoices` enum | Location status; one of [`StatusChoices`](#statuschoices-values) |
+| `name` | `CharField(255)` | `str`, required | Must be unique among siblings at the same level under the same root (see [validation](#methods--save-behaviour)) |
+| `description` | `CharField(255)` | `str`, required | Free-text |
+| `status` | `CharField(255)` | `StatusChoices` enum | One of [`StatusChoices`](#statuschoices-values) |
 | `operational_status` | `CharField(255)` | `FacilityLocationOperationalStatusChoices` enum | FHIR operational status code; one of [`FacilityLocationOperationalStatusChoices`](#facilitylocationoperationalstatuschoices-values) |
-| `system_availability_status` | `CharField(255)` | `str` (read-only) | Server-maintained; derived from encounter association. Conceptually one of [`LocationAvailabilityStatusChoices`](#locationavailabilitystatuschoices-values) (`available` / `reserved`) |
-| `mode` | `CharField(255)` | `FacilityLocationModeChoices` enum | `kind` (a type, e.g. a building/ward) or `instance` (a single location, e.g. Bed 1). See [`FacilityLocationModeChoices`](#facilitylocationmodechoices-values). Write-only on create; not updatable |
-| `location_type` | `JSONField` (`default=dict`, nullable) | `Coding \| None` (default `None`) | A single FHIR [`Coding`](#coding-shape) — **not** a `CodeableConcept`. No bound value set; free coding |
-| `form` | `CharField(255)` | `FacilityLocationFormChoices` enum | FHIR physical form of the location; one of [`FacilityLocationFormChoices`](#facilitylocationformchoices-values) |
+| `system_availability_status` | `CharField(255)` | `str` (read-only) | Server-maintained, derived from encounter association. Resolves to one of [`LocationAvailabilityStatusChoices`](#locationavailabilitystatuschoices-values) (`available` / `reserved`) |
+| `mode` | `CharField(255)` | `FacilityLocationModeChoices` enum | `kind` (a type, e.g. a building/ward) or `instance` (a single location, e.g. Bed 1). Set on create, then frozen. See [`FacilityLocationModeChoices`](#facilitylocationmodechoices-values) |
+| `location_type` | `JSONField` (`default=dict`, nullable) | `Coding \| None` (default `None`) | A single FHIR [`Coding`](#coding-shape), not a `CodeableConcept`. Unbound — any coding is accepted |
+| `form` | `CharField(255)` | `FacilityLocationFormChoices` enum | FHIR physical form; one of [`FacilityLocationFormChoices`](#facilitylocationformchoices-values) |
 
 ### Hierarchy & tree caches
 
-These fields denormalize the location tree so descendants can be queried without recursive joins. `save()` and the cascade task maintain them — clients should not set them directly.
+These fields denormalize the tree so descendants are queryable without recursive joins. `save()` and the cascade task own them; never set them from a client.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `parent` | `FK → FacilityLocation` | `SET_NULL`, nullable. Immediate parent node. Sent on write as a UUID (`parent`), excluded from read serialization (replaced with serialized parent JSON) |
+| `parent` | `FK → FacilityLocation` | `SET_NULL`, nullable. Immediate parent. Accepted on write as a UUID (`parent`); on read it's dropped in favour of the serialized parent JSON |
 | `root_location` | `FK → self` | `CASCADE`, `related_name="root"`, nullable. Top of this node's tree. Excluded from specs |
-| `has_children` | `BooleanField` | `default=False`; flipped to `True` on the parent when a child is created. Exposed read-only in list/retrieve specs |
-| `level_cache` | `IntegerField` | `default=0`; depth in the tree (`parent.level_cache + 1`) |
+| `has_children` | `BooleanField` | `default=False`. Set `True` on the parent when a child is created. Read-only in list/retrieve specs |
+| `level_cache` | `IntegerField` | `default=0`. Depth in the tree (`parent.level_cache + 1`) |
 | `parent_cache` | `ArrayField[int]` | Ordered ancestor IDs (`parent.parent_cache + [parent.id]`) |
-| `cached_parent_json` | `JSONField` (`default=dict`) | Serialized parent chain (`FacilityLocationListSpec`) with a `cache_expiry` ISO timestamp; rebuilt lazily by `get_parent_json()`, invalidated by the cascade task. `cache_expiry_days = 15` |
-| `sort_index` | `IntegerField` | `default=0`; in specs `int \| None`, default `0`, constrained `0 ≤ sort_index ≤ 10000` (`MIN_SORT_INDEX`/`MAX_SORT_INDEX`). Auto-assigned as `max(sibling sort_index) + 1` when unset |
+| `cached_parent_json` | `JSONField` (`default=dict`) | Serialized parent chain (`FacilityLocationListSpec`) plus a `cache_expiry` ISO timestamp. Rebuilt lazily by `get_parent_json()`, invalidated by the cascade task. `cache_expiry_days = 15` |
+| `sort_index` | `IntegerField` | `default=0`. In specs `int \| None`, default `0`, constrained `0 ≤ sort_index ≤ 10000` (`MIN_SORT_INDEX`/`MAX_SORT_INDEX`). Auto-assigned as `max(sibling sort_index) + 1` when left unset |
 
 ### Access & encounter
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `facility` | `FK → facility.Facility` | `PROTECT`. Owning facility. Excluded from specs (resolved from route/context) |
-| `facility_organization_cache` | `ArrayField[int]` | `default=list`. Org IDs that can access this location; rebuilt by `sync_organization_cache()` |
-| `current_encounter` | `FK → Encounter` | `SET_NULL`, nullable, `default=None`. Populated from `FacilityLocationEncounter`. Excluded from base spec; surfaced as serialized JSON in list/retrieve specs |
+| `facility` | `FK → facility.Facility` | `PROTECT`. Owning facility. Excluded from specs — resolved from route/context |
+| `facility_organization_cache` | `ArrayField[int]` | `default=list`. Org IDs that can reach this location; rebuilt by `sync_organization_cache()` |
+| `current_encounter` | `FK → Encounter` | `SET_NULL`, nullable, `default=None`. Populated from `FacilityLocationEncounter`. Excluded from the base spec; surfaced as serialized JSON in list/retrieve specs |
 | `metadata` | `JSONField` | `default=dict`. Open extension bag for deployment-specific data |
 
 ## Enum values
 
-All enums are `str` `Enum`s defined in `care/emr/resources/location/spec.py`. The values below are character-for-character from source.
+Every enum is a `str` `Enum` in `care/emr/resources/location/spec.py`. Values below are character-for-character from source.
 
 ### `StatusChoices` values
 
@@ -94,7 +94,7 @@ FHIR HL7 v2 bed/location operational status codes.
 
 | Value | Meaning |
 | --- | --- |
-| `instance` | A single, concrete location (e.g. Bed 1). Instances **cannot have children** |
+| `instance` | A single, concrete location (e.g. Bed 1). Instances cannot have children |
 | `kind` | A class/type of location (e.g. a ward or building) |
 
 ### `FacilityLocationFormChoices` values
@@ -121,7 +121,7 @@ FHIR `location-physical-type` codes.
 
 ### `LocationEncounterAvailabilityStatusChoices` values
 
-Used by `FacilityLocationEncounter.status` (how an encounter occupies a location).
+Used by `FacilityLocationEncounter.status` — how an encounter occupies a location.
 
 | Value | Meaning |
 | --- | --- |
@@ -132,7 +132,7 @@ Used by `FacilityLocationEncounter.status` (how an encounter occupies a location
 
 ### `LocationAvailabilityStatusChoices` values
 
-Conceptual values for `system_availability_status` (server-derived).
+The server-derived values that `system_availability_status` resolves to.
 
 | Value | Meaning |
 | --- | --- |
@@ -156,18 +156,18 @@ Coding {
 
 ### `FacilityLocationOrganization`
 
-Marks which organization can access a given location. Users under that organization inherit access to the location (and its encounters) through the role they hold on the organization.
+Links an organization to a location. Users under that organization inherit access to the location and its encounters through whatever role they hold on the organization.
 
 ```text
 location     → FK FacilityLocation (CASCADE)
 organization → FK FacilityOrganization (CASCADE)
 ```
 
-Saving a `FacilityLocationOrganization` calls `location.save()` (rebuilding `facility_organization_cache`), then `location.cascade_changes()`, which propagates the change to descendants asynchronously. On write, the set of organizations comes from `FacilityLocationWriteSpec.organizations` (a list of UUIDs).
+Saving one of these rows calls `location.save()` (rebuilding `facility_organization_cache`), then `location.cascade_changes()` to propagate the grant down to descendants asynchronously. On write, the organization set comes from `FacilityLocationWriteSpec.organizations`, a list of UUIDs.
 
 ### `FacilityLocationEncounter`
 
-Records how an encounter was associated with a location (e.g. a bed assignment over a time window).
+A bed assignment, in effect: it records how an encounter occupied a location over a time window.
 
 | Field | Type | Spec | Notes |
 | --- | --- | --- | --- |
@@ -175,7 +175,7 @@ Records how an encounter was associated with a location (e.g. a bed assignment o
 | `location` | `FK → FacilityLocation` | excluded / nested | `CASCADE`. Surfaced as JSON in `...ListSpecWithLocation` |
 | `encounter` | `FK → Encounter` | UUID on write, JSON on read | `CASCADE`. Validated to exist on create |
 | `start_datetime` | `DateTimeField` | `datetime` (required) | Occupancy start |
-| `end_datetime` | `DateTimeField` (nullable) | `datetime \| None` | Occupancy end (open-ended when null) |
+| `end_datetime` | `DateTimeField` (nullable) | `datetime \| None` | Occupancy end; open-ended when null |
 
 `FacilityLocation.current_encounter` is populated from these rows.
 
@@ -185,24 +185,24 @@ Records how an encounter was associated with a location (e.g. a bed assignment o
 
 On insert (no `id` yet):
 
-1. If `parent` is set → `level_cache`, `root_location`, and `parent_cache` are derived from the parent; the parent's `has_children` is flipped to `True` if needed.
-2. If `sort_index` is unset → it is assigned `max(sibling sort_index) + 1`.
+1. If `parent` is set, `level_cache`, `root_location`, and `parent_cache` are derived from the parent, and the parent's `has_children` is flipped to `True` if needed.
+2. If `sort_index` is unset, it's assigned `max(sibling sort_index) + 1`.
 
-On update, `cached_parent_json` is cleared so it rebuilds lazily. After every `super().save()`, `sync_organization_cache()` runs and persists `facility_organization_cache` via a second `save(update_fields=[...])`.
+On update, `cached_parent_json` is cleared so it rebuilds lazily. After every `super().save()`, `sync_organization_cache()` runs and persists `facility_organization_cache` through a second `save(update_fields=[...])`, so each write touches the row twice.
 
 ### Caches & cascade
 
-- `sync_organization_cache()` — unions the parent's org cache, all linked `FacilityLocationOrganization` org chains, and the facility's `default_internal_organization_id`, then writes `facility_organization_cache`.
-- `get_parent_json()` — returns the cached parent chain, refreshing `cached_parent_json` (via `FacilityLocationListSpec.serialize(parent)`) when expired (`cache_expiry_days = 15`).
-- `cascade_changes()` / `handle_cascade(base_location)` — a Celery task that walks every descendant and re-saves it to invalidate its `cached_parent_json`. Triggered when a location's organizations change; expect propagation to be **eventually consistent**.
+- `sync_organization_cache()` — unions the parent's org cache, the org chains of every linked `FacilityLocationOrganization`, and the facility's `default_internal_organization_id`, then writes `facility_organization_cache`.
+- `get_parent_json()` — returns the cached parent chain, refreshing `cached_parent_json` (via `FacilityLocationListSpec.serialize(parent)`) once it expires (`cache_expiry_days = 15`).
+- `cascade_changes()` / `handle_cascade(base_location)` — a Celery task that walks every descendant and re-saves it to invalidate each node's `cached_parent_json`. It fires when a location's organizations change, so propagation is eventually consistent, not immediate.
 
 ### `validate_uniqueness()`
 
-Classmethod that enforces `name` uniqueness among siblings at the same `level_cache` within the same `root_location` (or among root-level locations when there is no root). For a new instance with a `parent`, `level_cache` and `root_location` are computed from that parent before the check.
+Classmethod that enforces `name` uniqueness among siblings at the same `level_cache` within the same `root_location` — or among root-level locations when there's no root. For a new instance with a `parent`, `level_cache` and `root_location` are computed from that parent before the check runs.
 
 ## Resource specs (API schema)
 
-The Pydantic specs in `care/emr/resources/location/spec.py` define the API request/response shapes. All extend `EMRResource` (`serialize`/`de_serialize`, with `perform_extra_serialization`/`perform_extra_deserialization` hooks; see [base model](../foundation/base-model.mdx) and [`base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)).
+The Pydantic specs in `care/emr/resources/location/spec.py` define the request/response shapes. All extend `EMRResource`, which provides `serialize`/`de_serialize` plus the `perform_extra_serialization`/`perform_extra_deserialization` hooks (see [base model](../foundation/base-model.mdx) and [`base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)).
 
 ### Location specs
 
@@ -210,8 +210,8 @@ The Pydantic specs in `care/emr/resources/location/spec.py` define the API reque
 | --- | --- | --- |
 | `FacilityLocationBaseSpec` | shared base | `__model__ = FacilityLocation`; `id: UUID4 \| None`. `__exclude__ = [parent, facility, organizations, root_location, current_encounter]` |
 | `FacilityLocationSpec` | shared fields | `status`, `operational_status`, `name`, `description`, `location_type` (`Coding \| None`), `form`, `sort_index` (`0..10000`, default `0`) |
-| `FacilityLocationWriteSpec` | write · create | Adds `parent: UUID4 \| None`, `organizations: list[UUID4]` (required), `mode: FacilityLocationModeChoices`. Validator: if `parent` set, parent must exist and must not be `mode = instance` ("Instances cannot have children"). `perform_extra_deserialization` resolves `parent` UUID → FK |
-| `FacilityLocationUpdateSpec` | write · update | Same fields as `FacilityLocationSpec` (no `parent`/`organizations`/`mode` — hierarchy and mode are fixed after creation) |
+| `FacilityLocationWriteSpec` | write · create | Adds `parent: UUID4 \| None`, `organizations: list[UUID4]` (required), `mode: FacilityLocationModeChoices`. Validator: a set `parent` must exist and must not be `mode = instance` ("Instances cannot have children"). `perform_extra_deserialization` resolves the `parent` UUID to an FK |
+| `FacilityLocationUpdateSpec` | write · update | Same fields as `FacilityLocationSpec`. Drops `parent`/`organizations`/`mode` — hierarchy and mode are fixed after creation |
 | `FacilityLocationMinimalListSpec` | read · minimal | Adds `parent: dict`, `mode: str`, `has_children: bool`, `system_availability_status: str`. `perform_extra_serialization` sets `id = external_id` and `parent = obj.get_parent_json()` |
 | `FacilityLocationListSpec` | read · list | Extends minimal; adds `current_encounter: dict \| None`, serialized via `EncounterListSpec` when present |
 | `FacilityLocationRetrieveSpec` | read · detail | Extends list; adds `created_by`/`updated_by` (via `serialize_audit_users`) |
@@ -221,25 +221,25 @@ The Pydantic specs in `care/emr/resources/location/spec.py` define the API reque
 | Spec class | Role | Exposes / notes |
 | --- | --- | --- |
 | `FacilityLocationEncounterBaseSpec` | shared base | `__model__ = FacilityLocationEncounter`; `id: UUID4 \| None`. `__exclude__ = [encounter, location]` |
-| `FacilityLocationEncounterCreateSpec` | write · create | `status` (`LocationEncounterAvailabilityStatusChoices`), `encounter: UUID4`, `start_datetime`, `end_datetime: datetime \| None`. Validator: encounter must exist. `perform_extra_deserialization` resolves `encounter` UUID → FK |
-| `FacilityLocationEncounterUpdateSpec` | write · update | `status`, `start_datetime`, `end_datetime` (encounter not re-assignable) |
+| `FacilityLocationEncounterCreateSpec` | write · create | `status` (`LocationEncounterAvailabilityStatusChoices`), `encounter: UUID4`, `start_datetime`, `end_datetime: datetime \| None`. Validator: encounter must exist. `perform_extra_deserialization` resolves the `encounter` UUID to an FK |
+| `FacilityLocationEncounterUpdateSpec` | write · update | `status`, `start_datetime`, `end_datetime`. Encounter is not re-assignable |
 | `FacilityLocationEncounterListSpec` | read · list | `encounter: UUID4`, `start_datetime`, `end_datetime`, `status: str`; `id = external_id` |
 | `FacilityLocationEncounterListSpecWithLocation` | read · list | Extends list; adds `location: dict` (serialized via `FacilityLocationListSpec`) |
 | `FacilityLocationEncounterReadSpec` | read · detail | `encounter: dict` (serialized via `EncounterRetrieveSpec`), `start_datetime`, `end_datetime`, `status`, `created_by`/`updated_by` |
 
 ### Server-maintained behaviour
 
-- `system_availability_status`, `has_children`, `level_cache`, `parent_cache`, `cached_parent_json`, `facility_organization_cache`, `current_encounter`, `sort_index` (when unset) are platform-maintained — do not write them from clients.
-- On read, `parent` is replaced by the serialized parent chain (`get_parent_json()`), not the raw FK.
-- Granting access via `organizations` / `FacilityLocationOrganization` is **asynchronous**; the org cache and descendant caches settle after the cascade task runs.
-- `location_type` binds to a free `Coding` (no value set slug); `metadata` is an open extension bag — both add coded/extension data without schema migrations.
+- These are platform-maintained — don't write them from a client: `system_availability_status`, `has_children`, `level_cache`, `parent_cache`, `cached_parent_json`, `facility_organization_cache`, `current_encounter`, and `sort_index` (when left unset).
+- On read, `parent` comes back as the serialized parent chain (`get_parent_json()`), never the raw FK.
+- Access granted through `organizations` / `FacilityLocationOrganization` lands asynchronously; the org cache and descendant caches settle only after the cascade task runs.
+- `location_type` takes a free `Coding` (no value-set slug) and `metadata` is an open bag, so both add coded or extension data without a schema migration.
 
 ## API integration notes
 
-- Locations are exposed through Care's REST API and modelled on the FHIR `Location` resource; payload field names may differ from these Django names.
-- `mode` distinguishes `kind` (a location type) from `instance` (a concrete location such as a bed) — beds are `FacilityLocation` instances, not a separate model. `instance` locations cannot have children.
-- `parent`, `organizations`, and `mode` are settable only at creation (`FacilityLocationWriteSpec`); updates use `FacilityLocationUpdateSpec`, which omits them.
-- `level_cache`, `parent_cache`, `cached_parent_json`, `has_children`, `sort_index`, `facility_organization_cache`, and `current_encounter` are platform-maintained — do not write them from clients.
+- The API is modelled on the FHIR `Location` resource, so payload field names may differ from these Django names.
+- `mode` separates `kind` (a location type) from `instance` (a concrete location such as a bed). Beds are `FacilityLocation` instances, not a separate model, and `instance` locations cannot have children.
+- `parent`, `organizations`, and `mode` are settable only at creation (`FacilityLocationWriteSpec`). Updates go through `FacilityLocationUpdateSpec`, which omits all three.
+- For fields you can't write, see [Server-maintained behaviour](#server-maintained-behaviour).
 
 ## Related
 

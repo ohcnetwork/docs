@@ -4,9 +4,9 @@ sidebar_position: 1
 
 # Account
 
-Technical reference for the `Account` module in Care EMR.
+An `Account` is the financial bucket that aggregates every transaction made against a patient within a facility. You touch it indirectly: charge items land on a patient's default account, and invoices and reconciliations settle against it.
 
-An `Account` is a financial bucket that aggregates every transaction made against a patient within a facility. The Django model is the **storage layer** — several fields are opaque `JSONField`s whose real structure lives in the Pydantic **resource specs** (`care/emr/resources/account/`). This doc enriches the model fields with the spec-defined enums, JSON shapes, validation, and API read/write schemas.
+Several model fields are opaque `JSONField`s whose real structure lives in the Pydantic resource specs under `care/emr/resources/account/`. Each field below is paired with the spec-defined enums, JSON shapes, validation, and read/write schemas that govern it.
 
 **Source:**
 - Model: [`care/emr/models/account.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/account.py)
@@ -19,11 +19,11 @@ An `Account` is a financial bucket that aggregates every transaction made agains
 
 | Model | Purpose |
 | --- | --- |
-| `Account` | A financial bucket for all transactions made against a patient in a facility, aggregating charges and balances across encounters |
+| `Account` | Aggregates charges and balances for one patient in one facility across encounters |
 
-`Account` extends [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, audit fields `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON).
+`Account` extends [`EMRBaseModel`](../foundation/base-model.mdx), which contributes `external_id`, the audit fields `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON.
 
-An account is perpetual by default. Charge items are placed on the patient's default account within a facility, and initially only one active+open account exists per patient per facility (see [`get_default_account`](#default-account)). Once a patient is discharged, accounts can be balanced and closed. Invoices are created against accounts or against the items within them.
+Accounts are perpetual. One active, open account exists per patient per facility (see [`get_default_account`](#default-account)), and charge items land on it. After discharge, the account can be balanced and closed. Invoices are raised against an account or against the items within it.
 
 ## `Account` fields
 
@@ -31,64 +31,64 @@ An account is perpetual by default. Charge items are placed on the patient's def
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `facility` | `FK → facility.Facility` (PROTECT) | yes | Facility where the account is created. Server-set; not exposed on write specs |
-| `patient` | `FK → emr.Patient` (PROTECT) | yes | The entity that incurred the expenses. On create, supplied as a patient `external_id` (UUID) and resolved server-side |
-| `name` | `CharField(255)` | yes | Human-readable label. Default account auto-names as `"{patient.name} {YYYY-MM-DD}"` |
-| `description` | `TextField` | no | Nullable; explanation of purpose/use |
-| `primary_encounter` | `FK → emr.Encounter` (SET_NULL, nullable) | no | Optional link to associate the account with a single encounter for reports, summaries, and insurance paperwork. Settable only via the update spec (supplied as an encounter `external_id`) |
+| `facility` | `FK → facility.Facility` (PROTECT) | yes | Server-set from the request scope; absent from every write spec |
+| `patient` | `FK → emr.Patient` (PROTECT) | yes | The entity that incurred the expenses. On create, pass a patient `external_id` (UUID); the server resolves it |
+| `name` | `CharField(255)` | yes | Human-readable label. The default account auto-names as `"{patient.name} {YYYY-MM-DD}"` |
+| `description` | `TextField` | no | Nullable free text for purpose or use |
+| `primary_encounter` | `FK → emr.Encounter` (SET_NULL, nullable) | no | Pins the account to a single encounter for reports, summaries, and insurance paperwork. Settable only through the update spec, as an encounter `external_id` |
 
 ### Status
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `status` | `CharField(255)` | yes | Account lifecycle status — `AccountStatusOptions` enum (see [values](#accountstatusoptions-values)) |
-| `billing_status` | `CharField(255)` | yes | Billing lifecycle status — `AccountBillingStatusOptions` enum (see [values](#accountbillingstatusoptions-values)) |
-| `service_period` | `JSONField` (default `{}`) | yes (on spec) | Transaction window. Shape = `PeriodSpec { start, end }` — see [service_period shape](#service_period-shape) |
+| `status` | `CharField(255)` | yes | Lifecycle status from `AccountStatusOptions` (see [values](#accountstatusoptions-values)); the enum rejects out-of-set strings |
+| `billing_status` | `CharField(255)` | yes | Billing lifecycle status from `AccountBillingStatusOptions` (see [values](#accountbillingstatusoptions-values)) |
+| `service_period` | `JSONField` (default `{}`) | yes (on spec) | Transaction window holding a `PeriodSpec { start, end }` — see [service_period shape](#service_period-shape) |
 
 ### Balances & totals
 
-These decimal totals are stored with `max_digits=20, decimal_places=6` and default to `0`. They are **platform-maintained aggregates** computed by [`sync_account_items`](#balance-sync), not client-writable. None appear on the write specs.
+These decimal totals (`max_digits=20, decimal_places=6`, default `0`) are platform-maintained aggregates that [`sync_account_items`](#balance-sync) recomputes. None are client-writable, and none appear on a write spec.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `total_net` | `DecimalField` | Net total before adjustments. Currently **not populated** by `sync_account_items` (logic commented out); stays at default `0` |
-| `total_gross` | `DecimalField` | Sum of `total_price` over charge items in `paid`/`billed` status |
-| `total_paid` | `DecimalField` | Sum of `active`+`complete` payment reconciliations minus credit-note reconciliations |
+| `total_net` | `DecimalField` | Net total before adjustments. Not populated — the `sync_account_items` logic is commented out, so it holds the default `0` |
+| `total_gross` | `DecimalField` | Sum of `total_price` over charge items in `paid` or `billed` status |
+| `total_paid` | `DecimalField` | Sum of `active`+`complete` payment reconciliations, minus credit-note reconciliations |
 | `total_balance` | `DecimalField` | `total_gross − total_paid` |
 | `total_billable_charge_items` | `DecimalField` | Sum of `total_price` over charge items in `billable` status |
-| `total_price_components` | `JSONField` (default `{}`) | Intended breakdown of price components (taxes, discounts, etc.); shape = list of `MonetaryComponent` (see [below](#monetarycomponent-shape)). Currently **not populated** by `sync_account_items` (logic commented out) |
-| `cached_items` | `JSONField` (default `{}`) | Denormalized snapshot of the account's charge items. Currently **not populated** by `sync_account_items` (logic commented out). Serialized as a `list` on retrieve |
-| `calculated_at` | `DateTimeField` (nullable) | Timestamp the balances were last calculated (set to `care_now()` on each sync) |
+| `total_price_components` | `JSONField` (default `{}`) | Intended price-component breakdown (taxes, discounts, etc.) as a list of `MonetaryComponent` (see [below](#monetarycomponent-shape)). Not populated — the sync logic is commented out |
+| `cached_items` | `JSONField` (default `{}`) | Denormalized snapshot of the account's charge items, serialized as a `list` on retrieve. Not populated — the sync logic is commented out |
+| `calculated_at` | `DateTimeField` (nullable) | When the balances were last computed; set to `care_now()` on each sync |
 
 ### Tags & extensions
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `tags` | `ArrayField[int]` (default `[]`) | Tag IDs applied to the account; rendered via `SingleFacilityTagManager` on read |
-| `extensions` | `JSONField` (default `{}`) | Open extension bag for deployment-specific metadata. Validated by `ExtensionValidator` against `ExtensionResource.account`; surfaced on the retrieve spec |
+| `tags` | `ArrayField[int]` (default `[]`) | Tag IDs applied to the account; rendered through `SingleFacilityTagManager` on read |
+| `extensions` | `JSONField` (default `{}`) | Open bag for deployment-specific metadata. `ExtensionValidator` checks it against `ExtensionResource.account`; surfaced only on the retrieve spec |
 
 ## Enum values
 
 ### `AccountStatusOptions` values
 
-Lifecycle status of the account. Stored as the raw enum value string in `status`.
+Stored as the raw enum value string in `status`.
 
 | Value | Meaning |
 | --- | --- |
-| `active` | Account is open and in use (default-account state) |
-| `inactive` | Account is no longer actively used |
-| `entered_in_error` | Account was created in error |
-| `on_hold` | Account is temporarily paused |
+| `active` | Open and in use (the default-account state) |
+| `inactive` | No longer actively used |
+| `entered_in_error` | Created in error |
+| `on_hold` | Temporarily paused |
 
-Note: values use underscores (e.g. `entered_in_error`, `on_hold`), not the FHIR-style hyphenated forms.
+Values use underscores (`entered_in_error`, `on_hold`), not the FHIR-style hyphenated forms.
 
 ### `AccountBillingStatusOptions` values
 
-Billing lifecycle status of the account. Stored as the raw enum value string in `billing_status`.
+Stored as the raw enum value string in `billing_status`.
 
 | Value | Meaning |
 | --- | --- |
-| `open` | Billing open / accruing (default-account state) |
+| `open` | Billing open and accruing (the default-account state) |
 | `carecomplete_notbilled` | Care complete, not yet billed |
 | `billing` | Billing in progress |
 | `closed_baddebt` | Closed as bad debt |
@@ -109,18 +109,18 @@ PeriodSpec {
 }
 ```
 
-Validation (`PeriodSpec.validate_period`):
-- `start`, if present, **must be timezone-aware** (naive datetimes raise `"Start Date must be timezone aware"`).
-- `end`, if present, **must be timezone-aware** (`"End Date must be timezone aware"`).
-- If both are present, `start <= end` (`"Start Date cannot be greater than End Date"`).
+`PeriodSpec.validate_period` enforces three rules:
+- `start`, if present, must be timezone-aware — a naive datetime raises `"Start Date must be timezone aware"`.
+- `end`, if present, must be timezone-aware — `"End Date must be timezone aware"`.
+- With both present, `start <= end`, or `"Start Date cannot be greater than End Date"`.
 
-The default account is created with only `start` set, formatted as `"%Y-%m-%dT%H:%M:%S.%fZ"` (`care_now()`).
+The default account sets only `start`, formatted as `"%Y-%m-%dT%H:%M:%S.%fZ"` from `care_now()`.
 
-The FHIR-style [`Period`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/period.py) common type (`{ id?, start?, end? }`, `extra="forbid"`) is a related shape, but `Account` binds `service_period` to `PeriodSpec`, not `Period`.
+The FHIR-style [`Period`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/period.py) common type (`{ id?, start?, end? }`, `extra="forbid"`) is a related but distinct shape — `Account` binds `service_period` to `PeriodSpec`, not `Period`.
 
 ### `MonetaryComponent` shape
 
-`total_price_components` is intended to hold a list of [`MonetaryComponent`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/monetary_component.py) entries (the same shape used across billing):
+`total_price_components` is meant to hold a list of [`MonetaryComponent`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/monetary_component.py) entries, the same shape used across billing:
 
 ```text
 MonetaryComponent {
@@ -134,11 +134,11 @@ MonetaryComponent {
 }
 ```
 
-Key `MonetaryComponent` validation: `tax_included_amount` is only allowed on a `base` component; a `base` component must have an `amount`, no `factor`, and no `conditions`; `amount` and `factor` are mutually exclusive; exactly one of `amount`/`factor` is required unless it is a `global_component` with a `code`.
+`MonetaryComponent` validation: `tax_included_amount` is allowed only on a `base` component; a `base` component must carry an `amount`, no `factor`, and no `conditions`; `amount` and `factor` are mutually exclusive; exactly one of `amount`/`factor` is required unless the entry is a `global_component` with a `code`.
 
 ## Resource specs (API schema)
 
-The API layer is defined in [`resources/account/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/account/spec.py). All specs build on `EMRResource` (`serialize` / `de_serialize`, with `perform_extra_serialization` / `perform_extra_deserialization` hooks). `AccountSpec` sets `__exclude__ = ["patient"]` and binds `___extension_resource_type__ = ExtensionResource.account`.
+The API layer lives in [`resources/account/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/account/spec.py). Every spec builds on `EMRResource` (`serialize` / `de_serialize`, with the `perform_extra_serialization` / `perform_extra_deserialization` hooks). `AccountSpec` sets `__exclude__ = ["patient"]` and binds `___extension_resource_type__ = ExtensionResource.account`.
 
 | Spec class | Role | Fields exposed (beyond base) |
 | --- | --- | --- |
@@ -151,11 +151,11 @@ The API layer is defined in [`resources/account/spec.py`](https://github.com/ohc
 
 ### Validation & server-side behaviour
 
-- **Create** (`AccountCreateSpec`): mixes in `ExtensionValidator` (which validates `extensions`) and requires `patient` as a UUID. `perform_extra_deserialization` resolves it via `get_object_or_404(Patient, external_id=...)` and assigns `obj.patient`. `patient` is otherwise excluded from the base serialize loop.
+- **Create** (`AccountCreateSpec`): mixes in `ExtensionValidator` to validate `extensions`, and requires `patient` as a UUID. `perform_extra_deserialization` resolves it via `get_object_or_404(Patient, external_id=...)` and assigns `obj.patient`; `patient` is otherwise excluded from the base serialize loop.
 - **Update** (`AccountUpdateSpec`): mixes in `ExtensionValidator`; `primary_encounter` is optional. When supplied, `perform_extra_deserialization` resolves it via `get_object_or_404(Encounter, external_id=...)` and assigns `obj.primary_encounter`.
-- **Status / billing_status** are validated against `AccountStatusOptions` / `AccountBillingStatusOptions`; the Pydantic enums reject invalid values.
-- **Read serialization**: `perform_extra_serialization` sets `mapping["id"] = obj.external_id`. `AccountReadSpec` also serializes the patient (`PatientListSpec`) and renders tags via `SingleFacilityTagManager`; `AccountRetrieveSpec` serializes the full patient (`PatientRetrieveSpec`, scoped to `obj.facility`) and, when present, the primary encounter (`EncounterRetrieveSpec`).
-- **Totals are read-only**: balance/aggregate fields appear only on read specs. `sync_account_items` recomputes them; they are never set from client payloads.
+- **Status / billing_status**: the Pydantic enums `AccountStatusOptions` / `AccountBillingStatusOptions` reject any value outside their members.
+- **Read serialization**: `perform_extra_serialization` sets `mapping["id"] = obj.external_id`. `AccountReadSpec` serializes the patient (`PatientListSpec`) and renders tags via `SingleFacilityTagManager`; `AccountRetrieveSpec` serializes the full patient (`PatientRetrieveSpec`, scoped to `obj.facility`) and, when present, the primary encounter (`EncounterRetrieveSpec`).
+- **Totals are read-only**: balance and aggregate fields appear only on read specs. `sync_account_items` recomputes them; client payloads never set them.
 
 <a id="default-account"></a>
 ### Default account
@@ -166,7 +166,7 @@ The API layer is defined in [`resources/account/spec.py`](https://github.com/ohc
 - `service_period = { "start": care_now() }` (start only)
 - `name = "{patient.name} {YYYY-MM-DD}"`
 
-This materializes the default account when the first charge item is added — clients normally do not create accounts directly.
+This runs when the first charge item is added, so the default account materializes on demand. Clients normally never create accounts directly.
 
 <a id="balance-sync"></a>
 ### Balance sync
@@ -179,11 +179,11 @@ This materializes the default account when the first charge item is added — cl
 - `total_balance` = `total_gross − total_paid`
 - `calculated_at` = `care_now()`
 
-All sums use `care_round`. `total_net`, `cached_items`, and `total_price_components` are currently **not** updated (their logic is commented out), so they stay at their defaults. `rebalance_account_task(account_id)` is the Celery task wrapper that runs the sync and saves.
+Every sum runs through `care_round`. `total_net`, `cached_items`, and `total_price_components` are not updated — their logic is commented out — so they hold their defaults. `rebalance_account_task(account_id)` is the Celery wrapper that runs the sync and saves.
 
 ## Related models
 
-`Account` is the only class defined in `account.py`. Its relationships are:
+`Account` is the only class in `account.py`. Its relationships:
 
 ```text
 facility          → FK facility.Facility (PROTECT)
@@ -191,18 +191,18 @@ patient           → FK emr.Patient (PROTECT)
 primary_encounter → FK emr.Encounter (SET_NULL, nullable)
 ```
 
-[Charge items](./charge-item.mdx) reference the account they belong to and drive its totals; [invoices](./invoice.mdx) and [payment reconciliations](./payment-reconciliation.mdx) are created against the account or its items.
+[Charge items](./charge-item.mdx) reference the account they belong to and drive its totals; [invoices](./invoice.mdx) and [payment reconciliations](./payment-reconciliation.mdx) settle against the account or its items.
 
 ## API integration notes
 
-- Account records are exposed through Care's REST API and align to the FHIR `Account` resource; spec field names may differ from FHIR (e.g. enum values use underscores).
-- The default account is created automatically via `get_default_account` when the first charge item is added for a patient in a facility — clients normally do not create accounts directly.
+- The REST API aligns to the FHIR `Account` resource, but spec field names and enum values differ (enums use underscores, not hyphens).
+- `get_default_account` creates the default account when the first charge item is added for a patient in a facility; clients normally do not create accounts directly.
 - On **create**, supply `patient` as the patient's `external_id` (UUID); `facility` is server-scoped.
 - On **update**, `primary_encounter` accepts an encounter `external_id` (UUID); only the base fields plus `primary_encounter` are mutable.
-- Balance/aggregate fields (`total_net`, `total_gross`, `total_paid`, `total_balance`, `total_billable_charge_items`, `total_price_components`, `cached_items`, `calculated_at`) are platform-maintained and appear only on read specs — never set them from clients.
-- `service_period` requires **timezone-aware** datetimes with `start <= end`.
-- `extensions` is the supported place for custom key-value data without schema migrations; it is validated by `ExtensionValidator` and surfaced only on the retrieve spec.
-- Account data should be gated behind permissions that restrict access to users with rights to financial information.
+- Balance and aggregate fields (`total_net`, `total_gross`, `total_paid`, `total_balance`, `total_billable_charge_items`, `total_price_components`, `cached_items`, `calculated_at`) are platform-maintained and appear only on read specs — never set them from clients.
+- `service_period` requires timezone-aware datetimes with `start <= end`.
+- `extensions` is the supported place for custom key-value data without schema migrations; `ExtensionValidator` checks it, and it surfaces only on the retrieve spec.
+- Gate account data behind permissions that restrict access to users with rights to financial information.
 
 ## Related
 

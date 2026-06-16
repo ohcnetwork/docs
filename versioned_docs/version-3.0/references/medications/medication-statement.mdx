@@ -4,11 +4,9 @@ sidebar_position: 4
 
 # Medication Statement
 
-Technical reference for the `MedicationStatement` module in Care EMR.
+A `MedicationStatement` records a medication the patient is taking, has taken, or intends to take, as reported by the patient, a relative, or a clinician rather than actively prescribed or dispensed. Reach for it when you're capturing a medication history rather than driving an order. It aligns with the FHIR `MedicationStatement` resource.
 
-A `MedicationStatement` records a medication the patient **is taking, has taken, or intends to take** — as *reported* (by the patient, a relative, or a clinician) rather than actively prescribed or dispensed. It aligns with the FHIR `MedicationStatement` resource.
-
-The Django model handles **storage**: `medication` and `effective_period` are opaque `JSONField`s whose real structure lives in the Pydantic **resource specs** (`care/emr/resources/medication/statement/`). The specs define the enums, the nested JSON shapes, validation, the value-set binding on `medication`, and the read/write API schemas. This page documents both.
+The Django model stores `medication` and `effective_period` as opaque `JSONField`s. Their real structure comes from the Pydantic resource specs in `care/emr/resources/medication/statement/`, which define the enums, nested JSON shapes, validation, the value-set binding on `medication`, and the read/write API schemas. This page covers both layers.
 
 **Source:**
 
@@ -22,43 +20,43 @@ The Django model handles **storage**: `medication` and `effective_period` are op
 | --- | --- |
 | `MedicationStatement` | A record of a medication the patient is taking, has taken, or intends to take — as reported rather than actively prescribed |
 
-`MedicationStatement` extends [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, audit fields `created_by`/`updated_by`, `created_date`/`modified_date`, `history`/`meta` JSON, and soft-delete semantics).
+`MedicationStatement` extends [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base that supplies `external_id`, audit fields `created_by`/`updated_by`, `created_date`/`modified_date`, `history`/`meta` JSON, and soft-delete semantics.
 
 ## `MedicationStatement` fields
 
-The **Type** column gives the Django storage type; the **Spec shape** column gives the structured shape the Pydantic resource spec enforces when reading and writing over the API.
+**Type** is the Django storage type. **Spec shape** is the structured shape the Pydantic resource spec enforces when reading and writing over the API.
 
 ### Statement details
 
 | Field | Type | Spec shape | Notes |
 | --- | --- | --- | --- |
 | `status` | `CharField(100)` | `MedicationStatementStatus` enum | Required. See [Status values](#medicationstatementstatus-values). |
-| `reason` | `CharField(100)` | `str \| None` | Nullable / optional. Reason the medication is being taken. |
-| `medication` | `JSONField` (`default=dict`) | `Coding` bound to the `system-medication` value set | Required on create. A single SNOMED CT `Coding` (not a full `CodeableConcept`). See [`Coding` shape](#coding-shape) and [Bound value set](#bound-value-set). |
+| `reason` | `CharField(100)` | `str \| None` | Optional. Why the medication is being taken. |
+| `medication` | `JSONField` (`default=dict`) | `Coding` bound to the `system-medication` value set | Required on create. A single SNOMED CT `Coding`, not a full `CodeableConcept`. See [`Coding` shape](#coding-shape) and [Bound value set](#bound-value-set). |
 | `information_source` | `CharField(100)` | `MedicationStatementInformationSourceType` enum \| `None` | Optional. Who supplied the statement. See [Information-source values](#medicationstatementinformationsourcetype-values). |
-| `effective_period` | `JSONField` (`default=dict`) | `PeriodSpec` \| `None` | Optional. Period the medication is/was taken. See [`PeriodSpec` shape](#periodspec-shape). |
-| `dosage_text` | `TextField` | `str \| None` | Nullable / optional. Free-text dosage instructions. (The spec notes a structured `Dosage` may replace this in future.) |
-| `note` | `TextField` | `str \| None` | Nullable / optional. Additional free-text annotation. |
+| `effective_period` | `JSONField` (`default=dict`) | `PeriodSpec` \| `None` | Optional. The period the medication is or was taken. See [`PeriodSpec` shape](#periodspec-shape). |
+| `dosage_text` | `TextField` | `str \| None` | Optional, free-text dosage instructions. The spec flags that a structured `Dosage` may replace this later. |
+| `note` | `TextField` | `str \| None` | Optional, free-text annotation. |
 
 ### Relationships
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `patient` | `FK → Patient` | `on_delete=CASCADE`. The patient the statement is about. Set server-side from the encounter — not accepted from clients. |
-| `encounter` | `FK → Encounter` | `on_delete=CASCADE`. The encounter in which the statement was recorded. Supplied as a UUID on create. |
+| `patient` | `FK → Patient` | `on_delete=CASCADE`. The patient the statement is about. Derived server-side from the encounter — never accepted from clients. |
+| `encounter` | `FK → Encounter` | `on_delete=CASCADE`. The encounter the statement was recorded in. Supplied as a UUID on create. |
 
 ```text
 patient   → FK Patient   (CASCADE)
 encounter → FK Encounter (CASCADE)
 ```
 
-Both foreign keys cascade on delete, so removing a patient or encounter also removes the associated medication statements.
+Deleting a patient or encounter deletes its medication statements.
 
 ## Enum values
 
 ### `MedicationStatementStatus` values
 
-From `MedicationStatementStatus(str, Enum)` in `spec.py`. Bound to `status`.
+`MedicationStatementStatus(str, Enum)` in `spec.py`, bound to `status`.
 
 | Value | Meaning |
 | --- | --- |
@@ -73,7 +71,7 @@ From `MedicationStatementStatus(str, Enum)` in `spec.py`. Bound to `status`.
 
 ### `MedicationStatementInformationSourceType` values
 
-From `MedicationStatementInformationSourceType(str, Enum)` in `spec.py`. Bound to `information_source`.
+`MedicationStatementInformationSourceType(str, Enum)` in `spec.py`, bound to `information_source`.
 
 | Value | Meaning |
 | --- | --- |
@@ -85,20 +83,20 @@ From `MedicationStatementInformationSourceType(str, Enum)` in `spec.py`. Bound t
 
 ### `Coding` shape
 
-`medication` is stored as JSON but typed as a single `Coding` (from `care/emr/resources/common/coding.py`), not a `CodeableConcept`. `extra="forbid"`.
+`medication` is stored as JSON but typed as a single `Coding` (from `care/emr/resources/common/coding.py`), not a `CodeableConcept`. The spec sets `extra="forbid"`, so unrecognized keys are rejected.
 
 | Field | Type | Notes |
 | --- | --- | --- |
 | `system` | `str \| None` | Code system URI (e.g. `http://snomed.info/sct`) |
 | `version` | `str \| None` | Code-system version |
-| `code` | `str` | **Required.** The code, validated against the bound value set |
+| `code` | `str` | Required. Validated against the bound value set |
 | `display` | `str \| None` | Human-readable label |
 
 #### Bound value set
 
-`medication` is declared as `ValueSetBoundCoding[CARE_MEDICATION_VALUESET.slug]`. On write, the `code` is validated against the **`system-medication`** value set ([`medication.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/valueset/medication.py)), which includes SNOMED CT concepts under the constraint `<< 763158003 |Medicinal product|`. Any code outside the set is rejected.
+`medication` is declared as `ValueSetBoundCoding[CARE_MEDICATION_VALUESET.slug]`. On write, `code` is validated against the **`system-medication`** value set ([`medication.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/valueset/medication.py)), which includes SNOMED CT concepts under the constraint `<< 763158003 |Medicinal product|`. Any code outside the set is rejected.
 
-> The `care/emr/resources/medication/valueset/` directory holds additional value sets used by other medication resources (route, body site, administration method, additional instruction, as-needed reason, medication-not-given reason). `MedicationStatement` itself binds only `medication` → `system-medication`.
+> The `care/emr/resources/medication/valueset/` directory holds further value sets for other medication resources (route, body site, administration method, additional instruction, as-needed reason, medication-not-given reason). `MedicationStatement` binds only `medication` → `system-medication`.
 
 ### `PeriodSpec` shape
 
@@ -106,14 +104,14 @@ From `MedicationStatementInformationSourceType(str, Enum)` in `spec.py`. Bound t
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `start` | `datetime \| None` | Must be **timezone-aware** if present (naive datetimes are rejected) |
-| `end` | `datetime \| None` | Must be **timezone-aware** if present |
+| `start` | `datetime \| None` | Must be timezone-aware if present; naive datetimes are rejected |
+| `end` | `datetime \| None` | Must be timezone-aware if present |
 
-Validation (`validate_period`, mode `after`): a naive `start`/`end` raises an error, and `start` must not be greater than `end`.
+`validate_period` (mode `after`) rejects a naive `start`/`end` and requires `start` to be no greater than `end`.
 
 ## Resource specs (API schema)
 
-All specs subclass `EMRResource` (`care/emr/resources/base.py`), which provides `serialize` (DB object → pydantic) and `de_serialize` (pydantic → DB object). `__model__ = MedicationStatement`; `__exclude__ = ["patient", "encounter"]` keeps those fields out of the generic field copy so the extra hooks handle them instead.
+Every spec subclasses `EMRResource` (`care/emr/resources/base.py`), which provides `serialize` (DB object → pydantic) and `de_serialize` (pydantic → DB object). `__model__ = MedicationStatement`, and `__exclude__ = ["patient", "encounter"]` holds those two fields out of the generic field copy so the extra hooks set them instead.
 
 | Spec class | Role | Fields exposed |
 | --- | --- | --- |
@@ -122,32 +120,32 @@ All specs subclass `EMRResource` (`care/emr/resources/base.py`), which provides 
 | `MedicationStatementUpdateSpec` | write · update | `status`, `effective_period`, `note` only |
 | `MedicationStatementReadSpec` | read · list & detail | Inherits base; adds `created_by`, `updated_by` (`UserSpec`), `created_date`, `modified_date` |
 
-Key validation and server-maintained behaviour:
+What the specs validate and maintain on your behalf:
 
-- **`encounter` existence** — `MedicationStatementSpec.validate_encounter_exists` (a `field_validator` on `encounter`) raises `"Encounter not found"` unless an `Encounter` with that `external_id` exists.
-- **`patient` derived server-side** — `MedicationStatementSpec.perform_extra_deserialization` runs only on create (`is_update` false): it resolves the `Encounter` from the supplied UUID and sets `obj.patient = obj.encounter.patient`. Clients never send `patient`.
-- **Update is restricted** — `MedicationStatementUpdateSpec` accepts only `status`, `effective_period`, and `note`; `medication`, `reason`, `dosage_text`, `information_source`, and `encounter` are not updatable through it.
+- **`encounter` must exist** — `MedicationStatementSpec.validate_encounter_exists`, a `field_validator` on `encounter`, raises `"Encounter not found"` unless an `Encounter` with that `external_id` exists.
+- **`patient` is derived server-side** — `MedicationStatementSpec.perform_extra_deserialization` runs only on create (`is_update` false): it resolves the `Encounter` from the supplied UUID and sets `obj.patient = obj.encounter.patient`. Clients never send `patient`.
+- **Updates are narrow** — `MedicationStatementUpdateSpec` accepts only `status`, `effective_period`, and `note`. `medication`, `reason`, `dosage_text`, `information_source`, and `encounter` can't be changed through it.
 - **Read serialization** — `MedicationStatementReadSpec.perform_extra_serialization` sets `id = obj.external_id`, `encounter = obj.encounter.external_id`, and serializes audit users via `serialize_audit_users` (`created_by`/`updated_by` as `UserSpec`).
-- **`medication` value-set check** — enforced at validation time on the `Coding.code` (see [Bound value set](#bound-value-set)).
-- **`effective_period` tz-awareness / ordering** — enforced by `PeriodSpec` (see [`PeriodSpec` shape](#periodspec-shape)).
+- **`medication` value-set check** — runs at validation time against `Coding.code` (see [Bound value set](#bound-value-set)).
+- **`effective_period` tz-awareness and ordering** — enforced by `PeriodSpec` (see [`PeriodSpec` shape](#periodspec-shape)).
 
-This resource has **no** `status_history` — status is a single current value, not an appended log.
+There is no `status_history`. `status` is a single current value, not an appended log.
 
 ## Methods & save behaviour
 
-- Inherited from [`EMRBaseModel`](../foundation/base-model.mdx): `external_id` (UUID), audit fields, soft delete. Deletes are soft — a removed statement is retained with `deleted=True` and hidden by the default manager.
+- From [`EMRBaseModel`](../foundation/base-model.mdx): `external_id` (UUID), audit fields, soft delete. Deletes are soft — a removed statement stays in the table with `deleted=True` and is hidden by the default manager.
 - Create flow: client sends `MedicationStatementSpec` → `de_serialize` copies scalar/JSON fields → `perform_extra_deserialization` resolves `encounter` and back-fills `patient` → model saved.
-- Read flow: `MedicationStatementReadSpec.serialize(obj)` copies fields, then `perform_extra_serialization` injects `id`, `encounter` (as UUIDs) and audit users.
+- Read flow: `MedicationStatementReadSpec.serialize(obj)` copies fields, then `perform_extra_serialization` injects `id`, `encounter` (as UUIDs), and audit users.
 
 ## API integration notes
 
 - Exposed through Care's REST API, aligned with FHIR `MedicationStatement`. Use the spec field names above for payloads.
-- `medication` is a single SNOMED CT `Coding` object whose `code` must be in the `system-medication` value set — **not** a free CodeableConcept and not a scalar string.
+- `medication` is a single SNOMED CT `Coding` object whose `code` must be in the `system-medication` value set — not a free CodeableConcept, and not a scalar string.
 - `effective_period` datetimes must be timezone-aware and ordered (`start ≤ end`).
-- `encounter` is supplied as a UUID; `patient` is derived from it server-side and must not be sent.
-- Updates go through `MedicationStatementUpdateSpec` and can change only `status`, `effective_period`, and `note`.
-- `information_source` distinguishes a self-reported or third-party statement from an actively managed prescription ([`MedicationRequest`](medication-request.mdx)).
-- `external_id` (UUID), `created_by`/`updated_by`, `created_date`/`modified_date`, `history`, and `meta` are platform-maintained — do not set them directly from clients.
+- `encounter` goes in as a UUID; `patient` is derived from it server-side and must not be sent.
+- Updates flow through `MedicationStatementUpdateSpec` and can touch only `status`, `effective_period`, and `note`.
+- `information_source` is what separates a self-reported or third-party statement from an actively managed prescription ([`MedicationRequest`](medication-request.mdx)).
+- `external_id` (UUID), `created_by`/`updated_by`, `created_date`/`modified_date`, `history`, and `meta` are platform-maintained — don't set them from clients.
 
 ## Related
 

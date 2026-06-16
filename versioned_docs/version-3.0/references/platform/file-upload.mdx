@@ -4,9 +4,9 @@ sidebar_position: 1
 
 # File Upload
 
-Technical reference for the `FileUpload` resource in Care EMR.
+A `FileUpload` is the metadata record for a file living in S3-compatible object storage. You touch it whenever a Care resource needs an attachment — a patient document, an X-ray on an encounter, a signed consent form.
 
-`FileUpload` is metadata for a file held in object storage (S3-compatible). The Django model is the **storage layer**: it persists the record and an opaque `meta` JSON column. The Pydantic **resource specs** in `care/emr/resources/file_upload/spec.py` are the API layer. They define the `file_type` / `file_category` enums, validate the upload, decide what the `meta` JSON holds (`mime_type`), and shape every read/write payload — including the derived `extension`, `signed_url`, and `read_signed_url` fields, which have no backing columns.
+Two layers split the work. The Django model is storage: it persists the row and an opaque `meta` JSON column, nothing more. The Pydantic resource specs in `care/emr/resources/file_upload/spec.py` are the API — they define the `file_type` / `file_category` enums, validate the upload, decide what goes into `meta` (`mime_type`), and shape every read/write payload, including `extension`, `signed_url`, and `read_signed_url`, which are computed on the fly and have no backing columns.
 
 **Source:**
 - Model: [`care/emr/models/file_upload.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/file_upload.py)
@@ -29,18 +29,18 @@ Technical reference for the `FileUpload` resource in Care EMR.
 | --- | --- | --- |
 | `name` | `CharField(2000)` | User-facing file name. Required on the API (`FileUploadBaseSpec.name`) |
 | `internal_name` | `CharField(2000)` | Storage object key. Set server-side from `original_name` on create, then a random key is generated on `save()`. Never set by clients |
-| `associating_id` | `CharField(100)` | ID (`external_id`) of the owning resource. Required (`blank=False, null=False`). No DB `ForeignKey` — integrity is enforced in the app layer |
+| `associating_id` | `CharField(100)` | The `external_id` of the owning resource. Required (`blank=False, null=False`). There's no DB `ForeignKey` — integrity is enforced in the app layer |
 | `file_type` | `CharField(100)` | Domain of the owning resource. API-constrained to [`FileTypeChoices`](#filetypechoices-values) |
-| `file_category` | `CharField(100)` | File category. API-constrained to [`FileCategoryChoices`](#filecategorychoices-values) |
-| `upload_completed` | `BooleanField` | Default `False`. Flipped to `True` once the client finishes the direct-to-S3 upload (or immediately, for the inline `upload-file` path) |
+| `file_category` | `CharField(100)` | API-constrained to [`FileCategoryChoices`](#filecategorychoices-values) |
+| `upload_completed` | `BooleanField` | Default `False`. Flips to `True` once the client finishes the direct-to-S3 upload — or immediately, on the inline `upload-file` path |
 
 ### `meta` JSON contents
 
-`meta` is the opaque `JSONField` from `EMRBaseModel`. The specs store one structured key in it:
+`meta` is the opaque `JSONField` inherited from `EMRBaseModel`. The specs put exactly one structured key in it:
 
 | Key | Type | Shape / Notes |
 | --- | --- | --- |
-| `mime_type` | `str` | MIME type of the file. Written in `FileUploadCreateSpec.perform_extra_deserialization` (`obj.meta["mime_type"] = self.mime_type`); read back in serialization via `obj.meta.get("mime_type")`. Validated against `settings.ALLOWED_MIME_TYPES` |
+| `mime_type` | `str` | MIME type of the file. Written in `FileUploadCreateSpec.perform_extra_deserialization` (`obj.meta["mime_type"] = self.mime_type`); read back during serialization via `obj.meta.get("mime_type")`. Validated against `settings.ALLOWED_MIME_TYPES` |
 
 ### Archival
 
@@ -53,13 +53,13 @@ Technical reference for the `FileUpload` resource in Care EMR.
 
 ### Storage manager
 
-`FileUpload` declares a class-level `files_manager = S3FilesManager(BucketType.PATIENT)`. This is not a database field — it is the object-storage helper that generates signed write/read URLs and runs `put_object`, all against the `PATIENT` bucket.
+`FileUpload` declares a class-level `files_manager = S3FilesManager(BucketType.PATIENT)`. It's not a database field — it's the object-storage helper that mints signed write/read URLs and runs `put_object`, all against the `PATIENT` bucket.
 
 ## Enums
 
 ### `FileTypeChoices` values
 
-Owning-resource domain (`spec.py`). String enum.
+The owning-resource domain (`spec.py`). String enum.
 
 | Value | Links a file to |
 | --- | --- |
@@ -84,18 +84,18 @@ File category (`spec.py`). String enum.
 
 ## Resource specs (API schema)
 
-All specs extend `EMRResource` (`care/emr/resources/base.py`), which provides `serialize` (DB → Pydantic) and `de_serialize` (Pydantic → DB) along with the `perform_extra_serialization` / `perform_extra_deserialization` hooks. `FileUpload` does **not** set `__store_metadata__`, so the hooks move `mime_type` in and out of `meta` explicitly rather than relying on the generic meta machinery.
+Every spec extends `EMRResource` (`care/emr/resources/base.py`), which supplies `serialize` (DB → Pydantic) and `de_serialize` (Pydantic → DB) plus the `perform_extra_serialization` / `perform_extra_deserialization` hooks. `FileUpload` deliberately omits `__store_metadata__`, so its hooks move `mime_type` in and out of `meta` by hand instead of leaning on the generic meta machinery.
 
 | Spec | Role | Exposes / behaviour |
 | --- | --- | --- |
 | `FileUploadBaseSpec` | shared base | `id: UUID4 \| None`, `name: str` (required) |
 | `FileUploadCreateSpec` | write · create | Adds `original_name`, `file_type`, `file_category`, `associating_id`, `mime_type`. Validates `mime_type` and `original_name`; on deserialize sets `_just_created=True`, `internal_name = original_name`, and `meta["mime_type"]` |
-| `FileUploadUpdateSpec` | write · update | Same fields as base (`id`, `name`) — only the display name is editable |
-| `FileUploadListSpec` | read · list | Read view (see fields below); resolves `extension`, `mime_type`, audit users, `uploaded_by`, `archived_by` |
-| `FileUploadRetrieveSpec` | read · detail | Extends `FileUploadListSpec` with `signed_url`, `read_signed_url`, `internal_name`; emits a **write** URL for just-created rows, otherwise a **read** URL |
+| `FileUploadUpdateSpec` | write · update | Same fields as base (`id`, `name`) — the display name is the only thing you can edit |
+| `FileUploadListSpec` | read · list | Read view (fields below); resolves `extension`, `mime_type`, audit users, `uploaded_by`, `archived_by` |
+| `FileUploadRetrieveSpec` | read · detail | Extends `FileUploadListSpec` with `signed_url`, `read_signed_url`, `internal_name`; emits a write URL for just-created rows, otherwise a read URL |
 | `ConsentFileUploadCreateSpec` | write · create (consent) | `original_name` + `associating_id: UUID4`; forces `file_type=consent`, `file_category=consent_attachment` server-side |
 
-No field in these specs binds to a value set or uses `CodeableConcept` / `Period` / other `common` types — `file_type` and `file_category` are plain string enums.
+Nothing here binds to a value set or uses `CodeableConcept` / `Period` / other `common` types — `file_type` and `file_category` are plain string enums.
 
 ### `FileUploadCreateSpec` validation
 
@@ -132,40 +132,40 @@ No field in these specs binds to a value set or uses `CodeableConcept` / `Period
 
 | Field | Type | When populated |
 | --- | --- | --- |
-| `signed_url` | `str \| None` | When `obj._just_created` is truthy — a **write** (PUT) URL from `files_manager.signed_url(obj)`. This is the upload target returned at create time |
-| `read_signed_url` | `str \| None` | Otherwise — a **read** (GET) URL from `files_manager.read_signed_url(obj)` |
-| `internal_name` | `str` | The storage object key (marked in source as possibly not needing to be returned) |
+| `signed_url` | `str \| None` | When `obj._just_created` is truthy — a write (PUT) URL from `files_manager.signed_url(obj)`. The upload target handed back at create time |
+| `read_signed_url` | `str \| None` | Otherwise — a read (GET) URL from `files_manager.read_signed_url(obj)` |
+| `internal_name` | `str` | The storage object key (flagged in source as possibly not needing to be returned) |
 
 ## Methods & save behaviour
 
 ### `get_extension()`
 
-Returns the file extension derived from `internal_name` via `parse_file_extension`, formatted as `.ext` (or a multi-part form like `.tar.gz`), or `""` when none is found. Surfaced to clients as the `extension` read field.
+Derives the file extension from `internal_name` via `parse_file_extension`, formatted as `.ext` (or a multi-part form like `.tar.gz`), or `""` when there's none. This is what surfaces to clients as the `extension` read field.
 
 ### `save()` side effects
 
-On save, a random `internal_name` is generated when `internal_name` is empty or the row is new (`not self.id`) and the caller has **not** passed `skip_internal_name=True`:
+On save, a random `internal_name` is generated when `internal_name` is empty or the row is new (`not self.id`) and the caller has not passed `skip_internal_name=True`:
 
 1. A random `internal_name` is generated as `uuid4() + int(time.time())`.
 2. If an extension can be derived, it is appended to that random name.
 3. `internal_name` is set before the row is persisted.
 
-Keeping the user-supplied `name` out of the storage key limits PII leakage if the bucket is compromised. The inline `upload-file` path calls `save(skip_internal_name=True)` after uploading to preserve the generated key.
+Keeping the user-supplied `name` out of the storage key limits PII leakage if the bucket is compromised. The inline `upload-file` path calls `save(skip_internal_name=True)` after uploading, so the generated key survives.
 
 ## API integration notes
 
 ### Two upload flows
 
-1. **Signed-URL (direct-to-S3), default:** `POST` a `FileUploadCreateSpec`. The server validates, deserializes (`_just_created=True`), and returns `FileUploadRetrieveSpec` including a write `signed_url`. The client `PUT`s the bytes directly to S3, then calls `POST .../{external_id}/mark_upload_completed/` to flip `upload_completed=True`.
-2. **Inline base64 (`POST .../upload-file/`):** the client sends `original_name` + base64 `file_data`. The server decodes it, enforces `settings.MAX_FILE_UPLOAD_SIZE` (MB), sniffs the real MIME type with `python-magic`, re-checks `ALLOWED_MIME_TYPES`, builds a `FileUploadCreateSpec`, sets `_just_created=False`, uploads via `files_manager.put_object`, sets `upload_completed=True`, and returns `FileUploadRetrieveSpec` (so the response carries `read_signed_url`, not a write URL).
+1. **Signed-URL (direct-to-S3), default:** `POST` a `FileUploadCreateSpec`. The server validates, deserializes (`_just_created=True`), and returns `FileUploadRetrieveSpec` carrying a write `signed_url`. The client `PUT`s the bytes straight to S3, then calls `POST .../{external_id}/mark_upload_completed/` to flip `upload_completed=True`.
+2. **Inline base64 (`POST .../upload-file/`):** the client sends `original_name` + base64 `file_data`. The server decodes it, enforces `settings.MAX_FILE_UPLOAD_SIZE` (MB), sniffs the real MIME type with `python-magic`, re-checks `ALLOWED_MIME_TYPES`, builds a `FileUploadCreateSpec`, sets `_just_created=False`, uploads via `files_manager.put_object`, sets `upload_completed=True`, and returns `FileUploadRetrieveSpec` — so the response carries `read_signed_url`, not a write URL.
 
 ### Server-maintained behaviour
 
-- `internal_name` is platform-maintained — never set it from clients; the model generates a random PII-free key.
-- `mime_type` lives in `meta`, not a column; `FileUploadCreateSpec` writes it and serialization reads it back. On the inline path it is **re-derived from file content** (`magic.from_buffer`) rather than trusting the client.
-- `associating_id` + `file_type` together link a file to its owning resource; `list` requires both as query params and returns only `upload_completed=True` rows.
+- `internal_name` is platform-maintained — never set it from a client; the model generates a random PII-free key.
+- `mime_type` lives in `meta`, not a column. `FileUploadCreateSpec` writes it and serialization reads it back. On the inline path it is re-derived from file content (`magic.from_buffer`) rather than trusted from the client.
+- `associating_id` + `file_type` together link a file to its owning resource. `list` requires both as query params and returns only `upload_completed=True` rows.
 - Every action runs `file_authorizer(user, file_type, associating_id, "read"|"write")`.
-- Archival (`POST .../{external_id}/archive/`, body `{ archive_reason }`) sets `is_archived`, `archive_reason`, `archived_datetime`, `archived_by` server-side and returns `FileUploadListSpec`. This soft state is distinct from the `EMRBaseModel` soft-delete (`deleted`).
+- Archival (`POST .../{external_id}/archive/`, body `{ archive_reason }`) sets `is_archived`, `archive_reason`, `archived_datetime`, `archived_by` server-side and returns `FileUploadListSpec`. This soft state is separate from the `EMRBaseModel` soft-delete (`deleted`).
 - `mark_upload_completed` and `archive` both return `FileUploadListSpec` (no signed URL).
 
 ## Related

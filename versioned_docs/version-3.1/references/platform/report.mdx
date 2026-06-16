@@ -4,11 +4,11 @@ sidebar_position: 3
 
 # Report & Templates
 
-Technical reference for the `ReportUpload` and `Template` modules in Care EMR.
+A `Template` defines reusable report markup and render options; a `ReportUpload` is one generated file (PDF/HTML/etc.) produced from that template and linked to a subject resource. You author templates through the API; report uploads are created for you by the file-upload flow.
 
-This page covers two layers:
+Two layers back this:
 
-- **Storage layer** — the Django models (`care/emr/models/report/`). Several fields are opaque (`TextField`/`JSONField`), so their real shape is not visible here.
+- **Storage layer** — the Django models (`care/emr/models/report/`). Several fields are opaque (`TextField`/`JSONField`); their real shape lives in the spec layer, not the model.
 - **API layer** — the Pydantic resource specs (`care/emr/resources/report/`), built on [`EMRResource`](../foundation/base-model.mdx). These define the enums, validation, the structure of the JSON fields, and the read/write schemas the API exposes.
 
 **Source:**
@@ -23,9 +23,9 @@ This page covers two layers:
 | `ReportUpload` | An uploaded, generated report file (PDF/HTML/etc.) produced from a `Template` and linked to a subject resource via `associating_id` |
 | `Template` | A facility-scoped (or instance-wide) reusable report definition (markup + render options) used to generate reports |
 
-`ReportUpload` extends [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base that provides `external_id`, `meta`/`history` JSON, audit FKs, and soft-delete semantics.
+`ReportUpload` extends [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base providing `external_id`, `meta`/`history` JSON, audit FKs, and soft-delete semantics.
 
-`Template` extends [`SlugBaseModel`](../foundation/base-model.mdx), the facility-scoped slug variant (`FACILITY_SCOPED = True`, which adds `slug` handling on top of the EMR base). Slugs are stored with a prefix: `f-<facility_external_id>-<slug>` when facility-scoped, `i-<slug>` when instance-wide (see [`base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/base.py)).
+`Template` extends [`SlugBaseModel`](../foundation/base-model.mdx), the facility-scoped slug variant (`FACILITY_SCOPED = True`, which adds `slug` handling on top of the EMR base). Slugs carry a prefix in storage: `f-<facility_external_id>-<slug>` when facility-scoped, `i-<slug>` when instance-wide (see [`base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/base.py)).
 
 ## `ReportUpload` fields
 
@@ -33,11 +33,11 @@ This page covers two layers:
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `template` | `FK → Template (PROTECT)` | Template the report was generated from. Cannot be deleted while reports reference it |
+| `template` | `FK → Template (PROTECT)` | Template the report was generated from. The template cannot be deleted while reports reference it |
 | `name` | `CharField(2000)` | Display name of the report. Required in every spec |
-| `internal_name` | `CharField(2000)` | Randomized storage key; auto-generated on save to avoid leaking PII in the file name (see [save behaviour](#methods--save-behaviour)). Exposed only in `RetrieveSpec` |
+| `internal_name` | `CharField(2000)` | Randomized storage key, auto-generated on save so the file name never leaks PII (see [save behaviour](#methods--save-behaviour)). Exposed only in `RetrieveSpec` |
 | `associating_id` | `CharField(100)` | Non-null. Free-form identifier linking the report to its subject resource (e.g. an encounter) |
-| `upload_completed` | `BooleanField` | Default `False`. Set once the file upload to storage finishes |
+| `upload_completed` | `BooleanField` | Default `False`. Flips to `True` once the file upload to storage finishes |
 | `report_type` | `CharField(50)` | File/content type of the report; also exposed via the `file_type` property for `S3FilesManager` |
 
 ### Archival
@@ -46,7 +46,7 @@ This page covers two layers:
 | --- | --- | --- |
 | `is_archived` | `BooleanField` | Default `False` |
 | `archive_reason` | `TextField` | Blank allowed |
-| `archived_datetime` | `DateTimeField` | Nullable; set when archived |
+| `archived_datetime` | `DateTimeField` | Nullable; set when the report is archived |
 | `archived_by` | `FK → User (PROTECT)` | Nullable. `related_name="archived_reports"` |
 
 ### Inherited / metadata
@@ -59,24 +59,24 @@ This page covers two layers:
 
 ### Storage
 
-`ReportUpload` declares a class-level `files_manager = S3FilesManager(BucketType.REPORT)`, so the file body lives in object storage (REPORT bucket) rather than the database. The model row holds metadata and the `internal_name` storage key.
+`ReportUpload` declares a class-level `files_manager = S3FilesManager(BucketType.REPORT)`. The file body lives in object storage (REPORT bucket), not the database — the model row holds only metadata and the `internal_name` storage key.
 
 ## `Template` fields
 
-The Django model stores most config as plain strings plus an opaque `options` `JSONField`. The spec layer constrains `status`, `default_format`, the slug, and the structure and compatibility of `template_type`, `context`, and `options`.
+The Django model stores most config as plain strings plus an opaque `options` `JSONField`. The constraints live in the spec layer: it pins `status`, `default_format`, and the slug, and validates the structure and mutual compatibility of `template_type`, `context`, and `options`.
 
 | Field | Type (model) | Spec constraint | Notes |
 | --- | --- | --- | --- |
 | `facility` | `FK → Facility (PROTECT, nullable)` | `UUID4 \| None` (write) | Null → instance-wide template; set → facility-scoped. Excluded from base serialization (`__exclude__`); resolved server-side on write |
-| `slug` | `CharField(255)` | written via `slug_value: SlugType`; read as `slug` + parsed `slug_config` | Stored prefixed (`f-…`/`i-…`). `slug_value` validated: 5–50 chars, URL-safe, must start/end alphanumeric |
+| `slug` | `CharField(255)` | written via `slug_value: SlugType`; read as `slug` + parsed `slug_config` | Stored prefixed (`f-…`/`i-…`). `slug_value` must be 5–50 chars, URL-safe, and start and end alphanumeric |
 | `name` | `CharField(255)` | `str`, required | |
 | `status` | `CharField(255)` | `TemplateStatusOptions` enum | See [status values](#templatestatusoptions-values) |
-| `template_data` | `TextField` | `str`, required (write) | The report markup/body. Read only in `RetrieveSpec`, not in list/read |
-| `template_type` | `CharField(255)` | `str`, validated against `ReportTypeRegistry` | Must be a registered report type; must be compatible with `context` (matching `associating_model`) |
-| `default_format` | `CharField(255)` | `TemplateFormatOptions` enum | See [format values](#templateformatoptions-values). Drives which generator validates `options` |
-| `context` | `CharField(100)` (default `"encounter_base"`) | `str`, validated against `DataPointRegistry` | Default `encounter_base` → reports are encounter-oriented by default. Must be a registered context compatible with `template_type` |
+| `template_data` | `TextField` | `str`, required (write) | The report markup/body. Returned only by `RetrieveSpec`, not in list/read |
+| `template_type` | `CharField(255)` | `str`, validated against `ReportTypeRegistry` | Must be a registered report type, and compatible with `context` (matching `associating_model`) |
+| `default_format` | `CharField(255)` | `TemplateFormatOptions` enum | See [format values](#templateformatoptions-values). Selects which generator validates `options` |
+| `context` | `CharField(100)` (default `"encounter_base"`) | `str`, validated against `DataPointRegistry` | Defaults to `encounter_base`, so reports are encounter-oriented unless overridden. Must be a registered context compatible with `template_type` |
 | `description` | `TextField` (blank, default `""`) | `str = ""` | |
-| `options` | `JSONField` (default `{}`) | `dict = {}`, validated against the format generator's `options_model` | Render/config options; the accepted keys depend on `default_format` (PDF vs HTML generator) |
+| `options` | `JSONField` (default `{}`) | `dict = {}`, validated against the format generator's `options_model` | Render/config options; accepted keys depend on `default_format` (PDF vs HTML generator) |
 
 ### `TemplateStatusOptions` values
 
@@ -85,7 +85,7 @@ The Django model stores most config as plain strings plus an opaque `options` `J
 | Value | Meaning |
 | --- | --- |
 | `draft` | Template being authored, not yet usable |
-| `active` | Published / usable for generating reports |
+| `active` | Published, usable for generating reports |
 | `retired` | Withdrawn from use |
 
 ### `TemplateFormatOptions` values
@@ -99,7 +99,7 @@ The Django model stores most config as plain strings plus an opaque `options` `J
 
 ### `slug_config` shape (read)
 
-On read, `TemplateReadSpec` adds a parsed `slug_config` dict derived from the stored prefixed slug:
+On read, `TemplateReadSpec` parses the stored prefixed slug back into a `slug_config` dict:
 
 ```text
 slug_config (facility-scoped) → { facility: <facility_external_id>, slug_value: <slug> }
@@ -108,7 +108,7 @@ slug_config (instance-wide)   → { slug_value: <slug> }   # parsed from "i-<slu
 
 ## Resource specs (API schema)
 
-All specs subclass [`EMRResource`](../foundation/base-model.mdx). The read flow runs `serialize()` → DB-field copy → `perform_extra_serialization()` hook. The write flow runs `de_serialize()` → DB-field copy → `perform_extra_deserialization()` hook.
+All specs subclass [`EMRResource`](../foundation/base-model.mdx). Read runs `serialize()` → DB-field copy → `perform_extra_serialization()` hook. Write runs `de_serialize()` → DB-field copy → `perform_extra_deserialization()` hook.
 
 ### `ReportUpload` specs (`report/report_upload/spec.py`)
 
@@ -125,9 +125,9 @@ Server-maintained read behaviour (`perform_extra_serialization`):
 - `mime_type` ← `obj.meta["mime_type"]`.
 - `template` ← serialized via `TemplateReadSpec` (full nested template object).
 - `created_by` / `updated_by` populated from the user cache via `serialize_audit_users`.
-- **Signed URLs (retrieve only):** if the object was just created (`_just_created`), `signed_url` is set to a write/upload URL via `files_manager.signed_url(obj)`; otherwise `read_signed_url` is set via `files_manager.read_signed_url(obj)`. Exactly one is populated per response.
+- **Signed URLs (retrieve only):** a freshly created object (`_just_created`) gets a write/upload `signed_url` via `files_manager.signed_url(obj)`; any other read gets a `read_signed_url` via `files_manager.read_signed_url(obj)`. Exactly one is populated per response.
 
-> `ReportUpload` has no `CreateSpec`/`UpdateSpec` in this module — uploads are created through the file-upload flow ([File Upload](./file-upload.mdx)), and the report metadata and `internal_name` are platform-maintained. See [save behaviour](#methods--save-behaviour).
+> `ReportUpload` has no `CreateSpec`/`UpdateSpec` in this module. Uploads come from the file-upload flow ([File Upload](./file-upload.mdx)), and the report metadata and `internal_name` are platform-maintained. See [save behaviour](#methods--save-behaviour).
 
 ### `Template` specs (`report/template/spec.py`)
 
@@ -142,13 +142,13 @@ Server-maintained read behaviour (`perform_extra_serialization`):
 Write-side validation and side effects (`TemplateCreateSpec`):
 
 - `slug_value` — `SlugType`: 5–50 chars, pattern `^[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]$`.
-- `template_type` (`field_validator`) — must be non-empty and resolvable via `ReportTypeRegistry`; else `Invalid report type`.
-- `context` (`field_validator`) — must be non-empty and resolvable via `DataPointRegistry`; else `Invalid Context type`.
+- `template_type` (`field_validator`) — non-empty and resolvable via `ReportTypeRegistry`, else `Invalid report type`.
+- `context` (`field_validator`) — non-empty and resolvable via `DataPointRegistry`, else `Invalid Context type`.
 - `validate_report_type_and_context` (`model_validator`, after):
   - both `template_type` and `context` must resolve, else `Invalid report type or context`;
   - their `associating_model` must match (`template_type.associating_model == context.__associating_model__`), else `Report Type and Context are not compatible`;
   - `options` is validated against `GeneratorRegistry.get(default_format).options_model`, so the allowed `options` keys depend on whether `default_format` is `pdf` or `html`.
-- `perform_extra_deserialization` (side effects): resolves `facility` external ID to the `Facility` row (`get_object_or_404`) when provided, and sets `obj.slug = self.slug_value` (the raw value; the model prefixes it on `calculate_slug`).
+- `perform_extra_deserialization` (side effects): resolves `facility` external ID to the `Facility` row (`get_object_or_404`) when provided, and sets `obj.slug = self.slug_value` (the raw value; the model prefixes it in `calculate_slug`).
 
 Read-side behaviour:
 
@@ -159,10 +159,10 @@ Read-side behaviour:
 
 ### `ReportUpload.save()`
 
-On create (no `id`) or when `internal_name` is empty, `save()` generates a random `internal_name` from `uuid4()` plus the current epoch. This intermediate name decouples the stored object from the human-readable `name`, so a storage or data leak does not expose PII in file names.
+On create (no `id`) or when `internal_name` is empty, `save()` generates a random `internal_name` from `uuid4()` plus the current epoch. This intermediate name decouples the stored object from the human-readable `name`, so a storage or data leak never exposes PII in file names.
 
 - Pass `skip_internal_name=True` to `save()` to bypass generation and keep an explicitly set `internal_name`.
-- If `internal_name` already carried a value, the file extension is parsed (via `parse_file_extension`) and appended to the new randomized name.
+- If `internal_name` already held a value, its file extension is parsed (via `parse_file_extension`) and appended to the new randomized name.
 
 ### `ReportUpload.get_extension()`
 
@@ -170,7 +170,7 @@ Returns the dotted extension(s) parsed from `internal_name` (e.g. `.pdf`), or `"
 
 ### `ReportUpload.file_type` (property)
 
-Alias for `report_type`, provided for compatibility with `S3FilesManager`.
+Alias for `report_type`, kept for compatibility with `S3FilesManager`.
 
 ### `Template` slug methods (inherited from `SlugBaseModel`)
 
@@ -179,14 +179,14 @@ Alias for `report_type`, provided for compatibility with `S3FilesManager`.
 
 ## API integration notes
 
-- Report files live in object storage (S3-compatible REPORT bucket) and are accessed via `S3FilesManager`; the database row is metadata only.
-- `internal_name` is platform-maintained — do not set it from clients. It is generated on save to keep storage keys free of PII. Use `skip_internal_name` only for controlled migrations, and note that it is exposed only via `ReportUploadRetrieveSpec`.
-- On a freshly created report, the retrieve response carries an upload `signed_url`; on subsequent reads it carries a `read_signed_url` instead.
-- `upload_completed` reflects upload state; clients should treat a report as available only once it is `True`.
-- `associating_id` links the report to its subject resource; populate it when generating a report so the file can be retrieved in that resource's context.
-- `Template.options` is validated server-side against the chosen format's generator schema — it is not an arbitrary bag; valid keys depend on `default_format` (`pdf`/`html`).
-- `template_type` and `context` must form a compatible pair (same `associating_model`); the default `context` is `encounter_base`, so templates target encounters unless changed.
-- A nullable `Template.facility` distinguishes instance-wide templates (`i-` slug) from facility-scoped ones (`f-` slug).
+- Report files live in object storage (S3-compatible REPORT bucket) and are read through `S3FilesManager`; the database row is metadata only.
+- `internal_name` is platform-maintained — never set it from a client. Reserve `skip_internal_name` for controlled migrations. It is exposed only via `ReportUploadRetrieveSpec`.
+- A freshly created report returns an upload `signed_url`; subsequent reads return a `read_signed_url` instead.
+- Treat a report as available only once `upload_completed` is `True`.
+- Populate `associating_id` when generating a report so the file can be retrieved in its subject resource's context.
+- `Template.options` is validated server-side against the chosen format's generator schema, not an arbitrary bag; valid keys depend on `default_format` (`pdf`/`html`).
+- `template_type` and `context` must form a compatible pair (same `associating_model`). The default `context` is `encounter_base`, so templates target encounters unless changed.
+- `Template.facility` is nullable: null means instance-wide (`i-` slug), set means facility-scoped (`f-` slug).
 
 ## Related
 

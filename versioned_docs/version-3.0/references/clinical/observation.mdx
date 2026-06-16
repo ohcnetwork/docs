@@ -4,16 +4,14 @@ sidebar_position: 5
 
 # Observation
 
-Technical reference for the `Observation` module in Care EMR.
+An `Observation` is one named, coded data point about a subject — almost always a patient: a blood pressure reading, a temperature, a coded answer captured through a questionnaire. `main_code` records *what* was observed (usually bound to LOINC) and `value` holds the result. You rarely create one by hand; most observations are materialized when a questionnaire is submitted.
 
 **Source:**
 - Model: [`care/emr/models/observation.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/observation.py)
 - Resource spec: [`care/emr/resources/observation/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/observation/spec.py)
 - Value sets: [`care/emr/resources/observation/valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/observation/valueset.py)
 
-An observation is a single named, coded data point recorded about a subject — almost always a patient — such as a blood pressure reading, a temperature, or a coded answer captured through a questionnaire. The `main_code` records *what* was observed (typically bound to LOINC), and `value` holds the result.
-
-The Django model is the **storage** layer: several of its fields are opaque `JSONField`s whose real structure lives in the Pydantic resource specs. The specs (`care/emr/resources/observation/`) are the **API/implementation** layer — they define the enums, the nested shape of those JSON fields, validation, and the read/write schemas. Read both layers together: the table notes below give the storage column first, then the spec-enforced shape.
+The model is just storage; several fields are opaque `JSONField`s. Their real structure lives in the Pydantic resource specs under `care/emr/resources/observation/`, which own the enums, nested JSON shapes, validation, and the read/write schema split. Each field row below gives the storage column first, then the shape the spec enforces on top of it.
 
 ## Models
 
@@ -21,7 +19,7 @@ The Django model is the **storage** layer: several of its fields are opaque `JSO
 | --- | --- |
 | `Observation` | A single coded measurement or finding about a patient, captured within an encounter |
 
-`Observation` extends [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON).
+`Observation` extends [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base that supplies `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON.
 
 ## `Observation` fields
 
@@ -29,56 +27,56 @@ The Django model is the **storage** layer: several of its fields are opaque `JSO
 
 | Field | Storage type | Spec shape / notes |
 | --- | --- | --- |
-| `status` | `CharField(255)` | Enum `ObservationStatus` — `final`, `amended`, `entered_in_error`. Required in specs. Observations created from questionnaires are `final` |
-| `is_group` | `BooleanField` | Default `False`. Marks a grouping/panel observation that holds `component`/child observations rather than a single value. Not exposed in the resource specs |
-| `category` | `JSONField` (default `{}`) | Spec: a single `Coding { system?, version?, code, display? }`, optional. FHIR observation category derived from the questionnaire |
-| `main_code` | `JSONField` (default `{}`) | Spec: `Coding`, optional. Primary code for what is being observed, typically bound to LOINC (`CARE_OBSERVATION_VALUSET`, system `http://loinc.org`) |
-| `alternate_coding` | `JSONField` (default `[]`) | Spec: a single `CodeableConcept { id?, coding?: Coding[], text }`, optional. Additional codings for the same concept across other code systems |
+| `status` | `CharField(255)` | Enum `ObservationStatus` — `final`, `amended`, `entered_in_error`. Required in specs. Questionnaire-sourced observations land as `final` |
+| `is_group` | `BooleanField` | Default `False`. `True` marks a grouping/panel observation that holds `component`/child observations instead of a single value. Not exposed in the resource specs |
+| `category` | `JSONField` (default `{}`) | Spec: optional `Coding { system?, version?, code, display? }`. FHIR observation category, derived from the questionnaire |
+| `main_code` | `JSONField` (default `{}`) | Spec: optional `Coding`. What is being observed, typically LOINC (`CARE_OBSERVATION_VALUSET`, system `http://loinc.org`) |
+| `alternate_coding` | `JSONField` (default `[]`) | Spec: optional `CodeableConcept { id?, coding?: Coding[], text }`. Same concept expressed in other code systems |
 
 ### Subject & context
 
 | Field | Storage type | Spec shape / notes |
 | --- | --- | --- |
-| `subject_type` | `CharField(255)` | Enum `SubjectType` — `patient`, `encounter`. Spec default `encounter` |
-| `subject_id` | `UUIDField` | Identifier of the subject entity. Not exposed in the specs (set server-side) |
-| `patient` | `FK → Patient` | `CASCADE`. The patient the observation belongs to. Set server-side, not in the spec body |
-| `encounter` | `FK → Encounter` | `CASCADE`. Spec field is a `UUID4 \| None`. The encounter in which the observation was recorded |
-| `effective_datetime` | `DateTimeField` | Nullable in storage. Spec: required `datetime` (tz-aware) on create; optional on update. When the observation was effective/recorded |
+| `subject_type` | `CharField(255)` | Enum `SubjectType` — `patient`, `encounter`. Spec defaults to `encounter` |
+| `subject_id` | `UUIDField` | The subject entity's id. Set server-side; not in the spec body |
+| `patient` | `FK → Patient` | `CASCADE`. Set server-side, not in the spec body |
+| `encounter` | `FK → Encounter` | `CASCADE`. Spec field is `UUID4 \| None`. Where the observation was recorded |
+| `effective_datetime` | `DateTimeField` | When the observation was effective. Nullable in storage, but the spec requires a tz-aware `datetime` on create; optional on update |
 
 ### Author & performer
 
 | Field | Storage type | Spec shape / notes |
 | --- | --- | --- |
-| `data_entered_by` | `FK → users.User` | `CASCADE`, nullable. `related_name="observations_entered"`. Write specs take `data_entered_by_id: int`; read specs serialize a nested `UserSpec` |
-| `performer` | `JSONField` (default `{}`) | Spec: `Performer { type: PerformerType (related_person\|user), id: str }`, optional. Who performed the observation when not the data-entry user |
+| `data_entered_by` | `FK → users.User` | `CASCADE`, nullable. `related_name="observations_entered"`. Write specs accept `data_entered_by_id: int`; read specs serialize a nested `UserSpec` |
+| `performer` | `JSONField` (default `{}`) | Spec: optional `Performer { type: PerformerType (related_person\|user), id: str }`. Use it when the performer differs from the data-entry user |
 
 ### Value
 
 | Field | Storage type | Spec shape / notes |
 | --- | --- | --- |
-| `value_type` | `CharField(255)` | Enum `QuestionType` (from the questionnaire module) — discriminates how `value` is interpreted. See values below. Required in specs |
-| `value` | `JSONField` | Spec: `QuestionnaireSubmitResultValue { value?: str, unit?: Coding, coding?: Coding }`. Required on create, optional on update. `value` carries the raw/string value; `unit` for quantities; `coding` for coded answers |
-| `note` | `TextField` | Spec: `str \| None`. Free-text note about the observation |
+| `value_type` | `CharField(255)` | Enum `QuestionType` (from the questionnaire module). Tells the client how to read `value` — see the table below. Required in specs |
+| `value` | `JSONField` | Spec: `QuestionnaireSubmitResultValue { value?: str, unit?: Coding, coding?: Coding }`. Required on create, optional on update. `value` holds the raw/string result, `unit` the quantity unit, `coding` the coded answer |
+| `note` | `TextField` | Spec: `str \| None`. Free-text note |
 
 ### Clinical qualifiers
 
 | Field | Storage type | Spec shape / notes |
 | --- | --- | --- |
-| `body_site` | `JSONField` (default `{}`) | Spec: `Coding` bound to value set `CARE_BODY_SITE_VALUESET` (slug `system-body-site-observation`, SNOMED CT), optional. FHIR `Observation.bodySite` |
-| `method` | `JSONField` (default `{}`) | Spec: `Coding` bound to value set `CARE_OBSERVATION_COLLECTION_METHOD` (slug `system-collection-method`, SNOMED CT), optional. FHIR `Observation.method` |
-| `reference_range` | `JSONField` (default `[]`) | Spec: `ReferenceRange[]` (see shape below), default `[]`. Reference ranges for the value, typically derived from the observation definition |
-| `interpretation` | `JSONField` (default `{}`) | Spec: free `dict`, default `{}`. Coded interpretation relative to the reference range (high/low/normal). Bound value sets exist for normal/abnormal/critical codings (see below) |
-| `interpretation_old` | `CharField(255)` | Nullable. Legacy free-text interpretation retained for backward compatibility. Not in the specs |
+| `body_site` | `JSONField` (default `{}`) | Spec: optional `Coding` bound to `CARE_BODY_SITE_VALUESET` (slug `system-body-site-observation`, SNOMED CT). FHIR `Observation.bodySite` |
+| `method` | `JSONField` (default `{}`) | Spec: optional `Coding` bound to `CARE_OBSERVATION_COLLECTION_METHOD` (slug `system-collection-method`, SNOMED CT). FHIR `Observation.method` |
+| `reference_range` | `JSONField` (default `[]`) | Spec: `ReferenceRange[]` (shape below), default `[]`. Reference ranges for the value, usually carried over from the observation definition |
+| `interpretation` | `JSONField` (default `{}`) | Spec: free `dict`, default `{}`. Coded interpretation against the reference range (high/low/normal). Normal/abnormal/critical value sets exist (below) but are not enforced on this dict |
+| `interpretation_old` | `CharField(255)` | Nullable. Legacy free-text interpretation, kept for backward compatibility. Not in the specs |
 
 ### Structure & relationships
 
 | Field | Storage type | Spec shape / notes |
 | --- | --- | --- |
-| `parent` | `UUIDField` | Nullable. Spec: `UUID4 \| None` — `external_id` of a parent observation, used to nest related observations |
-| `component` | `JSONField` (default `[]`) | Spec: `Component[]` (see shape below), default `[]`. Sub-observations that share a context but carry their own codes/values (FHIR `Observation.component`) |
-| `questionnaire_response` | `FK → QuestionnaireResponse` | `CASCADE`, nullable. Spec field is `UUID4 \| None`. The questionnaire submission that produced this observation |
+| `parent` | `UUIDField` | Nullable. Spec: `UUID4 \| None` — the `external_id` of a parent observation, for nesting related observations |
+| `component` | `JSONField` (default `[]`) | Spec: `Component[]` (shape below), default `[]`. Sub-observations sharing this context but carrying their own codes and values (FHIR `Observation.component`) |
+| `questionnaire_response` | `FK → QuestionnaireResponse` | `CASCADE`, nullable. Spec field is `UUID4 \| None`. The submission that produced this observation |
 | `diagnostic_report` | `FK → DiagnosticReport` | `CASCADE`, nullable. The report this observation belongs to, if any. Not in the write specs |
-| `observation_definition` | `FK → ObservationDefinition` | `CASCADE`, nullable. The definition that templates this observation. Serialized (as `BaseObservationDefinitionSpec`) only in `ObservationRetrieveSpec` |
+| `observation_definition` | `FK → ObservationDefinition` | `CASCADE`, nullable. The definition this observation templates from. Serialized as `BaseObservationDefinitionSpec` only in `ObservationRetrieveSpec` |
 
 ## Enum & value-set reference
 
@@ -86,9 +84,9 @@ The Django model is the **storage** layer: several of its fields are opaque `JSO
 
 | Value | Meaning |
 | --- | --- |
-| `final` | Recorded, complete and verified. Default for questionnaire-sourced observations |
-| `amended` | Previously final, subsequently corrected |
-| `entered_in_error` | Recorded in error; should be disregarded |
+| `final` | Recorded, complete and verified. The default for questionnaire-sourced observations |
+| `amended` | Was `final`, then corrected |
+| `entered_in_error` | Recorded in error; disregard it |
 
 ### `PerformerType` values (`performer.type`)
 
@@ -106,7 +104,7 @@ The Django model is the **storage** layer: several of its fields are opaque `JSO
 
 ### `QuestionType` values (`value_type`)
 
-A discriminator borrowed from the questionnaire module. It tells the client how to read `value`.
+From the questionnaire module. The value tells the client which key of `value` to read.
 
 | Value | Value sourced from `QuestionnaireSubmitResultValue` |
 | --- | --- |
@@ -127,7 +125,7 @@ A discriminator borrowed from the questionnaire module. It tells the client how 
 
 ### Bound value sets
 
-Coded fields validate against registered Care value sets. A `body_site` or `method` coding that is not a member of its value set is rejected during deserialization.
+Coded fields validate against registered Care value sets. A `body_site` or `method` coding outside its value set is rejected during deserialization.
 
 | Field | Value set | Slug | System(s) |
 | --- | --- | --- | --- |
@@ -135,7 +133,7 @@ Coded fields validate against registered Care value sets. A `body_site` or `meth
 | `body_site` | `CARE_BODY_SITE_VALUESET` | `system-body-site-observation` | `http://snomed.info/sct` (curated concept list + descendants of `442083009`) |
 | `method` | `CARE_OBSERVATION_COLLECTION_METHOD` | `system-collection-method` | `http://snomed.info/sct` (descendants of `272394005`, `129264002`, `386053000`) |
 
-Additional interpretation value sets are registered for use by the FE and observation definitions. They are not directly enforced on the `interpretation` dict:
+These interpretation value sets are registered for the frontend and observation definitions, but are not enforced on the `interpretation` dict:
 
 | Value set | Slug | Concepts (system `http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation`) |
 | --- | --- | --- |
@@ -146,7 +144,7 @@ Additional interpretation value sets are registered for use by the FE and observ
 
 ## Nested JSON shapes (from the spec)
 
-These define the real structures behind the model's `JSONField`s.
+The structures behind the model's `JSONField`s.
 
 ### `Coding`
 
@@ -214,27 +212,27 @@ Component {
 
 ## Resource specs (API schema)
 
-The Pydantic specs build on [`EMRResource`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py) (`serialize` / `de_serialize`, with `perform_extra_serialization` / `perform_extra_deserialization` hooks). Every concrete spec inherits from `BaseObservationSpec`.
+The Pydantic specs build on [`EMRResource`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py), which provides `serialize` / `de_serialize` and the `perform_extra_serialization` / `perform_extra_deserialization` hooks. Every concrete spec inherits from `BaseObservationSpec`.
 
 | Spec | Role | Notes |
 | --- | --- | --- |
-| `BaseObservationSpec` | shared base | Defines all common fields: `id`, `status`, `category`, `main_code`, `alternate_coding`, `subject_type`, `encounter`, `effective_datetime`, `performer`, `value_type`, `value`, `note`, `body_site` (bound), `method` (bound), `reference_range`, `interpretation`, `parent`, `questionnaire_response`, `component` |
+| `BaseObservationSpec` | shared base | Defines the common fields: `id`, `status`, `category`, `main_code`, `alternate_coding`, `subject_type`, `encounter`, `effective_datetime`, `performer`, `value_type`, `value`, `note`, `body_site` (bound), `method` (bound), `reference_range`, `interpretation`, `parent`, `questionnaire_response`, `component` |
 | `ObservationSpec` | write · create | Adds `data_entered_by_id`, `created_by_id`, `updated_by_id` (all `int`). Used internally when materializing observations from a questionnaire submission |
-| `ObservationUpdateSpec` | write · update | Same as base but relaxes `effective_datetime` and `value` to optional (`None`) for partial updates |
-| `ObservationReadSpec` | read · list | Replaces user IDs with nested `created_by` / `updated_by` / `data_entered_by` `UserSpec` objects |
-| `ObservationRetrieveSpec` | read · detail | Extends `ObservationReadSpec`; additionally serializes `observation_definition` via `BaseObservationDefinitionSpec` when present |
+| `ObservationUpdateSpec` | write · update | The base, but `effective_datetime` and `value` relax to optional (`None`) for partial updates |
+| `ObservationReadSpec` | read · list | Swaps the user IDs for nested `created_by` / `updated_by` / `data_entered_by` `UserSpec` objects |
+| `ObservationRetrieveSpec` | read · detail | Extends `ObservationReadSpec` and additionally serializes `observation_definition` via `BaseObservationDefinitionSpec` when it is set |
 
 ### Server-side behaviour
 
 - `ObservationSpec.perform_extra_deserialization` (create/update): sets `obj.external_id = self.id`, copies `data_entered_by_id`, `created_by_id`, `updated_by_id` onto the model, drops `data_entered_by_id` from `meta`, and on **create** (`is_update` is false) clears `obj.id` so a new row is inserted.
-- `ObservationReadSpec.perform_extra_serialization`: maps `id` from `external_id`; deliberately sets `encounter`, `patient`, and `questionnaire_response` to `None` in the serialized output to avoid extra DB queries; resolves audit users (`created_by`, `updated_by`) and `data_entered_by` from cache (`model_from_cache`).
+- `ObservationReadSpec.perform_extra_serialization`: maps `id` from `external_id`; deliberately blanks `encounter`, `patient`, and `questionnaire_response` to `None` in the output to avoid extra DB queries; resolves the audit users (`created_by`, `updated_by`) and `data_entered_by` from cache (`model_from_cache`).
 - `ObservationRetrieveSpec.perform_extra_serialization`: calls the parent, then inlines the full `observation_definition` when the FK is set.
 - `body_site` / `method` are `ValueSetBoundCoding[...]`: the supplied `Coding` is validated against its bound value set during deserialization and rejected if the code is not a member.
-- `de_serialize` only writes fields present in the model's column mapping; non-default values are persisted (`model_dump(exclude_defaults=True)`), and unknown spec-only fields would be stored in `meta` when `__store_metadata__` is set (it is not, by default, for observations).
+- `de_serialize` only writes fields present in the model's column mapping. Non-default values are persisted (`model_dump(exclude_defaults=True)`), and unknown spec-only fields would land in `meta` when `__store_metadata__` is set — which, by default, it is not for observations.
 
 ## Related models
 
-`Observation` is a single self-contained model. It expresses its relationships through foreign keys rather than secondary tables.
+`Observation` is self-contained; it expresses relationships through foreign keys rather than secondary tables.
 
 ```text
 patient                → FK Patient (CASCADE)
@@ -245,17 +243,17 @@ diagnostic_report      → FK DiagnosticReport (CASCADE, nullable)
 observation_definition → FK ObservationDefinition (CASCADE, nullable)
 ```
 
-`parent` is a soft, UUID-based self-reference (not a Django FK) to another observation's `external_id`. It lets observations nest without enforcing a database constraint.
+`parent` is the exception: a soft, UUID-based self-reference to another observation's `external_id`, not a Django FK. It lets observations nest without a database constraint.
 
 ## API integration notes
 
-- Observations are exposed through Care's REST API and align with the FHIR `Observation` resource. API/FHIR field names (e.g. `effectiveDateTime`, `bodySite`) may differ from the Django model names; the resource specs above are the authoritative request/response schemas.
-- Most observations are created as a side effect of submitting a questionnaire: `value` and `value_type` mirror the questionnaire submission types (`QuestionnaireSubmitResultValue` / `QuestionType`), and the linked `questionnaire_response` records provenance.
-- `effective_datetime` must be timezone-aware. It is required on create and optional on update.
-- `status` is constrained to `final` / `amended` / `entered_in_error`; questionnaire-sourced observations are `final`.
-- Coded fields `body_site` and `method` are validated against their bound value sets, and `main_code` is expected to bind to LOINC via `CARE_OBSERVATION_VALUSET`.
-- On read, the list and detail specs blank out `encounter`, `patient`, and `questionnaire_response` to avoid extra queries, so clients should not rely on those being populated in observation list payloads.
-- Prefer **structured** observations. Storing arbitrary unstructured data is discouraged, because business logic (e.g. allergy/medication checks) relies on coded, structured values rather than free text.
+- Observations are exposed through Care's REST API and align with the FHIR `Observation` resource. FHIR field names (`effectiveDateTime`, `bodySite`, and so on) differ from the Django model names; the resource specs above are the authoritative request/response schemas.
+- Most observations are created as a side effect of submitting a questionnaire. `value` and `value_type` mirror the submission types (`QuestionnaireSubmitResultValue` / `QuestionType`), and `questionnaire_response` records provenance.
+- `effective_datetime` must be timezone-aware. Required on create, optional on update.
+- `status` is one of `final` / `amended` / `entered_in_error`; questionnaire-sourced observations are `final`.
+- `body_site` and `method` are validated against their bound value sets, and `main_code` is expected to bind to LOINC via `CARE_OBSERVATION_VALUSET`.
+- On read, the list and detail specs blank out `encounter`, `patient`, and `questionnaire_response`, so don't rely on those being populated in observation payloads.
+- Prefer structured observations. Allergy and medication checks read coded values, not free text, so unstructured data leaves them blind.
 
 ## Related
 

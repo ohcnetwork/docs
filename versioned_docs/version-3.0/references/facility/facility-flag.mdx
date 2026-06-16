@@ -4,9 +4,7 @@ sidebar_position: 3
 
 # Facility Flag
 
-Technical reference for the `FacilityFlag` module in Care EMR.
-
-`FacilityFlag` is a server-side feature-gating primitive: it binds a registered flag name to one `Facility`, letting you toggle behaviour per facility. It is **not** a FHIR resource and has **no dedicated Pydantic resource spec** — no `FacilityFlag` API endpoint, serializer, or `...CreateSpec`/`...ReadSpec` exists. The sections below document it entirely from the Django storage model. Flags reach API clients only as a derived, read-only array on the Facility resource (see [Resource specs](#resource-specs-api-schema)).
+`FacilityFlag` binds a registered flag name to a single `Facility` to gate server-side behaviour. It is not a FHIR resource and has no Pydantic spec — no endpoint, serializer, or `...CreateSpec`/`...ReadSpec` — so everything below comes from the Django storage model. Clients never write flags; they read them as a derived array on the Facility resource (see [Resource specs](#resource-specs-api-schema)).
 
 **Source:**
 - Model: [`care/facility/models/facility_flag.py`](https://github.com/ohcnetwork/care/blob/develop/care/facility/models/facility_flag.py)
@@ -20,20 +18,20 @@ Technical reference for the `FacilityFlag` module in Care EMR.
 | --- | --- |
 | `FacilityFlag` | Associates a registered feature flag with a single `Facility`, gating behaviour per facility |
 
-`FacilityFlag` extends `BaseFlag`, which extends `BaseModel` — the lightweight Care EMR base providing `external_id` (UUID), `created_date`/`modified_date` audit timestamps, and soft-delete via `deleted`. Unlike `EMRBaseModel` (see [Base model](../foundation/base-model.mdx)), `BaseModel` does **not** add `created_by`/`updated_by`, `history`, or `meta` JSON. `BaseFlag` contributes the `flag` value and the per-entity flag machinery: cache invalidation and validation against the flag registry.
+`FacilityFlag` extends `BaseFlag`, which extends `BaseModel` — the Care EMR base providing `external_id` (UUID), `created_date`/`modified_date` audit timestamps, and soft-delete via `deleted`. `BaseModel` is leaner than `EMRBaseModel` (see [Base model](../foundation/base-model.mdx)): no `created_by`/`updated_by`, no `history`, no `meta` JSON. `BaseFlag` adds the `flag` value and the per-entity machinery: cache invalidation and validation against the flag registry.
 
 ## `FacilityFlag` fields
 
 | Field | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |
-| `flag` | `CharField(max_length=1024)` | yes | — | Inherited from `BaseFlag`. The registered flag name; validated against the `FACILITY` flag registry on every save (see [validation](#save-inherited-from-baseflag)). The value space is **not** an enum — it is whatever has been registered at runtime via `FlagRegistry`, so it is open-ended but constrained to registered strings |
-| `facility` | `FK → facility.Facility` | yes | — | `on_delete=CASCADE`, `null=False`, `blank=False`. The facility the flag applies to. Drives the `entity` / `entity_id` properties via `entity_field_name="facility"` |
+| `flag` | `CharField(max_length=1024)` | yes | — | Inherited from `BaseFlag`. The registered flag name, validated against the `FACILITY` flag registry on every save (see [validation](#save-inherited-from-baseflag)). Not an enum — the value space is whatever has been registered at runtime via `FlagRegistry` |
+| `facility` | `FK → facility.Facility` | yes | — | `on_delete=CASCADE`, `null=False`, `blank=False`. The facility the flag applies to. Backs the `entity` / `entity_id` properties via `entity_field_name="facility"` |
 | `external_id` | `UUIDField` | auto | `uuid4` | Inherited from `BaseModel`; `unique=True`, `db_index=True` |
 | `created_date` | `DateTimeField` | auto | `auto_now_add` | Inherited; `null=True`, `blank=True`, `db_index=True` |
 | `modified_date` | `DateTimeField` | auto | `auto_now` | Inherited; `null=True`, `blank=True`, `db_index=True` |
 | `deleted` | `BooleanField` | no | `False` | Inherited; soft-delete flag, `db_index=True`. The default manager (`BaseManager`) filters `deleted=False` |
 
-The model has **no `JSONField`s**, so there is no opaque JSON shape to document. The only constrained value is `flag`, whose allowed values come from the runtime registry rather than a static enum.
+The model has no `JSONField`s, so there is no opaque JSON shape to document.
 
 ### Flag type values
 
@@ -44,7 +42,7 @@ The model has **no `JSONField`s**, so there is no opaque JSON shape to document.
 | `USER` | `"USER"` | `UserFlag` ([User](../access/user.mdx)) |
 | `FACILITY` | `"FACILITY"` | `FacilityFlag` (this model) |
 
-The `flag` values themselves are not enumerated in source — they are registered dynamically (`FlagRegistry.register(FlagType.FACILITY, "<name>")`). A name absent from the `FACILITY` registry raises `FlagNotFoundError` on save.
+The `flag` values themselves are not enumerated in source. They are registered at runtime via `FlagRegistry.register(FlagType.FACILITY, "<name>")`, and a name absent from the `FACILITY` registry raises `FlagNotFoundError` on save.
 
 ### Class-level configuration
 
@@ -53,9 +51,9 @@ These class attributes wire `FacilityFlag` into the generic `BaseFlag` caching a
 | Attribute | Value | Notes |
 | --- | --- | --- |
 | `cache_key_template` | `"facility_flag_cache:{entity_id}:{flag_name}"` | Per-flag existence cache key |
-| `all_flags_cache_key_template` | `"facility_all_flags_cache:{entity_id}"` | Cache key for the full flag list of a facility |
+| `all_flags_cache_key_template` | `"facility_all_flags_cache:{entity_id}"` | Cache key for a facility's full flag list |
 | `flag_type` | `FlagType.FACILITY` | Registry namespace used for flag-name validation |
-| `entity_field_name` | `"facility"` | Tells `BaseFlag` which FK is the owning entity; drives `entity` / `entity_id` properties |
+| `entity_field_name` | `"facility"` | Tells `BaseFlag` which FK is the owning entity; backs the `entity` / `entity_id` properties |
 
 Module-level constants mirror these templates: `FACILITY_FLAG_CACHE_KEY` (`"facility_flag_cache:{facility_id}:{flag_name}"`), `FACILITY_ALL_FLAGS_CACHE_KEY` (`"facility_all_flags_cache:{facility_id}"`), and `FACILITY_FLAG_CACHE_TTL` (`60 * 60 * 24`, 1 day).
 
@@ -69,20 +67,20 @@ UniqueConstraint(
 )
 ```
 
-Among non-deleted rows, a facility may hold a given flag at most once. Soft-deleted rows are excluded, so a flag can be removed and re-added. `Meta.verbose_name = "Facility Flag"`.
+A facility holds a given flag at most once among non-deleted rows. The condition excludes soft-deleted rows, so a flag can be removed and re-added. `Meta.verbose_name = "Facility Flag"`.
 
 ## Methods & save behaviour
 
 ### `save()` (inherited from `BaseFlag`)
 
-On every save:
+Every save runs four steps in order:
 
-1. `validate_flag(self.flag)` runs `FlagRegistry.validate_flag_name(FlagType.FACILITY, flag)`. This validates the flag type first, then checks that the name is registered. An unknown type or unregistered name raises `FlagNotFoundError` (a subclass of Django `ValidationError`), and the row is **not** written.
+1. `validate_flag(self.flag)` calls `FlagRegistry.validate_flag_name(FlagType.FACILITY, flag)`, which validates the flag type, then checks that the name is registered. An unknown type or unregistered name raises `FlagNotFoundError` (a subclass of Django `ValidationError`) and the row is not written.
 2. The per-flag cache key (`facility_flag_cache:{facility_id}:{flag}`) is deleted.
 3. The all-flags cache key (`facility_all_flags_cache:{facility_id}`) is deleted.
 4. The row is persisted via `super().save()`.
 
-Deletes use the `BaseModel` soft-delete (`delete()` sets `deleted = True` and saves `update_fields=["deleted"]`). Cache entries are **not** purged on delete, so they expire by TTL or are rebuilt on the next miss.
+Deletes use the `BaseModel` soft-delete: `delete()` sets `deleted = True` and saves `update_fields=["deleted"]`. It does not purge cache entries, so they expire by TTL or are rebuilt on the next miss.
 
 ### Lookups
 
@@ -91,7 +89,7 @@ Deletes use the `BaseModel` soft-delete (`delete()` sets `deleted = True` and sa
 | `check_facility_has_flag(facility_id, flag_name)` | `bool` | Delegates to `BaseFlag.check_entity_has_flag`: validates the flag name, then `cache.get_or_set` on the per-flag key with an `.exists()` query; cached for `FLAGS_CACHE_TTL` (1 day) |
 | `get_all_flags(facility_id)` | `tuple[FlagName]` | Delegates to `BaseFlag.get_all_flags`: `cache.get_or_set` on the all-flags key, materializing `values_list("flag", flat=True)` for the facility; cached for 1 day |
 
-Both wrap the generic `BaseFlag` methods using `entity_field_name="facility"`. `Facility.get_facility_flags()` is a thin wrapper that calls `FacilityFlag.get_all_flags(self.id)`.
+Both wrap the generic `BaseFlag` methods using `entity_field_name="facility"`. `Facility.get_facility_flags()` is a thin wrapper over `FacilityFlag.get_all_flags(self.id)`.
 
 ### Properties (inherited)
 
@@ -100,23 +98,19 @@ Both wrap the generic `BaseFlag` methods using `entity_field_name="facility"`. `
 
 ## Resource specs (API schema)
 
-**`FacilityFlag` has no Pydantic resource spec and no REST endpoint of its own.** There is no `FacilityFlagCreateSpec` / `FacilityFlagUpdateSpec` / `FacilityFlagListSpec` / `FacilityFlagRetrieveSpec`, no serializer, and no viewset — confirmed by their absence from `care/emr/resources/` and `care/facility/api/`. Flags are administered through Django admin or management/registration code, not the public API.
+`FacilityFlag` has no Pydantic resource spec and no REST endpoint of its own. There is no `FacilityFlagCreateSpec` / `FacilityFlagUpdateSpec` / `FacilityFlagListSpec` / `FacilityFlagRetrieveSpec`, no serializer, and no viewset — confirmed by their absence from `care/emr/resources/` and `care/facility/api/`. Flags are administered through Django admin or registration/management code, not the public API.
 
-Flags surface to API clients in exactly one place: the **Facility** resource, which exposes them as a derived read-only field:
+Flags reach API clients in exactly one place: the Facility resource exposes them as a derived read-only field.
 
 | Spec | Field | Role | Behaviour |
 | --- | --- | --- | --- |
 | `FacilityRetrieveSpec` ([`facility/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/facility/spec.py)) | `flags: list[str]` | read · detail | Populated in `perform_extra_serialization` via `mapping["flags"] = obj.get_facility_flags()`. Server-maintained and read-only; clients cannot set or mutate flags through the Facility write specs |
 
-Notes on this binding:
-
-- The `flags` array is the materialized list of registered flag names attached to the facility (from `FacilityFlag.get_all_flags`, cache-backed, 1-day TTL).
-- The same pattern exists for users: the User resource exposes `flags` via `obj.get_all_flags()`, backed by `UserFlag` (see [User](../access/user.mdx)).
-- No value set is bound to `flag`; allowed values are the runtime `FACILITY` registry entries, not a coded concept.
+The `flags` array is the materialized list of registered flag names attached to the facility, from `FacilityFlag.get_all_flags` (cache-backed, 1-day TTL). No value set is bound to it — entries are the runtime `FACILITY` registry names, not a coded concept. The User resource mirrors this, exposing `flags` via `obj.get_all_flags()` backed by `UserFlag` (see [User](../access/user.mdx)).
 
 ## Related models
 
-`FacilityFlag` defines no secondary models. Its behaviour is shared via two utilities in `care/utils`.
+`FacilityFlag` defines no secondary models. Its behaviour comes from two utilities in `care/utils`.
 
 ### `BaseFlag` (abstract)
 
@@ -130,12 +124,12 @@ Provides save-time validation, cache invalidation, and the `check_entity_has_fla
 
 ### `FlagRegistry`
 
-An in-process class-level registry (`_flags: dict[FlagType, dict[FlagName, bool]]`) of valid flag names per `FlagType`. Key methods:
+An in-process, class-level registry (`_flags: dict[FlagType, dict[FlagName, bool]]`) of valid flag names per `FlagType`. Key methods:
 
 | Method | Notes |
 | --- | --- |
-| `register(flag_type, flag_name)` | Adds a name to a type's registry (creating the type bucket if needed) |
-| `register_wrapper(flag_type, flag_name)` | Class decorator form of `register` |
+| `register(flag_type, flag_name)` | Adds a name to a type's registry, creating the type bucket if needed |
+| `register_wrapper(flag_type, flag_name)` | Class-decorator form of `register` |
 | `unregister(flag_type, flag_name)` | Removes a name; logs a warning if absent |
 | `validate_flag_type(flag_type)` | Raises `FlagNotFoundError` ("Invalid Flag Type") if the type bucket is missing |
 | `validate_flag_name(flag_type, flag_name)` | Validates type, then raises `FlagNotFoundError` ("Flag not registered") if the name is absent |
@@ -146,11 +140,10 @@ A flag must be registered before a `FacilityFlag` referencing it can be saved. S
 
 ## API integration notes
 
-- `FacilityFlag` is a server-side gating primitive — not a FHIR resource and not a writable API resource. It has no CRUD endpoint; flags are managed via Django admin or registration/management code.
-- Clients observe a facility's flags only through the read-only `flags: list[str]` field on `FacilityRetrieveSpec` (see [Resource specs](#resource-specs-api-schema)).
-- In application code, read access should go through `check_facility_has_flag` / `get_all_flags` (or `Facility.get_facility_flags()`), which are cache-backed — do not query the table directly for hot-path checks.
-- Flag names are constrained to entries registered in the `FACILITY` `FlagRegistry`; clients cannot introduce arbitrary flag strings, and an unregistered name fails validation on save with `FlagNotFoundError`.
-- The `{facility, flag}` uniqueness is enforced only over non-deleted rows, so soft-deleted history is preserved and a flag can be removed then re-added.
+- There is no CRUD endpoint. Manage flags via Django admin or registration/management code; clients only observe them through the read-only `flags: list[str]` field on `FacilityRetrieveSpec` (see [Resource specs](#resource-specs-api-schema)).
+- In application code, read through `check_facility_has_flag` / `get_all_flags` (or `Facility.get_facility_flags()`), which are cache-backed. Do not query the table directly for hot-path checks.
+- Flag names are limited to entries registered in the `FACILITY` `FlagRegistry`. An unregistered name fails save validation with `FlagNotFoundError`, so clients cannot introduce arbitrary flag strings.
+- The `{facility, flag}` uniqueness holds only over non-deleted rows, so soft-deleted history is preserved and a flag can be removed then re-added.
 
 ## Related
 

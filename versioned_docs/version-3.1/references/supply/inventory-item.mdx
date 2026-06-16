@@ -4,16 +4,14 @@ sidebar_position: 3
 
 # Inventory Item
 
-Technical reference for the `InventoryItem` module in Care EMR.
+`InventoryItem` records how much of one [`Product`](../supply/product.mdx) is on hand at one [facility location](../facility/location.mdx). Deliveries move product in, dispenses move it out, and the server recomputes the balance into `net_content`. You never create these rows — the server does, and the only field a client can write is `status`, such as marking a line `inactive` when stock is damaged or pulled from circulation.
 
 **Source:**
 - Model: [`care/emr/models/inventory_item.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/inventory_item.py)
 - Spec: [`care/emr/resources/inventory/inventory_item/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/inventory_item/spec.py)
 - Helpers: [`create_inventory_item.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/inventory_item/create_inventory_item.py), [`sync_inventory_item.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/inventory_item/sync_inventory_item.py)
 
-`InventoryItem` tracks the availability of a single [`Product`](../supply/product.mdx) at a single [facility location](../facility/location.mdx). It is the on-hand counterpart to the supply workflow: deliveries move product into a location, dispenses move it out, and the server recomputes the resulting balance into `net_content`. The server **creates and maintains inventory rows automatically** — clients cannot create them through a write API. The only client-facing mutation is changing `status` (for example, marking a line `inactive` when an item is damaged or no longer dispensed).
-
-The Django model is the **storage** layer. The Pydantic **resource specs** (`care/emr/resources/inventory/inventory_item/`) define the `status` enum and the read schema, including the nested `product` / `location` objects that the model exposes only as foreign keys.
+The Django model is storage. The Pydantic resource specs (`care/emr/resources/inventory/inventory_item/`) define the `status` enum and the read schema, inlining the `product` and `location` objects that the model holds only as foreign keys.
 
 ## Models
 
@@ -27,26 +25,26 @@ The Django model is the **storage** layer. The Pydantic **resource specs** (`car
 
 | Field | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |
-| `location` | `FK → FacilityLocation` | yes | — | `on_delete=PROTECT`. The facility location holding the stock (e.g. central store, ward pharmacy). |
+| `location` | `FK → FacilityLocation` | yes | — | `on_delete=PROTECT`. The location holding the stock (central store, ward pharmacy, and so on). |
 | `product` | `FK → Product` | yes | — | `on_delete=PROTECT`. The product being tracked. |
-| `status` | `CharField(255)` | yes | — | Lifecycle/availability status. Spec constrains values to `InventoryItemStatusOptions` (see below). |
-| `net_content` | `DecimalField` | no | `Decimal(0)` | `max_digits=20`, `decimal_places=6`. Current on-hand quantity. Server-computed (see [`sync()`](#sync_inventory_item)). May go negative if dispenses/outgoing deliveries exceed incoming. |
+| `status` | `CharField(255)` | yes | — | The model field is an unconstrained string; the spec restricts it to `InventoryItemStatusOptions` (see below). |
+| `net_content` | `DecimalField` | no | `Decimal(0)` | `max_digits=20`, `decimal_places=6`. On-hand quantity, computed by the server — see [`sync()`](#sync_inventory_item). Goes negative when dispenses and outgoing deliveries outrun incoming stock. |
 
-The `(location, product)` pair is unique: at most one inventory item exists per product per location, enforced in `save()` (see [Methods & save behaviour](#methods--save-behaviour)).
+The `(location, product)` pair is unique — one inventory item per product per location — enforced in `save()` (see [Methods & save behaviour](#methods--save-behaviour)).
 
 ### `InventoryItemStatusOptions` values
 
-Defined in [`spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/inventory_item/spec.py). The spec restricts `status` to these values (the model field itself is an unconstrained `CharField`):
+Defined in [`spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/inventory_item/spec.py). The spec accepts only these three values; the model field itself stays an open `CharField`:
 
 | Value | Meaning |
 | --- | --- |
-| `active` | Stock line is live and dispensable. Default applied when the server auto-creates a row. |
-| `inactive` | No longer actively dispensed (e.g. damaged stock, or other concern). |
+| `active` | Live and dispensable. Set when the server auto-creates a row. |
+| `inactive` | No longer dispensed — damaged stock, or another hold. |
 | `entered_in_error` | Record created in error. |
 
 ## Related models
 
-`InventoryItem` references two models from other domains, plus the transactional records that drive its quantity:
+Two foreign keys anchor the row; two transactional sources set its quantity:
 
 ```text
 location → FK FacilityLocation (PROTECT)
@@ -57,43 +55,43 @@ drives net_content (read in sync_inventory_item):
   MedicationDispense   (dispensed-out, excluding cancelled statuses)
 ```
 
-Both foreign keys use `on_delete=PROTECT`, so a location or product cannot be hard-deleted while inventory rows reference it. See [Supply Delivery](../supply/supply-delivery.mdx) and [Medication Dispense](../medications/medication-dispense.mdx) for the records that adjust `net_content`.
+Both foreign keys are `on_delete=PROTECT`: a location or product can't be hard-deleted while an inventory row references it. The records that move `net_content` live in [Supply Delivery](../supply/supply-delivery.mdx) and [Medication Dispense](../medications/medication-dispense.mdx).
 
 ## Resource specs (API schema)
 
-All specs extend `EMRResource` (`care/emr/resources/base.py`), which provides `serialize` / `de_serialize` and the `perform_extra_serialization` hook that inlines the nested `product` and `location` objects.
+All specs extend `EMRResource` (`care/emr/resources/base.py`), which supplies `serialize` / `de_serialize` and the `perform_extra_serialization` hook that inlines the nested `product` and `location` objects.
 
 | Spec class | Role | Fields exposed | Notes |
 | --- | --- | --- | --- |
 | `BaseInventoryItemSpec` | shared | `id`, `status` | `__model__ = InventoryItem`, `__exclude__ = []`. `status` typed as `InventoryItemStatusOptions`. |
-| `InventoryItemWriteSpec` | write | `id`, `status` | Inherits `BaseInventoryItemSpec` unchanged — only `status` is client-writable; `product`, `location`, and `net_content` are server-maintained. |
+| `InventoryItemWriteSpec` | write | `id`, `status` | Inherits `BaseInventoryItemSpec` unchanged. Only `status` is client-writable; `product`, `location`, and `net_content` are server-maintained. |
 | `InventoryItemReadSpec` | read · list | `id`, `status`, `net_content`, `product`, `location` | See serialization below. |
-| `InventoryItemRetrieveSpec` | read · detail | same as `InventoryItemReadSpec` | `pass` subclass — identical shape to the list spec. |
+| `InventoryItemRetrieveSpec` | read · detail | same as `InventoryItemReadSpec` | A `pass` subclass — identical shape to the list spec. |
 
 ### Read serialization (`InventoryItemReadSpec.perform_extra_serialization`)
 
 | Field | Serialized shape | Source |
 | --- | --- | --- |
-| `id` | `UUID4` | `obj.external_id` (the public id, not the internal pk). |
+| `id` | `UUID4` | `obj.external_id` — the public id, not the internal pk. |
 | `net_content` | `Decimal` (`max_digits=20`, `decimal_places=0` on the read field) | model `net_content`. |
-| `product` | nested `dict` | `ProductReadSpec.serialize(obj.product).to_json()` — includes nested `product_knowledge` and optional `charge_item_definition`. See [Product](../supply/product.mdx). |
-| `location` | nested `dict` | `FacilityLocationListSpec.serialize(obj.location).to_json()` — includes `parent`, `mode`, `has_children`, `system_availability_status`, and optional `current_encounter`. See [Location](../facility/location.mdx). |
+| `product` | nested `dict` | `ProductReadSpec.serialize(obj.product).to_json()` — carries nested `product_knowledge` and optional `charge_item_definition`. See [Product](../supply/product.mdx). |
+| `location` | nested `dict` | `FacilityLocationListSpec.serialize(obj.location).to_json()` — carries `parent`, `mode`, `has_children`, `system_availability_status`, and optional `current_encounter`. See [Location](../facility/location.mdx). |
 
-`status` (typed `InventoryItemStatusOptions`) carries through from `BaseInventoryItemSpec`. There is no separate `CreateSpec` — inventory rows are not created via a client write path.
+`status` (typed `InventoryItemStatusOptions`) carries through from `BaseInventoryItemSpec`. There is no `CreateSpec`; rows are never created through a client write path.
 
 ## Methods & save behaviour
 
 ### `save()`
 
-On creation only (when `self.id` is unset), `save()` enforces uniqueness of the `(location, product)` pair:
+On creation only (when `self.id` is unset), `save()` enforces the `(location, product)` uniqueness:
 
 ```text
 if creating and InventoryItem with same (location, product) exists:
     raise ValueError("Inventory item already exists")
 ```
 
-- The check runs **only for new rows**; updates to an existing item skip it.
-- Violations raise a plain `ValueError`, not a database `IntegrityError` — callers creating items through the ORM should handle it.
+- The check runs only for new rows; updates to an existing item skip it.
+- A violation raises a plain `ValueError`, not a database `IntegrityError`, so callers creating items through the ORM must handle it.
 
 ### `create_inventory_item(product, location)`
 
@@ -104,7 +102,7 @@ Helper in [`create_inventory_item.py`](https://github.com/ohcnetwork/care/blob/d
 
 ### `sync_inventory_item()`
 
-Helper in [`sync_inventory_item.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/inventory_item/sync_inventory_item.py) — the source of truth for `net_content`. Running under `InventoryLock(product, location)`, it recomputes the balance from transactional records and writes it back:
+Helper in [`sync_inventory_item.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/inventory_item/sync_inventory_item.py), the source of truth for `net_content`. Holding `InventoryLock(product, location)`, it recomputes the balance from the transactional records and writes it back:
 
 ```text
 net_content =
@@ -119,17 +117,17 @@ net_content =
                                       excluding cancelled statuses)
 ```
 
-- If no row exists for `(product, location)`, it is auto-created (`status=active`, `net_content=0`) before computing.
-- `net_content` is the **aggregate sum** of `supplied_item_quantity` / dispense `quantity`; it can be negative.
-- Called whenever a delivery is completed or a dispense changes, keeping availability current.
+- If no row exists for `(product, location)`, one is auto-created (`status=active`, `net_content=0`) before computing.
+- `net_content` is the aggregate sum of `supplied_item_quantity` / dispense `quantity`, and can be negative.
+- Runs whenever a delivery completes or a dispense changes, so the balance stays current.
 
 ## API integration notes
 
-- Inventory items are **server-maintained**: created via `create_inventory_item` / `sync_inventory_item`, never through a direct client create. The only meaningful client write is changing `status` (e.g. to `inactive`).
-- One inventory row exists per `(location, product)` pair — `net_content` is adjusted on the existing row rather than by inserting duplicates.
-- `net_content` is recomputed by `sync_inventory_item` under an `InventoryLock`; do not patch it directly — the next sync overwrites it.
+- Rows are server-maintained: they come from `create_inventory_item` / `sync_inventory_item`, never a direct client create. The only meaningful client write is `status` (for example, setting `inactive`).
+- One row exists per `(location, product)` pair. `net_content` is adjusted on that row, not by inserting duplicates.
+- Don't patch `net_content` directly — `sync_inventory_item` recomputes it under an `InventoryLock`, and the next sync overwrites your value.
 - Read responses inline the full `product` (with `product_knowledge`) and `location` objects, not just their ids.
-- `location` and `product` are `PROTECT` foreign keys — referenced products and locations cannot be hard-deleted while stock rows exist.
+- `location` and `product` are `PROTECT` foreign keys, so referenced products and locations can't be hard-deleted while stock rows exist.
 
 ## Related
 

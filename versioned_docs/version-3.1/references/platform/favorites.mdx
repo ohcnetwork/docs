@@ -4,9 +4,9 @@ sidebar_position: 7
 
 # Favorites
 
-Technical reference for the `UserResourceFavorites` module in Care EMR.
+`UserResourceFavorites` lets a user pin resource IDs into named lists so the owning resource's list endpoint can surface them first. It's a Care-internal personalization feature, not a FHIR resource — you touch it when you add favoriting to a resource's UI.
 
-Favorites are a Care-internal personalization feature, not a FHIR resource. A user keeps one or more **named lists** of favorited resource IDs, scoped by a `resource_type` and (optionally) a `facility`. Unlike most EMR resources, favorites have **no `EMRResource` serialize/de_serialize spec**. The implementation layer is an enum (`FavoriteResourceChoices`), a default-list constant, a DRF filter backend (`FavoritesFilter`), and a viewset mixin (`EMRFavoritesMixin`) that exposes the read/write endpoints.
+Each list is scoped by a `resource_type` and, optionally, a `facility`. There's no `EMRResource` serialize/de_serialize spec here. The moving parts are an enum (`FavoriteResourceChoices`), a default-list constant, a DRF filter backend (`FavoritesFilter`), and a viewset mixin (`EMRFavoritesMixin`) that wires up the read/write endpoints.
 
 **Source:**
 - Model: [`care/emr/models/favorites.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/favorites.py)
@@ -20,23 +20,23 @@ Favorites are a Care-internal personalization feature, not a FHIR resource. A us
 | --- | --- |
 | `UserResourceFavorites` | Stores a per-user, named list of favorited resource integer PKs, optionally scoped to a facility and constrained to one resource type |
 
-`UserResourceFavorites` extends [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base providing `external_id`, the audit fields `created_by` / `updated_by` / `created_date` / `modified_date`, and soft-delete semantics.
+`UserResourceFavorites` extends [`EMRBaseModel`](../foundation/base-model.mdx), which supplies `external_id`, the audit fields `created_by` / `updated_by` / `created_date` / `modified_date`, and soft-delete semantics.
 
 ## `UserResourceFavorites` fields
 
 | Field | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |
-| `user` | `FK → User` | optional | — | `CASCADE`, nullable. Owner of the favorites list |
-| `favorites` | `ArrayField(IntegerField)` | yes | `[]` | Ordered list of favorited resource **primary-key integers** (not `external_id`s). Newest-first; capped at `settings.MAX_FAVORITES_PER_LIST` (default `50`) |
-| `favorite_list` | `CharField(255)` | yes | — | Name of the list. A user may keep multiple named lists per `(resource_type, facility)`. Endpoints default it to `"default"` (`DEFAULT_FAVORITE_LIST`) |
-| `resource_type` | `CharField(255)` | yes | — | The kind of resource favorited. In practice always one of the `FavoriteResourceChoices` values (set server-side from the viewset's `FAVORITE_RESOURCE`), never accepted from the client |
-| `facility` | `FK → Facility` | optional | — | `CASCADE`, nullable. Optional facility scope; `null` means an instance-wide (cross-facility) list |
+| `user` | `FK → User` | optional | — | Owner of the list. `CASCADE`, nullable |
+| `favorites` | `ArrayField(IntegerField)` | yes | `[]` | Favorited resource primary-key integers, not `external_id`s. Newest-first; capped at `settings.MAX_FAVORITES_PER_LIST` (default `50`) |
+| `favorite_list` | `CharField(255)` | yes | — | List name. A user may keep multiple named lists per `(resource_type, facility)`. Endpoints default it to `"default"` (`DEFAULT_FAVORITE_LIST`) |
+| `resource_type` | `CharField(255)` | yes | — | The kind of resource favorited. Always one of the `FavoriteResourceChoices` values, set server-side from the viewset's `FAVORITE_RESOURCE` — never accepted from the client |
+| `facility` | `FK → Facility` | optional | — | `CASCADE`, nullable. `null` means an instance-wide (cross-facility) list |
 
-In practice, the tuple `(user, resource_type, facility, favorite_list)` uniquely addresses a row. The cache keys and the `get_or_create` in `add_favorite` are both built from this combination.
+The tuple `(user, resource_type, facility, favorite_list)` addresses a single row: it's what the cache keys and the `get_or_create` in `add_favorite` are built from.
 
 ### `resource_type` values — `FavoriteResourceChoices`
 
-`resource_type` is constrained at the API layer to the string values of `FavoriteResourceChoices` (`care/emr/resources/favorites/spec.py`). Each value is wired to a viewset through that viewset's `FAVORITE_RESOURCE` attribute.
+The API constrains `resource_type` to the string values of `FavoriteResourceChoices` (`care/emr/resources/favorites/spec.py`). Each viewset binds to exactly one value through its `FAVORITE_RESOURCE` attribute.
 
 | Value | Bound resource | Wired viewset |
 | --- | --- | --- |
@@ -49,13 +49,13 @@ In practice, the tuple `(user, resource_type, facility, favorite_list)` uniquely
 
 ## Resource specs (API schema)
 
-Favorites do **not** use the `EMRResource` Create/Update/List/Retrieve pattern. The "spec" surface consists of:
+Favorites skip the `EMRResource` Create/Update/List/Retrieve pattern. The spec surface is just:
 
 | Symbol | Kind | Role |
 | --- | --- | --- |
-| `FavoriteResourceChoices` | `str, Enum` (`spec.py`) | The allowed `resource_type` values (table above). A viewset selects one via `FAVORITE_RESOURCE = FavoriteResourceChoices.<x>.value` |
+| `FavoriteResourceChoices` | `str, Enum` (`spec.py`) | Allowed `resource_type` values (table above). A viewset selects one via `FAVORITE_RESOURCE = FavoriteResourceChoices.<x>.value` |
 | `DEFAULT_FAVORITE_LIST` | constant (`spec.py`) | `"default"` — the list name used when the request omits `favorite_list` |
-| `FavoriteRequest` | `pydantic.BaseModel` (viewset) | Request body for write actions. Single field `favorite_list: str = DEFAULT_FAVORITE_LIST` |
+| `FavoriteRequest` | `pydantic.BaseModel` (viewset) | Request body for write actions. One field: `favorite_list: str = DEFAULT_FAVORITE_LIST` |
 | `FavoritesFilter` | DRF `BaseFilterBackend` (`filters.py`) | Read path. Adds the `favorite_list` query param to the resource's list endpoint and restricts/orders results to that user's favorites |
 | `EMRFavoritesMixin` | viewset mixin (`api/viewsets/favorites.py`) | Adds the `favorite_lists`, `add_favorite`, `remove_favorite` actions |
 
@@ -65,7 +65,7 @@ Favorites do **not** use the `EMRResource` Create/Update/List/Retrieve pattern. 
 | --- | --- | --- | --- |
 | `favorite_list` | `str` | optional | `"default"` (`DEFAULT_FAVORITE_LIST`) |
 
-There is no read schema for the favorited objects themselves. Favorited resources come back through the **owning resource's own list endpoint** (for example, the questionnaire list serializer), filtered and ordered by `FavoritesFilter`. The `favorite_lists` action returns only `{"lists": [<list name>, ...]}`.
+Favorited objects have no read schema of their own. They come back through the owning resource's list endpoint — for example, the questionnaire list serializer — filtered and ordered by `FavoritesFilter`. The `favorite_lists` action returns only `{"lists": [<list name>, ...]}`.
 
 ## Related models
 
@@ -75,11 +75,11 @@ There is no read schema for the favorited objects themselves. Favorited resource
 
 ## Methods & save behaviour
 
-This model maintains a Django cache alongside the database row.
+Every row is mirrored into a Django cache, kept in sync by `save()` and `refresh_cache()`.
 
 ### Cache keys
 
-Two module-level helpers build the cache keys, encoding a missing facility as `-`:
+Two module-level helpers build the keys, encoding a missing facility as `-`:
 
 ```text
 favorite_lists_cache_key(user, resource_type, facility)
@@ -89,26 +89,26 @@ favorite_list_object_cache_key(user, resource_type, facility, favorite_list)
   → "user_favorites_list_object:{user.id}:{resource_type}:{facility.id|-}:{favorite_list}"
 ```
 
-- The **lists** key caches the ordered, deduplicated set of `favorite_list` names a user has for a `(resource_type, facility)`.
-- The **list object** key caches the `favorites` integer array for a single named list.
+- The lists key holds the ordered, deduplicated set of `favorite_list` names a user has for a `(resource_type, facility)`.
+- The list-object key holds the `favorites` integer array for one named list.
 
 ### `refresh_cache(refresh_list=False)`
 
 - Always writes the current `favorites` array under the list-object key.
-- When `refresh_list=True`, also recomputes the deduplicated, `modified_date`-descending set of `favorite_list` names for the `(user, resource_type, facility)` and writes it under the lists key.
+- With `refresh_list=True`, also recomputes the deduplicated, `modified_date`-descending set of `favorite_list` names for the `(user, resource_type, facility)` and writes it under the lists key.
 
 ### `save()` side effects
 
-`save()` sets `refresh_list = not self.pk` (so only when creating a new row), calls `super().save()`, then `refresh_cache(refresh_list=refresh_list)`. The effects:
+`save()` sets `refresh_list = not self.pk` (true only on insert), calls `super().save()`, then `refresh_cache(refresh_list=refresh_list)`. So:
 
 1. Creating a new list refreshes both the lists cache and the list-object cache.
-2. Updating an existing list refreshes only the list-object cache, since the set of list names is unchanged.
+2. Updating an existing list refreshes only the list-object cache — the set of list names hasn't changed.
 
-Integrators reading favorites through the cache should treat these keys as platform-maintained. Write through the model or endpoints so the cache stays consistent.
+Treat these keys as platform-maintained. Write through the model or the endpoints so the cache stays consistent.
 
 ## API integration notes
 
-Favorites are exposed through the **owning resource's viewset** via `EMRFavoritesMixin`, not through a standalone favorites endpoint. A viewset opts in by mixing in `EMRFavoritesMixin`, setting `FAVORITE_RESOURCE`, and adding `FavoritesFilter` to `filter_backends`:
+There's no standalone favorites endpoint. Favorites ride on the owning resource's viewset through `EMRFavoritesMixin`. A viewset opts in by mixing in `EMRFavoritesMixin`, setting `FAVORITE_RESOURCE`, and adding `FavoritesFilter` to `filter_backends`:
 
 ```python
 class QuestionnaireViewSet(EMRModelViewSet, EMRFavoritesMixin):
@@ -120,19 +120,18 @@ class QuestionnaireViewSet(EMRModelViewSet, EMRFavoritesMixin):
 
 | Action | Method · route | Body | Behaviour |
 | --- | --- | --- | --- |
-| `add_favorite` | `POST {resource}/{id}/add_favorite/` | `FavoriteRequest` | `get_or_create` the `(user, favorite_list, resource_type, facility)` row, `insert(0, obj.id)` (newest-first), dedupe, **trim to `MAX_FAVORITES_PER_LIST`**, save. Returns `{}` |
-| `remove_favorite` | `POST {resource}/{id}/remove_favorite/` | `FavoriteRequest` | Pops `obj.id` from the list. If the list becomes empty, **deletes the row and both cache keys**. 404/validation error if the list does not exist. Returns `{}` |
-| `favorite_lists` | `GET {resource}/favorite_lists/` | — | Returns `{"lists": [<name>, ...]}` (cache-first, falls back to DB). Resolves `facility` from `facility_external_id` kwarg or `?facility=` query param |
+| `add_favorite` | `POST {resource}/{id}/add_favorite/` | `FavoriteRequest` | `get_or_create` the `(user, favorite_list, resource_type, facility)` row, `insert(0, obj.id)` (newest-first), dedupe, trim to `MAX_FAVORITES_PER_LIST`, save. Returns `{}` |
+| `remove_favorite` | `POST {resource}/{id}/remove_favorite/` | `FavoriteRequest` | Pops `obj.id` from the list. Emptying the list deletes the row and both cache keys. 404/validation error if the list does not exist. Returns `{}` |
+| `favorite_lists` | `GET {resource}/favorite_lists/` | — | Returns `{"lists": [<name>, ...]}` (cache-first, falls back to DB). Resolves `facility` from the `facility_external_id` kwarg or `?facility=` query param |
 | list (filtered) | `GET {resource}/?favorite_list=<name>` | — | `FavoritesFilter` restricts the resource list to `id__in=favorites` and orders by favorite position (`sort_index`). Empty/unknown list → empty queryset |
 
-Server-maintained / validation behaviour:
+What's server-maintained or validated:
 
-- `resource_type` is never client-supplied; each viewset fixes it via `FAVORITE_RESOURCE`. The client only ever sends `favorite_list`.
-- `facility` is derived server-side via `retrieve_facility_obj(obj)` (defaulting to `obj.facility`), so favorites inherit the favorited object's facility scope.
-- `favorites` stores **integer primary keys**, not `external_id`s. Ordering is significant and newest-first; `add_favorite` re-inserts at position 0 and dedupes.
-- The list is capped at `settings.MAX_FAVORITES_PER_LIST` (env `MAX_FAVORITES_PER_LIST`, default `50`). On `add_favorite`, the oldest entries beyond the cap are dropped.
-- Do not set the `user_favorites_lists:*` or `user_favorites_list_object:*` cache keys directly from clients. They are maintained by `save()` / `refresh_cache()` and torn down by `remove_favorite` when a list empties.
-- A `null` `facility` denotes an instance-wide list; a set `facility` denotes a facility-scoped list.
+- `resource_type` is never client-supplied — each viewset fixes it via `FAVORITE_RESOURCE`. The client only sends `favorite_list`.
+- `facility` is derived server-side via `retrieve_facility_obj(obj)` (defaulting to `obj.facility`), so favorites inherit the favorited object's facility scope. A `null` `facility` is an instance-wide list; a set one is facility-scoped.
+- `favorites` holds integer primary keys, not `external_id`s. Order is newest-first; `add_favorite` re-inserts at position 0 and dedupes.
+- The list is capped at `settings.MAX_FAVORITES_PER_LIST` (env `MAX_FAVORITES_PER_LIST`, default `50`). `add_favorite` drops the oldest entries beyond the cap.
+- Never set the `user_favorites_lists:*` or `user_favorites_list_object:*` cache keys from a client. `save()` / `refresh_cache()` maintain them, and `remove_favorite` tears them down when a list empties.
 
 ## Related
 

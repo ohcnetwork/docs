@@ -4,15 +4,13 @@ sidebar_position: 5
 
 # Supply Delivery
 
-Technical reference for the `SupplyDelivery` module in Care EMR.
+A supply delivery records product moving into a destination location — either from another location or from an external supplier. Deliveries and dispensing together drive facility stock: `supply delivered − supply dispensed = current stock`. Each delivery belongs to a `DeliveryOrder`, the shipment grouping usually created from a [supply request](./supply-request.mdx).
 
 **Source:**
 - Model: [`care/emr/models/supply_delivery.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/supply_delivery.py)
 - Resource specs: [`spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/supply_delivery/spec.py) · [`delivery_order.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/supply_delivery/delivery_order.py)
 
-A supply delivery records the movement of a product from one location — or an external supplier — to a destination location. Together with supply dispensing, deliveries are the source of truth for facility inventory: `supply delivered − supply dispensed = current stock`. Deliveries are grouped under a `DeliveryOrder`, which is typically created from a [supply request](./supply-request.mdx).
-
-The Django model is the **storage layer**: `status`, `delivery_type`, and `supplied_item_condition` are plain `CharField`s, and `extensions` is an opaque `JSONField`. The **real shape** of those fields — enum values, validation, and the read/write schemas — lives in the Pydantic resource specs documented below.
+The Django model is a thin store: `status`, `delivery_type`, and `supplied_item_condition` are plain `CharField`s, and `extensions` is an opaque `JSONField`. Enum values, validation, and the read/write schema split live in the Pydantic resource specs below.
 
 ## Models
 
@@ -21,7 +19,7 @@ The Django model is the **storage layer**: `status`, `delivery_type`, and `suppl
 | `SupplyDelivery` | A single line of delivered product (quantity, condition, source product/inventory) |
 | `DeliveryOrder` | Groups deliveries for a shipment between an origin and destination |
 
-Both models extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base providing `external_id`, audit fields `created_by`/`updated_by`, `created_date`/`modified_date`, soft-delete via `deleted`, and `history`/`meta` JSON.
+Both extend [`EMRBaseModel`](../foundation/base-model.mdx), which supplies `external_id`, the `created_by`/`updated_by` and `created_date`/`modified_date` audit fields, soft-delete via `deleted`, and `history`/`meta` JSON.
 
 ## `SupplyDelivery` fields
 
@@ -29,8 +27,8 @@ Both models extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Ca
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `supplied_item` | `FK → Product (CASCADE)` | Nullable. The product being delivered. Required at the API layer **only when the order has no `origin`** (external delivery). On write, scoped to `order.destination.facility` |
-| `supplied_inventory_item` | `FK → InventoryItem (CASCADE)` | Nullable. Specific inventory item (batch/lot) drawn from. Required at the API layer **when the order has an `origin`** (intra-facility move); scoped to `order.origin.facility` |
+| `supplied_item` | `FK → Product (CASCADE)` | Nullable. The product delivered. Required at the API layer only when the order has no `origin` (external delivery); scoped to `order.destination.facility` on write |
+| `supplied_inventory_item` | `FK → InventoryItem (CASCADE)` | Nullable. Specific inventory item (batch/lot) drawn from. Required at the API layer when the order has an `origin` (intra-facility move); scoped to `order.origin.facility` |
 | `supplied_item_quantity` | `DecimalField(max_digits=20, decimal_places=6)` | Nullable in DB. On write a `Decimal` with `decimal_places=0` (whole units); on read serialized as `int`. Auto-derived as `pack_quantity × pack_size` when both are given |
 | `supplied_item_pack_quantity` | `IntegerField` | Nullable; default `None`. Number of packs delivered |
 | `supplied_item_pack_size` | `IntegerField` | Nullable; default `None`. Units per pack |
@@ -41,7 +39,7 @@ Both models extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Ca
 | Field | Type | Notes |
 | --- | --- | --- |
 | `status` | `CharField(255)` | Required. Lifecycle state — enum `SupplyDeliveryStatusOptions` (see below) |
-| `delivery_type` | `CharField(255)` | Type of item delivered — enum `SupplyDeliveryTypeOptions` (`product` / `device`). Stored on the model; not exposed on the current Create/Update specs |
+| `delivery_type` | `CharField(255)` | Enum `SupplyDeliveryTypeOptions` (`product` / `device`). Stored on the model but not exposed on the current Create/Update specs, so it can't be set through the API |
 
 ### Links & pricing
 
@@ -54,7 +52,7 @@ Both models extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Ca
 
 ### `SupplyDelivery` enum values
 
-These enums are `str` enums in `spec.py` — the stored value equals the member value (snake_case), not a FHIR URI.
+These are `str` enums in `spec.py` — the stored value equals the member value (snake_case), not a FHIR URI.
 
 #### `SupplyDeliveryStatusOptions` (`status`)
 
@@ -83,7 +81,7 @@ These enums are `str` enums in `spec.py` — the stored value equals the member 
 
 ### `DeliveryOrder`
 
-Groups one or more `SupplyDelivery` rows into a single logical shipment moving between two facility locations, or from an external supplier into a facility.
+A `DeliveryOrder` is one logical shipment. It groups its `SupplyDelivery` rows and moves stock between two facility locations, or from an external supplier into a facility.
 
 ```text
 supplier        → FK Organization (CASCADE, nullable)      -- external/source supplier
@@ -106,7 +104,7 @@ patient_invoice → FK Invoice (PROTECT, nullable)           -- linked billing i
 | `patient_invoice` | `FK → Invoice (PROTECT)` | Nullable. Linked billing invoice; serialized as `patient_invoice_id` on read |
 | `extensions` | `JSONField` | Default `{}`. Validated for `ExtensionResource.supply_delivery_order` |
 
-`patient` and `patient_invoice` use `PROTECT`, so a referenced patient or invoice cannot be deleted while a delivery order points to it.
+`patient` and `patient_invoice` use `PROTECT`: a referenced patient or invoice can't be deleted while a delivery order points to it.
 
 #### `SupplyDeliveryOrderStatusOptions` (`status`)
 
@@ -121,7 +119,7 @@ patient_invoice → FK Invoice (PROTECT, nullable)           -- linked billing i
 
 ## Resource specs (API schema)
 
-All specs extend `EMRResource` ([`base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)): `serialize` builds the read payload from the DB object (`perform_extra_serialization` hook), and `de_serialize` builds the DB object from the request (`perform_extra_deserialization` hook). `to_json()` dumps the model excluding `meta`.
+Every spec extends `EMRResource` ([`base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)): `serialize` builds the read payload from the DB object (`perform_extra_serialization` hook), `de_serialize` builds the DB object from the request (`perform_extra_deserialization` hook), and `to_json()` dumps the model excluding `meta`.
 
 ### `SupplyDelivery` specs
 
@@ -164,16 +162,16 @@ All specs extend `EMRResource` ([`base.py`](https://github.com/ohcnetwork/care/b
 
 ### Extensions
 
-`extensions` is not free-form JSON. On write, `ExtensionValidator` runs each registered handler for the resource type (`supply_delivery` / `supply_delivery_order`) — unknown keys are dropped, and known keys are validated and re-serialized. On read, `ExtensionListRenderer` / `ExtensionRetrieveRenderer` render every registered extension for the resource (list vs retrieve variants).
+`extensions` is not free-form JSON. On write, `ExtensionValidator` runs each registered handler for the resource type (`supply_delivery` / `supply_delivery_order`): unknown keys are dropped, and known keys are validated and re-serialized. On read, `ExtensionListRenderer` / `ExtensionRetrieveRenderer` render every registered extension for the resource (list vs retrieve variants).
 
 ## API integration notes
 
-- Coded fields carry the **snake_case enum values** above (e.g. `status = "in_progress"`), not FHIR URIs. Validate against the enum, not free text.
+- Coded fields carry the snake_case enum values above (e.g. `status = "in_progress"`), not FHIR URIs. Validate against the enum, not free text.
 - A delivery is created against a `DeliveryOrder` (`order` is required on create). The order's `origin` decides whether you send `supplied_inventory_item` (intra-facility) or `supplied_item` (external) — never both.
 - Send `supplied_item_pack_quantity` + `supplied_item_pack_size` to have `supplied_item_quantity` computed server-side; otherwise send `supplied_item_quantity` directly (whole units).
-- A `DeliveryOrder` must start in `draft` or `pending`; `completed`/`abandoned`/`entered_in_error` are terminal states.
+- A `DeliveryOrder` must start in `draft` or `pending`; `completed`/`abandoned`/`entered_in_error` are terminal.
 - `patient` and `origin` are mutually exclusive on an order (patient dispense vs location-to-location move).
-- `extensions` is the supported place for deployment-specific data — but only **registered** extension keys are persisted.
+- `extensions` holds deployment-specific data, but only registered extension keys are persisted.
 
 ## Related
 

@@ -4,9 +4,9 @@ sidebar_position: 2
 
 # Meta Artifact
 
-Technical reference for the `MetaArtifact` module in Care EMR.
+A `MetaArtifact` attaches a freeform metadata payload to any Care object without a dedicated foreign key. You reach for it when a feature needs to hang structured data — a drawing on a patient, say — off an existing record without adding a column or a join table.
 
-`MetaArtifact` is a generic, polymorphic metadata record attached to any Care object by type and external ID. The Django model handles storage: `object_value` is an opaque `JSONField`, and `associating_type` / `object_type` are bare `CharField`s. The constrained values and the API request/response schemas live in the Pydantic resource specs.
+Storage and schema split across two layers. The Django model stays loose: `object_value` is an opaque `JSONField`, and `associating_type` / `object_type` are bare `CharField`s. The Pydantic resource specs constrain those values to known enums and define the request/response shapes the API accepts.
 
 **Source:**
 
@@ -25,27 +25,27 @@ Technical reference for the `MetaArtifact` module in Care EMR.
 
 ### Association
 
-A `MetaArtifact` is not tied to a parent through a Django `ForeignKey`. Instead, it points at any object generically by recording the object's type and its `external_id`.
+There is no Django `ForeignKey` to a parent. A `MetaArtifact` points at its target by storing the target's type and `external_id` instead.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `associating_type` | `CharField(255)` | Non-null. Identifies the kind of object this artifact is attached to. API-constrained to [`MetaArtifactAssociatingTypeChoices`](#metaartifactassociatingtypechoices-values) |
-| `associating_external_id` | `UUIDField` | Non-null. The `external_id` of the associated object. Set server-side from the spec's `associating_id` (see [Resource specs](#resource-specs-api-schema)) |
+| `associating_type` | `CharField(255)` | Non-null. The kind of object this artifact hangs off. API-constrained to [`MetaArtifactAssociatingTypeChoices`](#metaartifactassociatingtypechoices-values) |
+| `associating_external_id` | `UUIDField` | Non-null. The parent's `external_id`. Set server-side from the spec's `associating_id` (see [Resource specs](#resource-specs-api-schema)) |
 
-A composite database index covers these two fields (see [Methods & save behaviour](#methods--save-behaviour)), so lookups by associated object stay efficient.
+A composite database index covers these two fields (see [Methods & save behaviour](#methods--save-behaviour)), so looking up every artifact for a given parent stays cheap.
 
 ### Content
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `name` | `CharField(255)` | Display name for the artifact. Spec enforces non-blank on create |
-| `object_type` | `CharField(255)` | Describes the kind of payload held in `object_value`. API-constrained to [`MetaArtifactObjectTypeChoices`](#metaartifactobjecttypechoices-values) |
-| `object_value` | `JSONField` | Structured payload for the artifact. Spec types it as `dict \| list` (required, no default) |
-| `note` | `TextField` | Nullable free-text note. Spec: `str \| None`, default `None` |
+| `name` | `CharField(255)` | Spec rejects blank/whitespace-only on create |
+| `object_type` | `CharField(255)` | Names the shape held in `object_value`. API-constrained to [`MetaArtifactObjectTypeChoices`](#metaartifactobjecttypechoices-values) |
+| `object_value` | `JSONField` | The payload. Spec types it as `dict \| list`, required with no default |
+| `note` | `TextField` | Nullable. Spec: `str \| None`, default `None` |
 
 ## Enum values
 
-These choice classes constrain `associating_type` and `object_type` at the API layer. They are defined in `spec.py` (there is no separate `constants.py` / `valueset.py` for this resource), and both are `str` enums.
+Two `str` enums constrain `associating_type` and `object_type` at the API layer. Both live in `spec.py` — this resource has no separate `constants.py` or `valueset.py`.
 
 ### `MetaArtifactAssociatingTypeChoices` values
 
@@ -79,30 +79,30 @@ Field-level details and validation:
 
 | Field | Spec type | Required | Default | Validation / behaviour |
 | --- | --- | --- | --- | --- |
-| `id` | `UUID4 \| None` | optional | `None` | Read: populated from `obj.external_id` in `perform_extra_serialization` |
+| `id` | `UUID4 \| None` | optional | `None` | Read-only; populated from `obj.external_id` in `perform_extra_serialization` |
 | `object_value` | `dict \| list` | yes | — | Arbitrary JSON object or array |
 | `note` | `str \| None` | no | `None` | Free text |
-| `associating_type` | `MetaArtifactAssociatingTypeChoices` | yes (create) | — | Bound enum; `patient` or `encounter` |
-| `associating_id` | `UUID4` | yes (create) | — | `external_id` of the parent. On create, copied to model field `associating_external_id` in `perform_extra_deserialization` |
-| `object_type` | `MetaArtifactObjectTypeChoices` | yes (create) | — | Bound enum; `drawing` |
-| `name` | `str` | yes (create) | — | `validate_name`: rejects blank/whitespace-only with `"Name cannot be empty"` |
+| `associating_type` | `MetaArtifactAssociatingTypeChoices` | yes (create) | — | `patient` or `encounter` |
+| `associating_id` | `UUID4` | yes (create) | — | Parent's `external_id`; copied to model field `associating_external_id` in `perform_extra_deserialization` |
+| `object_type` | `MetaArtifactObjectTypeChoices` | yes (create) | — | `drawing` |
+| `name` | `str` | yes (create) | — | `validate_name` rejects blank/whitespace-only with `"Name cannot be empty"` |
 | `created_date` | `datetime` | read | — | From `EMRBaseModel` |
 | `modified_date` | `datetime` | read | — | From `EMRBaseModel` |
 | `created_by` / `updated_by` | `dict \| None` | read | `None` | Serialized via `serialize_audit_users` (cached `UserSpec`) |
 
 Server-maintained behaviour:
 
-- **Create** (`MetaArtifactCreateSpec.perform_extra_deserialization`): sets `obj.associating_external_id = self.associating_id`. The spec's `associating_id` (the parent's `external_id`) is the public handle; the model stores it as `associating_external_id`.
+- **Create** (`MetaArtifactCreateSpec.perform_extra_deserialization`): sets `obj.associating_external_id = self.associating_id`. Clients send the parent's `external_id` as `associating_id`; the model stores it under `associating_external_id`.
 - **Read** (`MetaArtifactReadSpec.perform_extra_serialization`): sets `mapping["id"] = obj.external_id` and calls `serialize_audit_users` to attach `created_by` / `updated_by`.
-- **Update**: `MetaArtifactUpdateSpec` exposes only `object_value` and `note` (plus the inherited optional `id`). It does not re-accept `associating_type`, `associating_id`, `object_type`, or `name`, so association and classification are immutable after creation.
+- **Update**: `MetaArtifactUpdateSpec` exposes only `object_value` and `note` (plus the inherited optional `id`). It never re-accepts `associating_type`, `associating_id`, `object_type`, or `name`, so association and classification are immutable once the record exists.
 
-No coded field on this resource binds to a value set (there is no `valueset.py`); the only constrained vocabularies are the two `str` enums above.
+No field on this resource binds to a value set (there is no `valueset.py`); the only constrained vocabularies are the two `str` enums above.
 
 ## Methods & save behaviour
 
-`MetaArtifact` does not override `save()` or `delete()` and defines no custom methods; it inherits all audit and soft-delete behaviour from [`EMRBaseModel`](../foundation/base-model.mdx).
+`MetaArtifact` adds no custom methods and overrides neither `save()` nor `delete()`. Audit and soft-delete behaviour come entirely from [`EMRBaseModel`](../foundation/base-model.mdx).
 
-The model's `Meta` declares one composite index to support querying artifacts for a given parent object:
+Its `Meta` declares one composite index to back parent-object lookups:
 
 ```text
 Index(fields=["associating_type", "associating_external_id"])
@@ -110,12 +110,11 @@ Index(fields=["associating_type", "associating_external_id"])
 
 ## API integration notes
 
-- The generic `associating_type` + `associating_external_id` pair lets a single table store metadata for many different Care object types without per-type foreign keys. Clients reference the target by its `external_id` (UUID), never its internal primary key, and send it as `associating_id` on create.
-- `associating_type` and `object_type` are open `CharField`s in storage but are constrained at the API by `str` enums (`patient` / `encounter` and `drawing` respectively). Adding new association or artifact kinds means extending those enums in `spec.py`, not running a schema migration.
-- `object_value` is an open `JSONField` typed as `dict | list` by the spec, so artifact payloads can carry deployment- or feature-specific structure without schema migrations; `object_type` records what shape to expect (e.g. `drawing`).
-- `name` is validated non-blank on create; whitespace-only names are rejected.
-- After creation, the association (`associating_type` / `associating_id`), `object_type`, and `name` are fixed — only `object_value` and `note` are updatable via `MetaArtifactUpdateSpec`.
-- Audit fields (`created_by`, `updated_by`, `created_date`, `modified_date`), the public `external_id` (exposed as `id`), and soft-delete (`deleted`) are platform-maintained via `EMRBaseModel`. Do not set them directly from clients.
+- Reference the target by its `external_id` (UUID), never its internal primary key, and pass it as `associating_id` on create. The `associating_type` + `associating_external_id` pair lets one table hold metadata for many Care object types without per-type foreign keys.
+- Add a new association or artifact kind by extending the `str` enums in `spec.py` — no schema migration, since the underlying `CharField`s are already open.
+- `object_value` accepts any `dict | list`, so payloads carry feature-specific structure without migrations; `object_type` records which shape to expect (e.g. `drawing`).
+- After creation, `associating_type`, `associating_id`, `object_type`, and `name` are fixed. Only `object_value` and `note` can change, via `MetaArtifactUpdateSpec`.
+- `EMRBaseModel` maintains the audit fields (`created_by`, `updated_by`, `created_date`, `modified_date`), the public `external_id` (exposed as `id`), and soft-delete (`deleted`). Don't set them from clients.
 
 ## Related
 
