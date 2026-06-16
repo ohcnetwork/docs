@@ -56,8 +56,8 @@ Access to observation definitions is governed by facility-scoped role permission
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Create Observation Definition on Facility | Create and edit observation definitions for a facility | Facility Admin, Admin |
-| Can Read Observation Definition | View observation definitions available to a facility | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| `can_write_observation_definition` | Create and update observation definitions for a facility | Facility Admin, Admin |
+| `can_read_observation_definition` | View observation definitions available to a facility | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
 
 Roles are granted through a user's organization, facility, or patient memberships, and permissions cascade down the organization tree — so authoring is restricted to administrators while most clinical roles can read the definitions they need to collect data.
 

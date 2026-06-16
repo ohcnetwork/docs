@@ -52,9 +52,12 @@ Access to devices is governed by facility-scoped permissions.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can List Devices on Facility | View the devices registered to a facility | Staff, Admin, Doctor, Nurse, Facility Admin, Pharmacist |
-| Can Manage Devices on Facility | Create, update, place, and service devices | Staff, Admin, Facility Admin, Pharmacist |
-| Can Manage Device Associations to Encounters | Attach and detach devices from patient encounters | Staff, Admin, Doctor, Nurse, Facility Admin |
+| `can_manage_devices` | Create devices, and update, delete, relocate, service, or change the managing organization of existing ones | Staff, Admin, Facility Admin, Pharmacist |
+| `can_list_devices` | View devices registered to a facility and their location, encounter, and service history | Staff, Admin, Doctor, Nurse, Facility Admin, Pharmacist |
+| `can_manage_device_associations_to_encounters` | Attach a device to or detach it from a patient encounter | Staff, Admin, Doctor, Nurse, Facility Admin |
+| `can_write_encounter` | Also required on the target encounter when attaching a device to it | Admin, Doctor, Nurse, Facility Admin |
+| `can_write_facility_locations` | Also required on the target location when placing a device there | Facility Admin, Admin, Staff |
+| `can_manage_facility_organization` | Also required on the organization when setting or clearing a device's managing organization | Facility Admin, Administrator |
 
 Roles are granted through facility and organization memberships, and they cascade down the organization tree — a user's access to a device follows from the managing organization it sits under.
 

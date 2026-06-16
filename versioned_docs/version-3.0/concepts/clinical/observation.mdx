@@ -48,14 +48,12 @@ An observation rarely stands alone. It links to the primitives around it:
 
 ## Permissions
 
-Observations are clinical data, so access is governed by the **patient** permission set rather than one of their own. Whether someone can read or record observations follows from their patient permissions.
+Observations are exposed through a read-only API, so the viewset only gates reading. Access is governed by clinical-data permissions: a reader is allowed if they hold the patient-level `can_view_clinical_data` permission, or, when querying a specific encounter, the encounter-level `can_read_encounter_clinical_data` permission. Observations are recorded as a side effect of submitting questionnaires, so creating them is gated by those questionnaire flows rather than by this viewset.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can view clinical data | View clinical data about patients, including observations | Staff, Doctor, Nurse, Admin, Facility Admin |
-| Can view questionnaire responses | View questionnaire responses on a patient, which carry the observations they produced | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator, Pharmacist |
-| Can submit patient questionnaire | Submit a questionnaire about a patient, the action that records new observations | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator |
-| Can list patients | List patients in scope, a prerequisite for reaching their clinical data | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer, Pharmacist |
+| `can_view_clinical_data` | View clinical data about a patient, including their observations | Staff, Doctor, Nurse, Admin, Facility Admin |
+| `can_read_encounter_clinical_data` | Read clinical data recorded within a specific encounter; used as the encounter-scoped fallback when reading observations | Admin, Doctor, Nurse, Facility Admin |
 
 Roles are granted through a user's organization, facility, or patient memberships, and permissions cascade down the organization tree — so access to a patient's observations follows from access to the patient.
 

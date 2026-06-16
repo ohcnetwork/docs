@@ -45,12 +45,14 @@ Care protects accounts with layered sign-in controls:
 
 ## Permissions
 
-User permissions govern who can create and see other accounts within a facility. They do not control what a user can do clinically — that flows from the roles a user holds.
+User permissions govern who can create other accounts and assign their roles. They do not control what a user can do clinically — that flows from the roles a user holds. Listing and retrieving user accounts are not gated by a dedicated permission in the viewset, and updating or deleting an account is restricted to the account owner or a superuser rather than to a role permission.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can create user | Create a new user account within a facility | Admin, Facility Admin, Administrator |
-| Can list users | View the list of user accounts in a facility | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist |
+| `can_create_user` | Create a new human user account | Admin, Facility Admin, Administrator |
+| `can_create_service_account` | Create a new service (machine) account | Admin, Facility Admin, Administrator |
+| `can_manage_organization_users` | Assign the requested roles to the new account within an organization | Admin, Administrator, Facility Admin, Admin (role org) |
+| `can_manage_connected_role_organizations` | Assign roles in a connected role organization when onboarding the account | Admin (role org), Manager (role org) |
 
 Roles are granted through organization, facility, and patient memberships, and permissions cascade down the organization tree — a role held at a higher level applies to the facilities and teams beneath it.
 

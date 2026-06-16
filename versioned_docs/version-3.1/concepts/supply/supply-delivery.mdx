@@ -56,9 +56,9 @@ Access to supply deliveries is governed by facility-scoped permissions.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Create Supply Delivery on Facility | Record a delivery and add its lines within the facility | Facility Admin, Admin |
-| Can Read Supply Delivery | View deliveries and their delivery orders | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| Can Create External Supply Delivery on Facility | Record a delivery of stock arriving from an outside supplier | Facility Admin, Admin |
+| `can_write_supply_delivery` | Create or update deliveries on internal transfer orders (an order with an origin location); gates both the create and update actions for in-facility moves | Facility Admin, Admin |
+| `can_write_external_supply_delivery` | Create or update deliveries on external orders (no origin, stock arriving from an outside supplier); gates both create and update for inbound deliveries | Facility Admin, Admin |
+| `can_read_supply_delivery` | List and retrieve deliveries and their delivery orders | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
 
 Roles are granted to users through their facility and organization memberships, and permissions cascade down the organization tree — so a role held at a parent organization carries to the facilities beneath it.
 

@@ -55,15 +55,14 @@ These axes move independently: a record can be clinically `active` yet only `unc
 
 ## Permissions
 
-Allergy and intolerance records have no permission file of their own — as patient clinical data, they are governed by the **patient** and **encounter** permissions a user holds in the relevant facility. Recording an allergy is gated by write access to the patient; reading and editing it fall back to the patient's clinical-data or the encounter's read/write permissions.
+Allergy and intolerance records have no permission file of their own — as patient clinical data, they are governed by the **patient** and **encounter** permissions a user holds in the relevant facility. Recording an allergy is gated by write access to the patient; reading is allowed by the patient's clinical-data permission, or, failing that, by the encounter's clinical-data read permission for a specified encounter; editing is gated by write access to the encounter's clinical data.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| `can_write_patient` | Create an allergy record (the create path checks write access to the patient) | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
+| `can_write_patient` | Create an allergy record — the create path checks write access to the patient | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
 | `can_view_clinical_data` | View a patient's clinical data, including their allergies and intolerances | Staff, Doctor, Nurse, Admin, Facility Admin |
-| `can_read_encounter` | Read an encounter and its clinical data — used to reach allergies when patient-level clinical access is absent | Admin, Doctor, Nurse, Staff, Facility Admin |
-| `can_write_encounter` | Update an allergy record (the update path checks write access to its encounter) | Admin, Doctor, Nurse, Staff, Facility Admin |
-| `can_list_patients` | List patients in scope (entry point to reach a patient's record) | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer, Pharmacist |
+| `can_read_encounter_clinical_data` | Read an encounter's clinical data — the fallback used to reach allergies when patient-level clinical access is absent, scoped to the matching encounter | Admin, Doctor, Nurse, Facility Admin |
+| `can_write_encounter_clinical_data` | Update an allergy record — the update path checks write access to its encounter's clinical data | Admin, Doctor, Nurse, Facility Admin |
 
 Roles are granted to users through organization, facility, and patient memberships; permissions cascade down the organization tree, so a role held higher up applies to the facilities and patients beneath it.
 

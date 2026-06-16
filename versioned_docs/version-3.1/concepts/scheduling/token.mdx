@@ -47,10 +47,10 @@ Access to tokens is granted at the facility level — the same facility the queu
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Create on Token Category | Create reusable token categories for a facility | Admin, Staff, Facility Admin |
-| Can list token category on Facility | View the token categories available in a facility | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
-| Can Create on Token | Issue a token to a patient in a queue | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
-| Can list token on Object | View the tokens in a queue | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
+| `can_write_token` | Issue, update, and delete tokens, and manage their queues and sub-queues for a schedulable resource | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
+| `can_list_token` | View tokens, queues, and sub-queues for a schedulable resource | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
+| `can_write_token_category` | Create, update, and set the default token category for a facility | Admin, Staff, Facility Admin |
+| `can_list_token_category` | View the token categories available in a facility | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
 
 Roles come from a user's facility and organization memberships, and permissions cascade down the organization tree — so access granted higher up applies to the facilities beneath it.
 

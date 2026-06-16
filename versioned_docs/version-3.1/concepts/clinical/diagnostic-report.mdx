@@ -54,12 +54,13 @@ Because these are coded concepts rather than free text, the same test means the 
 
 ## Permissions
 
-Access to diagnostic reports is governed by two facility-scoped permissions.
+Access to diagnostic reports is governed by the following permissions.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Create Diagnostic Report on Facility | Create and update diagnostic reports within a facility | Facility Admin, Admin, Doctor, Nurse |
-| Can Read Diagnostic Report | View diagnostic reports and their results | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer |
+| `can_write_diagnostic_report` | Create and update a report (including upserting its observations), checked against the originating service request | Facility Admin, Admin, Doctor, Nurse |
+| `can_read_diagnostic_report` | Retrieve a report, and list reports filtered by their encounter or service request | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer |
+| `can_view_clinical_data` | List a patient's reports when no encounter or service request filter is supplied, authorized against the patient | Facility Admin, Admin, Doctor, Nurse, Staff |
 
 Roles are granted through a user's membership in an organization, facility, or patient, and permissions cascade down the organization tree — so a role held higher up applies to the facilities and reports beneath it.
 

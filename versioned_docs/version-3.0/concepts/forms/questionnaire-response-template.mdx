@@ -43,12 +43,11 @@ Because sharing is by facility, organization, or user, the same template can be 
 
 ## Permissions
 
-Access to response templates is governed by two questionnaire-context permissions.
+Reading and listing response templates is not gated by a permission slug — the API instead scopes results to templates a user can already reach: those they created, those shared directly with them, and those shared with a facility organization they belong to. Creating, updating, and deleting a template all require a single write permission.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Read Questionnaire Response Templates | View and apply response templates within the user's scope | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist |
-| Can Create/Update Questionnaire Response Templates | Create new templates and edit existing ones, including their sharing scope | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist |
+| `can_write_questionnaire_response_template` | Create, update, and delete response templates (including their sharing scope) | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist |
 
 Roles are granted through a user's facility and organization memberships, and permissions cascade down the organization tree — so a user's reach over templates follows wherever those memberships place them.
 

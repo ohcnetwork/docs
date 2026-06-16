@@ -45,14 +45,12 @@ Access to organizations is governed by the permissions below. Each lists the sys
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can View Organizations | View organizations and their details in the tree | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (role org), Manager (role org), Member (role org) |
-| Can Create Organizations | Create new organizations in the instance-wide tree | Admin |
-| Can Delete Organizations | Remove organizations from the tree (only when they have no children) | Admin |
-| Can Manage Organizations | Change an organization's name, description, metadata, and similar attributes | Admin, Admin (role org) |
-| Can Manage Users in an Organization | Add, remove, and assign roles to users in an organization | Admin, Administrator, Facility Admin, Admin (role org) |
-| Can Manage Connected Role Organizations | Add, remove, and assign roles to users in connected role organizations | Admin (role org), Manager (role org) |
-| Can List Users in an Organization | List the users who belong to an organization | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (role org), Manager (role org) |
-| Is Geo Admin | Manage the facilities that belong to an organization | None by default |
+| `can_create_organization` | Create a new organization under a parent the user can already manage (root, governance, and role organizations remain superadmin-only) | Admin |
+| `can_view_organization` | View organizations and list/retrieve them through the accessible-organizations filter | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (role org), Manager (role org), Member (role org) |
+| `can_manage_organization` | Update an organization's name, description, and metadata, manage its connected role organizations, and delete it once it has no children | Admin, Admin (role org) |
+| `can_list_organization_users` | List the members of an organization | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (role org), Manager (role org) |
+| `can_manage_organization_users` | Add, remove, and assign roles to members of an organization (bounded by the actor's own role privileges) | Admin, Administrator, Facility Admin, Admin (role org) |
+| `can_manage_connected_role_organizations` | Add, remove, and assign roles to members of connected role organizations | Admin (role org), Manager (role org) |
 
 ## Related
 

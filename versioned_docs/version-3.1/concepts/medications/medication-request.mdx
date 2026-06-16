@@ -63,10 +63,10 @@ Access to a medication request follows the encounter it belongs to, with one add
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Pharmacist in Care | Pharmacists have access to all medication requests and can create dispenses for patients | Facility Admin, Admin, Pharmacist |
-| Update Encounter and Create all associated datapoints | Author, update, or discontinue a medication request on an encounter | Admin, Doctor, Nurse, Staff, Facility Admin |
-| Can view clinical data about patients | View the medication requests recorded for a patient | Admin, Doctor, Nurse, Staff, Facility Admin |
-| Can Read encounter and related data | View the medication requests on a specific encounter | Admin, Doctor, Nurse, Staff, Facility Admin |
+| `can_write_encounter_clinical_data` | Author, update, or discontinue a medication request on an encounter | Admin, Doctor, Nurse, Facility Admin |
+| `is_pharmacist` | Pharmacist-wide access to read every medication request in a facility (and create dispenses) | Facility Admin, Admin, Pharmacist |
+| `can_view_clinical_data` | Read the medication requests recorded for a patient | Staff, Doctor, Nurse, Admin, Facility Admin |
+| `can_read_encounter_clinical_data` | Read the medication requests on a specific encounter (when scoped by encounter) | Admin, Doctor, Nurse, Facility Admin |
 
 Roles are granted to a user through their membership in an organization, facility, or patient's care team; permissions cascade down the organization tree, so access granted higher up flows to the facilities and encounters beneath it.
 

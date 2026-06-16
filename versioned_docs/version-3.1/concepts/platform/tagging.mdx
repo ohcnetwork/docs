@@ -51,9 +51,9 @@ Access to tags separates three actions: defining them, applying them, and readin
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Create Tag Config on Facility | Define new tags and edit their definitions within a facility | Facility Admin, Admin |
-| Can Apply Tag Config to Resources | Attach existing tags to patients, encounters, and other records | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
-| Can Read Tag Config | View tag definitions and the tags applied to records | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| `can_write_tag_config` | Create new tag definitions and edit existing ones within a facility (the viewset checks this for both create and update) | Facility Admin, Admin |
+| `can_read_tag_config` | List and retrieve tag definitions in a facility | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| `can_apply_tag_config` | Attach an existing tag to records of its target type (patients, encounters, and other resources) | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
 
 Permissions cascade down the organization tree, so curating the shared vocabulary stays with administrators while frontline clinical staff can apply and read tags during care.
 

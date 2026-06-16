@@ -53,8 +53,9 @@ Bookings are governed by the schedule permission set. Access is granted to staff
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| `can_list_booking` | View the bookings on a schedulable resource | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
-| `can_write_booking` | Create or update a booking (including check-in and status changes) | Admin, Staff, Facility Admin, Doctor, Nurse |
+| `can_write_booking` | Update a booking, and run the cancel, reschedule, and generate-token actions on it | Admin, Staff, Facility Admin, Doctor, Nurse |
+| `can_list_booking` | List and retrieve the bookings on a schedulable resource | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
+| `can_write_schedule` | Filter a booking list by organisation (checked when listing bookings scoped to a facility organisation) | Admin, Staff, Facility Admin, Doctor, Nurse |
 | `can_reschedule_booking` | Move a booking to a different slot via the reschedule action | Doctor, Staff, Nurse, Administrator, Facility Admin, Admin |
 
 Roles come from a user's facility and organization memberships, and permissions cascade down the organization tree — a role held higher up applies to the facilities and resources beneath it.

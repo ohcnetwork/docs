@@ -59,9 +59,9 @@ Access to recording and viewing administrations is governed by facility-scoped p
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Write Medication Dispense | Record and update medication administration and dispense events | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
-| Medication Dispense Read | View medication administration and dispense records | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
-| Pharmacist in Care | Pharmacists have access to all medication requests and can create dispenses for patients | Facility Admin, Admin, Pharmacist |
+| `can_write_encounter_clinical_data` | Create, update, and delete a medication administration on the encounter (write encounter clinical data). Blocked once the encounter is closed | Admin, Doctor, Nurse, Facility Admin |
+| `can_view_clinical_data` | View a patient's clinical data, including listing and retrieving their medication administrations | Staff, Doctor, Nurse, Admin, Facility Admin |
+| `can_read_encounter_clinical_data` | Read an encounter's clinical data; used as the fallback read check when a specific encounter is supplied | Admin, Doctor, Nurse, Facility Admin |
 
 Roles are granted through a user's facility and organization memberships, and permissions cascade down the organization tree — a role held high in the hierarchy carries to the facilities beneath it.
 

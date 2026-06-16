@@ -58,10 +58,11 @@ Access to locations is governed by facility-level permissions. Viewing the locat
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can List Facility Locations | View a facility's locations and the location tree | Admin, Doctor, Facility Admin, Administrator, Nurse, Staff, Pharmacist |
-| Can Create/Update Facility Locations | Create or edit locations (add a ward, room, or bed; change status) | Facility Admin, Admin, Staff |
-| Can List Facility Location Organizations | See which organizations have access to a location | Facility Admin, Admin, Staff |
-| Can Create/Update Facility Location Organizations | Grant or change an organization's access to a location | Facility Admin, Admin, Staff |
+| `can_write_facility_locations` | Create, edit, or delete a location, and add or remove an organization's access to one (add a ward, room, or bed; change status; grant org access) | Facility Admin, Admin, Staff |
+| `can_create_facility_organization` | Create a root location (one with no parent) at the top of the facility tree | Facility Admin |
+| `can_list_facility_locations` | View a facility's locations, the location tree, and which organizations have access to a location | Admin, Doctor, Facility Admin, Administrator, Nurse, Staff, Pharmacist |
+| `can_manage_facility_organization` | Grant or change an organization's access to a location | Facility Admin, Administrator |
+| `can_write_encounter` | Assign or move an encounter (a patient) to a location, such as placing them in a bed | Admin, Doctor, Nurse, Facility Admin |
 
 Roles are granted through facility and organization memberships, and because location access follows the tree, a permission held at a parent location cascades down to everything nested beneath it.
 

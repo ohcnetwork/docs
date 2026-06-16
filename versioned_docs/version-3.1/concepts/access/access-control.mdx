@@ -70,16 +70,15 @@ Permissions are declared in code per resource area and assigned to standard role
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can View Organizations | View organizations | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (role org), Manager (role org), Member (role org) |
-| Can Create Organizations | Create a new organization | Admin |
-| Can Delete Organizations | Delete an organization | Admin |
-| Can Manage Organizations | Change an organization's name, description, metadata, etc. | Admin, Admin (role org) |
-| Can Manage Users in an Organization | Add, remove, and assign roles to users in an organization | Admin, Administrator, Facility Admin, Admin (role org) |
-| Can Manage Connected Role Organizations | Add, remove, and assign roles to users in connected role organizations | Admin (role org), Manager (role org) |
-| Can List Users in an Organization | List the users in an organization | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (role org), Manager (role org) |
-| Is Geo Admin | Manage facilities within an organization | (none by default) |
-| Can Create User | Create a user in Care | Admin, Facility Admin, Administrator |
-| Can List Users | List users in Care | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist |
+| `can_create_organization` | Create a new organization under an accessible parent (checked by the organization create flow) | Admin |
+| `can_view_organization` | View organizations; gates which organizations appear in list and retrieve | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (role org), Manager (role org), Member (role org) |
+| `can_list_organization_users` | List the users attached to an organization | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (role org), Manager (role org) |
+| `can_manage_organization` | Update an organization (name, description, metadata) and delete it — the update, delete, and managing-organization actions all check this | Admin, Admin (role org) |
+| `can_manage_organization_users` | Add, remove, and assign roles to users in an organization | Admin, Administrator, Facility Admin, Admin (role org) |
+| `can_manage_connected_role_organizations` | Manage users in connected role organizations | Admin (role org), Manager (role org) |
+| `can_create_user` | Create a user in Care | Admin, Facility Admin, Administrator |
+| `can_create_service_account` | Create a service-account user | Admin, Facility Admin, Administrator |
+| `can_list_user` | List users in Care | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist |
 
 ## Related
 

@@ -57,17 +57,14 @@ The encounter is the hub that most clinical work hangs off:
 
 ## Permissions
 
-Access to encounters is permission-controlled. Most actions are reserved for clinical roles; submitting a questionnaire about an encounter is opened slightly wider to include front-desk staff.
+Access to encounters is permission-controlled, and every action on the encounter endpoint is reserved for clinical roles. Listing and retrieving an encounter is also granted when the user can view the underlying patient.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Create encounter | Open a new encounter for a patient | Admin, Doctor, Nurse, Facility Admin |
-| Can list encounters | List encounters (clinical data is not exposed through this permission) | Admin, Doctor, Nurse, Facility Admin |
-| Update Encounter non clinical | Edit an encounter's non-clinical fields (status, class, period, and similar) | Admin, Doctor, Nurse, Facility Admin |
-| Update Encounter related clinical data | Record or change clinical data within an encounter | Admin, Doctor, Nurse, Facility Admin |
-| Can Read encounter | View an encounter's non-clinical details | Admin, Doctor, Nurse, Facility Admin |
-| Can Read encounter related clinical data | View the clinical data captured in an encounter | Admin, Doctor, Nurse, Facility Admin |
-| Can submit questionnaire about patient encounters | Submit a questionnaire about a patient's encounters | Staff, Doctor, Nurse, Admin, Facility Admin |
+| `can_create_encounter` | Open a new encounter for a patient under a facility | Admin, Doctor, Nurse, Facility Admin |
+| `can_list_encounter` | List encounters within a facility (clinical data is not exposed through this permission) | Admin, Doctor, Nurse, Facility Admin |
+| `can_read_encounter` | Retrieve an encounter's non-clinical details | Admin, Doctor, Nurse, Facility Admin |
+| `can_write_encounter` | Update an encounter, manage its organizations, set facility identifiers, assign care-team members, and restart a completed encounter | Admin, Doctor, Nurse, Facility Admin |
 
 Roles are granted to users through their organization, facility, and patient memberships, and permissions cascade down the organization tree — a role held at a parent organization applies to the facilities and encounters beneath it.
 

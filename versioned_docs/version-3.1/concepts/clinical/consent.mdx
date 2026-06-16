@@ -62,14 +62,13 @@ Two neighbouring records hang off a consent:
 
 ## Permissions
 
-There is no separate consent permission set. Consents are governed by the **patient** permission set, because a consent belongs to a patient's clinical record.
+There is no separate consent permission set. Because a consent always hangs off an encounter, it is governed by the **encounter** clinical-data permissions, with patient-level clinical-data access also accepted for reads.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can view clinical data | View a patient's clinical record, including their consents | Staff, Doctor, Nurse, Admin, Facility Admin |
-| Can update a patient's data | Create or update a patient's clinical record, including recording consents | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
-| Can create patient | Register a patient whose record can then hold consents | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
-| Can list patients | Find patients to reach their consents | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer, Pharmacist |
+| `can_write_encounter_clinical_data` | Create, update, or delete a consent on an encounter, and add or remove its verifications (blocked once the encounter is closed) | Admin, Doctor, Nurse, Facility Admin |
+| `can_view_clinical_data` | View a patient's clinical record, including their consents | Staff, Doctor, Nurse, Admin, Facility Admin |
+| `can_read_encounter_clinical_data` | Read consents via the encounter when patient-level clinical-data access is absent | Admin, Doctor, Nurse, Facility Admin |
 
 Roles are granted through organization, facility, or patient memberships, and permissions cascade down the organization tree — a role held higher up applies to the patients and consents beneath it.
 

@@ -46,8 +46,8 @@ Access to specimens is governed by two facility-scoped permissions.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Create Specimen on Facility | Create and update specimens within a facility — record collection, processing, and status changes | Facility Admin, Admin, Doctor, Nurse |
-| Can Read Specimen | View specimen records within a facility | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Pharmacist |
+| `can_read_specimen` | View a specimen record, including lookup by accession identifier | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Pharmacist |
+| `can_write_specimen` | Update a specimen — record collection, processing, and status changes | Facility Admin, Admin, Doctor, Nurse |
 
 Both permissions are checked against the specimen's linked service request rather than the specimen alone. Roles are granted through a user's facility, organization, or patient memberships, and permissions cascade down the organization tree — a role given high in the tree applies to the facilities beneath it.
 

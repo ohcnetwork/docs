@@ -47,9 +47,10 @@ Access to a facility is governed by a small set of permissions, granted to staff
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Create on Facility | Create a new facility | Administrator, Admin, Facility Admin |
-| Can Read on Facility | View a facility's details | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer |
-| Can Update on Facility | Edit a facility's details and configuration | Facility Admin, Administrator, Admin, Staff |
+| `can_create_facility` | Create a new facility | Administrator, Admin, Facility Admin |
+| `can_update_facility` | Edit a facility's details and configuration, including its cover image, monetary config, and invoice expression | Facility Admin, Administrator, Admin, Staff |
+
+Reading a facility is not gated by a dedicated permission — the list and retrieve endpoints return only the facilities a user can reach through their organization memberships. Deleting a facility is restricted to super admins.
 
 Permissions cascade down the organization tree: a role held at a parent organization applies to the facilities and sub-organizations beneath it.
 

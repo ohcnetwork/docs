@@ -50,13 +50,13 @@ Because a statement is reported rather than ordered, it always names its source.
 
 ## Permissions
 
-Access to medication data is governed by facility-scoped permissions. The permissions below come from Care's medication permission set; they cover the pharmacist capability and the dispense actions that share the medication workflow.
+Access to medication statements is governed by the clinical-data permissions on the encounter and patient. Creating, updating, and deleting a statement all require write access to the encounter's clinical data, while listing and reading require view access to the patient's clinical data (or, when filtered by encounter, read access to that encounter's clinical data).
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Pharmacist in Care | Pharmacists in Care have access to all medication requests and can create dispenses for patients | Facility Admin, Admin, Pharmacist |
-| Medication Dispense Read | Users can read medication dispenses | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
-| Write Medication Dispense | Users can write medication dispenses | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| `can_write_encounter_clinical_data` | Create, update, or delete a medication statement on an open encounter | Admin, Doctor, Nurse, Facility Admin |
+| `can_view_clinical_data` | View a patient's clinical data, the primary gate for listing and reading statements | Staff, Doctor, Nurse, Admin, Facility Admin |
+| `can_read_encounter_clinical_data` | Read an encounter's clinical data, the fallback gate when results are filtered to a specific encounter | Admin, Doctor, Nurse, Facility Admin |
 
 Roles are granted through a user's organization and facility memberships, and permissions cascade down the organization tree — a role held at a parent organization applies to the facilities and patients beneath it.
 

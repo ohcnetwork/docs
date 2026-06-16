@@ -49,10 +49,10 @@ Notes have no permission file of their own. Access follows the [patient](../clin
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can view clinical data about patients | Read a patient's clinical record, including note threads and messages | Staff, Doctor, Nurse, Admin, Facility Admin |
-| Can Update a Patient's data | Create and update patient-scoped records, including writing and editing notes | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
-| Can Read encounter related clinical data | Read clinical data within an encounter, including encounter-scoped threads | Admin, Doctor, Nurse, Facility Admin |
-| Update Encounter related clinical data | Add or edit clinical data within an encounter, including its note threads | Admin, Doctor, Nurse, Facility Admin |
+| `can_write_patient` | Create or update a patient-scoped thread or message (used when the note is not tied to an encounter) | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
+| `can_write_encounter_clinical_data` | Create or update an encounter-scoped thread or message (the encounter must not be closed) | Admin, Doctor, Nurse, Facility Admin |
+| `can_view_clinical_data` | Read a patient's clinical record, including their note threads and messages | Staff, Doctor, Nurse, Admin, Facility Admin |
+| `can_read_encounter_clinical_data` | Read encounter-scoped threads and messages when patient-level clinical access is not granted | Admin, Doctor, Nurse, Facility Admin |
 
 Roles are granted through a person's organization, facility, or patient membership, then cascade down the organization tree — access granted at a parent organization flows to the facilities and patients beneath it.
 

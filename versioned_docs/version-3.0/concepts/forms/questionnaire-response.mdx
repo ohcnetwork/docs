@@ -45,14 +45,17 @@ Because answers are not re-edited after submission, the only change applied to a
 
 ## Permissions
 
-Questionnaire responses are governed by the **patient** permission set — there is no separate response permission. Two permissions apply directly.
+Questionnaire responses have no permission slug of their own. The read-only-plus-update viewset gates each action through the **patient** and **encounter** permission sets, choosing which permission to check based on whether the response is tied to an encounter.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| `can_submit_patient_questionnaire` | Submit a questionnaire about a patient, creating a new response | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator |
-| `can_view_questionnaire_responses` | View the questionnaire responses recorded on a patient | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator, Pharmacist |
+| `can_view_questionnaire_responses` | View the questionnaire responses on a patient when the response is not linked to an encounter | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator, Pharmacist |
+| `can_view_clinical_data` | View clinical data about a patient; satisfies viewing an encounter-linked response from the patient side | Staff, Doctor, Nurse, Admin, Facility Admin |
+| `can_read_encounter_clinical_data` | Read an encounter's clinical data; alternatively satisfies viewing an encounter-linked response from the encounter side | Admin, Doctor, Nurse, Facility Admin |
+| `can_submit_patient_questionnaire` | Submit a questionnaire about a patient; required to update (correct) a response not linked to an encounter | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator |
+| `can_submit_encounter_questionnaire` | Submit a questionnaire about a patient encounter; required to update (correct) an encounter-linked response | Staff, Doctor, Nurse, Admin, Facility Admin |
 
-Roles are granted through a user's organization, facility, or patient memberships, and permissions cascade down the organization tree — so access to a patient's responses follows from access to the patient.
+Reads on an encounter-linked response are allowed if **either** `can_view_clinical_data` (patient) or `can_read_encounter_clinical_data` (encounter) is held; responses without an encounter fall back to `can_view_questionnaire_responses`. Updates are limited to marking a response `entered_in_error` within a short edit window and require the matching submit permission. Roles are granted through a user's organization, facility, or patient memberships, and permissions cascade down the organization tree — so access to a patient's responses follows from access to the patient.
 
 ## Related
 

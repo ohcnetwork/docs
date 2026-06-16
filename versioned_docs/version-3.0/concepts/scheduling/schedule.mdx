@@ -54,11 +54,9 @@ Access to schedules and the bookings made against them is governed by the facili
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Create on Schedule | Create and edit schedules and availabilities for a resource | Admin, Staff, Facility Admin, Doctor, Nurse |
-| Can list schedule on Object | View the schedules and availability defined for a resource | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
-| Can list bookings on Object | View the bookings made against a resource's schedule | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
-| Can update bookings on Object | Create or update bookings against a schedule | Admin, Staff, Facility Admin, Doctor, Nurse |
-| Can reschedule bookings on Object | Move an existing booking to a different slot | Doctor, Staff, Nurse, Administrator, Facility Admin, Admin |
+| `can_write_schedule` | Create, update, and delete schedules and their availabilities for a resource | Admin, Staff, Facility Admin, Doctor, Nurse |
+| `can_list_schedule` | View the schedules and availabilities defined for a resource | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
+| `can_set_charge_item_definition` | Attach a billing charge item definition (and revisit settings) to a schedule | Facility Admin, Admin |
 
 Roles are granted through a user's facility and organization memberships, and permissions cascade down the organization tree — a role held on a parent organization applies to the facilities and resources beneath it.
 

@@ -53,11 +53,11 @@ Access to charge items is governed by facility-scoped permissions.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Read Charge Item | View charge items and their pricing | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| Can Create Charge Item | Create a new charge item for a patient | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
-| Can Create Negative Charge Item | Create a reversal (credit) charge item | Facility Admin, Admin |
-| Can Update Charge Item | Edit an existing charge item | Facility Admin, Admin |
-| Can Cancel Charge Item | Cancel a charge item after the free-cancel window | Facility Admin, Admin |
+| `can_create_charge_item` | Create a charge item, apply charge item definitions, and move charge items between accounts | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| `can_create_negative_charge_item` | Allow charge items priced below zero (reversals/credits) when applying definitions | Facility Admin, Admin |
+| `can_read_charge_item` | View charge items and their pricing | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| `can_update_charge_item` | Edit an existing charge item | Facility Admin, Admin |
+| `can_cancel_charge_item` | Cancel a charge item after the free-cancel window has elapsed | Facility Admin, Admin |
 
 Roles are granted to users through facility and organization memberships, and permissions cascade down the organization tree — a role held higher up applies to the facilities and patients beneath it.
 

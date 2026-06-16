@@ -50,9 +50,9 @@ Accounts hold financial information, so access is gated by facility-scoped permi
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Create Account | Create a new account for a patient at the facility | Facility Admin, Admin |
-| Can Update Account | Edit an account — its name, status, billing status, service period, or primary encounter | Facility Admin, Admin |
-| Can Read Account | View an account and its balances and totals | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| `can_create_account` | Create a new account for a patient at the facility | Facility Admin, Admin |
+| `can_read_account` | View an account, its balances and totals (also gates retrieve, list, and the default-account lookup) | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| `can_update_account` | Edit an account (name, status, billing status, service period, primary encounter); also gates rebalancing totals and setting or removing tags | Facility Admin, Admin |
 
 Roles are granted to users through their organization and facility memberships, and permissions cascade down the organization tree — a role held higher up applies to the facilities and patients beneath it.
 

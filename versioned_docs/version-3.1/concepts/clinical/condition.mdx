@@ -55,17 +55,15 @@ Conditions sit alongside the patient's other clinical records — most closely [
 
 ## Permissions
 
-A condition has no permission file of its own — as patient clinical data, it is governed by the **patient** and **encounter** permissions a user holds in the relevant facility. Recording a condition is gated by write access to the patient; reading and editing it fall back to the patient's clinical-data or the encounter's read/write permissions. Conditions can also be captured by submitting a symptom questionnaire.
+A condition has no permission file of its own — as patient clinical data, it is governed by the **patient** and **encounter** clinical-data permissions a user holds in the relevant facility. Creating, updating, and deleting a condition is gated by write access to the encounter's clinical data; reading it requires the patient's clinical-data permission, falling back to the encounter's clinical-data read permission. Chronic conditions are a special case — updating one is gated by the patient's clinical-data permission rather than the encounter's. Conditions can also be captured by submitting a symptom or diagnosis questionnaire.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| `can_write_patient` | Create a condition record (the create path checks write access to the patient) | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
-| `can_view_clinical_data` | View a patient's clinical data, including their conditions | Staff, Doctor, Nurse, Admin, Facility Admin |
-| `can_read_encounter` | Read an encounter and its clinical data — used to reach conditions when patient-level clinical access is absent | Admin, Doctor, Nurse, Staff, Facility Admin |
-| `can_write_encounter` | Update a condition record (the update path checks write access to its encounter) | Admin, Doctor, Nurse, Staff, Facility Admin |
-| `can_list_patients` | List patients in scope (the entry point to reach a patient's record) | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer, Pharmacist |
-| `can_submit_patient_questionnaire` | Submit a questionnaire about a patient, which can record conditions | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator |
-| `can_submit_encounter_questionnaire` | Submit a questionnaire about a patient encounter, which can record conditions | Staff, Doctor, Nurse, Admin, Facility Admin |
+| `can_write_encounter_clinical_data` | Create, update, or delete a condition (the create, update, and destroy paths check write access to the encounter's clinical data; chronic-condition updates are the exception below) | Admin, Doctor, Nurse, Facility Admin |
+| `can_view_clinical_data` | Read a patient's conditions, and update a chronic condition (the read path checks the patient's clinical-data permission; chronic-condition updates check this same permission) | Staff, Doctor, Nurse, Admin, Facility Admin |
+| `can_read_encounter_clinical_data` | Read conditions via an encounter when patient-level clinical access is absent (the read path falls back to this when an `encounter` query param is supplied) | Admin, Doctor, Nurse, Facility Admin |
+| `can_submit_patient_questionnaire` | Submit a patient-subject questionnaire (such as symptom or diagnosis), which can record conditions | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator |
+| `can_submit_encounter_questionnaire` | Submit an encounter-linked questionnaire, which can record conditions | Staff, Doctor, Nurse, Admin, Facility Admin |
 
 Roles are granted to users through facility, organization, or patient memberships, and they cascade down the organization tree — a role held high in the hierarchy applies to the facilities and patients beneath it.
 

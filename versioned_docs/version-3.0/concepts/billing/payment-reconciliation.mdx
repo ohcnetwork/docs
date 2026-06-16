@@ -66,9 +66,9 @@ Access to payment records is governed by facility-scoped role-based permissions.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Write Payment Reconciliation | Create or update a payment record | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
-| Can Read Payment Reconciliation | View payment records | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| Can Destroy Payment Reconciliation | Delete a payment record | Facility Admin, Admin |
+| `can_write_payment_reconciliation` | Create, update, cancel within the free-cancel window, or reassign payment records to another account | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| `can_read_payment_reconciliation` | List and view payment records | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| `can_destroy_payment_reconciliation` | Cancel a payment record after the free-cancel window has passed | Facility Admin, Admin |
 
 Roles are granted through a user's facility and organization memberships, and permissions cascade down the organization tree, so a role held higher up applies to the facilities beneath it.
 

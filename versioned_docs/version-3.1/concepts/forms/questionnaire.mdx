@@ -65,13 +65,12 @@ Access to questionnaires is governed by these permissions, granted to users thro
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Read Questionnaires | View questionnaire definitions and the forms available to fill in | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist, Admin (role org), Manager (role org), Member (role org) |
-| Can Submit Questionnaires | Fill in and submit a questionnaire against a patient or encounter | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Admin (role org), Member (role org), Manager (role org) |
-| Can Create/Update Questionnaires | Author new questionnaires and edit existing definitions | Admin, Facility Admin |
-| Can Archive Questionnaires | Retire a questionnaire so it can no longer be used | Admin, Facility Admin |
-| Can Manage Questionnaires | Add or remove the organizations a questionnaire is scoped to (Access Management) | Admin, Facility Admin, Admin (role org) |
+| `can_write_questionnaire` | Create a questionnaire and set the organizations it is scoped to | Admin, Facility Admin |
+| `can_read_questionnaire` | View questionnaire definitions, list them, and see the organizations a questionnaire is scoped to | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist, Admin (role org), Manager (role org), Member (role org) |
+| `can_submit_patient_questionnaire` | Submit a questionnaire about a patient (no encounter) | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator |
+| `can_submit_encounter_questionnaire` | Submit a questionnaire against a patient encounter | Staff, Doctor, Nurse, Admin, Facility Admin |
 
-Roles are granted to users through organization, facility, or patient memberships, and the access they confer cascades down the organization tree. Authoring and retiring a form is restricted to admins, while most clinical roles can read and submit.
+Roles are granted to users through organization, facility, or patient memberships, and the access they confer cascades down the organization tree. Editing and deleting a questionnaire are restricted to superusers, while most clinical roles can read and submit.
 
 ## Related
 

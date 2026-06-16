@@ -54,8 +54,8 @@ Access to products is granted per facility, so who can see or change a batch dep
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Create Product on Facility | Create or update products (batches) at a facility | Facility Admin, Admin |
-| Can Read Product | View products at a facility | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| `can_write_product` | Create, update, or upsert products (batches) at a facility | Facility Admin, Admin |
+| `can_read_product` | List and view products at a facility | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
 
 Roles are assigned through facility and organization memberships, and permissions cascade down the organization tree — a role granted on a parent organization is inherited by the facilities beneath it. Creating or editing products is limited to administrators, while a broad set of clinical and pharmacy roles can read them.
 

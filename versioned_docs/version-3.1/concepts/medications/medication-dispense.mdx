@@ -67,9 +67,8 @@ Dispensing is gated by facility-level permissions. Pharmacists are granted dedic
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Pharmacist in Care | Pharmacists have access to all medication requests and can create dispenses for patients | Facility Admin, Admin, Pharmacist |
-| Medication Dispense Read | View medication dispenses | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
-| Write Medication Dispense | Create and update medication dispenses | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| `write_medication_dispense` | Create and update medication dispenses (creates and updates authorize against the dispensing location) | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| `read_medication_dispense` | Read medication dispenses, by location or by encounter | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
 
 Roles are granted through a user's facility and organization memberships, and they cascade down the organization tree — a role held high in the hierarchy carries to the facilities and locations beneath it.
 

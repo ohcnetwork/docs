@@ -61,9 +61,8 @@ Access to charge item definitions is governed at the facility level — who may 
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Read Charge Item Definition | View the facility's charge item definitions and their pricing | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| Can Create Charge Item Definition on Facility | Create a new charge item definition for the facility | Facility Admin, Admin |
-| Can Set Charge Item Definition on Facility | Update or configure an existing charge item definition | Facility Admin, Admin |
+| `can_write_charge_item_definition` | Create a charge item definition for the facility, and update or configure an existing one (also gates tag changes on a definition) | Facility Admin, Admin |
+| `can_read_charge_item_definition` | List and view the facility's charge item definitions and their pricing | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
 
 Roles are granted through facility and organization memberships rather than assigned per definition, and permissions cascade down the organization tree, so an administrator higher up inherits access to the facilities beneath them.
 

@@ -52,10 +52,10 @@ Access to invoices is governed by facility-scoped permissions:
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Write Invoice | Create and update invoices, including assembling charge items and issuing them | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
-| Can Read Invoice | View invoices, their line items, totals, and reconciliation history | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| Can Destroy Invoice | Delete an invoice | Facility Admin, Admin |
-| Can Manage Locked Invoice | Lock and unlock invoices to freeze or reopen them | Facility Admin, Admin |
+| `can_write_invoice` | Create and update invoices, including attaching or removing charge items and issuing or balancing them. Also gates cancelling an invoice within the free-cancel window. | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| `can_read_invoice` | List and retrieve invoices, their line items, totals, and reconciliation history. | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| `can_destroy_invoice` | Cancel an invoice after the free-cancel window has elapsed. | Facility Admin, Admin |
+| `can_manage_locked_invoice` | Lock and unlock invoices, and retrieve a locked invoice. | Facility Admin, Admin |
 
 Roles are granted through a user's facility and organization memberships, and permissions cascade down the organization tree, so access at a parent organization carries to the facilities beneath it.
 

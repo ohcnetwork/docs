@@ -53,12 +53,13 @@ A service request is the hub that ties an order to the rest of the record:
 
 ## Permissions
 
-Access to service requests is governed by two facility-scoped permissions.
+Access to service requests is governed by these facility-scoped permissions.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| Can Write Service Request on Facility | Create and update service requests within a facility | Facility Admin, Admin, Doctor, Nurse |
-| Can Read Service Request | View service requests within a facility | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| `can_write_service_request` | Create, update, complete, cancel, and apply an activity definition to service requests within a facility | Facility Admin, Admin, Doctor, Nurse |
+| `can_read_service_request` | List and view service requests within a facility | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| `can_write_specimen` | Create a specimen against a service request | Facility Admin, Admin, Doctor, Nurse |
 
 Roles are granted through a user's facility, organization, or patient memberships, and permissions cascade down the organization tree — a role given high in the tree applies to the facilities beneath it.
 
