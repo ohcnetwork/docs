@@ -85,17 +85,17 @@ Instance-wide organization. Adds one field on top of `OrganizationCommonBase`:
 
 | Field | Type | Default | Notes |
 | --- | --- | --- | --- |
-| `managing_organizations` | `ArrayField[int]` | `[]` (`list`) | Internal ids of orgs that manage this one. Expanded to a list of nested org JSON (`OrganizationReadSpec`) only by `OrganizationRetrieveSpec` |
+| `managing_organizations` | `ArrayField[int]` | `[]` (`list`) | Internal ids of the organizations that **manage** this one — the management hierarchy that decides who may administer the org and its users (a user is editable only from a managing org above them). Expanded to nested org JSON (`OrganizationReadSpec`) only by `OrganizationRetrieveSpec` |
 
 ### `FacilityOrganization`
 
-Facility-scoped organization. Adds one field on top of `OrganizationCommonBase`:
+Facility-scoped organization — departments, teams, and groups within one facility. Adds one field on top of `OrganizationCommonBase`:
 
 ```text
 facility → FK facility.Facility  (CASCADE)
 ```
 
-See [Facility](../facility/facility.mdx).
+Unlike `Organization`, its `org_type` binds to `FacilityOrganizationTypeChoices` (see [Facility organization type values](#facility-organization-type-values)), and its specs live in `resources/facility_organization/`: `FacilityOrganizationWriteSpec` requires `facility` + `org_type` + optional `parent` (validated within the same facility); `FacilityOrganizationReadSpec` / `FacilityOrganizationRetrieveSpec` mirror the instance read specs, with the caller's `permissions` resolved via `get_permission_on_facility_organization`. See [Facility](../facility/facility.mdx).
 
 ### `OrganizationUser`
 
@@ -121,16 +121,28 @@ role         → FK security.RoleModel    (CASCADE)
 
 ### Organization type values
 
-`org_type` is a `CharField` in the DB, but every write binds to `OrganizationTypeChoices` (`resources/organization/spec.py`).
+`Organization.org_type` is a `CharField` in the DB, but every write binds to `OrganizationTypeChoices` (`resources/organization/spec.py`).
 
 | Value | Meaning |
 | --- | --- |
-| `team` | A team / department-style grouping |
-| `govt` | Governance / governmental unit (typically superadmin-managed) |
-| `role` | Role-grouping org. An `OrganizationUser` on a `role`-typed org invalidates the user's cached role-org list (see [`OrganizationUser.save()`](#organizationusersave)) |
+| `team` | A working / department-style grouping of people (the default) |
+| `govt` | A governance unit mirroring a real administrative hierarchy (`State → District → …`). Viewable by any user to support cross-governance coordination; create/edit is superadmin-only; facilities and patients reference these nodes geographically |
+| `role` | A **user group** (a flat set of users, e.g. _Volunteer_, _ASHA Worker_). Adding an `OrganizationUser` to a `role`-typed org invalidates the user's `cached_role_orgs` (see [`OrganizationUser.save()`](#organizationusersave)); managed by superadmins |
 | `product_supplier` | Supplier organization (links to the supply chain) |
 
-`FacilityOrganization` in practice uses the `team` and `root` types; the spec binds the same `OrganizationTypeChoices` enum (instance scope). `govt`/`role` orgs and root orgs are restricted to superadmin management.
+### Facility organization type values
+
+`FacilityOrganization.org_type` binds to a **separate** enum — `FacilityOrganizationTypeChoices` (`resources/facility_organization/spec.py`), **not** `OrganizationTypeChoices`.
+
+| Value | Meaning |
+| --- | --- |
+| `root` | System-generated top node, one per facility (cannot be edited or deleted) |
+| `dept` | A department within the facility |
+| `team` | A team, often nested under a department |
+| `role` | A facility-scoped user group |
+| `other` | Any grouping outside the categories above |
+
+Root, `govt`, and `role` (instance) organizations, and any system-generated organization, are restricted to superadmin management.
 
 ## Resource specs (API schema)
 

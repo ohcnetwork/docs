@@ -4,35 +4,46 @@ sidebar_position: 3
 
 # Facility Organization
 
-A **facility organization** is a department or team inside a single facility — Cardiology, the Emergency Ward, the night-shift nursing team. It is how one facility is divided internally so that staff, patients, and resources can be grouped, and so that access can be granted to a part of the facility rather than the whole of it.
+A **facility organization** is a department, team, or group inside a single facility — Cardiology, the Emergency Ward, the night-shift nursing team. It is how one facility is divided internally so that staff, patients, and resources can be grouped, and so that access can be granted to a *part* of the facility rather than the whole of it.
 
 ## What it represents
 
-In Care's FHIR-aligned model, a facility organization is the facility-scoped form of the **Organization** resource (`FacilityOrganization`). Each unit carries a name and description, a place in the facility's internal tree, a type, and a list of member users with the role each one holds.
+A facility organization is the facility-scoped form of the [organization](./organization.mdx) primitive (`FacilityOrganization`). It carries a name and description, a place in the facility's internal tree, a type, and a list of member users — each with the role they hold.
 
-The key distinction is from an instance-wide [organization](./organization.mdx). An instance organization is a deployment-level grouping — a hospital network, a governance body, a role group — that lives above any single facility. A facility organization exists only inside one facility and is deleted with it. Think of the instance organization as "who operates across the system" and the facility organization as "how one building is divided up inside."
+The distinction from an instance-wide organization is one of scope. An instance organization is a deployment-level grouping — a hospital network, a governance body, a user group — that lives above any single facility. A facility organization exists only inside one facility and is deleted with it. Think of the instance organization as "who operates across the system" and the facility organization as "how one building is divided up inside."
+
+## Types
+
+A facility organization's type describes the kind of unit it is within the facility.
+
+| Type | What it is |
+| --- | --- |
+| `root` | The system-generated top node, one per facility, created with the facility; cannot be edited or deleted |
+| `dept` | A department — a major functional division such as Cardiology or Radiology |
+| `team` | A working team within the facility, often nested under a department |
+| `role` | A facility-scoped user group, used to grant a shared role to a set of staff |
+| `other` | Any grouping that does not fit the categories above |
+
+`dept` and `team` carry the everyday structure of a hospital; `role` provides facility-level user groups (the facility-scoped counterpart of an instance [role organization](./organization.mdx)).
 
 ## How it is structured
 
-Facility organizations form a tree. Every facility is created with a single **root** organization, and departments and teams hang beneath it as nested children — a department can itself contain sub-teams, several levels deep.
+Facility organizations form a tree. Every facility is created with a single **root**, and departments, teams, and groups hang beneath it as nested children — a department can itself contain sub-teams, several levels deep.
 
 ```text
-Facility root → Department (team) → Sub-team (team)
+Facility root → Department (dept) → Team (team)
 ```
 
-- **Facility root** (`root`) — the system-generated top node, one per facility, created automatically with the facility; it cannot be edited or deleted
-- **Department** (`team`) — a working unit such as Cardiology or the Emergency Ward, created beneath the root
-- **Sub-team** (`team`) — a finer grouping nested under a department, for as many levels as a facility needs
+A unit's name must be unique among its siblings — the units sharing its parent — but the same name can be reused in a different branch of the tree.
 
-A unit's name must be unique among its siblings — units sharing the same parent — but the same name can be reused in a different branch of the tree.
-
-The tree is what makes access manageable: anything attached to a node sits implicitly within every ancestor above it. So a permission granted high in the tree reaches everything below it without being re-granted at each level — and a department "sees" only its own caseload because patients and resources are attached at or below that department's node.
+The tree is what makes access manageable: a permission granted high in the tree reaches every unit nested under it without being re-granted at each level. Equally, a department "sees" only its own caseload, because patients and resources are attached at or below that department's node — never above it.
 
 ## How it connects
 
-- **Facility** — every facility organization belongs to exactly one [facility](./facility.mdx) and shares its lifetime
-- **Users** — staff are added as members with a role, which is how the platform decides what each person may do within that unit and the units beneath it
-- **Locations** — physical [locations](./location.mdx) such as wards and beds are modeled separately; a facility organization groups people and access, not rooms
+- **Facility** — every facility organization belongs to exactly one [facility](./facility.mdx) and shares its lifetime.
+- **Encounters** — an [encounter](../clinical/encounter.mdx) is scoped to one or more responsible facility organizations. This is the link that decides who can reach a patient's encounter: a clinician's role in a responsible department (or any unit above it) is what grants access to that encounter and the clinical data recorded in it.
+- **Users & roles** — staff are added as members with a role, which is how Care decides what each person may do within that unit and the units beneath it.
+- **Locations** — physical [locations](./location.mdx) such as wards and beds are modelled separately; a facility organization groups people and access, not rooms (though an encounter's current location also contributes to who can reach it).
 
 ## Permissions
 
@@ -50,6 +61,4 @@ Access to facility organizations is governed by the permissions below. The roles
 ## Related
 
 - Reference: [Organization (technical)](../../references/facility/organization.mdx)
-- Concept: [Organization](./organization.mdx)
-- Concept: [Facility](./facility.mdx)
-- Concept: [Location](./location.mdx)
+- Concept: [Organization](./organization.mdx) · [Facility](./facility.mdx) · [Encounter](../clinical/encounter.mdx) · [Location](./location.mdx)
