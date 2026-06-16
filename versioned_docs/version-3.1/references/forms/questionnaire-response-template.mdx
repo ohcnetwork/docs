@@ -1,0 +1,90 @@
+---
+sidebar_position: 3
+---
+
+# Questionnaire Response Template
+
+Technical reference for the `QuestionnaireResponseTemplate` module in Care EMR — a reusable, shareable template that pre-fills a [questionnaire response](./questionnaire-response.mdx) along with associated medication requests and activity definitions (a clinician's "favourite" / order set).
+
+The Django model is the **storage** layer; the Pydantic **resource specs** define the structured `template_data` payload, validation, and the read/write API schemas.
+
+**Source:**
+- Model: [`care/emr/models/questionnaire.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/questionnaire.py)
+- Spec: [`resources/questionnaire_response_template/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/questionnaire_response_template/spec.py)
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `QuestionnaireResponseTemplate` | A named template bundling pre-filled questionnaire answers, medication requests, and activity definitions, scoped to a facility/users/organizations |
+
+`QuestionnaireResponseTemplate` extends [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, audit fields, soft-delete, and `history`/`meta` JSON).
+
+## `QuestionnaireResponseTemplate` fields
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `name` | `CharField(255)` | Template name |
+| `description` | `TextField` | `default=""` |
+| `template_data` | `JSONField` | `default=dict`. Structured payload — shape defined by `TemplateData` (see [shape](#templatedata-shape)) |
+| `facility` | `FK → Facility` | `CASCADE`, nullable. Owning facility (instance-wide when null) |
+| `questionnaire` | `FK → Questionnaire` | `CASCADE`, nullable, `default=None`. Optional questionnaire the template targets |
+| `facility_organizations` | `ArrayField[int]` | `default=list`. Facility-organization ids the template is shared with |
+| `users` | `ArrayField[int]` | `default=list`. User ids the template is shared with |
+| `available_keys` | `ArrayField[CharField(255)]` | `default=list`. Platform-maintained — the populated top-level keys of `template_data`, recomputed on every write |
+
+## `TemplateData` shape
+
+The real structure of the opaque `template_data` `JSONField` (`resources/questionnaire_response_template/spec.py`). Every section is optional; `available_keys` records which are populated.
+
+```text
+TemplateData {
+  medication_request:  list[MedicationRequestTemplateSpec] | None
+  questionnaire:       list[QuestionnaireAnswer] | None
+  activity_definition: list[ActivityDefinitionTemplateSpec] | None
+  meta:                dict | None
+}
+
+QuestionnaireAnswer { question_id: str, answer: dict, meta: dict }
+
+MedicationRequestTemplateSpec   # extends the medication request write spec
+  + requested_product: str | None     # validated against ProductKnowledge.slug
+
+ActivityDefinitionTemplateSpec {
+  slug:            str                 # validated against ActivityDefinition.slug
+  service_request: ServiceRequestUpdateSpec
+}
+```
+
+See [Medication Request](../medications/medication-request.mdx), [Activity Definition](../clinical/activity-definition.mdx), and [Service Request](../clinical/service-request.mdx) for the embedded specs.
+
+## Resource specs (API schema)
+
+All specs extend `EMRResource` (`resources/base.py`).
+
+| Spec class | Role | Notes |
+| --- | --- | --- |
+| `QuestionnaireResponseTemplateBaseSpec` | shared | `__model__ = QuestionnaireResponseTemplate`; `id` (`UUID4?`), `template_data` (`TemplateData`), `name`, `description` (`= ""`) |
+| `QuestionnaireResponseTemplateCreateSpec` | write · create | Adds `questionnaire` (slug `str?`), `facility` (`UUID4?`), `users` (`list[str]`), `facility_organizations` (`list[UUID4]`). Validates that a `facility` is present when `facility_organizations` are given; resolves the questionnaire by slug and facility by external id; recomputes `available_keys` |
+| `QuestionnaireResponseTemplateUpdateSpec` | write · update | `users`, `facility_organizations`; recomputes `available_keys`. Cannot change `facility`/`questionnaire` |
+| `QuestionnaireResponseTemplateReadSpec` | read · list | Adds `created_date`/`modified_date` |
+| `QuestionnaireResponseTemplateRetrieveSpec` | read · detail | Expands `users` (`UserSpec` via cache) and `facility_organizations` (`FacilityOrganizationReadSpec`), plus `created_by`/`updated_by` |
+
+### Validation & server-maintained behaviour
+
+- `validate_facility` (`model_validator(after)` on create): rejects facility organizations without a facility.
+- `available_keys` is derived on every create/update in `perform_extra_deserialization` — it lists the `template_data` keys whose value is non-empty. Clients should not set it directly.
+- Embedded `requested_product` and activity-definition `slug` are validated to exist (`ProductKnowledge`, `ActivityDefinition`) before save.
+
+## API integration notes
+
+- This is a Care-specific authoring/convenience resource (not a FHIR resource): one template can seed a questionnaire response, medication requests, and activity-definition-driven service requests at once.
+- Sharing is controlled by `facility`, `facility_organizations`, and `users`; instance-wide templates leave `facility` null.
+- `available_keys` lets clients cheaply discover which sections a template carries without parsing `template_data`.
+
+## Related
+
+- Reference: [Questionnaire Response](./questionnaire-response.mdx) — what a template helps pre-fill
+- Reference: [Questionnaire](./questionnaire.mdx)
+- Reference: [Medication Request](../medications/medication-request.mdx) · [Activity Definition](../clinical/activity-definition.mdx) · [Service Request](../clinical/service-request.mdx)
+- Source: [questionnaire.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/questionnaire.py)
