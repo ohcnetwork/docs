@@ -12,6 +12,7 @@ const sidebars = {
         {
           type: 'category',
           label: 'Clinical',
+          key: 'clinical-concepts',
           items: ['concepts/clinical/patient'],
         },
       ],
@@ -24,6 +25,7 @@ const sidebars = {
         {
           type: 'category',
           label: 'Clinical',
+          key: 'clinical-flows',
           items: ['flows/clinical/create-patient'],
         },
       ],
@@ -36,6 +38,7 @@ const sidebars = {
         {
           type: 'category',
           label: 'Clinical',
+          key: 'clinical-references',
           items: ['references/clinical/patient'],
         },
       ],

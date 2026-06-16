@@ -56,6 +56,8 @@ const config = {
     })),
   },
 
+  clientModules: [require.resolve('./src/clientModules/devLocaleWarning.js')],
+
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
 
@@ -64,7 +66,15 @@ const config = {
   // may want to replace "en" with "zh-Hans".
   i18n: {
     defaultLocale: 'en',
-    locales: ['en'],
+    locales: ['en', 'ml'],
+    localeConfigs: {
+      en: {
+        label: 'English',
+      },
+      ml: {
+        label: 'മലയാളം',
+      },
+    },
   },
 
   presets: [
@@ -154,6 +164,10 @@ const config = {
               label: deployment.label,
               docsPluginId: deployment.id,
             })),
+          },
+          {
+            type: 'localeDropdown',
+            position: 'right',
           },
           {
             type: 'docsVersionDropdown',

@@ -1,16 +1,22 @@
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import useBaseUrl from '@docusaurus/useBaseUrl';
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import Translate, {translate} from '@docusaurus/Translate';
 import Layout from '@theme/Layout';
 import Heading from '@theme/Heading';
 import styles from './index.module.css';
 
 const FeatureList = [
   {
-    title: 'FHIR-Native',
-    description:
-      'Built around FHIR R5, SNOMED CT, LOINC, and open APIs — interoperable by design, not as an afterthought.',
+    title: translate({
+      id: 'homepage.feature.fhir.title',
+      message: 'FHIR-Native',
+    }),
+    description: translate({
+      id: 'homepage.feature.fhir.description',
+      message:
+        'Built around FHIR R5, SNOMED CT, LOINC, and open APIs — interoperable by design, not as an afterthought.',
+    }),
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path d="M4 6h16M4 12h10M4 18h16" strokeLinecap="round" />
@@ -19,9 +25,15 @@ const FeatureList = [
     ),
   },
   {
-    title: 'Clinical Workflows',
-    description:
-      'OP, IP, emergency, labs, pharmacy, billing, tasks, referrals, and care plans — everything a hospital needs.',
+    title: translate({
+      id: 'homepage.feature.workflows.title',
+      message: 'Clinical Workflows',
+    }),
+    description: translate({
+      id: 'homepage.feature.workflows.description',
+      message:
+        'OP, IP, emergency, labs, pharmacy, billing, tasks, referrals, and care plans — everything a hospital needs.',
+    }),
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path d="M12 4v16M4 12h16" strokeLinecap="round" />
@@ -30,9 +42,15 @@ const FeatureList = [
     ),
   },
   {
-    title: 'Open Source',
-    description:
-      'MIT licensed and listed as a Digital Public Good. Deploy, adapt, and scale without vendor lock-in.',
+    title: translate({
+      id: 'homepage.feature.opensource.title',
+      message: 'Open Source',
+    }),
+    description: translate({
+      id: 'homepage.feature.opensource.description',
+      message:
+        'MIT licensed and listed as a Digital Public Good. Deploy, adapt, and scale without vendor lock-in.',
+    }),
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <circle cx="12" cy="12" r="9" />
@@ -41,9 +59,15 @@ const FeatureList = [
     ),
   },
   {
-    title: 'Extensible Platform',
-    description:
-      'CARE Core plus plugins for AI Scribe, imaging, devices, analytics, and national health rails.',
+    title: translate({
+      id: 'homepage.feature.extensible.title',
+      message: 'Extensible Platform',
+    }),
+    description: translate({
+      id: 'homepage.feature.extensible.description',
+      message:
+        'CARE Core plus plugins for AI Scribe, imaging, devices, analytics, and national health rails.',
+    }),
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <rect x="3" y="3" width="7" height="7" rx="1" />
@@ -54,9 +78,15 @@ const FeatureList = [
     ),
   },
   {
-    title: 'Role-Based Access',
-    description:
-      'Granular permissions, audit trails, and security patterns built for accountable clinical environments.',
+    title: translate({
+      id: 'homepage.feature.rbac.title',
+      message: 'Role-Based Access',
+    }),
+    description: translate({
+      id: 'homepage.feature.rbac.description',
+      message:
+        'Granular permissions, audit trails, and security patterns built for accountable clinical environments.',
+    }),
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path d="M12 3l7 4v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9V7l7-4z" />
@@ -65,9 +95,15 @@ const FeatureList = [
     ),
   },
   {
-    title: 'Configurable Forms',
-    description:
-      'Dynamic questionnaires and value sets let clinicians shape workflows without rewriting the core.',
+    title: translate({
+      id: 'homepage.feature.forms.title',
+      message: 'Configurable Forms',
+    }),
+    description: translate({
+      id: 'homepage.feature.forms.description',
+      message:
+        'Dynamic questionnaires and value sets let clinicians shape workflows without rewriting the core.',
+    }),
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <rect x="4" y="2" width="16" height="20" rx="2" />
@@ -79,19 +115,37 @@ const FeatureList = [
 
 const QuickLinks = [
   {
-    title: 'Documentation model',
-    description: 'How concepts, flows, and playbooks fit together.',
-    to: '/docs/intro',
+    title: translate({
+      id: 'homepage.quicklinks.model.title',
+      message: 'Documentation model',
+    }),
+    description: translate({
+      id: 'homepage.quicklinks.model.description',
+      message: 'How concepts, flows, and playbooks fit together.',
+    }),
+    to: '/intro',
   },
   {
-    title: 'Patient (concept)',
-    description: 'What a patient record is in Care.',
-    to: '/docs/concepts/clinical/patient',
+    title: translate({
+      id: 'homepage.quicklinks.patient.title',
+      message: 'Patient (concept)',
+    }),
+    description: translate({
+      id: 'homepage.quicklinks.patient.description',
+      message: 'What a patient record is in Care.',
+    }),
+    to: '/concepts/clinical/patient',
   },
   {
-    title: 'Create a patient (flow)',
-    description: 'Step-by-step registration in the product.',
-    to: '/docs/flows/clinical/create-patient',
+    title: translate({
+      id: 'homepage.quicklinks.create.title',
+      message: 'Create a patient (flow)',
+    }),
+    description: translate({
+      id: 'homepage.quicklinks.create.description',
+      message: 'Step-by-step registration in the product.',
+    }),
+    to: '/flows/clinical/create-patient',
   },
 ];
 
@@ -119,21 +173,32 @@ function HomepageHeader() {
           alt="Care by Open Healthcare Network"
           className={styles.heroLogo}
         />
-        <div className={styles.heroBadge}>EMR Documentation</div>
+        <div className={styles.heroBadge}>
+          <Translate id="homepage.hero.badge">EMR Documentation</Translate>
+        </div>
         <Heading as="h1" className={styles.heroTitle}>
-          The open EMR for modern healthcare
+          <Translate id="homepage.hero.title">
+            The open EMR for modern healthcare
+          </Translate>
         </Heading>
         <p className={styles.heroSubtitle}>
-          CARE is the electronic medical records platform from{' '}
-          <a href="https://ohc.network" target="_blank" rel="noopener noreferrer">
-            Open Healthcare Network
-          </a>
-          . FHIR-native, self-hostable, and built for hospitals, clinics, and
-          public health programs worldwide.
+          <Translate
+            id="homepage.hero.subtitle"
+            values={{
+              ohcLink: (
+                <a href="https://ohc.network" target="_blank" rel="noopener noreferrer">
+                  Open Healthcare Network
+                </a>
+              ),
+            }}>
+            {
+              'CARE is the electronic medical records platform from {ohcLink}. FHIR-native, self-hostable, and built for hospitals, clinics, and public health programs worldwide.'
+            }
+          </Translate>
         </p>
         <div className={styles.heroButtons}>
-          <Link className={clsx('button button--lg', styles.primaryButton)} to="/docs/intro">
-            Get Started
+          <Link className={clsx('button button--lg', styles.primaryButton)} to="/intro">
+            <Translate id="homepage.hero.cta.primary">Get Started</Translate>
           </Link>
           <a
             className={clsx('button button--lg', styles.secondaryButton)}
@@ -146,15 +211,21 @@ function HomepageHeader() {
         <div className={styles.heroStats}>
           <div className={styles.stat}>
             <span className={styles.statValue}>FHIR R5</span>
-            <span className={styles.statLabel}>Standards-native</span>
+            <span className={styles.statLabel}>
+              <Translate id="homepage.hero.stat.standards">Standards-native</Translate>
+            </span>
           </div>
           <div className={styles.stat}>
             <span className={styles.statValue}>MIT</span>
-            <span className={styles.statLabel}>Open license</span>
+            <span className={styles.statLabel}>
+              <Translate id="homepage.hero.stat.license">Open license</Translate>
+            </span>
           </div>
           <div className={styles.stat}>
             <span className={styles.statValue}>DPG</span>
-            <span className={styles.statLabel}>Verified public good</span>
+            <span className={styles.statLabel}>
+              <Translate id="homepage.hero.stat.dpg">Verified public good</Translate>
+            </span>
           </div>
         </div>
       </div>
@@ -168,12 +239,14 @@ function HomepageFeatures() {
       <div className="container">
         <div className={styles.sectionHeader}>
           <Heading as="h2" className={styles.sectionTitle}>
-            Built for the field
+            <Translate id="homepage.features.title">Built for the field</Translate>
           </Heading>
           <p className={styles.sectionSubtitle}>
-            CARE Core provides reusable primitives for patient records, encounters,
-            orders, observations, and more — so implementers can focus on care, not
-            infrastructure.
+            <Translate id="homepage.features.subtitle">
+              CARE Core provides reusable primitives for patient records, encounters,
+              orders, observations, and more — so implementers can focus on care, not
+              infrastructure.
+            </Translate>
           </p>
         </div>
         <div className={styles.featureGrid}>
@@ -192,10 +265,12 @@ function HomepageQuickLinks() {
       <div className="container">
         <div className={styles.sectionHeader}>
           <Heading as="h2" className={styles.sectionTitle}>
-            Explore the docs
+            <Translate id="homepage.quicklinks.title">Explore the docs</Translate>
           </Heading>
           <p className={styles.sectionSubtitle}>
-            Everything you need to deploy, configure, and extend CARE.
+            <Translate id="homepage.quicklinks.subtitle">
+              Everything you need to deploy, configure, and extend CARE.
+            </Translate>
           </p>
         </div>
         <div className={styles.linkGrid}>
@@ -223,24 +298,28 @@ function HomepageCTA() {
         <div className={styles.ctaCard}>
           <div className={styles.ctaContent}>
             <Heading as="h2" className={styles.ctaTitle}>
-              Ready to build on open healthcare infrastructure?
+              <Translate id="homepage.cta.title">
+                Ready to build on open healthcare infrastructure?
+              </Translate>
             </Heading>
             <p className={styles.ctaText}>
-              Join governments, hospitals, and developers deploying CARE across
-              India and beyond. Start with the documentation or connect with the
-              OHC Foundation.
+              <Translate id="homepage.cta.text">
+                Join governments, hospitals, and developers deploying CARE across
+                India and beyond. Start with the documentation or connect with the
+                OHC Foundation.
+              </Translate>
             </p>
           </div>
           <div className={styles.ctaButtons}>
-            <Link className={clsx('button button--lg', styles.ctaPrimary)} to="/docs/intro">
-              Read the docs
+            <Link className={clsx('button button--lg', styles.ctaPrimary)} to="/intro">
+              <Translate id="homepage.cta.docs">Read the docs</Translate>
             </Link>
             <a
               className={clsx('button button--lg', styles.ctaOutline)}
               href="https://ohc.network"
               target="_blank"
               rel="noopener noreferrer">
-              Partner with OHC
+              <Translate id="homepage.cta.partner">Partner with OHC</Translate>
             </a>
           </div>
         </div>
@@ -250,11 +329,14 @@ function HomepageCTA() {
 }
 
 export default function Home() {
-  const {siteConfig} = useDocusaurusContext();
   return (
     <Layout
-      title="Care Documentation"
-      description={`Documentation for Care — the open EMR from ${siteConfig.organizationName || 'Open Healthcare Network'}. FHIR-native, MIT licensed, and built for real-world healthcare delivery.`}>
+      title={translate({id: 'homepage.meta.title', message: 'Care Documentation'})}
+      description={translate({
+        id: 'homepage.meta.description',
+        message:
+          'Documentation for Care — the open EMR from Open Healthcare Network. FHIR-native, MIT licensed, and built for real-world healthcare delivery.',
+      })}>
       <HomepageHeader />
       <main>
         <HomepageFeatures />
