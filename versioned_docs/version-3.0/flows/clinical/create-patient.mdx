@@ -1,0 +1,90 @@
+---
+sidebar_position: 1
+---
+
+# Create a patient
+
+This flow walks through registering a **new patient** in Care — the minimum path from search to a saved record ready for an encounter.
+
+:::info Prerequisite
+Read [Patient](../../concepts/clinical/patient.mdx) to understand what a patient record contains and how identifiers work.
+:::
+
+## Before you start
+
+- You need a role with **patient create** permission (typically registration or front-desk staff).
+- Know which **identifiers** your facility requires (MRN, national ID, phone-only intake, etc.).
+- If your deployment enforces duplicate checks, have at least two identifiers ready (e.g. name + date of birth + phone).
+
+## Steps
+
+### 1. Open patient search
+
+From the facility dashboard, go to **Patients** → **Search** (or use the global patient search shortcut).
+
+Search first — Care expects you to confirm the person is not already registered before creating a duplicate.
+
+### 2. Start registration
+
+If no match is found, select **Register new patient**.
+
+The registration form opens. Required fields depend on your facility's questionnaire configuration; the baseline set is:
+
+| Field | Notes |
+| --- | --- |
+| Name | Legal name; supports multiple given names where configured |
+| Date of birth | Used for duplicate detection |
+| Sex | Administrative sex for clinical context |
+| Phone | Often required for OTP or follow-up contact |
+| Identifier | Facility MRN or national ID when applicable |
+
+### 3. Complete demographics
+
+Fill optional fields as required by your program — address, emergency contact, blood group, photo, etc.
+
+If duplicate detection is enabled, Care may warn when a similar record exists. Resolve the warning before saving (merge, override with justification, or cancel).
+
+### 4. Save the record
+
+Select **Save** (or **Register**).
+
+On success:
+
+- A patient ID and facility MRN are assigned (if auto-generated).
+- The patient profile opens.
+- You can start an **encounter** or return to the queue.
+
+## After creation
+
+| Next step | When |
+| --- | --- |
+| Start an encounter | Patient is at the desk for a visit *(flow coming soon)* |
+| Print registration slip | Facility policy requires a paper token |
+| Link national health ID | ABDM or other rails are enabled on your deployment |
+
+## API equivalent
+
+```http
+POST /api/v1/patient/
+Content-Type: application/json
+
+{
+  "name": "Jane Doe",
+  "age": 34,
+  "gender": "female",
+  "phone_number": "+91XXXXXXXXXX"
+}
+```
+
+Exact payload shape depends on your Care version and facility questionnaire. Use the OpenAPI schema for your instance.
+
+## Edge cases
+
+Deployment-specific handling (unknown identity, emergency intake without ID, duplicate merges) is documented in playbooks, not here.
+
+→ See [Outpatient registration](/deployments/hmis/playbooks/outpatient-registration) for HMIS registration desk scenarios.
+
+## Related
+
+- Concept: [Patient](../../concepts/clinical/patient.mdx)
+- Reference: [Patient (technical)](../../references/clinical/patient.mdx)

@@ -1,0 +1,135 @@
+---
+sidebar_position: 1
+---
+
+# Patient
+
+Technical reference for the `Patient` module in Care EMR. For a product-oriented overview, see the [Patient concept](../../concepts/clinical/patient.mdx).
+
+**Source:** [`care/emr/models/patient.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/patient.py)
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `Patient` | Core patient record |
+| `PatientOrganization` | Links a patient to an `Organization` |
+| `PatientUser` | Grants a `User` access to a patient with a `RoleModel` |
+| `PatientIdentifierConfig` | Defines identifier types (instance-wide or per-facility) |
+| `PatientIdentifier` | Stores an identifier value for a patient |
+
+All models extend `EMRBaseModel` (shared Care EMR base with `external_id`, audit fields, and soft-delete semantics).
+
+## `Patient` fields
+
+### Demographics
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `name` | `CharField(200)` | Display name |
+| `gender` | `CharField(35)` | Administrative gender |
+| `date_of_birth` | `DateField` | Nullable; preferred when known |
+| `year_of_birth` | `IntegerField` | Min 1900; used when full DOB is unknown. Auto-set from `date_of_birth` on save |
+| `deceased_datetime` | `DateTimeField` | Set when patient is marked deceased; affects age calculation |
+| `blood_group` | `CharField(16)` | |
+
+### Contact & address
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `phone_number` | `CharField(14)` | Validated with `mobile_or_landline_number_validator` |
+| `emergency_phone_number` | `CharField(14)` | Same validator |
+| `address` | `TextField` | Current address |
+| `permanent_address` | `TextField` | |
+| `pincode` | `IntegerField` | Nullable |
+
+### Organization & access caches
+
+These are **denormalized caches** rebuilt on every `Patient.save()` for fast filtering without deep joins.
+
+| Field | Type | Rebuilt by |
+| --- | --- | --- |
+| `geo_organization` | `FK → Organization` | Geographic/administrative org assignment |
+| `organization_cache` | `ArrayField[int]` | `rebuild_organization_cache()` — includes `geo_organization` parent chain and all linked `PatientOrganization` orgs |
+| `users_cache` | `ArrayField[int]` | `rebuild_users_cache()` — user IDs from `PatientUser` rows |
+
+### Identifiers & tags
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `instance_identifiers` | `JSONField` | List of `{config, value}` built from `PatientIdentifier` rows (instance-scoped configs) |
+| `facility_identifiers` | `JSONField` | Dict keyed by `facility_id` → list of `{config, value}` |
+| `instance_tags` | `ArrayField[int]` | Instance-level tag IDs |
+| `facility_tags` | `JSONField` | Dict keyed by facility → tag IDs |
+| `extensions` | `JSONField` | Open extension bag for deployment-specific metadata |
+
+Identifier values live in `PatientIdentifier` and are materialized into the JSON caches via `build_instance_identifiers()` and `build_facility_identifiers(facility_id)`.
+
+## Related models
+
+### `PatientOrganization`
+
+```text
+patient  → FK Patient
+organization → FK Organization
+```
+
+Saving a `PatientOrganization` triggers `patient.save()`, which rebuilds `organization_cache`.
+
+### `PatientUser`
+
+Grants a Care user access to a patient record.
+
+```text
+user   → FK User
+patient → FK Patient
+role   → FK RoleModel (PROTECT)
+```
+
+Saving a `PatientUser` triggers `patient.save()`, which rebuilds `users_cache`.
+
+### `PatientIdentifier` / `PatientIdentifierConfig`
+
+`PatientIdentifierConfig` defines what identifiers exist (status, optional facility scope, JSON config). `PatientIdentifier` stores the actual value:
+
+```text
+patient → FK Patient
+config  → FK PatientIdentifierConfig
+facility → FK Facility (nullable)
+value   → CharField(1024), indexed
+```
+
+`PatientIdentifierConfigCache` provides in-process caching for configs (`get_instance_config()`, `get_facility_config(facility_id)`).
+
+## Methods & save behaviour
+
+### Age
+
+- `get_age() → str` — human-readable age (years, months, days) relative to `deceased_datetime` or now
+- `age → int` — whole years only
+
+Both use `date_of_birth` when present, otherwise `year_of_birth` (January 1).
+
+### `save()` side effects
+
+On every save:
+
+1. If `date_of_birth` is set and `year_of_birth` is empty → `year_of_birth` is derived
+2. `rebuild_organization_cache()` runs
+3. `rebuild_users_cache()` runs
+4. A second `save(update_fields=["organization_cache", "users_cache"])` persists the caches
+
+Integrators should expect **two write passes** when creating or updating patients through the ORM.
+
+## API integration notes
+
+- Patient records are exposed through Care's REST API and FHIR `Patient` resources; field names in API payloads may differ from Django model names.
+- Use `instance_identifiers` / `facility_identifiers` JSON for read-optimized identifier lookup; write through `PatientIdentifier` for consistency.
+- `extensions` is the supported place for custom key-value data without schema migrations.
+- `users_cache` and `organization_cache` are maintained by the platform — do not set them directly from clients.
+
+## Related
+
+- Concept: [Patient](../../concepts/clinical/patient.mdx)
+- Flow: [Create a patient](../../flows/clinical/create-patient.mdx)
+- Source: [patient.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/patient.py)

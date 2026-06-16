@@ -1,0 +1,54 @@
+---
+sidebar_position: 1
+---
+
+# Patient
+
+A **patient** in Care is a person who receives care through your facility or program. It is the longitudinal anchor for clinical documentation — every encounter, observation, order, and care plan links back to a patient record.
+
+## What it represents
+
+In Care's FHIR-aligned model, a patient maps to the **Patient** resource. It holds:
+
+- **Identity** — name, date of birth, sex, photo, and government or facility identifiers
+- **Contact** — phone, address, and emergency contacts
+- **Administrative context** — registration status, facility association, and tags used by your deployment
+- **Clinical linkage** — references to encounters, conditions, allergies, and other resources in the record
+
+A patient is not the same as a single visit. One patient can have many encounters over time; the patient record is the container that makes that history coherent.
+
+## Identifiers
+
+Patients are located using one or more identifiers, depending on how your deployment is configured:
+
+| Identifier type | Typical use |
+| --- | --- |
+| Facility MRN | Primary key inside a hospital or clinic |
+| National health ID | ABDM, ABHA, or other national rails |
+| Program ID | Public health or campaign-specific registries |
+
+Identifiers must be unique within the scope your administrator defines. Duplicate detection during registration uses these fields.
+
+## Lifecycle
+
+```
+Register → Active → (optional) Inactive / Deceased
+```
+
+- **Register** — a patient record is created with minimum demographics
+- **Active** — the record is used for encounters and orders
+- **Inactive** — retained for history but hidden from routine search (configurable)
+- **Deceased** — administrative closure; clinical history remains auditable
+
+## Permissions
+
+Who can view or edit patient demographics is controlled by role-based access. Clinical staff typically can read full records; registration staff can create and update demographics; some fields may be restricted by facility or ward.
+
+## Related
+
+- Flow: [Create a patient](../../flows/clinical/create-patient.mdx)
+- Playbook: [Outpatient registration](/deployments/hmis/playbooks/outpatient-registration) (HMIS)
+
+## FHIR reference
+
+Care exposes patients through FHIR R5 `Patient` resources. See your deployment's API base URL for `GET /Patient` and `POST /Patient` when integrating externally.

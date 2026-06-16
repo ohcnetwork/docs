@@ -1,0 +1,82 @@
+---
+sidebar_position: 1
+---
+
+# Outpatient registration
+
+Register a walk-in or scheduled outpatient at the hospital front desk. This playbook combines the [create patient](/docs/flows/clinical/create-patient) flow with HMIS-specific edge cases your registration team will hit in production.
+
+## Flows involved
+
+| Order | Flow | Purpose |
+| --- | --- | --- |
+| 1 | [Create a patient](/docs/flows/clinical/create-patient) | New visitor with no existing record |
+| 2 | Patient search & merge *(coming soon)* | Suspected duplicate before creating |
+| 3 | Start OP encounter *(coming soon)* | Open today's visit after registration |
+
+## Happy path
+
+1. Reception searches by phone or national ID.
+2. No match → **Register new patient** → complete demographics per facility questionnaire.
+3. Print OPD slip / token if enabled.
+4. Route patient to triage or consulting room encounter queue.
+
+This matches the core [create patient](/docs/flows/clinical/create-patient) flow without additional configuration.
+
+## Edge cases
+
+### Suspected duplicate
+
+**Symptom:** Duplicate warning after entering name, DOB, and phone.
+
+**Action:**
+
+1. Open the suggested match side-by-side.
+2. If same person → **use existing record**; do not create a second patient.
+3. If homonym → document override reason (when your facility requires it) and proceed.
+4. If unsure → escalate to registration supervisor; HMIS audit log retains the decision.
+
+### Unknown identity (emergency)
+
+**Symptom:** Patient cannot provide name or ID (trauma, unconscious).
+
+**Action:**
+
+1. Create a temporary record using your facility's **unknown patient** naming convention (e.g. `Unknown Male ED-042`).
+2. Assign emergency MRN; photograph identifying marks when possible.
+3. After identification, merge into a full demographic record *(merge flow coming soon)*.
+
+Requires `emergency_registration` permission on most HMIS deployments.
+
+### Phone-only intake
+
+**Symptom:** Camp or rural OPD collects phone first; other fields arrive later.
+
+**Action:**
+
+1. Register with phone + minimal demographics allowed by questionnaire.
+2. Flag record as **incomplete demographics**.
+3. Front desk completes remaining fields before billing or discharge workflows.
+
+### National health ID (ABDM / ABHA)
+
+**Symptom:** Patient presents ABHA address or QR.
+
+**Action:**
+
+1. Search by ABHA first.
+2. If found → link existing Care patient to ABHA identifier.
+3. If not found → create patient, then run **ABDM link** step post-registration *(flow coming soon)*.
+
+## Roles
+
+| Role | Can |
+| --- | --- |
+| Registration clerk | Search, create, update demographics |
+| Registration supervisor | Override duplicate warnings, merge records |
+| Clinician | Read demographics; cannot delete identifiers |
+
+## Related
+
+- Concept: [Patient](/docs/concepts/clinical/patient)
+- Flow: [Create a patient](/docs/flows/clinical/create-patient)

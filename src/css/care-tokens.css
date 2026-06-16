@@ -1,0 +1,112 @@
+/**
+ * Care UI design tokens — aligned with https://careui.ohc.network/#colors
+ * Semantic tokens resolve to Tailwind v4 neutral + emerald palettes.
+ */
+
+:root {
+  /* Base palette */
+  --care-white: #ffffff;
+  --care-black: #000000;
+
+  --care-neutral-50: #fafafa;
+  --care-neutral-100: #f5f5f5;
+  --care-neutral-200: #e5e5e5;
+  --care-neutral-300: #d4d4d4;
+  --care-neutral-400: #a3a3a3;
+  --care-neutral-500: #737373;
+  --care-neutral-600: #525252;
+  --care-neutral-700: #404040;
+  --care-neutral-800: #262626;
+  --care-neutral-900: #171717;
+  --care-neutral-950: #0a0a0a;
+
+  --care-emerald-50: #ecfdf5;
+  --care-emerald-100: #d1fae5;
+  --care-emerald-200: #a7f3d0;
+  --care-emerald-300: #6ee7b7;
+  --care-emerald-400: #34d399;
+  --care-emerald-500: #10b981;
+  --care-emerald-600: #059669;
+  --care-emerald-700: #047857;
+  --care-emerald-800: #065f46;
+  --care-emerald-900: #064e3b;
+  --care-emerald-950: #022c22;
+
+  --care-red-50: #fef2f2;
+  --care-red-400: #f87171;
+  --care-red-600: #dc2626;
+
+  --care-indigo-500: #6366f1;
+
+  /* Semantic tokens — light */
+  --care-radius: 0.625rem;
+
+  --care-background: var(--care-white);
+  --care-soft-background: var(--care-neutral-50);
+  --care-muted-background: var(--care-neutral-100);
+  --care-strong-background: var(--care-neutral-200);
+  --care-muted: var(--care-neutral-100);
+
+  --care-foreground: var(--care-neutral-950);
+  --care-muted-foreground: var(--care-neutral-700);
+  --care-soft-foreground: var(--care-neutral-600);
+  --care-placeholder-foreground: var(--care-neutral-500);
+  --care-inverse-foreground: var(--care-white);
+
+  --care-card: var(--care-white);
+  --care-card-foreground: var(--care-neutral-950);
+
+  --care-primary: var(--care-emerald-800);
+  --care-primary-foreground: var(--care-emerald-50);
+
+  --care-secondary: var(--care-neutral-100);
+  --care-secondary-foreground: var(--care-neutral-900);
+
+  --care-accent: var(--care-neutral-100);
+  --care-accent-foreground: var(--care-neutral-900);
+
+  --care-destructive: var(--care-red-600);
+  --care-destructive-foreground: var(--care-red-50);
+
+  --care-soft-border: var(--care-neutral-100);
+  --care-border: var(--care-neutral-200);
+  --care-strong-border: var(--care-neutral-300);
+  --care-stronger-border: var(--care-neutral-400);
+  --care-input: var(--care-neutral-300);
+  --care-ring: color-mix(in oklab, var(--care-indigo-500) 75%, transparent);
+}
+
+[data-theme='dark'] {
+  --care-background: var(--care-neutral-950);
+  --care-soft-background: var(--care-neutral-900);
+  --care-muted-background: var(--care-neutral-800);
+  --care-strong-background: var(--care-neutral-700);
+  --care-muted: var(--care-neutral-800);
+
+  --care-foreground: var(--care-neutral-50);
+  --care-muted-foreground: var(--care-neutral-200);
+  --care-soft-foreground: var(--care-neutral-300);
+  --care-placeholder-foreground: var(--care-neutral-600);
+  --care-inverse-foreground: var(--care-black);
+
+  --care-card: var(--care-neutral-900);
+  --care-card-foreground: var(--care-white);
+
+  --care-primary: var(--care-emerald-400);
+  --care-primary-foreground: var(--care-emerald-950);
+
+  --care-secondary: var(--care-neutral-800);
+  --care-secondary-foreground: var(--care-neutral-50);
+
+  --care-accent: var(--care-neutral-700);
+  --care-accent-foreground: var(--care-neutral-50);
+
+  --care-destructive: var(--care-red-400);
+  --care-destructive-foreground: var(--care-red-50);
+
+  --care-soft-border: rgba(255, 255, 255, 0.05);
+  --care-border: rgba(255, 255, 255, 0.09);
+  --care-strong-border: rgba(255, 255, 255, 0.15);
+  --care-stronger-border: rgba(255, 255, 255, 0.22);
+  --care-input: rgba(255, 255, 255, 0.15);
+}

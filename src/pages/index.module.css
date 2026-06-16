@@ -1,0 +1,413 @@
+/* Homepage — Care UI semantic tokens (careui.ohc.network) */
+
+/* ── Hero ─────────────────────────────────────────────── */
+
+.hero {
+  position: relative;
+  padding: 4.5rem 0 4rem;
+  overflow: hidden;
+  background: var(--care-soft-background);
+  border-bottom: 1px solid var(--care-border);
+}
+
+.heroGlow {
+  position: absolute;
+  top: -40%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(900px, 100%);
+  height: 420px;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in oklab, var(--care-primary) 12%, transparent) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.heroInner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 760px;
+}
+
+.heroLogo {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 1.25rem;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.75rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--care-primary);
+  background: color-mix(in oklab, var(--care-primary) 10%, transparent);
+  border: 1px solid color-mix(in oklab, var(--care-primary) 20%, transparent);
+  border-radius: 999px;
+}
+
+.heroTitle {
+  font-size: clamp(2rem, 4.5vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 1rem;
+  color: var(--care-foreground);
+  letter-spacing: -0.025em;
+}
+
+.heroSubtitle {
+  font-size: 1.125rem;
+  line-height: 1.65;
+  color: var(--care-muted-foreground);
+  margin-bottom: 2rem;
+  max-width: 600px;
+}
+
+.heroSubtitle a {
+  color: var(--care-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.heroSubtitle a:hover {
+  color: color-mix(in oklab, var(--care-primary) 80%, var(--care-foreground));
+}
+
+.heroButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-bottom: 2.5rem;
+}
+
+.primaryButton {
+  background: var(--care-primary) !important;
+  color: var(--care-primary-foreground) !important;
+  border: 1px solid var(--care-primary) !important;
+  font-weight: 600;
+  border-radius: var(--care-radius);
+  box-shadow: 0 1px 2px color-mix(in oklab, var(--care-primary) 25%, transparent);
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.primaryButton:hover {
+  background: color-mix(in oklab, var(--care-primary) 90%, transparent) !important;
+  color: var(--care-primary-foreground) !important;
+  box-shadow: 0 4px 12px color-mix(in oklab, var(--care-primary) 30%, transparent);
+}
+
+.secondaryButton {
+  background: var(--care-secondary) !important;
+  color: var(--care-secondary-foreground) !important;
+  border: 1px solid var(--care-border) !important;
+  font-weight: 600;
+  border-radius: var(--care-radius);
+  transition: background 0.15s ease;
+}
+
+.secondaryButton:hover {
+  background: color-mix(in oklab, var(--care-secondary) 80%, transparent) !important;
+  color: var(--care-secondary-foreground) !important;
+  border-color: var(--care-strong-border) !important;
+}
+
+.heroStats {
+  display: flex;
+  align-items: stretch;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 560px;
+}
+
+.stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  padding: 0.875rem 1rem;
+  background: var(--care-card);
+  border: 1px solid var(--care-border);
+  border-radius: var(--care-radius);
+}
+
+.statValue {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--care-foreground);
+  letter-spacing: 0.01em;
+}
+
+.statLabel {
+  font-size: 0.7rem;
+  color: var(--care-soft-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Sections ─────────────────────────────────────────── */
+
+.features {
+  padding: 4.5rem 0;
+  background: var(--care-background);
+}
+
+.quickLinks {
+  padding: 4rem 0 4.5rem;
+  background: var(--care-soft-background);
+  border-top: 1px solid var(--care-border);
+}
+
+.sectionHeader {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 2.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.625rem;
+  color: var(--care-foreground);
+  letter-spacing: -0.02em;
+}
+
+.sectionSubtitle {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--care-muted-foreground);
+  margin: 0;
+}
+
+/* ── Feature cards ────────────────────────────────────── */
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.featureCard {
+  padding: 1.5rem;
+  border-radius: var(--care-radius);
+  border: 1px solid var(--care-border);
+  background: var(--care-card);
+  color: var(--care-card-foreground);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.featureCard:hover {
+  border-color: var(--care-strong-border);
+  box-shadow: 0 4px 16px color-mix(in oklab, var(--care-foreground) 6%, transparent);
+}
+
+.featureIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 0.875rem;
+  border-radius: calc(var(--care-radius) - 2px);
+  background: color-mix(in oklab, var(--care-primary) 10%, transparent);
+  color: var(--care-primary);
+}
+
+.featureIcon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.featureTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.375rem;
+  color: var(--care-foreground);
+}
+
+.featureDescription {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--care-muted-foreground);
+  margin: 0;
+}
+
+/* ── Quick link cards ─────────────────────────────────── */
+
+.linkGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.linkCard {
+  position: relative;
+  display: block;
+  padding: 1.5rem;
+  border-radius: var(--care-radius);
+  border: 1px solid var(--care-border);
+  background: var(--care-card);
+  text-decoration: none !important;
+  color: var(--care-card-foreground);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.linkCard:hover {
+  border-color: color-mix(in oklab, var(--care-primary) 40%, var(--care-border));
+  box-shadow: 0 4px 16px color-mix(in oklab, var(--care-primary) 8%, transparent);
+  color: var(--care-card-foreground);
+}
+
+.linkTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  color: var(--care-foreground);
+}
+
+.linkDescription {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--care-muted-foreground);
+  margin: 0;
+  padding-right: 1.25rem;
+}
+
+.linkArrow {
+  position: absolute;
+  right: 1.25rem;
+  bottom: 1.5rem;
+  font-size: 1.1rem;
+  color: var(--care-primary);
+  transition: transform 0.15s ease;
+}
+
+.linkCard:hover .linkArrow {
+  transform: translateX(3px);
+}
+
+/* ── CTA ──────────────────────────────────────────────── */
+
+.cta {
+  padding: 0 0 4.5rem;
+  background: var(--care-soft-background);
+}
+
+.ctaCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 2rem 2.5rem;
+  border-radius: calc(var(--care-radius) + 4px);
+  background: var(--care-primary);
+  color: var(--care-primary-foreground);
+  box-shadow: 0 8px 24px color-mix(in oklab, var(--care-primary) 35%, transparent);
+}
+
+.ctaTitle {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--care-primary-foreground);
+  margin-bottom: 0.375rem;
+  letter-spacing: -0.015em;
+}
+
+.ctaText {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: color-mix(in oklab, var(--care-primary-foreground) 85%, transparent);
+  margin: 0;
+  max-width: 500px;
+}
+
+.ctaButtons {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.ctaPrimary {
+  background: var(--care-primary-foreground) !important;
+  color: var(--care-primary) !important;
+  border: none !important;
+  font-weight: 600;
+  border-radius: var(--care-radius);
+}
+
+.ctaPrimary:hover {
+  background: color-mix(in oklab, var(--care-primary-foreground) 90%, transparent) !important;
+  color: var(--care-primary) !important;
+}
+
+.ctaOutline {
+  background: transparent !important;
+  color: var(--care-primary-foreground) !important;
+  border: 1px solid color-mix(in oklab, var(--care-primary-foreground) 35%, transparent) !important;
+  font-weight: 600;
+  border-radius: var(--care-radius);
+}
+
+.ctaOutline:hover {
+  background: color-mix(in oklab, var(--care-primary-foreground) 10%, transparent) !important;
+  color: var(--care-primary-foreground) !important;
+  border-color: color-mix(in oklab, var(--care-primary-foreground) 55%, transparent) !important;
+}
+
+/* ── Responsive ───────────────────────────────────────── */
+
+@media screen and (max-width: 996px) {
+  .hero {
+    padding: 3rem 1.5rem 2.5rem;
+  }
+
+  .featureGrid,
+  .linkGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ctaCard {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.75rem;
+  }
+
+  .ctaButtons {
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .heroStats {
+    flex-direction: column;
+  }
+
+  .featureGrid,
+  .linkGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .heroButtons,
+  .ctaButtons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .heroButtons .button,
+  .ctaButtons .button {
+    width: 100%;
+  }
+}

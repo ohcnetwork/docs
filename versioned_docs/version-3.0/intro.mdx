@@ -1,0 +1,48 @@
+---
+sidebar_position: 1
+---
+
+# Care documentation
+
+Care documentation is organized in four layers. Start with **concepts** to build mental models, follow **flows** when you need to do something in the product, use **references** for technical module detail, and use **playbooks** when a deployment combines flows into a real-world scenario.
+
+## Concepts
+
+**Concepts answer: _What is…?_**
+
+Definitions and platform primitives in plain language — for example, [what a patient is](./concepts/clinical/patient.mdx). Concepts are versioned with the core Care release and apply across deployments.
+
+→ Browse [Concepts](./concepts/clinical/patient.mdx)
+
+## Flows
+
+**Flows answer: _How do I…?_**
+
+Step-by-step guides for tasks in Care — for example, [how to create a patient](./flows/clinical/create-patient.mdx). Flows describe the happy path in the product UI and API; they stay deployment-agnostic unless noted.
+
+→ Browse [Flows](./flows/clinical/create-patient.mdx)
+
+## References
+
+**References answer: _How is it built?_**
+
+Module-level technical documentation for developers and integrators — models, fields, relationships, and save behaviour. For example, the [Patient reference](./references/clinical/patient.mdx) maps to `care.emr.models.patient`.
+
+→ Browse [References](./references/clinical/patient.mdx)
+
+## Playbooks
+
+**Playbooks answer: _How does this work in my deployment?_**
+
+Playbooks live under each [deployment playbook](/deployments/hmis/) (HMIS and others). They wire flows together for concrete use cases — registration desks, emergency intake, and ward workflows — and document edge cases, local configuration, and operational expectations.
+
+→ Browse [HMIS playbooks](/deployments/hmis/playbooks/outpatient-registration)
+
+## How to read a page
+
+| Layer | Question | Audience | Example |
+| --- | --- | --- | --- |
+| Concept | What is it? | Everyone | [Patient](./concepts/clinical/patient.mdx) |
+| Flow | How do I do it? | Operators, implementers | [Create a patient](./flows/clinical/create-patient.mdx) |
+| Reference | How is it built? | Developers, integrators | [Patient (technical)](./references/clinical/patient.mdx) |
+| Playbook | How does my site run it? | Deployment teams | [Outpatient registration](/deployments/hmis/playbooks/outpatient-registration) |
