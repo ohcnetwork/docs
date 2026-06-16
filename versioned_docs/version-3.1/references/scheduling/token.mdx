@@ -31,7 +31,7 @@ The `resource` FK on `TokenQueue` / `TokenSubQueue` points at `emr.SchedulableRe
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `facility` | `FK → facility.Facility` (CASCADE) | yes (server) | Set server-side from the queue's facility |
-| `patient` | `FK → emr.Patient` (CASCADE) | optional | Nullable; the patient the token belongs to. See [Patient](../../concepts/clinical/patient.mdx) |
+| `patient` | `FK → emr.Patient` (CASCADE) | optional | Nullable; the patient the token belongs to. See [Patient](../../concepts/clinical/patient) |
 | `queue` | `FK → TokenQueue` (CASCADE) | yes (server) | Set server-side from the URL queue |
 | `category` | `FK → TokenCategory` (CASCADE) | yes | Resolved from the `category` UUID on create. Must be in the same facility as the queue |
 | `sub_queue` | `FK → TokenSubQueue` (CASCADE) | optional | Nullable. Must match the queue's facility **and** resource |
@@ -207,7 +207,7 @@ Validation & server behaviour (from `perform_extra_deserialization` and the view
 - Reference: [Schedule](./schedule.mdx)
 - Reference: [Booking](./booking.mdx)
 - Reference: [Base model](../foundation/base-model.mdx)
-- Concept: [Patient](../../concepts/clinical/patient.mdx)
+- Concept: [Patient](../../concepts/clinical/patient)
 - Reference: [Encounter](../clinical/encounter.mdx)
 - Source: [token.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/scheduling/token.py)
 - Specs: [token](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/scheduling/token/spec.py) · [token_category](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/scheduling/token_category/spec.py) · [token_queue](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/scheduling/token_queue/spec.py) · [token_sub_queue](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/scheduling/token_sub_queue/spec.py)

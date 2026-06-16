@@ -33,7 +33,7 @@ Both models extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care E
 | Field | Type | Notes |
 | --- | --- | --- |
 | `title` | `CharField(255)` | Nullable, blank-allowed at the storage layer; the spec layer requires it on write (`title: str`, `max_length=255`) |
-| `patient` | `FK → Patient` | `on_delete=CASCADE`; thread is removed when the [patient](./patient.mdx) is deleted. Excluded from spec serialization (`__exclude__`); set from the URL/viewset context, not the request body |
+| `patient` | `FK → Patient` | `on_delete=CASCADE`; thread is removed when the [patient](./patient) is deleted. Excluded from spec serialization (`__exclude__`); set from the URL/viewset context, not the request body |
 | `encounter` | `FK → Encounter` | Nullable, blank-allowed; `on_delete=CASCADE`. Scopes the thread to a specific [encounter](./encounter.mdx) when set. Excluded from spec serialization; on create it is resolved from a UUID in the request body (see specs below) |
 
 A `NoteThread` groups related messages for a patient. Threads with no `encounter` are patient-level; threads with an `encounter` are scoped to that visit. A `TODO` in the source notes that organization-based access restriction is planned but not yet implemented.
@@ -131,6 +131,6 @@ Validation / server behaviour:
 
 - Source: [notes.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/notes.py)
 - Specs: [thread_spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/notes/thread_spec.py), [notes_spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/notes/notes_spec.py)
-- Reference: [Patient](./patient.mdx)
+- Reference: [Patient](./patient)
 - Reference: [Encounter](./encounter.mdx)
 - Reference: [Base model](../foundation/base-model.mdx)

@@ -190,7 +190,7 @@ All specs build on `EMRResource` (`serialize` / `de_serialize`, with `perform_ex
 | `EncounterSpecBase` | shared | Fields: `id`, `status`, `encounter_class`, `period` (`PeriodSpec`, default `{}`), `hospitalization` (`HospitalizationSpec \| None`, default `{}`), `priority`, `external_identifier`, `discharge_summary_advice`. `__model__ = Encounter` |
 | `EncounterCreateSpec` | write · create | Extends base + `ExtensionValidator`. Adds `patient: UUID4`, `facility: UUID4`, `organizations: list[UUID4] = []`, `appointment: UUID4 \| None`. Resolves FKs by `external_id`; validates appointment belongs to the patient and facility |
 | `EncounterUpdateSpec` | write · update | Extends base + `ExtensionValidator`. Does not accept `patient`/`facility`/`organizations`/`appointment` — only mutable fields. Appends to status/class history on change |
-| `EncounterListSpec` | read · list | Adds serialized `patient` ([`PatientListSpec`](./patient.mdx)), `facility` (`FacilityBareMinimumSpec`), `status_history`, `encounter_class_history`, `created_date`, `modified_date`, `tags`, `current_location` (`FacilityLocationMinimalListSpec \| None`), `care_team` (`[{ member, role }]`) |
+| `EncounterListSpec` | read · list | Adds serialized `patient` ([`PatientListSpec`](./patient)), `facility` (`FacilityBareMinimumSpec`), `status_history`, `encounter_class_history`, `created_date`, `modified_date`, `tags`, `current_location` (`FacilityLocationMinimalListSpec \| None`), `care_team` (`[{ member, role }]`) |
 | `EncounterRetrieveSpec` | read · detail | Extends list + `EncounterPermissionsMixin`. Adds `appointment` (`TokenBookingReadSpec`), `created_by`/`updated_by` ([`UserSpec`](../access/user.mdx)), `organizations` (`FacilityOrganizationReadSpec[]`), `location_history` (`FacilityLocationEncounter[]`, newest first), `extensions`; patient via `PatientRetrieveSpec` |
 | `HospitalizationSpec` | nested | Plain `BaseModel`; see shape above |
 | `EncounterCareTeamMemberSpec` | nested (write) | `{ user_id: UUID4, role: Coding }`, `role` bound to the `system-practitioner-role-code` value set |
@@ -255,13 +255,13 @@ Integrators should expect **two write passes** when creating or updating encount
 
 ## Related
 
-- Reference: [Patient](./patient.mdx)
+- Reference: [Patient](./patient)
 - Reference: [Service request](./service-request.mdx)
 - Reference: [Booking](../scheduling/booking.mdx)
 - Reference: [Location](../facility/location.mdx)
 - Reference: [Organization](../facility/organization.mdx)
 - Reference: [Facility](../facility/facility.mdx)
 - Reference: [User](../access/user.mdx)
-- Concept: [Patient](../../concepts/clinical/patient.mdx)
+- Concept: [Patient](../../concepts/clinical/patient)
 - Source (model): [encounter.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/encounter.py)
 - Source (specs): [resources/encounter on GitHub](https://github.com/ohcnetwork/care/tree/develop/care/emr/resources/encounter)
