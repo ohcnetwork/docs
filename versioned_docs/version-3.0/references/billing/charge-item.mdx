@@ -1,0 +1,266 @@
+---
+sidebar_position: 2
+---
+
+# Charge Item
+
+Technical reference for the `ChargeItem` module in Care EMR.
+
+**Source:**
+- Model: [`care/emr/models/charge_item.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/charge_item.py)
+- Resource specs: [`care/emr/resources/charge_item/`](https://github.com/ohcnetwork/care/tree/develop/care/emr/resources/charge_item)
+  ([`spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/charge_item/spec.py),
+  [`sync_charge_item_costs.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/charge_item/sync_charge_item_costs.py),
+  [`apply_charge_item_definition.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/charge_item/apply_charge_item_definition.py),
+  [`handle_charge_item_cancel.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/charge_item/handle_charge_item_cancel.py))
+- Viewset: [`care/emr/api/viewsets/charge_item.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/charge_item.py)
+
+A charge item tracks the financial cost of a service or product supplied to a patient. Charge items are self-descriptive — they record what was charged, the quantity, the unit and total price components, and any applied discounts or override reasons. Every charge item belongs to an [`Account`](./account.mdx) and is created against a patient (optionally an encounter).
+
+The Django model is the **storage** layer: several fields are opaque `JSONField`s whose real structure lives only in the Pydantic resource specs (`care/emr/resources/charge_item/`). Those specs define the enums, the JSON shapes, validation, and the read/write API schemas, and they drive server-side cost calculation and status side effects. This page documents both layers.
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `ChargeItem` | A single billable line item for a service or product rendered to a patient |
+
+`ChargeItem` extends `EMRBaseModel` (shared Care EMR base with `external_id`, audit fields — `created_by`/`updated_by`/`created_date`/`modified_date` — and soft-delete semantics — see [Base model](../foundation/base-model.mdx)).
+
+## `ChargeItem` fields
+
+### Context & relationships
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `facility` | `FK → facility.Facility` (`PROTECT`) | Facility where the charge is created. Set server-side from the URL, not the request body |
+| `patient` | `FK → emr.Patient` (`CASCADE`) | Patient associated with the charge. Derived from `encounter` when an encounter is supplied |
+| `encounter` | `FK → emr.Encounter` (`CASCADE`) | Nullable; encounter the charge relates to |
+| `charge_item_definition` | `FK → emr.ChargeItemDefinition` (`CASCADE`) | Nullable; template the charge was applied from. Not writable via the standard create/update specs (set only by `apply_charge_item_defs`) |
+| `account` | `FK → emr.Account` (`CASCADE`) | Account this charge is placed on. Defaults to the patient's default account when omitted |
+
+### Description & status
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `title` | `CharField(255)` | Required; display title for the charge |
+| `description` | `TextField` | Nullable; longer description |
+| `status` | `CharField(255)` | Required; lifecycle status — constrained to `ChargeItemStatusOptions`, see [Status values](#status-values) |
+| `code` | `JSONField` | Nullable; a `Coding` that identifies the charge (e.g. a billing code) — shape `Coding { system?, version?, code, display? }`, see [Coding shape](#coding-shape). No bound value set |
+| `note` | `TextField` | Nullable; free-text (markdown) comments about the charge item |
+
+### Pricing
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `quantity` | `DecimalField(20, 6)` | Required on write; quantity serviced. Multiplies the base/per-unit components during cost sync |
+| `unit_price_components` | `JSONField` | Required on write; list of `MonetaryComponent` — see [MonetaryComponent shape](#monetarycomponent-shape). At most one `base` component; duplicate component codes rejected |
+| `total_price_components` | `JSONField` | Nullable; **server-computed** list of `MonetaryComponent` (as dicts) — the resolved breakdown after applying base × quantity, surcharges, discounts, and taxes. Not client-writable |
+| `total_price` | `DecimalField(20, 6)` | Nullable; **server-computed** resolved total amount. Must be ≥ 0 unless the charge is a reversal |
+| `override_reason` | `JSONField` | Nullable; `ChargeItemOverrideReason { text: str, code?: Coding }` explaining a list-price/factor override. No bound value set |
+| `discount_configuration` | `JSONField` | Nullable (default `None`); `DiscountConfiguration { max_applicable: int (≥0), applicability_order: total_asc \| total_desc }`. Populated from the definition/facility config when applied from a definition |
+
+### Service source
+
+These record why the charge was rendered — the originating resource that produced this charge.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `service_resource` | `CharField(255)` | Nullable (default `None`); resource type — constrained to `ChargeItemResourceOptions`, see [Service resource types](#service-resource-types) |
+| `service_resource_id` | `CharField(255)` | Nullable (default `None`); external id of the originating resource. Required when `service_resource` is set |
+| `performer_actor` | `FK → users.User` (`CASCADE`) | Nullable (default `None`); user who performed the service. Must belong to the facility's organization |
+
+### Invoicing & tags
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `paid_invoice` | `FK → emr.Invoice` (`CASCADE`) | Nullable (default `None`); denormalized link to the invoice that settled this charge. Platform-maintained; cleared on cancel |
+| `paid_on` | `DateTimeField` | Nullable (default `None`); timestamp the charge was paid. Platform-maintained; cleared on cancel |
+| `tags` | `ArrayField[int]` | Tag IDs, defaults to `[]`. Managed through the tag mixin (`SingleFacilityTagManager`), serialized as objects on read |
+
+## Enums
+
+### Status values
+
+`status` is a plain `CharField` in storage, but every write goes through `ChargeItemStatusOptions` (`care/emr/resources/charge_item/spec.py`):
+
+| Value | Meaning |
+| --- | --- |
+| `billable` | Ready to be invoiced |
+| `not_billable` | Will not be billed |
+| `aborted` | Charge was cancelled before billing |
+| `billed` | Included on an invoice |
+| `paid` | Settled (links to `paid_invoice` / `paid_on`) |
+| `entered_in_error` | Recorded in error |
+
+(`planned` exists in the source as a commented-out option and is **not** currently selectable.)
+
+`not_billable`, `aborted`, and `entered_in_error` form the cancelled set (`CHARGE_ITEM_CANCELLED_STATUS`). Transitioning into this set on update triggers the cancel side effect (see [Methods & save behaviour](#methods--save-behaviour)). `billed` and `paid` cannot be set manually — the viewset rejects manual changes into them.
+
+### Service resource types
+
+`service_resource` is constrained by `ChargeItemResourceOptions`:
+
+| Value |
+| --- |
+| `service_request` |
+| `medication_dispense` |
+| `appointment` |
+| `bed_association` |
+
+On create the viewset validates the referenced resource: `service_request` must exist (and not be completed) for the patient/encounter, and `bed_association` must reference a `FacilityLocationEncounter` on a non-completed encounter in the facility.
+
+### MonetaryComponentType values
+
+Used by every entry in `unit_price_components` / `total_price_components` (`care/emr/resources/common/monetary_component.py`):
+
+| Value | Role in cost sync |
+| --- | --- |
+| `base` | Per-unit base price. Exactly one allowed; must carry `amount` (not `factor`); no `conditions`. `base.amount × quantity` seeds the running total |
+| `surcharge` | Added on top of base; `amount` or `factor` (% of base) |
+| `discount` | Subtracted from the net price; `amount` or `factor` (% of net). Filtered/limited by `discount_configuration` |
+| `tax` | Added on the post-discount taxable price; `amount` or `factor` (% of taxable) |
+| `informational` | Carried through without affecting the computed total |
+
+### DiscountApplicability values
+
+`discount_configuration.applicability_order` (`care/emr/resources/common/monetary_component.py`):
+
+| Value | Effect |
+| --- | --- |
+| `total_asc` | Sort candidate discounts by amount ascending before applying `max_applicable` |
+| `total_desc` | Sort by amount descending before applying `max_applicable` |
+
+`max_applicable = 0` drops all discounts.
+
+## JSON field shapes
+
+### Coding shape
+
+`code` and the `code` field inside components / `override_reason` (`care/emr/resources/common/coding.py`, `extra="forbid"`):
+
+```text
+Coding {
+  system?:  str
+  version?: str
+  code:     str        # required
+  display?: str
+}
+```
+
+### MonetaryComponent shape
+
+Each entry of `unit_price_components` and `total_price_components` (`care/emr/resources/common/monetary_component.py`):
+
+```text
+MonetaryComponent {
+  monetary_component_type: base | surcharge | discount | tax | informational   # required
+  code?:                Coding
+  factor?:              Decimal(20,6)      # percentage; mutually exclusive with amount
+  amount?:              Decimal(20,6)      # absolute; mutually exclusive with factor
+  tax_included_amount?: Decimal(20,6)      # base component only
+  global_component:     bool = False       # resolved against facility monetary config
+  conditions:           [EvaluatorConditionSpec] = []   # not allowed on base
+}
+```
+
+Validation: exactly one of `amount`/`factor` (unless `global_component` with a `code`); `base` must have `amount`, no `factor`, no `conditions`; `tax_included_amount` only on `base`; duplicate component `code`s are rejected.
+
+`EvaluatorConditionSpec { metric: str, operation: str, value: dict | str }` — conditions are evaluated against patient/facility/encounter context when a definition is applied; a component whose conditions fail is dropped.
+
+### ChargeItemOverrideReason shape
+
+`override_reason` (`care/emr/resources/charge_item/spec.py`):
+
+```text
+ChargeItemOverrideReason {
+  text: str            # required
+  code?: Coding        # no bound value set
+}
+```
+
+### DiscountConfiguration shape
+
+`discount_configuration` (`care/emr/resources/common/monetary_component.py`):
+
+```text
+DiscountConfiguration {
+  max_applicable:      int (>= 0)               # 0 drops all discounts
+  applicability_order: total_asc | total_desc
+}
+```
+
+## Resource specs (API schema)
+
+Charge items are exposed through `ChargeItemViewSet` (create / retrieve / update / upsert / list / tag actions, plus the `apply_charge_item_defs` and `change_account` custom actions). The Pydantic specs in `care/emr/resources/charge_item/spec.py` build on `EMRResource` (`serialize` / `de_serialize`, with `perform_extra_serialization` / `perform_extra_deserialization` hooks).
+
+| Spec | Role | Notes |
+| --- | --- | --- |
+| `ChargeItemSpec` | shared base | `__model__ = ChargeItem`, `__exclude__ = ["encounter", "account"]`. Fields: `id`, `title`, `description`, `status`, `code`, `quantity`, `unit_price_components`, `note`, `override_reason`. Validators: no duplicate component codes, ≤1 `base` component |
+| `ChargeItemWriteSpec` | write · create | Extends base with `encounter`, `patient`, `account`, `service_resource`, `service_resource_id`, `performer_actor` (all `UUID4`/enum, optional). Requires `encounter` **or** `patient`; requires `service_resource_id` when `service_resource` set |
+| `ChargeItemUpdateSpec` | write · update | Base fields + `performer_actor`. Does not re-bind patient/encounter/account |
+| `ChargeItemReadSpec` | read · list & detail | Base fields + server-side: `total_price_components`, `total_price`, `charge_item_definition` (nested), `paid_invoice` (nested), `tags` (objects), `service_resource(_id)`, `created_date`, `modified_date`, `paid_on`, `performer_actor`, `created_by`, `updated_by`, `discount_configuration` |
+
+Notable validation / binding:
+
+- `code`, `override_reason.code`, and component `code`s are FHIR-aligned `Coding`s with **no bound value set**.
+- `ChargeItemWriteSpec.perform_extra_deserialization` resolves `patient`/`encounter`/`account`/`performer_actor` from external ids; supplying `encounter` overrides `patient` with the encounter's patient, and `account` is looked up scoped to that patient.
+- `ChargeItemReadSpec.perform_extra_serialization` nests the full `ChargeItemDefinitionReadSpec` and `InvoiceReadSpec`, renders tags, and resolves `performer_actor` / `created_by` / `updated_by` from the user cache.
+
+### Nested / related specs
+
+| Spec | Used by | Shape |
+| --- | --- | --- |
+| `Coding` | `code`, component & override codes | see [Coding shape](#coding-shape) |
+| `MonetaryComponent` | `unit_price_components`, `total_price_components` | see [MonetaryComponent shape](#monetarycomponent-shape) |
+| `ChargeItemOverrideReason` | `override_reason` | `{ text, code? }` |
+| `DiscountConfiguration` | `discount_configuration` | `{ max_applicable, applicability_order }` |
+| `ChargeItemDefinitionReadSpec` | `charge_item_definition` (read) | full nested definition — see [Charge Item Definition](./charge-item-definition.mdx) |
+| `InvoiceReadSpec` | `paid_invoice` (read) | full nested invoice — see [Invoice](./invoice.mdx) |
+| `UserSpec` | `performer_actor`, audit users (read) | see [User](../access/user.mdx) |
+
+## Related models
+
+`ChargeItem` is a leaf model — it holds foreign keys rather than owning child rows. Its relationships:
+
+```text
+facility               → FK facility.Facility (PROTECT)
+patient                → FK emr.Patient (CASCADE)
+encounter              → FK emr.Encounter (CASCADE, nullable)
+charge_item_definition → FK emr.ChargeItemDefinition (CASCADE, nullable)
+account                → FK emr.Account (CASCADE)
+paid_invoice           → FK emr.Invoice (CASCADE, nullable)
+performer_actor        → FK users.User (CASCADE, nullable)
+```
+
+## Methods & save behaviour
+
+Cost resolution and status side effects are applied in the spec helpers and the viewset, not in the model's `save()`.
+
+- **Cost sync (`sync_charge_item_costs`)** — runs on every create and on update (unless suppressed). Iterates `unit_price_components`: multiplies the `base` amount by `quantity` to seed `total_price`/`base`, adds `surcharge`s, applies `discount`s (filtered by `discount_configuration` via `apply_discount_configuration`), then adds `tax`es on the taxable price. Writes the resolved breakdown to `total_price_components` and the sum to `total_price`. Raises `ValidationError` if `total_price < 0` and the charge is not a reversal.
+- **Apply from definition (`apply_charge_item_definition` / `POST apply_charge_item_defs`)** — builds a `ChargeItem` from a `ChargeItemDefinition`: copies `title`/`description`, merges category + global components, evaluates per-component `conditions` against patient/facility/encounter context (dropping unmet ones), sets `status = billable`, resolves `discount_configuration`, defaults the account to the patient's default account, and runs cost sync. `reverse` negates component amounts to produce a credit.
+- **Cancel (`handle_charge_item_cancel`)** — fires on update when `status` moves into `CHARGE_ITEM_CANCELLED_STATUS` (`not_billable` / `aborted` / `entered_in_error`). If the charge sits on a **draft** invoice it is removed from the invoice, the invoice is rebalanced and saved, and `paid_invoice` / `paid_on` are cleared. Cancelling a charge on a non-draft invoice raises `ValidationError`. Cost sync is skipped for cancellations.
+- **Update guards (`validate_data` / `perform_update`)** — no updates allowed once the charge is in a cancelled status; updates blocked if the linked invoice is `balanced`/`issued`; `status` cannot be manually moved into `billed`/`paid`; if the source definition has `can_edit_charge_item = False`, pricing fields (`unit_price_components`, `total_price_components`, `total_price`, `quantity`) are reset from the previous object and cost sync is skipped. After update, a draft `paid_invoice` is re-synced.
+- **Cancel authorization (`authorize_cancel`)** — cancellation is free within `CHARGE_ITEM_FREE_CANCEL_PERIOD_MINUTES` of creation; afterwards it requires the `can_cancel_charge_item_in_facility` permission.
+- **Change account (`POST change_account`)** — bulk-moves up to 100 `billable` charge items to a target account, then queues `rebalance_account_task` for every affected account.
+
+## API integration notes
+
+- The viewset sets `facility` from the URL and ignores any body value; `patient` is derived from `encounter` when supplied.
+- A charge item must resolve to an `account` — when none is supplied the patient's default account is used. `encounter` and `charge_item_definition` are optional.
+- `total_price`, `total_price_components`, `paid_invoice`, and `paid_on` are server-maintained; do not set them from clients.
+- Create/update enforce that `performer_actor` (and, when applying definitions, the actor) belongs to the facility's organization.
+- `discount_configuration` and `tags` are structured but deployment-tunable: `discount_configuration` follows `DiscountConfiguration`, and tags are resolved via the single-facility tag manager.
+
+## Related
+
+- Reference: [Account](./account.mdx)
+- Reference: [Charge Item Definition](./charge-item-definition.mdx)
+- Reference: [Invoice](./invoice.mdx)
+- Reference: [Payment Reconciliation](./payment-reconciliation.mdx)
+- Reference: [Patient](../clinical/patient.mdx)
+- Reference: [Encounter](../clinical/encounter.mdx)
+- Reference: [User](../access/user.mdx)
+- Reference: [Base model](../foundation/base-model.mdx)
+- Source: [charge_item.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/charge_item.py)
+- Source: [charge_item resource specs on GitHub](https://github.com/ohcnetwork/care/tree/develop/care/emr/resources/charge_item)

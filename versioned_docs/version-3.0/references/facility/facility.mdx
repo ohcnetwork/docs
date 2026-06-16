@@ -1,0 +1,283 @@
+---
+sidebar_position: 1
+---
+
+# Facility
+
+Technical reference for the `Facility` module in Care EMR.
+
+A `Facility` is a physical or virtual care site — hospital, clinic, lab, telemedicine endpoint — and the root of a deployment's administrative hierarchy. The Django **model** is the storage layer: several columns (`features`, `print_templates`) are opaque on the model, and the API contract (enums, validation, JSON-field shapes, read/write schemas) lives in the Pydantic **resource specs**.
+
+**Source:**
+- Model: [`care/facility/models/facility.py`](https://github.com/ohcnetwork/care/blob/develop/care/facility/models/facility.py)
+- Resource specs: [`care/emr/resources/facility/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/facility/spec.py)
+- Base resource: [`care/emr/resources/base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)
+- Common types: [`coding.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/coding.py), [`monetary_component.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/monetary_component.py)
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `Facility` | A care site and the root of a deployment's administrative org hierarchy |
+| `FacilityMonetoryConfig` | Per-facility billing config (one-to-one): discount codes, discount monetary components, discount configuration, invoice-number expression. Backs the discount/invoice fields of `FacilityRetrieveSpec`. See [Facility config](facility-config.mdx) |
+
+`Facility` extends [`BaseModel`](../foundation/base-model.mdx) (not `EMRBaseModel`), so it carries `external_id`, `created_date`/`modified_date`, and soft-delete via `deleted`, but **not** the `EMRBaseModel` audit/history/meta fields. It defines its own `created_by` FK directly and has no `updated_by`, `history`, or `meta` columns. `FacilityMonetoryConfig` extends `EMRBaseModel`.
+
+The model file also defines the choice sets and enums used by `Facility` — see [Choices & enums](#choices--enums).
+
+## `Facility` fields
+
+The **Type** column is the Django storage type; **Spec** notes the API representation, validation, and bound enum from the Pydantic specs where they differ.
+
+### Identity & classification
+
+| Field | Type | Spec / Notes |
+| --- | --- | --- |
+| `name` | `CharField(1000)` | Required (`blank=False, null=False`). Spec validates case-insensitive uniqueness across all facilities (`Lower(Trim(name))`); on update the current row is excluded. |
+| `description` | `TextField` | `blank=True, null=False`; defaults to empty string. Required (`str`) in `FacilityBaseSpec`. |
+| `facility_type` | `IntegerField` | Required; choices from `FACILITY_TYPES` (see below). **Wire format is the label string, not the integer:** create validates the label against `REVERSE_REVERSE_FACILITY_TYPES` then maps to the int; read maps the int back to the label via `REVERSE_FACILITY_TYPES`. |
+| `features` | `ArrayField[SmallIntegerField]` | Nullable; each element a `FacilityFeature` choice. Spec type `list[int]`. |
+| `is_active` | `BooleanField` | `default=True`. Not exposed by the specs (server-managed). |
+| `verified` | `BooleanField` | `default=False`. Not exposed by the specs (server-managed). |
+| `is_public` | `BooleanField` | `default=False`; controls public visibility. Exposed as `bool` on `FacilityBaseSpec`. |
+
+### Location & contact
+
+| Field | Type | Spec / Notes |
+| --- | --- | --- |
+| `address` | `TextField` | Free-text address. Required (`str`). |
+| `pincode` | `IntegerField` | `default=None, null=True` on model; required `int` in `FacilityBaseSpec`. |
+| `longitude` | `DecimalField(22, 16)` | Nullable. Spec type `Longitude \| None` (`pydantic_extra_types`, range −180…180). |
+| `latitude` | `DecimalField(22, 16)` | Nullable. Spec type `Latitude \| None` (`pydantic_extra_types`, range −90…90). |
+| `phone_number` | `CharField(14)` | `blank=True`; validated with `mobile_or_landline_number_validator`. Spec type `str`. |
+| `middleware_address` | `CharField(200)` | Nullable, `default=None`. Hostname of an external device/middleware integration. Spec type `str \| None`. |
+
+### Organization links & caches
+
+| Field | Type | Spec / Notes |
+| --- | --- | --- |
+| `geo_organization` | `FK → emr.Organization` | `on_delete=SET_NULL`, nullable. Geographic/administrative org placement. **Write** (`FacilityCreateSpec`): a required `UUID4` (the org's `external_id`); deserialization resolves it to an `Organization` with `org_type="govt"`. **Read**: a nested `OrganizationReadSpec` dict (empty `{}` when unset). |
+| `geo_organization_cache` | `ArrayField[int]` | `default=list`. Denormalized cache of `geo_organization`'s `parent_cache` chain plus its own id; rebuilt by `sync_cache()`. Not exposed by specs. |
+| `default_internal_organization` | `FK → emr.FacilityOrganization` | `on_delete=SET_NULL`, nullable, `related_name="default_facilities"`. The auto-created root `Administration` org. Not exposed by specs. |
+| `internal_organization_cache` | `ArrayField[int]` | `default=list`. Denormalized cache of all `FacilityOrganization` ids (with parent chains) under this facility; rebuilt by `sync_cache()`. Not exposed by specs. |
+
+Both cache fields are **platform-maintained denormalizations** rebuilt on every `save()` for fast org-scoped filtering without deep joins — do not write them directly. See [Methods & save behaviour](#methods--save-behaviour).
+
+### Media & presentation
+
+| Field | Type | Spec / Notes |
+| --- | --- | --- |
+| `cover_image_url` | `CharField(500)` | Nullable, `default=None`. Stores an **object key**, not a URL. Read specs expose both the raw `cover_image_url` and a resolved `read_cover_image_url` (full URL via `read_cover_image_url()`). |
+| `print_templates` | `JSONField` | `default=list`. Opaque on the model; the real shape is `list[PrintTemplate]` (see [PrintTemplate](#printtemplate-json-shape)). Accepted typed on create; returned as `list[dict]` on retrieve. |
+
+### Integration & audit
+
+| Field | Type | Spec / Notes |
+| --- | --- | --- |
+| `created_by` | `FK → users.User` | `on_delete=SET_NULL`, nullable. Set to the facility administrator when the root org is provisioned. Read specs expose it as a nested `UserSpec` dict (cache-backed), `None` when unset. |
+
+## Choices & enums
+
+The model module defines these choice sets consumed by `Facility` and related code.
+
+### `FacilityFeature` (`IntegerChoices`)
+
+| Value | Name | Label |
+| --- | --- | --- |
+| 1 | `CT_SCAN_FACILITY` | CT Scan Facility |
+| 2 | `MATERNITY_CARE` | Maternity Care |
+| 3 | `X_RAY_FACILITY` | X-Ray Facility |
+| 4 | `NEONATAL_CARE` | Neonatal Care |
+| 5 | `OPERATION_THEATER` | Operation Theater |
+| 6 | `BLOOD_BANK` | Blood Bank |
+
+### `HubRelationship` (`IntegerChoices`)
+
+| Value | Name | Label |
+| --- | --- | --- |
+| 1 | `REGULAR_HUB` | Regular Hub |
+| 2 | `TELE_ICU_HUB` | Tele ICU Hub |
+
+### `FACILITY_TYPES`
+
+List of `(int code, label)`. Codes are sparse and namespaced (8xx govt hospitals/health centres, 9xx labs/cooperatives, 10xx–16xx COVID-era centres, 3xxx/4xxx NGO/CBO). Commented-out legacy codes (`8`, `801`, `820`, `831`, `850`, `950`, `1000`) are retained in source as historical mapping notes and are **not** valid. The API binds on the **label**, not the code.
+
+| Code | Label | Code | Label |
+| --- | --- | --- | --- |
+| 1 | Educational Inst | 870 | Govt Medical College Hospitals |
+| 2 | Private Hospital | 900 | Co-operative hospitals |
+| 3 | Other | 910 | Autonomous healthcare facility |
+| 4 | Hostel | 1010 | COVID-19 Domiciliary Care Center |
+| 5 | Hotel | 1100 | First Line Treatment Centre |
+| 6 | Lodge | 1200 | Second Line Treatment Center |
+| 7 | TeleMedicine | 1300 | Shifting Centre |
+| 9 | Govt Labs | 1400 | Covid Management Center |
+| 10 | Private Labs | 1500 | Request Approving Center |
+| 800 | Primary Health Centres | 1510 | Request Fulfilment Center |
+| 802 | Family Health Centres | 1600 | District War Room |
+| 803 | Community Health Centres | 3000 | Clinical Non Governmental Organization |
+| 830 | Taluk Hospitals | 3001 | Non Clinical Non Governmental Organization |
+| 840 | Women and Child Health Centres | 4000 | Community Based Organization |
+| 860 | District Hospitals | | |
+
+`REVERSE_FACILITY_TYPES` (code → label) and `REVERSE_REVERSE_FACILITY_TYPES` (label → code) are derived from `FACILITY_TYPES` via `reverse_choices`. The create spec validates against the label set and stores the code; read specs map back to the label.
+
+### `DOCTOR_TYPES`
+
+List of `(int, label)` — 64 medical specialties (`1` General Medicine, `2` Pulmonology, `8` Cardiologist, `48` Nurse, `64` Critical Care Physician, etc.). Defined in this module but not referenced by the `Facility` model or facility specs.
+
+### `MonetaryComponentType` (str enum, from `monetary_component.py`)
+
+Used by the discount monetary components in `FacilityMonetaryCodeSpec` / `FacilityRetrieveSpec`.
+
+| Value |
+| --- |
+| `base` |
+| `surcharge` |
+| `discount` |
+| `tax` |
+| `informational` |
+
+### `DiscountApplicability` (str enum, from `monetary_component.py`)
+
+| Value |
+| --- |
+| `total_asc` |
+| `total_desc` |
+
+## Nested JSON shapes
+
+These Pydantic models define the real structure of the model's JSON/array fields and of the discount config.
+
+### `PrintTemplate` JSON shape
+
+Element type of the `print_templates` field.
+
+```text
+PrintTemplate {
+  slug:        str (required)
+  page:        PageConfig | null
+  print_setup: PrintSetupConfig | null
+  branding:    BrandingConfig | null
+  watermark:   WatermarkConfig | null
+}
+PageConfig        { size: "A4"|"A5"|"Letter"|"Legal" | null,
+                    orientation: "portrait"|"landscape" | null,
+                    margin: PageMargin | null }
+PageMargin        { top: float≥0, bottom: float≥0, left: float≥0, right: float≥0 }   # all required
+PrintSetupConfig  { auto_print: bool | null }
+BrandingConfig    { logo: LogoConfig | null, header_image: HeaderImageConfig | null,
+                    footer_image: FooterImageConfig | null }
+LogoConfig        { url: str (required), width: float | null, height: float | null,
+                    alignment: "left"|"center"|"right" (required) }
+HeaderImageConfig { url: str (required), height: float | null }
+FooterImageConfig { url: str | null, height: float | null }
+WatermarkConfig   { enabled: bool | null, text: str | null,
+                    opacity: float | null (0…1), rotation: float | null }
+```
+
+### Discount config shapes (`FacilityMonetaryCodeSpec` / `FacilityMonetoryConfig`)
+
+```text
+discount_codes:                list[Coding]                     # see Coding below
+discount_monetary_components:  list[MonetaryComponentDefinition]
+discount_configuration:        DiscountConfiguration | null
+
+Coding { system: str|null, version: str|null, code: str (required), display: str|null }   # extra="forbid"
+
+MonetaryComponentDefinition (extends MonetaryComponent) {
+  title:                   str (required)
+  monetary_component_type: MonetaryComponentType   # base not allowed in a definition
+  code:                    Coding | null
+  factor:                  Decimal | null (max_digits=20, decimal_places=6)
+  amount:                  Decimal | null (max_digits=20, decimal_places=6)
+  tax_included_amount:     Decimal | null (base component only)
+  global_component:        bool = false
+  conditions:              list[EvaluatorConditionSpec] = []
+}
+EvaluatorConditionSpec { metric: str, operation: str, value: dict|str }   # metric validated against EvaluatorMetricsRegistry
+DiscountConfiguration  { max_applicable: int≥0 (required), applicability_order: DiscountApplicability (required) }
+```
+
+`PeriodSpec` (`base.py`) — the shared period shape used across EMR resources (not used directly by `Facility`, included for reference): `{ start: datetime|null, end: datetime|null }`, both must be **timezone-aware**, and `start ≤ end`.
+
+## Resource specs (API schema)
+
+All specs subclass `EMRResource` (`base.py`), which provides `serialize` (DB object → Pydantic), `de_serialize` (Pydantic → DB object), and the `perform_extra_serialization` / `perform_extra_deserialization` hooks. `__exclude__` lists fields skipped during (de)serialization; `__store_metadata__` (default `False`) controls writing unknown fields into the model's `meta`.
+
+The class hierarchy is `FacilityBareMinimumSpec → FacilityBaseSpec → {FacilityCreateSpec, FacilityReadSpec → FacilityRetrieveSpec, FacilityMinimalReadSpec}`. There is **no separate `UpdateSpec`**: `FacilityCreateSpec` is reused for both create and update (its validators read `is_update`/`object` from the serializer context).
+
+| Spec class | Role | Key fields / behaviour |
+| --- | --- | --- |
+| `FacilityBareMinimumSpec` | shared base (`@cacheable`, base manager) | `id: UUID4`, `name`. `__exclude__=["geo_organization"]`. Cacheable, fetchable via `model_from_cache`. |
+| `FacilityBaseSpec` | shared base | Adds `description`, `longitude`, `latitude`, `pincode`, `address`, `phone_number`, `middleware_address`, `facility_type`, `is_public`. |
+| `FacilityCreateSpec` | write · create & update | Adds `geo_organization: UUID4`, `features: list[int]`, `print_templates: list[PrintTemplate] = []`. Validates `facility_type` label and case-insensitive `name` uniqueness. `perform_extra_deserialization` resolves `geo_organization` (must be `org_type="govt"`) and maps the `facility_type` label → int. |
+| `FacilityReadSpec` | read · list | `FacilityBaseSpec` + `features`, `cover_image_url`, `read_cover_image_url`, `geo_organization: dict`, `created_by: dict\|null`. `perform_extra_serialization` sets `id=external_id`, resolves the cover image URL, maps `facility_type` int → label, serializes `geo_organization` via `OrganizationReadSpec`, and resolves `created_by` via cached `UserSpec`. |
+| `FacilityRetrieveSpec` | read · detail | Extends `FacilityReadSpec` + `FacilityPermissionsMixin`. Adds `flags` (from `get_facility_flags()`), facility + instance discount/tax/informational code lists, patient identifier configs, `invoice_number_expression`, and `print_templates: list[dict]`. Permissions mixin adds `permissions`, `root_org_permissions`, `child_org_permissions`. Discount/invoice fields come from `FacilityMonetoryConfig.get_monetory_config()`; instance-level lists come from Django `settings`. |
+| `FacilityMinimalReadSpec` | read · minimal | `FacilityBaseSpec` + `features`, `cover_image_url`, `read_cover_image_url`, `geo_organization: dict`. Same serialization as `FacilityReadSpec` minus `created_by`. |
+| `FacilityMonetaryCodeSpec` | write · billing config | Bound to `FacilityMonetoryConfig`. Validates ≤ 100 discount codes and ≤ 100 monetary components, forbids duplicate / system-redefining codes, and requires every monetary-component code to be a defined facility or system code. |
+| `FacilityInvoiceExpressionSpec` | write · invoice config | `invoice_number_expression: str`, validated by `evaluate_invoice_dummy_expression` (raises "Invalid Expression"). |
+
+### Validation & server-side behaviour
+
+- **`name`** — must be unique case-insensitively (`Lower(Trim(name))`); on update the current object (from context) is excluded from the check.
+- **`facility_type`** — write accepts the **label**; rejected with the sorted valid-label list if unknown. Stored as the integer code; read maps back to the label.
+- **`geo_organization`** — write is a `UUID4` resolved to an `Organization` filtered by `org_type="govt"`; resolves to `None` if no match. Read embeds the full `OrganizationReadSpec`.
+- **`features`** — `list[int]`; each int should correspond to a `FacilityFeature` value.
+- **Bound value sets / coded fields** — discount/tax/informational components use `Coding` (`extra="forbid"`); `MonetaryComponentDefinition` enforces no `base` type, single base rules inherited from `MonetaryComponent`, and amount/factor mutual exclusion.
+- **`cover_image_url`** — stores an object key; `read_cover_image_url` is the resolved URL only on read specs.
+- Permissions on `FacilityRetrieveSpec` are computed per requesting user from facility root and sub-org roles (`FacilityAccess`); `can_update_facility` is excluded from `child_org_permissions`.
+
+## Related models
+
+`Facility` is the anchor for the administrative hierarchy; its relationships are resolved through models in adjacent modules:
+
+```text
+geo_organization               → FK emr.Organization (SET_NULL)        # write: UUID4 of a govt org
+default_internal_organization  → FK emr.FacilityOrganization (SET_NULL) # auto-provisioned root org
+created_by                     → FK users.User (SET_NULL)
+FacilityMonetoryConfig         → OneToOne facility.Facility (CASCADE)   # billing/discount config
+```
+
+On creation, `save()` provisions a root [`FacilityOrganization`](organization.mdx) named `Administration` (`org_type="root"`, `system_generated=True`) and a `FacilityOrganizationUser` linking `created_by` to it with the `FACILITY_ADMIN_ROLE`. Feature flags are stored in [`FacilityFlag`](facility-flag.mdx) and surfaced via `get_facility_flags()`.
+
+## Methods & save behaviour
+
+`Facility` overrides `save()` and adds several helpers.
+
+| Member | Behaviour |
+| --- | --- |
+| `save()` | On **create** only: persists the row, then creates the root `Administration` `FacilityOrganization`, sets it as `default_internal_organization` (extra write), and creates a `FacilityOrganizationUser` granting `created_by` the `FACILITY_ADMIN_ROLE`. On **every** save: calls `sync_cache()`. |
+| `sync_cache()` | Rebuilds `geo_organization_cache` (parent chain of `geo_organization` + its id) and `internal_organization_cache` (all `FacilityOrganization` parent chains + ids, de-duplicated), then persists only those two fields via `update_fields`. |
+| `read_cover_image_url()` | Resolves `cover_image_url` to a full URL via `settings.FACILITY_CDN`, else the S3 external endpoint/bucket; returns `None` when unset. |
+| `get_facility_flags()` | Delegates to `FacilityFlag.get_all_flags(self.id)` (cache-backed). |
+| `__str__()` | Returns `name`. |
+
+Integrators should expect **multiple write passes** when creating a facility through the ORM: the initial insert, the `default_internal_organization` update, and the `sync_cache()` write of the two cache columns.
+
+Deletes are soft (inherited `BaseModel.delete()` sets `deleted=True`); the row and its child organizations are retained.
+
+## API integration notes
+
+- `external_id` (UUID) is the public identifier exposed as `id` by every read spec — the integer `pk` is internal.
+- `facility_type` crosses the wire as the **label string** (e.g. `"Private Hospital"`), validated against `REVERSE_REVERSE_FACILITY_TYPES`; the integer code is storage-only.
+- `features` are integer `FacilityFeature` codes; map to labels client-side.
+- `geo_organization` is **written** as the org's UUID (must be a `govt` org) and **read** as an embedded `OrganizationReadSpec` object.
+- `print_templates` follows the typed [`PrintTemplate`](#printtemplate-json-shape) shape on write and is returned as `list[dict]` on retrieve.
+- `geo_organization_cache` / `internal_organization_cache` are platform-maintained — never set them from clients; they are rebuilt on every save.
+- Creating a facility automatically provisions its root `Administration` organization and an admin membership for `created_by`; do not create these manually.
+- `cover_image_url` stores an object key; clients should render `read_cover_image_url`.
+- Discount/tax/invoice billing config is managed through `FacilityMonetaryCodeSpec` / `FacilityInvoiceExpressionSpec` and surfaced on `FacilityRetrieveSpec`; it is backed by [`FacilityMonetoryConfig`](facility-config.mdx).
+- `FacilityRetrieveSpec` also returns the requesting user's permissions and feature flags; flags are read via `get_facility_flags()` rather than queried row-by-row.
+
+## Related
+
+- Reference: [Base models & conventions](../foundation/base-model.mdx)
+- Reference: [Facility config](facility-config.mdx)
+- Reference: [Facility flag](facility-flag.mdx)
+- Reference: [Organization](organization.mdx)
+- Reference: [Location](location.mdx)
+- Reference: [Healthcare service](healthcare-service.mdx)
+- Reference: [Device](device.mdx)
+- Source: [facility.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/facility/models/facility.py)
+- Source: [facility/spec.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/facility/spec.py)

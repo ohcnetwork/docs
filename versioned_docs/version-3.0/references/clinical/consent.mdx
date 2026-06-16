@@ -1,0 +1,175 @@
+---
+sidebar_position: 8
+---
+
+# Consent
+
+Technical reference for the `Consent` module in Care EMR.
+
+The Django model is the **storage layer**: it persists `status`, `category`, `decision` as bare `CharField`s and `period` / `verification_details` as opaque `JSONField`s. The real constraints — allowed enum values, the nested shape of those JSON fields, validation, and the read/write API schemas — live in the **Pydantic resource specs** (`care/emr/resources/consent/spec.py`), all built on `EMRResource`.
+
+**Source:**
+
+- Model: [`care/emr/models/consent.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/consent.py)
+- Resource spec: [`care/emr/resources/consent/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/consent/spec.py)
+- Base resource: [`care/emr/resources/base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `Consent` | Records a patient's consent decision (permit/deny) for a category of activity, scoped to an encounter |
+
+`Consent` extends [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base providing `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON).
+
+## `Consent` fields
+
+Storage types come from the Django model; the **Spec type** column gives the real shape enforced at the API layer.
+
+| Field | Storage type | Spec type | Notes |
+| --- | --- | --- | --- |
+| `status` | `CharField(50)` | `ConsentStatusChoices` (enum) | Required. Consent state. See [enum](#consentstatuschoices-values) |
+| `category` | `CharField(50)` | `CategoryChoice` (enum) | Required. Classification of the consent. See [enum](#categorychoice-values) |
+| `date` | `DateTimeField` | `datetime` | Required. When the consent was recorded |
+| `period` | `JSONField` (default `dict`) | `PeriodSpec { start, end }` | Validity window. Both ends tz-aware; `start ≤ end`; and `start ≥ date` (enforced on create). See [PeriodSpec](#periodspec-nested-shape) |
+| `encounter` | `FK → Encounter` (`CASCADE`, `related_name="consents"`) | `UUID4` (`external_id`) | Required. Encounter the consent applies to; deleting the encounter cascades to its consents. Excluded from the auto DB mapping (`__exclude__`) and resolved/assigned manually — see [Methods](#methods--save-behaviour) |
+| `decision` | `CharField(10)` | `DecisionType` (enum) | Required. `permit` / `deny`. See [enum](#decisiontype-values) |
+| `verification_details` | `JSONField` (default `list`) | `list[ConsentVerificationSpec]` | Read-only on the API; list of verification records. See [ConsentVerificationSpec](#consentverificationspec-nested-shape) |
+| `note` | `TextField` (null, blank) | `str \| None` | Optional free-text note |
+
+> Note: `source_attachments` is **not** a model field. It is derived at serialize time from `FileUpload` rows (see [Resource specs](#resource-specs-api-schema)).
+
+## Enums
+
+### `ConsentStatusChoices` values
+
+| Value | Meaning |
+| --- | --- |
+| `draft` | Consent is being drafted, not yet in force |
+| `active` | Consent is in force |
+| `inactive` | Consent is no longer in force |
+| `not_done` | Consent activity did not occur |
+| `entered_in_error` | Consent was recorded in error |
+
+### `CategoryChoice` values
+
+| Value | Meaning |
+| --- | --- |
+| `research` | Consent for research participation |
+| `patient_privacy` | Patient privacy / information disclosure consent |
+| `treatment` | Consent to treatment |
+| `dnr` | Do-not-resuscitate directive |
+| `comfort_care` | Comfort / palliative care directive |
+| `acd` | Advance care directive |
+| `adr` | Advance directive (other) |
+
+> A `consent_document` category (LOINC 59284-0) exists in migrations only and is **not** an accepted API value.
+
+### `DecisionType` values
+
+| Value | Meaning |
+| --- | --- |
+| `permit` | Consent is granted |
+| `deny` | Consent is refused |
+
+### `VerificationType` values
+
+Used inside `ConsentVerificationSpec.verification_type`.
+
+| Value | Meaning |
+| --- | --- |
+| `family` | Verified by a family member |
+| `validation` | Verified through validation |
+
+## Nested JSON shapes
+
+### `PeriodSpec` nested shape
+
+The `period` JSON field deserializes to `PeriodSpec` (from `care/emr/resources/base.py`). The Django model default is `dict`, so an absent period stores `{}`.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `start` | `datetime \| None` | Default `None`. Must be **timezone-aware** if set |
+| `end` | `datetime \| None` | Default `None`. Must be **timezone-aware** if set |
+
+Validation (`PeriodSpec.validate_period`, mode `after`):
+
+- `start` must be tz-aware (else `"Start Date must be timezone aware"`).
+- `end` must be tz-aware (else `"End Date must be timezone aware"`).
+- If both set, `start ≤ end` (else `"Start Date cannot be greater than End Date"`).
+
+### `ConsentVerificationSpec` nested shape
+
+Each entry in `verification_details` follows this shape (write side). On read, `verified_by` is expanded — see below.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `verified` | `bool` | Required. Whether the consent was verified |
+| `verified_by` | `UUID4 \| None` | Default `None`. User `external_id` who verified (write). On read, replaced by a full `UserSpec` object |
+| `verification_date` | `datetime \| None` | Default `None` |
+| `verification_type` | `VerificationType` | Required. `family` / `validation` |
+| `note` | `str \| None` | Default `None` |
+
+## Resource specs (API schema)
+
+All specs subclass `EMRResource` via `ConsentBaseSpec`. `serialize` builds the read schema from the model; `de_serialize` writes a model from the payload (skipping `id`/`external_id` and `__exclude__` fields). `ConsentBaseSpec` sets `__exclude__ = ["encounter"]`, so the encounter FK is never round-tripped through the generic mapping and is handled by the deserialization hooks instead.
+
+| Spec class | Role | Exposes / behaviour |
+| --- | --- | --- |
+| `ConsentBaseSpec` | shared base | `id`, `status`, `category`, `date`, `period`, `encounter` (UUID4), `decision`, `note`. `__model__ = Consent`, `__exclude__ = ["encounter"]` |
+| `ConsentCreateSpec` | write · create | Same fields as base (all required except `id`, `note`). Validates `period.start ≥ date`; resolves `encounter` from `external_id` → `Encounter` instance |
+| `ConsentUpdateSpec` | write · update | All fields optional (`status`, `category`, `date`, `period`, `encounter`, `decision`, `note` → `None`). Keeps the existing `encounter` (ignores any supplied value) |
+| `ConsentListSpec` | read · list | Base fields plus derived `source_attachments: list` and expanded `verification_details: list` |
+| `ConsentRetrieveSpec` | read · detail | Identical to `ConsentListSpec` (`pass`) |
+
+Nested specs used by the schema: [`PeriodSpec`](#periodspec-nested-shape) (the `period` field) and [`ConsentVerificationSpec`](#consentverificationspec-nested-shape) (entries of `verification_details`).
+
+### Validation
+
+- **Create only** (`ConsentCreateSpec.validate_period_and_date`, mode `after`): if `period.start` is set and `period.start < date`, raises `"Start of the period cannot be before than the Consent date"`.
+- **All specs** (via `PeriodSpec`): tz-aware `start`/`end`, and `start ≤ end`.
+- Enum fields (`status`, `category`, `decision`) reject any value outside their respective enums; on `ConsentUpdateSpec` they may be omitted (`None`).
+
+### Server-maintained behaviour
+
+- **Encounter resolution (create):** `ConsentCreateSpec.perform_extra_deserialization` sets `obj.encounter = Encounter.objects.get(external_id=self.encounter)` when not an update.
+- **Encounter immutability (update):** `ConsentUpdateSpec.perform_extra_deserialization` copies `self.encounter = obj.encounter` on update, so the encounter cannot be reassigned via the API.
+- **Source attachments (read):** `ConsentListSpec.perform_extra_serialization` sets `source_attachments` to the serialized `FileUploadListSpec` of every `FileUpload` where `associating_id == consent.external_id`, `file_category == consent_attachment`, and `file_type == consent`.
+- **Verifier expansion (read):** each `verification_details[i].verified_by` is replaced with a full `UserSpec` (`User.objects.get(external_id=...)`).
+- **Identifiers (read):** `id` is set to `external_id`; `encounter` is serialized as `obj.encounter.external_id`.
+
+## Related models
+
+`Consent` links to a single `Encounter`; an encounter can carry many consents via the `consents` reverse relation:
+
+```text
+encounter → FK Encounter (CASCADE, related_name="consents")
+```
+
+The owning patient is reached transitively through `encounter`. Coded values (`status`, `category`, `decision`) and structured JSON (`period`, `verification_details`) are validated at the API layer (Pydantic specs), not by database constraints.
+
+Read schemas also reach into `FileUpload` (consent attachments) and `User` (verifiers) at serialize time.
+
+## Methods & save behaviour
+
+- `EMRResource.serialize(obj)` → builds the read object: copies non-FK model fields present on the spec, runs `perform_extra_serialization` (id, encounter `external_id`, `source_attachments`, expanded `verification_details`), and stamps `version`.
+- `EMRResource.de_serialize(obj=None)` → builds/updates the model: dumps the spec (`exclude_defaults=True`), assigns matching DB fields (skipping `id`/`external_id` and `__exclude__`), then runs `perform_extra_deserialization`.
+- `encounter` is in `__exclude__`, so it is never set by the generic loop — create resolves it from `external_id`, update preserves the existing FK.
+- Status is a free field: changing `status` to `entered_in_error` (or any other value) is a plain field write — there is no server-side status-history side effect for consent.
+
+## API integration notes
+
+- `Consent` is exposed through Care's REST API using the spec classes above; payload field names match the spec (`encounter` is a UUID `external_id`, not a numeric PK).
+- The model aligns with the FHIR `Consent` resource — `status`, `category`, `decision`, and `period` map to their FHIR counterparts.
+- `period` accepts `{ start, end }` (tz-aware datetimes); `verification_details` is read-only on the consent payload and returns expanded user objects.
+- Allowed values for `status`, `category`, and `decision` are enforced by the Pydantic enums at the API layer, not by the database column definitions.
+- `note` is optional free text and may be null.
+
+## Related
+
+- Reference: [Encounter](./encounter.mdx)
+- Reference: [Patient](./patient.mdx)
+- Reference: [File upload](../platform/file-upload.mdx)
+- Reference: [User](../access/user.mdx)
+- Source: [consent.py (model)](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/consent.py)
+- Source: [spec.py (resource)](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/consent/spec.py)

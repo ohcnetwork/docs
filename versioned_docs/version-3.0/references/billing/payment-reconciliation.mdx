@@ -1,0 +1,200 @@
+---
+sidebar_position: 5
+---
+
+# Payment Reconciliation
+
+Technical reference for the `PaymentReconciliation` module in Care EMR.
+
+**Source:**
+- Model: [`care/emr/models/payment_reconciliation.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/payment_reconciliation.py)
+- Resource spec: [`care/emr/resources/payment_reconciliation/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/payment_reconciliation/spec.py)
+
+`PaymentReconciliation` records a payment made against an `Account` — and optionally a specific `Invoice`. It captures how, when, by whom, and how much was paid, mirroring the FHIR [`PaymentReconciliation`](https://build.fhir.org/paymentreconciliation.html) resource.
+
+The Django **model** is the storage layer: several constrained fields are stored as plain `CharField`s, and `extensions` is an opaque `JSONField`. The real shape — enum values, amount computation, validation, and the read/write API schemas — lives in the Pydantic **resource specs** (`care/emr/resources/payment_reconciliation/spec.py`), built on `EMRResource`. This page documents both layers.
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `PaymentReconciliation` | A single payment (or credit note / adjustment) recorded against an account or invoice |
+
+The model extends `EMRBaseModel` (shared Care EMR base with `external_id`, audit fields, and soft-delete semantics — see [Base model](../foundation/base-model.mdx)).
+
+## `PaymentReconciliation` fields
+
+### Relationships
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `facility` | `FK → Facility` (PROTECT) | Facility where the payment is recorded |
+| `target_invoice` | `FK → Invoice` (PROTECT) | Nullable (`default=None`); the invoice this payment is allocated to. A single allocation is supported. On write, supplied as the invoice `external_id` (UUID) |
+| `account` | `FK → Account` (PROTECT) | The account being paid against. Required even when `target_invoice` is set. On write, supplied as the account `external_id` (UUID) |
+| `location` | `FK → FacilityLocation` (PROTECT) | Nullable; physical location (e.g. counter) where payment was taken. On write, supplied as the location `external_id` (UUID) |
+
+### Classification
+
+These string columns are bound to fixed enums defined in the resource spec. The model stores them as free-form `CharField(100)`; the enum constraint is enforced at the schema/API layer, not by the database. See [enum values](#enum-values) for the full lists.
+
+| Field | Type | Spec enum | Notes |
+| --- | --- | --- | --- |
+| `reconciliation_type` | `CharField(100)` | `PaymentReconciliationTypeOptions` | Required. `payment` \| `adjustment` \| `advance` |
+| `status` | `CharField(100)` | `PaymentReconciliationStatusOptions` | Required. `active` \| `cancelled` \| `draft` \| `entered_in_error` |
+| `kind` | `CharField(100)` | `PaymentReconciliationKindOptions` | Required. `deposit` \| `periodic_payment` \| `online` \| `kiosk` |
+| `issuer_type` | `CharField(100)` | `PaymentReconciliationIssuerTypeOptions` | Required. `patient` \| `insurer` |
+| `outcome` | `CharField(100)` | `PaymentReconciliationOutcomeOptions` | Required. `queued` \| `complete` \| `error` \| `partial` |
+| `method` | `CharField(100)` | `PaymentReconciliationPaymentMethodOptions` | Required. HL7 [v2-0570](https://terminology.hl7.org/6.2.0/ValueSet-v2-0570.html) payment-method codes — `cash` \| `ccca` \| `cchk` \| `cdac` \| `chck` \| `ddpo` \| `debc` |
+
+### Payment details
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `payment_datetime` | `DateTimeField` → `datetime \| None` | Optional (default `None`); when the payment was issued |
+| `reference_number` | `CharField(1024)` → `str \| None` | Optional; cheque number or payment reference |
+| `authorization` | `CharField(1024)` → `str \| None` | Optional; authorization number |
+| `disposition` | `TextField` → `str \| None` | Optional; disposition message describing the outcome |
+| `note` | `TextField` → `str \| None` | Optional; free-text note |
+
+### Amounts
+
+All amounts are `DecimalField(max_digits=20, decimal_places=6)` (spec: `Decimal`, `max_digits=20`, `decimal_places=6`). Six decimal places give sub-currency precision.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `tendered_amount` | `Decimal(20, 6)` | **Required on write.** Amount offered by the issuer |
+| `returned_amount` | `Decimal(20, 6)` | **Required on write.** Amount returned by the receiver (e.g. change). Validated `returned_amount < tendered_amount` |
+| `amount` | `Decimal(20, 6)` | **Server-computed.** `amount = tendered_amount - returned_amount`; any client-supplied value is overwritten by the write validator |
+
+### Flags & extensions
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `is_credit_note` | `BooleanField` → `bool` | Defaults to `False`; marks the record as a credit note rather than an inbound payment |
+| `extensions` | `JSONField` → `dict` | Defaults to `{}`. Open extension bag. On write, each key is validated against the registered extension handler for resource type `payment_reconciliation` (unknown keys are currently dropped); on read (retrieve), rendered through the registered handlers |
+
+## Enum values
+
+All enums are `str, Enum` classes in [`spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/payment_reconciliation/spec.py).
+
+### `PaymentReconciliationTypeOptions` (`reconciliation_type`)
+
+| Value |
+| --- |
+| `payment` |
+| `adjustment` |
+| `advance` |
+
+### `PaymentReconciliationStatusOptions` (`status`)
+
+| Value |
+| --- |
+| `active` |
+| `cancelled` |
+| `draft` |
+| `entered_in_error` |
+
+### `PaymentReconciliationKindOptions` (`kind`)
+
+| Value |
+| --- |
+| `deposit` |
+| `periodic_payment` |
+| `online` |
+| `kiosk` |
+
+### `PaymentReconciliationIssuerTypeOptions` (`issuer_type`)
+
+| Value |
+| --- |
+| `patient` |
+| `insurer` |
+
+### `PaymentReconciliationOutcomeOptions` (`outcome`)
+
+| Value |
+| --- |
+| `queued` |
+| `complete` |
+| `error` |
+| `partial` |
+
+### `PaymentReconciliationPaymentMethodOptions` (`method`)
+
+HL7 v2-0570 payment-method codes.
+
+| Value | HL7 meaning |
+| --- | --- |
+| `cash` | Cash |
+| `ccca` | Credit card |
+| `cchk` | Cashier's check |
+| `cdac` | Credit/debit account |
+| `chck` | Check |
+| `ddpo` | Direct deposit |
+| `debc` | Debit card |
+
+## Resource specs (API schema)
+
+Defined in [`care/emr/resources/payment_reconciliation/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/payment_reconciliation/spec.py). All extend `EMRResource` (`serialize` / `de_serialize`, with `perform_extra_serialization` / `perform_extra_deserialization` hooks). See [Base model](../foundation/base-model.mdx).
+
+| Spec class | Role | Notes |
+| --- | --- | --- |
+| `BasePaymentReconciliationSpec` | shared base | Holds `id`, the six enum fields, `disposition`, `payment_datetime`, `method`, `reference_number`, `authorization`, `note`. `__exclude__ = ["target_invoice", "account"]` (FKs handled in hooks). `___extension_resource_type__ = payment_reconciliation` |
+| `PaymentReconciliationWriteSpec` | write · create & update | Adds `target_invoice` (UUID, optional), `account` (UUID, required), `tendered_amount`, `returned_amount`, `amount` (optional), `is_credit_note` (default `False`), `location` (UUID, optional). Mixes in `ExtensionValidator` |
+| `PaymentReconciliationMinimalReadSpec` | read · list | Adds `amount`, `tendered_amount`, `returned_amount`, `is_credit_note`, `created_date`, `modified_date` |
+| `PaymentReconciliationReadSpec` | read · detail (nested) | Extends minimal read; adds `account: dict` (serialized via `AccountReadSpec`) and `target_invoice: dict \| None` (serialized via `InvoiceReadSpec`) |
+| `PaymentReconciliationRetrieveSpec` | read · full retrieve | Extends read; adds `location: dict \| None` (via `FacilityLocationListSpec`), `extensions: dict`, `created_by` / `updated_by`. Also injects `account.patient` via `PatientRetrieveSpec` |
+
+### Write validation & side effects
+
+`PaymentReconciliationWriteSpec`:
+
+- **Amount validator** (`model_validator(mode="after")`, `check_amount_or_factor`): raises `"Returned amount cannot be greater than tendered amount"` when `returned_amount >= tendered_amount`, then sets `amount = tendered_amount - returned_amount`. The `amount` field on the write spec is therefore advisory only — always recomputed.
+- **`perform_extra_deserialization(is_update, obj)`** resolves the FK UUIDs to model instances:
+  - `target_invoice` (if provided) → `Invoice.objects.get(external_id=...)`
+  - `account` (required) → `Account.objects.get(external_id=...)`
+  - `location` (if provided) → `FacilityLocation.objects.get(external_id=...)`
+- **`extensions`** are validated by `ExtensionValidator.validate_extensions` against the `payment_reconciliation` extension registry before save.
+
+### Read serialization side effects
+
+- `PaymentReconciliationMinimalReadSpec.perform_extra_serialization` maps `id` ← `obj.external_id`.
+- `PaymentReconciliationReadSpec` serializes the related `account` (`AccountReadSpec`) and, when present, `target_invoice` (`InvoiceReadSpec`) into nested objects.
+- `PaymentReconciliationRetrieveSpec` additionally nests the account's `patient` (`PatientRetrieveSpec`, scoped to the account's facility), the `location` (`FacilityLocationListSpec`), the raw `extensions`, and audit users (`created_by` / `updated_by` via `serialize_audit_users`).
+
+## Related models
+
+`PaymentReconciliation` is a single, self-contained model. Its foreign keys reach into the broader billing and facility domains:
+
+```text
+facility       → FK Facility (PROTECT)
+target_invoice → FK Invoice (PROTECT, nullable)
+account        → FK Account (PROTECT)
+location       → FK FacilityLocation (PROTECT, nullable)
+```
+
+All foreign keys use `on_delete=PROTECT`, so a payment record blocks deletion of the facility, invoice, account, or location it references.
+
+## Methods & save behaviour
+
+- **No custom model `save()`** — `PaymentReconciliation` inherits `EMRBaseModel` behaviour (audit fields, `external_id`, soft delete).
+- **Amount is derived, not stored as sent**: on every create/update the write spec computes `amount = tendered_amount - returned_amount` and rejects `returned_amount >= tendered_amount`. Clients should send `tendered_amount` and `returned_amount`; `amount` is informational.
+- **FK resolution** happens in `perform_extra_deserialization`: clients pass `external_id` UUIDs for `account`, `target_invoice`, and `location`, which are resolved to instances at de-serialization time.
+- **Extensions lifecycle**: validated on write against the `payment_reconciliation` extension registry; rendered on retrieve through registered handlers.
+
+## API integration notes
+
+- Exposed through Care's REST API. Write requests use `PaymentReconciliationWriteSpec` for both create and update; list responses use `PaymentReconciliationMinimalReadSpec`, detail/retrieve responses use `PaymentReconciliationReadSpec` / `PaymentReconciliationRetrieveSpec`.
+- `account` is always required; `target_invoice` is optional and represents a single allocation of the payment to one invoice. Both, plus `location`, are passed as `external_id` UUIDs.
+- Classification fields (`reconciliation_type`, `status`, `kind`, `issuer_type`, `outcome`, `method`) are constrained to the fixed enums above by the Pydantic schema — invalid values are rejected at the API even though the column is a plain `CharField`.
+- Send `tendered_amount` and `returned_amount` (both required, `Decimal(20, 6)`); do **not** rely on a client-supplied `amount` — the server overwrites it with `tendered_amount - returned_amount`.
+- `extensions` is the supported place for custom key-value data without schema migrations, validated against registered extension handlers.
+
+## Related
+
+- Reference: [Account](../billing/account.mdx)
+- Reference: [Invoice](../billing/invoice.mdx)
+- Reference: [Charge item](../billing/charge-item.mdx)
+- Reference: [Base model](../foundation/base-model.mdx)
+- Source (model): [payment_reconciliation.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/payment_reconciliation.py)
+- Source (spec): [payment_reconciliation/spec.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/payment_reconciliation/spec.py)

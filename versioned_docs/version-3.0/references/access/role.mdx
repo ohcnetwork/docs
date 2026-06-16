@@ -1,0 +1,220 @@
+---
+sidebar_position: 2
+---
+
+# Role
+
+Technical reference for the `Role` module in Care EMR.
+
+A role is an arbitrary, flat collection of permissions that can be assigned to a user within a given organizational boundary (it is **not** a job title or a type — "Doctor", "Doctor Read Only" and "Doctor Scheduler" are all just distinct permission sets). A user may hold multiple roles across different organizations, but only one role per organization chain. Roles are resolved into effective permissions through `RolePermission` join rows.
+
+The Django model (`care/security/models/role.py`) is the **storage** layer: `name`, `description`, flags, and the `contexts` array. The Pydantic **resource specs** (`care/emr/resources/role/spec.py`, `care/emr/resources/permissions.py`) define the API read/write schemas, the `contexts` enum binding, the permission enum, and all create/update validation.
+
+**Source:**
+- Model: [`care/security/models/role.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/models/role.py)
+- Spec: [`care/emr/resources/role/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/role/spec.py)
+- Permissions mixins: [`care/emr/resources/permissions.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/permissions.py)
+- Role definitions: [`care/security/roles/role.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/roles/role.py)
+- Permission registry: [`care/security/permissions/base.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/permissions/base.py)
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `RoleModel` | A named role grouping a set of permissions |
+| `RolePermission` | Join table linking a `RoleModel` to a `PermissionModel` |
+
+Both models extend `BaseModel` (see [Base model](../foundation/base-model.mdx)) — they get `external_id`, `created_date`/`modified_date`, and soft-delete via the `deleted` flag, but **not** the richer `created_by`/`updated_by`/history/meta fields of `EMRBaseModel`.
+
+## `RoleModel` fields
+
+A role comprises multiple permissions. Roles can be created on the fly: system roles (`is_system=True`) cannot be deleted, and the API also blocks creating or updating them; user-created roles can be removed by users with the appropriate permission.
+
+### Identity & description
+
+| Field | Type | Required | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `name` | `CharField(1024)` | yes | — | Role name. Unique across non-deleted rows (see Meta). Spec rejects empty/blank on create and rejects a name that already exists case-insensitively |
+| `description` | `TextField` | no | `""` | Free text |
+| `contexts` | `ArrayField[CharField(24)]` | yes | `[]` | The boundary types this role applies to. The model stores opaque strings; the spec constrains each element to the **`RoleContext`** enum (see [RoleContext values](#rolecontext-values)) |
+
+### Status flags
+
+| Field | Type | Required | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `is_system` | `BooleanField` | no | `False` | `True` when created by the platform. Such roles cannot be deleted; the create/update spec rejects any request with `is_system=True` and rejects updates to existing system roles |
+| `temp_deleted` | `BooleanField` | no | `False` | Soft-marks a role for staged removal independent of `deleted` |
+| `is_archived` | `BooleanField` | no | `False` | Hides the role without deleting it. Exposed in the API specs |
+
+### Meta / constraints
+
+A partial unique constraint enforces a unique `name` only among non-deleted rows:
+
+```text
+UniqueConstraint(fields=["name"], condition=Q(deleted=False), name="unique_name_if_not_deleted")
+```
+
+The `RoleCreateSpec` validator additionally enforces uniqueness case-insensitively (`name__iexact`) before the DB constraint is reached.
+
+## Related models
+
+### `RolePermission`
+
+Join table connecting a role to a single permission. A role accumulates permissions through many `RolePermission` rows.
+
+```text
+role         → FK RoleModel (CASCADE, required)
+permission   → FK PermissionModel (CASCADE, required)
+temp_deleted → BooleanField (default False)
+```
+
+`temp_deleted` lets a permission grant be excluded from a role without removing the row — permission lookups filter on `rolepermission__temp_deleted=False`.
+
+### `PermissionModel`
+
+The permission a `RolePermission` points at ([Permission](../access/permission.mdx)).
+
+```text
+slug         → CharField(1024) unique, indexed
+name         → CharField(1024)
+description  → TextField (default "")
+context      → CharField(1024)   # one of the PermissionContext values
+temp_deleted → BooleanField (default False)
+```
+
+The available permissions are not stored as a fixed list in the DB; they are registered in code via `PermissionController` (`care/security/permissions/base.py`), which aggregates per-domain `enum.Enum` handlers (e.g. `PatientPermissions`, `FacilityPermissions`). Each member's value is a `Permission(name, description, context, roles)` dataclass.
+
+## Enum / value tables
+
+### `RoleContext` values
+
+Each element of `contexts` is validated against this enum (`care/security/roles/role.py`). These are the **organizational boundary** types a role can apply to — distinct from `PermissionContext`.
+
+| Value | Meaning |
+| --- | --- |
+| `FACILITY` | Role applies within a facility |
+| `GOVT_ORG` | Role applies within a government organization |
+| `ROLE_ORG` | Role applies within a role (user-group) organization |
+
+### `PermissionContext` values
+
+`PermissionModel.context` / `Permission.context` is one of these (`care/security/permissions/constants.py`). The `permissions` mixins (below) filter grants by these contexts when resolving a user's effective permissions.
+
+| Value |
+| --- |
+| `GENERIC` |
+| `FACILITY` |
+| `PATIENT` |
+| `QUESTIONNAIRE` |
+| `ORGANIZATION` |
+| `FACILITY_ORGANIZATION` |
+| `ENCOUNTER` |
+
+### `PermissionEnum` (write field for `permissions`)
+
+`RoleCreateSpec.permissions` is typed against `PermissionController.get_enum()` — a `str` enum built dynamically at runtime from every registered permission `name` across all permission handlers. Values are the permission identifiers (slugs), e.g. `can_create_patient`, `can_write_patient`, `can_list_patients`, `can_view_clinical_data`. The full set is the union of all handlers listed in `PermissionController.internal_permission_handlers` plus any registered via plugins, so the enum is deployment-dependent rather than fixed.
+
+### Built-in (`is_system`) roles
+
+Seeded by `RoleController` (`care/security/roles/role.py`). These are created with `is_system=True` and cannot be created, updated, or deleted through the API.
+
+| Role | Contexts |
+| --- | --- |
+| `Doctor` | `FACILITY`, `GOVT_ORG` |
+| `Nurse` | `FACILITY`, `GOVT_ORG` |
+| `Staff` | `FACILITY`, `GOVT_ORG` |
+| `Volunteer` | `FACILITY`, `GOVT_ORG` |
+| `Pharmacist` | `FACILITY` |
+| `Administrator` | `FACILITY`, `GOVT_ORG` |
+| `Facility Admin` | `FACILITY` |
+| `Admin` | `FACILITY`, `GOVT_ORG` |
+| `Admin` (role org) | `ROLE_ORG` |
+| `Manager` (role org) | `ROLE_ORG` |
+| `Member` (role org) | `ROLE_ORG` |
+
+## Resource specs (API schema)
+
+All specs extend `EMRResource` (`care/emr/resources/base.py`), which provides `serialize` (DB → Pydantic, via `perform_extra_serialization`) and `de_serialize` (Pydantic → DB, via `perform_extra_deserialization`). `RoleBaseSpec` sets `__exclude__ = ["permissions"]` so the `permissions` field is handled explicitly by each subclass rather than copied field-by-field.
+
+| Spec class | Role | Fields |
+| --- | --- | --- |
+| `RoleBaseSpec` | shared base | `id`, `name`, `description`, `is_system`, `is_archived`, `contexts` |
+| `RoleCreateSpec` | write · create & update | base fields + `permissions: list[PermissionEnum]` |
+| `RoleReadSpec` | read · detail/list | base fields + `permissions: list[PermissionSpec]` |
+| `RoleReadMinimalSpec` | read · minimal/embedded | base fields only |
+| `PermissionSpec` | nested (read) | `name`, `description`, `slug` (`SlugType`), `context` |
+
+### Field shapes & bindings
+
+| Field | Spec type | Notes |
+| --- | --- | --- |
+| `id` | `UUID4 \| None` | The role's `external_id` on read (set in `perform_extra_serialization`); ignored on write |
+| `name` | `str \| None` | Required & non-blank on create; case-insensitive uniqueness enforced |
+| `description` | `str \| None` | Optional |
+| `is_system` | `bool \| None` (default `False`) | Must be falsy on write — `True` is rejected |
+| `is_archived` | `bool \| None` (default `False`) | — |
+| `contexts` | `list[RoleContext]` | Bound to the `RoleContext` enum |
+| `permissions` (write) | `list[PermissionEnum]` (default `[]`) | Dynamic `str` enum of every registered permission name; must contain ≥ 1 entry |
+| `permissions` (read) | `list[PermissionSpec]` | Resolved server-side from the role's active grants |
+| `PermissionSpec.slug` | `SlugType` | `str`, length 5–50, pattern `^[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]$` |
+
+### Validation (`RoleCreateSpec.validate_role`, mode="after")
+
+Runs on both create and update (the `is_update` flag and target `object` are read from the serializer context):
+
+- On create, `name` must be present and non-blank (`"Role name cannot be empty"`).
+- `name` must be unique case-insensitively (`name__iexact`); on update the current row is excluded. Duplicate → `"Role with this name already exists"`.
+- Updating a role whose `is_system=True` → `"Cannot update system roles"`.
+- `is_system=True` in the payload → `"Cannot create system roles"`.
+- `permissions` must be non-empty → `"At least one permission must be assigned to the role"`.
+- `permissions` is de-duplicated (`list(set(...))`).
+
+### Server-side serialization behaviour
+
+- **Write** (`RoleCreateSpec.perform_extra_deserialization`): the validated `permissions` list is attached to the model instance as `obj.permissions` (a transient attribute, since `permissions` is in `__exclude__` and is not a model column). The view/service layer materializes these into `RolePermission` rows.
+- **Read detail** (`RoleReadSpec.perform_extra_serialization`): sets `id = obj.external_id` and fills `permissions` from `obj.get_permissions_for_role()` — the cached list of `{name, slug, context, description}` for every active (non-`temp_deleted`) grant.
+- **Read minimal** (`RoleReadMinimalSpec.perform_extra_serialization`): sets `id = obj.external_id` only; omits `permissions` entirely.
+
+### Permission resolution mixins
+
+`care/emr/resources/permissions.py` defines mixins that other resource specs inherit to expose the **calling user's** effective permissions on an object (not the role's own list). They populate `mapping["permissions"]` in `perform_extra_user_serialization` only when an authenticated `user` is passed to `serialize`:
+
+| Mixin | Resolves | Context filter |
+| --- | --- | --- |
+| `PermissionsMixin` | base — adds `permissions: list[str]` | — |
+| `PatientPermissionsMixin` | roles the user holds on a patient | `permission__context in ("PATIENT", "FACILITY")` |
+| `EncounterPermissionsMixin` | roles the user holds on an encounter | `permission__context in ("ENCOUNTER", "PATIENT")` |
+| `FacilityPermissionsMixin` | roles on facility root + sub-orgs; also exposes `root_org_permissions` and `child_org_permissions` (child set excludes `can_update_facility`) | none (root) / excludes `can_update_facility` (child) |
+
+## Methods & save behaviour
+
+`RoleModel` resolves its effective permissions through two cached helpers backed by the Django cache (Redis), with a 7-day TTL:
+
+- `get_permission_sk_for_role() → list[str]` — returns the `slug` of every active permission on the role. Cache key `role_permissions_cache:{id}`.
+- `get_permissions_for_role() → list[dict]` — returns full permission detail (`name`, `slug`, `context`, `description`) for every active permission. Cache key `role_permissions:{id}`. Used by `RoleReadSpec`.
+
+Both queries join through `RolePermission` and exclude `temp_deleted=True` grants.
+
+### Cache invalidation signal
+
+A `@receiver([post_save, post_delete], sender=RolePermission)` handler (`invalidate_role_permissions_cache`) clears both cache keys for the affected `role_id` whenever a `RolePermission` is created, updated, or deleted. Integrators mutating role-permission links through the ORM get automatic cache invalidation; raw SQL writes bypass the signal and leave stale caches.
+
+## API integration notes
+
+- Roles are referenced from access-control models (for example organization memberships and patient/encounter associations) to resolve a user's effective permissions in a given context.
+- `is_system` roles are platform-maintained: the spec rejects creating one (`is_system=True`) and rejects any update to an existing system role.
+- Writes go through `RoleCreateSpec` (create and update). `permissions` is required (≥ 1) and is de-duplicated; the resolved set is attached to the model as `obj.permissions` for the service layer to translate into `RolePermission` rows.
+- Reads use `RoleReadSpec` (full, with nested `PermissionSpec[]`) or `RoleReadMinimalSpec` (no permissions) depending on the endpoint.
+- Each element of `contexts` is bound to the `RoleContext` enum (`FACILITY`, `GOVT_ORG`, `ROLE_ORG`) — not an open string at the API layer, even though the model column is.
+- Permission membership is managed through `RolePermission` rows, not by editing `RoleModel` directly — prefer ORM writes so the cache-invalidation signal fires.
+
+## Related
+
+- Reference: [Permission](../access/permission.mdx)
+- Reference: [Permission association](../access/permission-association.mdx)
+- Reference: [User](../access/user.mdx)
+- Reference: [Organization](../facility/organization.mdx)
+- Reference: [Base model](../foundation/base-model.mdx)
+- Source: [role.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/security/models/role.py)
+- Source: [role/spec.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/role/spec.py)
+- Source: [permissions.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/permissions.py)

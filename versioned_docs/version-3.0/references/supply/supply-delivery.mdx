@@ -1,0 +1,190 @@
+---
+sidebar_position: 5
+---
+
+# Supply Delivery
+
+Technical reference for the `SupplyDelivery` module in Care EMR.
+
+**Source:**
+- Model: [`care/emr/models/supply_delivery.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/supply_delivery.py)
+- Resource specs: [`spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/supply_delivery/spec.py) · [`delivery_order.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/supply_delivery/delivery_order.py)
+
+A supply delivery records the movement of a product from one location (or an external supplier) to a destination location. Together with supply dispensing, deliveries are a source of truth for facility inventory: `supply delivered − supply dispensed = current stock`. Deliveries are grouped under a `DeliveryOrder`, which is typically created from a [supply request](./supply-request.mdx).
+
+The Django model is the **storage layer**: `status`, `delivery_type`, and `supplied_item_condition` are plain `CharField`s and `extensions` is an opaque `JSONField`. The **real shape** of those fields — enum values, validation, the read/write schemas — lives in the Pydantic resource specs, documented below.
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `SupplyDelivery` | A single line of delivered product (quantity, condition, source product/inventory) |
+| `DeliveryOrder` | Groups deliveries for a shipment between an origin and destination |
+
+Both models extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, audit fields `created_by`/`updated_by`, `created_date`/`modified_date`, soft-delete via `deleted`, and `history`/`meta` JSON).
+
+## `SupplyDelivery` fields
+
+### Delivered item & quantity
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `supplied_item` | `FK → Product (CASCADE)` | Nullable. The product being delivered. Required at the API layer **only when the order has no `origin`** (external delivery). On write, scoped to `order.destination.facility` |
+| `supplied_inventory_item` | `FK → InventoryItem (CASCADE)` | Nullable. Specific inventory item (batch/lot) drawn from. Required at the API layer **when the order has an `origin`** (intra-facility move); scoped to `order.origin.facility` |
+| `supplied_item_quantity` | `DecimalField(max_digits=20, decimal_places=6)` | Nullable in DB. On write a `Decimal` with `decimal_places=0` (whole units); on read serialized as `int`. Auto-derived as `pack_quantity × pack_size` when both are given |
+| `supplied_item_pack_quantity` | `IntegerField` | Nullable; default `None`. Number of packs delivered |
+| `supplied_item_pack_size` | `IntegerField` | Nullable; default `None`. Units per pack |
+| `supplied_item_condition` | `CharField(255)` | Optional. Condition of the delivered item — enum `SupplyDeliveryConditionOptions` (see below) |
+
+### Status & classification
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `status` | `CharField(255)` | Required. Lifecycle state — enum `SupplyDeliveryStatusOptions` (see below) |
+| `delivery_type` | `CharField(255)` | Type of item delivered — enum `SupplyDeliveryTypeOptions` (`product` / `device`). Stored on the model; not exposed on the current Create/Update specs |
+
+### Links & pricing
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `supply_request` | `FK → SupplyRequest (CASCADE)` | Nullable. Request this delivery fulfils. Set by `external_id` on write |
+| `order` | `FK → DeliveryOrder (CASCADE)` | Nullable in DB, but **required on create** (referenced by `external_id`). Optional on update |
+| `total_purchase_price` | `DecimalField(max_digits=20, decimal_places=6)` | Nullable. Total purchase cost. Spec: `Decimal` `max_digits=20, decimal_places=6` |
+| `extensions` | `JSONField` | Default `{}`. Validated per registered extension handler for `ExtensionResource.supply_delivery` (see [Resource specs](#resource-specs-api-schema)) |
+
+### `SupplyDelivery` enum values
+
+These enums are `str` enums in `spec.py` — the stored value equals the member value (snake_case), not a FHIR URI.
+
+#### `SupplyDeliveryStatusOptions` (`status`)
+
+| Value |
+| --- |
+| `in_progress` |
+| `completed` |
+| `abandoned` |
+| `entered_in_error` |
+
+#### `SupplyDeliveryConditionOptions` (`supplied_item_condition`)
+
+| Value |
+| --- |
+| `normal` |
+| `damaged` |
+
+#### `SupplyDeliveryTypeOptions` (`delivery_type`)
+
+| Value |
+| --- |
+| `product` |
+| `device` |
+
+## Related models
+
+### `DeliveryOrder`
+
+Groups one or more `SupplyDelivery` rows into a single logical shipment moving between two facility locations (or from an external supplier into a facility).
+
+```text
+supplier        → FK Organization (CASCADE, nullable)      -- external/source supplier
+origin          → FK FacilityLocation (CASCADE, nullable)  -- related_name="origin_delivery_orders"
+destination     → FK FacilityLocation (CASCADE)            -- related_name="destination_delivery_orders"
+patient         → FK Patient (PROTECT, nullable)           -- patient the order is dispensed to
+patient_invoice → FK Invoice (PROTECT, nullable)           -- linked billing invoice
+```
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `name` | `CharField(255)` | Required. Human-readable order name |
+| `status` | `CharField(255)` | Required. Order lifecycle — enum `SupplyDeliveryOrderStatusOptions` (see below) |
+| `note` | `TextField` | Nullable. Free-text note |
+| `tags` | `ArrayField[int]` | Default `[]`. Tag IDs; rendered via `SingleFacilityTagManager` on read |
+| `supplier` | `FK → Organization (CASCADE)` | Nullable. On write must be an Organization with `org_type = product_supplier` |
+| `origin` | `FK → FacilityLocation (CASCADE)` | Nullable. Source location; absence means stock is entering from an external `supplier` |
+| `destination` | `FK → FacilityLocation (CASCADE)` | **Required.** Receiving location |
+| `patient` | `FK → Patient (PROTECT)` | Nullable. Patient the order is dispensed to. Cannot be set together with `origin` |
+| `patient_invoice` | `FK → Invoice (PROTECT)` | Nullable. Linked billing invoice; serialized as `patient_invoice_id` on read |
+| `extensions` | `JSONField` | Default `{}`. Validated for `ExtensionResource.supply_delivery_order` |
+
+`patient`/`patient_invoice` use `PROTECT` so referenced patients and invoices cannot be deleted while a delivery order points to them.
+
+#### `SupplyDeliveryOrderStatusOptions` (`status`)
+
+| Value | Notes |
+| --- | --- |
+| `draft` | Allowed on create |
+| `pending` | Allowed on create |
+| `in_progress` | |
+| `completed` | Terminal (in `SUPPLY_DELIVERY_ORDER_COMPLETED_STATUSES`) |
+| `abandoned` | Terminal (in `SUPPLY_DELIVERY_ORDER_COMPLETED_STATUSES`) |
+| `entered_in_error` | Terminal (in `SUPPLY_DELIVERY_ORDER_COMPLETED_STATUSES`) |
+
+## Resource specs (API schema)
+
+All specs extend `EMRResource` ([`base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)): `serialize` builds the read payload from the DB object (`perform_extra_serialization` hook), `de_serialize` builds the DB object from the request (`perform_extra_deserialization` hook). `to_json()` dumps the model excluding `meta`.
+
+### `SupplyDelivery` specs
+
+| Spec | Role | Exposes / behaviour |
+| --- | --- | --- |
+| `BaseSupplyDeliverySpec` | shared | `id`, `status` (required), `supplied_item_condition?`, `total_purchase_price?`. `__exclude__ = ["supplied_item", "supply_request", "supplied_inventory_item"]` (these are resolved by hooks, not direct field copy) |
+| `SupplyDeliveryWriteSpec` | write · create | Adds `supplied_item_pack_quantity?`, `supplied_item_pack_size?`, `supplied_item_quantity` (Decimal, `decimal_places=0`), `supplied_item?`, `supplied_inventory_item?`, `supply_request?`, `order` (**required**), `extensions`. Mixes in `ExtensionValidator` |
+| `SupplyDeliveryUpdateSpec` | write · update | `order?` only (plus shared base fields + `extensions`). Mixes in `ExtensionValidator` |
+| `SupplyDeliveryReadSpec` | read · list | `supplied_item_quantity: int`, `created_date`, `modified_date`, `supplied_item_pack_quantity?`, `supplied_item_pack_size?`, `extensions`, and nested objects `supplied_item`, `supplied_inventory_item`, `supply_request`, `order` (serialized as `dict`). Mixes in `ExtensionListRenderer` |
+| `SupplyDeliveryRetrieveSpec` | read · detail | Extends `SupplyDeliveryReadSpec`; adds `created_by`/`updated_by` (`UserSpec`). Mixes in `ExtensionRetrieveRenderer` |
+
+**Write validation (`SupplyDeliveryWriteSpec`):**
+- `validate_quantity`: when both `supplied_item_pack_quantity` and `supplied_item_pack_size` are set, `supplied_item_quantity` is overwritten with their product.
+- `validate_supplied_item` (resolves `order` from `external_id`):
+  - if `order.origin` is set → `supplied_inventory_item` is **required** (intra-facility stock move);
+  - if `order.origin` is **not** set → `supplied_item` is **required** (external delivery);
+  - `supplied_item` and `supplied_inventory_item` **cannot both** be provided.
+- `perform_extra_deserialization`: resolves `order` by `external_id`; resolves `supplied_item` scoped to `order.destination.facility`; if `order.origin` exists, resolves `supplied_inventory_item` scoped to `order.origin.facility`; resolves `supply_request` by `external_id`.
+
+**Update (`SupplyDeliveryUpdateSpec`):** `perform_extra_deserialization` re-resolves `order` from `external_id` only when `order` is provided.
+
+**Read serialization:** `perform_extra_serialization` sets `id = external_id` and inlines related objects via their read specs — `supplied_item` → `ProductReadSpec`, `supplied_inventory_item` → `InventoryItemReadSpec`, `supply_request` → `SupplyRequestReadSpec`, `order` → `SupplyDeliveryOrderReadSpec`.
+
+### `DeliveryOrder` specs
+
+| Spec | Role | Exposes / behaviour |
+| --- | --- | --- |
+| `BaseSupplyDeliveryOrderSpec` | shared | `id`, `status` (required), `name` (required), `note?`. Mixes in `ExtensionValidator` |
+| `SupplyDeliveryOrderWriteSpec` | write · create/update | Adds `supplier?`, `origin?`, `destination` (**required**), `patient?` (all by `external_id`) |
+| `SupplyDeliveryOrderReadSpec` | read · list | Nested `origin?`, `destination`, `supplier?`, `patient?` (`dict`), `tags`, `patient_invoice_id?`, `created_date`, `modified_date`, `created_by?`, `updated_by?`. Mixes in `ExtensionListRenderer` |
+| `SupplyDeliveryOrderRetrieveSpec` | read · detail | Extends `SupplyDeliveryOrderReadSpec` (no extra fields). Mixes in `ExtensionRetrieveRenderer` |
+
+**Write validation (`SupplyDeliveryOrderWriteSpec.perform_extra_deserialization`):**
+- resolves `destination` (required), `origin?`, `patient?` by `external_id`;
+- resolves `supplier?` constrained to `org_type = product_supplier`;
+- `patient` and `origin` **cannot** be provided together;
+- on create the `status` **must be `draft` or `pending`**.
+
+**Read serialization:** `id = external_id`; inlines `origin`/`destination` via `FacilityLocationListSpec`, `supplier` via `OrganizationReadSpec`, `patient` via `PatientListSpec`; renders `tags` via `SingleFacilityTagManager`; exposes the linked invoice as `patient_invoice_id` (string); attaches audit users.
+
+### Extensions
+
+`extensions` is not free-form JSON. On write, `ExtensionValidator` runs each registered handler for the resource type (`supply_delivery` / `supply_delivery_order`) — unknown keys are dropped, known keys are validated and re-serialized. On read, `ExtensionListRenderer` / `ExtensionRetrieveRenderer` render every registered extension for the resource (list vs retrieve variants).
+
+## API integration notes
+
+- Coded fields carry the **snake_case enum values** above (e.g. `status = "in_progress"`), not FHIR URIs. Validate against the enum, not free text.
+- A delivery is created against a `DeliveryOrder` (`order` is required on create). The order's `origin` decides whether you send `supplied_inventory_item` (intra-facility) or `supplied_item` (external) — never both.
+- Send `supplied_item_pack_quantity` + `supplied_item_pack_size` to have `supplied_item_quantity` computed server-side; otherwise send `supplied_item_quantity` directly (whole units).
+- A `DeliveryOrder` must start in `draft` or `pending`; `completed`/`abandoned`/`entered_in_error` are terminal states.
+- `patient` and `origin` are mutually exclusive on an order (patient dispense vs location-to-location move).
+- `extensions` is the supported place for deployment-specific data — but only **registered** extension keys are persisted.
+
+## Related
+
+- Reference: [Supply Request](./supply-request.mdx)
+- Reference: [Inventory Item](./inventory-item.mdx)
+- Reference: [Product](./product.mdx)
+- Reference: [Location](../facility/location.mdx)
+- Reference: [Organization](../facility/organization.mdx)
+- Reference: [Patient](../clinical/patient.mdx)
+- Reference: [Invoice](../billing/invoice.mdx)
+- Source: [supply_delivery.py (model)](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/supply_delivery.py)
+- Source: [spec.py (SupplyDelivery specs)](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/supply_delivery/spec.py)
+- Source: [delivery_order.py (DeliveryOrder specs)](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/supply_delivery/delivery_order.py)
+- Source: [base.py (EMRResource)](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)

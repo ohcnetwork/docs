@@ -1,0 +1,139 @@
+---
+sidebar_position: 2
+---
+
+# Booking
+
+Technical reference for the `TokenBooking` and `TokenSlot` modules in Care EMR.
+
+**Source:**
+
+- Model: [`care/emr/models/scheduling/booking.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/scheduling/booking.py)
+- Resource spec: [`care/emr/resources/scheduling/slot/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/scheduling/slot/spec.py)
+- Viewset (side effects): [`care/emr/api/viewsets/scheduling/booking.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/scheduling/booking.py)
+
+A booking is the appointment of a patient into a concrete time slot generated from a [Schedule](../scheduling/schedule.mdx). `TokenSlot` materializes a bookable unit of availability; `TokenBooking` records a patient's appointment against that slot and tracks its status through the appointment lifecycle.
+
+The Django model is the **storage** layer — `status` is an unconstrained `CharField` and several relations are opaque at the DB level. The **Pydantic resource specs** (`care/emr/resources/scheduling/slot/`) are the API layer: they constrain `status` to a fixed enum, validate writes, and define the read schemas (which embed slot, resource, facility, token, charge item, encounter, and patient sub-objects).
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `TokenSlot` | A concrete, bookable time window generated from a schedulable resource's availability |
+| `TokenBooking` | A patient's appointment against a `TokenSlot`, with status, notes, and optional links to an encounter, token, and charge item |
+
+Both models extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base providing `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON).
+
+## `TokenBooking` fields
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `token_slot` | `FK → TokenSlot` (PROTECT) | The slot this appointment occupies; required. PROTECT prevents deleting a slot that has bookings |
+| `patient` | `FK → emr.Patient` (CASCADE) | The booked patient; required |
+| `booked_on` | `DateTimeField` | `auto_now_add` — set once at creation; platform-maintained |
+| `booked_by` | `FK → User` (CASCADE) | User who created the booking; nullable (e.g. self-service or system-created) |
+| `status` | `CharField` (storage) → `BookingStatusChoices` (API) | Appointment lifecycle status. Unbounded on the model; constrained to the [`BookingStatusChoices`](#bookingstatuschoices-values) enum by the write spec |
+| `note` | `TextField` | Free-text note; nullable in storage, required (`str`) on write |
+| `tags` | `ArrayField[int]` | Tag IDs; defaults to empty list. Managed via the `SingleFacilityTagManager` (read returns rendered tag objects, not raw IDs) |
+| `associated_encounter` | `FK → emr.Encounter` (PROTECT) | Encounter linked to the appointment; nullable, defaults to `None`. Only surfaced by `TokenBookingRetrieveSpec` |
+| `token` | `FK → emr.Token` (PROTECT) | Queue token issued for this booking; nullable, defaults to `None`, `related_name="token_booking"`. Created by the `generate_token` action |
+| `charge_item` | `FK → emr.ChargeItem` (CASCADE) | Billing charge item for the appointment; nullable. Auto-created on booking when the schedule has a `charge_item_definition` |
+
+### `BookingStatusChoices` values
+
+`BookingStatusChoices` (`str, Enum`) — the only values the write spec accepts for `status`:
+
+| Value | Notes |
+| --- | --- |
+| `proposed` | |
+| `pending` | |
+| `booked` | Default applied server-side when a booking is created via `lock_create_appointment` |
+| `arrived` | |
+| `fulfilled` | Terminal; in `COMPLETED_STATUS_CHOICES` |
+| `cancelled` | Set only via the `cancel` endpoint; in `CANCELLED_STATUS_CHOICES` + `COMPLETED_STATUS_CHOICES` |
+| `noshow` | Terminal; in `COMPLETED_STATUS_CHOICES` |
+| `entered_in_error` | Set only via the `cancel` endpoint; in `CANCELLED_STATUS_CHOICES` + `COMPLETED_STATUS_CHOICES` |
+| `checked_in` | |
+| `waitlist` | |
+| `in_consultation` | Cannot be cancelled (the cancel handler rejects it) |
+| `rescheduled` | Set only via the `reschedule` endpoint; in `CANCELLED_STATUS_CHOICES` + `COMPLETED_STATUS_CHOICES` |
+
+Derived sets (from `slot/spec.py`):
+
+| Set | Values |
+| --- | --- |
+| `CANCELLED_STATUS_CHOICES` | `entered_in_error`, `cancelled`, `rescheduled` |
+| `COMPLETED_STATUS_CHOICES` | `fulfilled`, `noshow`, `entered_in_error`, `cancelled`, `rescheduled` |
+
+`TokenBookingWriteSpec.perform_extra_deserialization` rejects any write whose `status` is in `CANCELLED_STATUS_CHOICES` with `"Cannot cancel a booking. Use the cancel endpoint"` — cancellation/rescheduling must go through the dedicated endpoints (see below).
+
+## Related models
+
+### `TokenSlot`
+
+A bookable window derived from a resource's availability. Bookings reference it via PROTECT, so slots with active bookings cannot be deleted.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `resource` | `FK → SchedulableResource` (CASCADE) | The schedulable resource (practitioner, location, or healthcare service) the slot belongs to; required |
+| `availability` | `FK → Availability` (CASCADE) | The availability rule that generated this slot; nullable |
+| `start_datetime` | `DateTimeField` | Slot start; required (tz-aware) |
+| `end_datetime` | `DateTimeField` | Slot end; required (tz-aware) |
+| `allocated` | `IntegerField` | Count of bookings currently allocated to the slot; used to enforce capacity. Defaults to `0`. Platform-maintained — never written by clients |
+
+`SchedulableResource` and `Availability` are defined in the [Schedule](../scheduling/schedule.mdx) module. `SchedulableResource.resource_type` is one of `SchedulableResourceTypeOptions`: `practitioner`, `location`, `healthcare_service`.
+
+## Resource specs (API schema)
+
+All specs extend `EMRResource` ([`base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)) — `serialize` (DB → pydantic, read), `de_serialize` (pydantic → DB, write), with `perform_extra_serialization` / `perform_extra_deserialization` hooks.
+
+| Spec class | Role | Exposes / behaviour |
+| --- | --- | --- |
+| `TokenBookingBaseSpec` | shared | `__model__ = TokenBooking`, `__exclude__ = ["token_slot", "patient"]` |
+| `TokenBookingWriteSpec` | write · create + update | Fields: `status: BookingStatusChoices`, `note: str`. Rejects `status` in `CANCELLED_STATUS_CHOICES` (use cancel/reschedule endpoints). Used as both `pydantic_model` and `pydantic_update_model` |
+| `TokenBookingMinimumReadSpec` | read · embed | Lightweight read used when a booking is embedded in another resource (e.g. token). Fields: `id`, `token_slot` (embedded `TokenSlotBaseSpec`), `booked_on`, `status: str`, `note`, `created_date`, `modified_date` |
+| `TokenBookingBaseReadSpec` | read · shared | Adds `booked_by: UserSpec`, `resource_type`, `resource` (serialized resource), `facility`, `created_by`/`updated_by`, `token: TokenReadSpec`, `tags: list[dict]` (rendered), `charge_item: dict` |
+| `TokenBookingReadSpec` | read · list/default | `TokenBookingBaseReadSpec` + `patient: PatientRetrieveSpec`. The viewset's `pydantic_read_model` (list responses) |
+| `TokenBookingOTPReadSpec` | read · OTP flow | `TokenBookingBaseReadSpec` + `patient: PatientOTPReadSpec` (public/OTP booking flow) |
+| `TokenBookingRetrieveSpec` | read · detail | `TokenBookingReadSpec` + `associated_encounter: dict` (serialized `EncounterListSpec`). The viewset's `pydantic_retrieve_model` |
+| `TokenSlotBaseSpec` | read · embed | `__model__ = TokenSlot`, `__exclude__ = ["resource", "availability"]`. Fields: `id`, `availability` (embedded as `{name, tokens_per_slot, id, schedule:{name,id}}`), `start_datetime`, `end_datetime`, `allocated` |
+
+### Read serialization details (`perform_extra_serialization`)
+
+- `id` is always set from `obj.external_id` (UUID), not the integer PK.
+- `token_slot` is embedded via `TokenSlotBaseSpec.serialize(...)`.
+- `resource_type` comes from `token_slot.resource.resource_type`; `resource` is built by `serialize_resource()` — a `UserSpec` for `practitioner`, `HealthcareServiceReadSpec` for `healthcare_service`, `FacilityLocationListSpec` for `location`.
+- `facility` is a cached `FacilityBareMinimumSpec`; `booked_by` / `created_by` / `updated_by` are cached `UserSpec`s.
+- `tags` are rendered through `SingleFacilityTagManager().render_tags(obj)` (objects, not raw IDs).
+- `token` (`TokenReadSpec`), `charge_item` (`ChargeItemReadSpec`), and `associated_encounter` (`EncounterListSpec`) are included only when present.
+
+## Methods & save behaviour
+
+`status` has no model-level `choices`; the lifecycle is enforced entirely in the spec/viewset layer (`TokenBookingViewSet`). Key server-maintained behaviour:
+
+- **Creation (`lock_create_appointment`)** — under a per-resource lock and a transaction: rejects past slots (`end_datetime < now`) and full slots (`allocated >= availability.tokens_per_slot`), rejects a duplicate active booking for the same patient/slot (any status not in `COMPLETED_STATUS_CHOICES`), then increments `token_slot.allocated`, creates the booking with `status="booked"`, and — if the schedule has a `charge_item_definition` — auto-creates the linked `charge_item`.
+- **Cancel (`cancel` action)** — accepts `CancelBookingSpec { reason: cancelled | entered_in_error | rescheduled, note?: str }`. Rejects cancelling an `in_consultation` booking. Decrements `token_slot.allocated` (unless already cancelled), sets `status = reason`, optionally overwrites `note`, sets `updated_by`, and aborts any linked `charge_item` (`handle_charge_item_cancel` + status `aborted`).
+- **Reschedule (`reschedule` action)** — accepts `RescheduleBookingSpec { new_slot: UUID, new_booking_note: str, previous_booking_note?: str, tags: list[UUID] }`. Requires `can_reschedule_booking`. Cancels the existing booking with reason `rescheduled`, then `lock_create_appointment` creates a fresh booking on `new_slot` for the same patient; rejects rescheduling to the same slot.
+- **Generate token (`generate_token` action)** — accepts `TokenGenerationSpec { category: UUID, note?: str, queue?: UUID }`. Rejects if a token already exists. Resolves/creates a `TokenQueue` for the slot's date and resource, allocates the next `number` under a queue lock, creates a `Token` (`status="CREATED"`), and links it to `booking.token`.
+- **`booked_on`** is `auto_now_add` — never set by clients.
+
+## API integration notes
+
+- `TokenSlot` and `TokenBooking` are exposed through Care's scheduling REST API and align with the FHIR `Slot` and `Appointment` resources; payload field names may differ from Django model names.
+- Writes use `TokenBookingWriteSpec` (`status` constrained to `BookingStatusChoices`, `note` required). `cancelled` / `entered_in_error` / `rescheduled` cannot be set through a plain update — use the `cancel` / `reschedule` actions.
+- List responses use `TokenBookingReadSpec`; detail responses use `TokenBookingRetrieveSpec` (adds `associated_encounter`).
+- `allocated` on `TokenSlot` is a capacity counter maintained by `lock_create_appointment` / cancel; do not write it directly.
+- `tags` is an array of integer tag IDs in storage but returned as rendered tag objects on read.
+- List requires a `resource_type` query param and authorization scoped to organizations or resource IDs.
+
+## Related
+
+- Reference: [Schedule](../scheduling/schedule.mdx)
+- Reference: [Token](../scheduling/token.mdx)
+- Reference: [Encounter](../clinical/encounter.mdx)
+- Reference: [Patient](../clinical/patient.mdx)
+- Reference: [Charge item](../billing/charge-item.mdx)
+- Source: [booking.py (model)](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/scheduling/booking.py)
+- Source: [slot/spec.py (resource spec)](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/scheduling/slot/spec.py)
+- Source: [booking.py (viewset)](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/scheduling/booking.py)

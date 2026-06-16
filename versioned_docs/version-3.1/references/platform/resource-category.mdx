@@ -1,0 +1,208 @@
+---
+sidebar_position: 5
+---
+
+# Resource Category
+
+Technical reference for the `ResourceCategory` module in Care EMR.
+
+`ResourceCategory` is the **storage** layer (Django model). The **API/implementation** layer is defined by the Pydantic resource specs in `care/emr/resources/resource_category/`, which add the `resource_type` enum, the structured shape of the `*_monetary_components` JSON fields (via `MonetaryComponent`), slug validation, and the read/write schemas. Several model fields are opaque `JSONField`s whose real structure only exists in the specs — see [Resource specs (API schema)](#resource-specs-api-schema).
+
+**Source:**
+- Model: [`care/emr/models/resource_category.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/resource_category.py)
+- Spec: [`care/emr/resources/resource_category/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/resource_category/spec.py)
+- Shared: [`base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py) · [`common/monetary_component.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/monetary_component.py) · [`common/coding.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/coding.py)
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `ResourceCategory` | A facility-scoped, self-nesting category tree node that classifies resources (`product_knowledge`, `activity_definition`, `charge_item_definition`) and carries inheritable charge-item monetary components |
+
+`ResourceCategory` extends [`SlugBaseModel`](../foundation/base-model.mdx) (`FACILITY_SCOPED = True`), the facility-scoped slug variant of the base (adds `slug` handling on top of the EMR base fields: `external_id`, audit fields, soft-delete, and `history`/`meta` JSON).
+
+## `ResourceCategory` fields
+
+### Core
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `facility` | `FK → facility.Facility (PROTECT)` | yes | Owning facility; cannot be deleted while categories reference it. Excluded from spec write/read payloads (set server-side) |
+| `resource_type` | `CharField(255)` | yes | Top-level classification. Spec constrains to the `ResourceCategoryResourceTypeOptions` enum — see [values](#resourcecategoryresourcetypeoptions-values) |
+| `resource_sub_type` | `CharField(255)` | yes | Secondary classification; free string in the spec (`resource_sub_type: str`) |
+| `title` | `CharField(255)` | yes | Display name (`title: str`) |
+| `slug` | `CharField(255)` | yes | Facility-scoped encoded slug `f-<facility_external_id>-<slug_value>`. Clients send the unencoded `slug_value` (validated `SlugType`); the model encodes via `calculate_slug()` |
+| `description` | `TextField` | no | Nullable, blank-able (`description: str \| None = None`) |
+
+The `Meta` declares a composite index on `(slug, facility)` for fast slug lookups within a facility.
+
+### Tree structure
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `parent` | `FK → emr.ResourceCategory (CASCADE)` | Self-reference to the parent node; nullable. `related_name="children"`. `__exclude__`d from spec serialization; written via slug lookup, read via `get_parent_json()` |
+| `is_child` | `BooleanField` | Default `False`. Exposed on write (`ResourceCategoryWriteSpec`) and read |
+| `has_children` | `BooleanField` | Default `False`; flipped to `True` on the parent when a child is created (see [save behaviour](#methods--save-behaviour)). Read-only in specs |
+| `root_org` | `FK → emr.ResourceCategory (CASCADE)` | Self-reference to the root of this node's tree; nullable. `related_name="root"`. Not exposed in specs |
+
+### Tree caches
+
+These denormalized fields are populated by `set_organization_cache()` and `get_parent_json()` so the ancestor chain can be read without recursive joins. They are platform-maintained — never written by clients.
+
+| Field | Type | Rebuilt by |
+| --- | --- | --- |
+| `parent_cache` | `ArrayField[int]` | `set_organization_cache()` — parent's `parent_cache` plus the parent's id |
+| `level_cache` | `IntegerField` | `set_organization_cache()` — parent's `level_cache + 1` (default `0` for roots). Exposed read-only (`level_cache: int = 0`) |
+| `cached_parent_json` | `JSONField` | `get_parent_json()` — nested snapshot (see shape below) with a `cache_expiry` timestamp; refreshed after `cache_expiry_days` (15) |
+
+`cached_parent_json` (and the `parent` field of `ResourceCategoryReadSpec`) shape, from `get_parent_json()`:
+
+```text
+{
+  "id": str,            # parent.external_id (UUID)
+  "slug": str,          # parent.slug (encoded)
+  "title": str,
+  "description": str | null,
+  "parent": { ... },    # recursively the grandparent's cached_parent_json ({} at root)
+  "cache_expiry": str   # ISO datetime; now + 15 days
+}
+```
+
+Root nodes (no `parent_id`) serialize `parent` as `{}`.
+
+### Charge item monetary components
+
+Both are `JSONField(default=list)` in the model; the spec types each element as a `MonetaryComponent` (see [shape](#monetarycomponent-nested-shape)). Only serialized when `resource_type == charge_item_definition`.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `configured_monetary_components` | `JSONField` → `list[MonetaryComponent] \| None` | Components configured directly on this category |
+| `calculated_monetary_components` | `JSONField` → `list[MonetaryComponent] \| None` | Effective components after merging the parent's calculated components with this node's configured components (see [Methods](#methods--save-behaviour)). Server-maintained, read-only |
+
+## Enums
+
+### `ResourceCategoryResourceTypeOptions` values
+
+`care/emr/resources/resource_category/spec.py` — bound to `resource_type`.
+
+| Value | Meaning |
+| --- | --- |
+| `product_knowledge` | Category classifies [Product Knowledge](../supply/product-knowledge.mdx) entries |
+| `activity_definition` | Category classifies [Activity Definitions](../clinical/activity-definition.mdx) |
+| `charge_item_definition` | Category classifies [Charge Item Definitions](../billing/charge-item-definition.mdx); enables monetary-component fields |
+
+### `MonetaryComponentType` values
+
+`care/emr/resources/common/monetary_component.py` — bound to `MonetaryComponent.monetary_component_type`.
+
+| Value |
+| --- |
+| `base` |
+| `surcharge` |
+| `discount` |
+| `tax` |
+| `informational` |
+
+## Resource specs (API schema)
+
+All specs extend `EMRResource` (`serialize`/`de_serialize`; reads run `perform_extra_serialization`, writes run `perform_extra_deserialization`). `__model__ = ResourceCategory` and `__exclude__ = ["parent"]` (the `parent` FK is never auto-mapped; it is resolved explicitly).
+
+| Spec class | Role | Exposes / behaviour |
+| --- | --- | --- |
+| `ResourceCategoryBaseSpec` | shared base | `id` (UUID, read), `title`, `description`, `resource_type` (enum), `resource_sub_type` |
+| `ResourceCategoryWriteSpec` | write · create | Base + `parent: str \| None` (parent **slug**), `is_child: bool = False`, `slug_value: SlugType`. `perform_extra_deserialization` resolves `obj.parent = ResourceCategory.objects.get(slug=self.parent)` when `parent` is set, and sets `obj.slug = self.slug_value` |
+| `ResourceCategoryUpdateSpec` | write · update | Base + `slug_value: SlugType`. `perform_extra_deserialization` sets `obj.slug = self.slug_value` (no `parent` reassignment on update) |
+| `ResourceCategoryReadSpec` | read · list & detail | Base + `parent: dict`, `has_children: bool`, `level_cache: int = 0`, `is_child: bool`, `slug: str`, `slug_config: dict`, `calculated_monetary_components`, `configured_monetary_components`. See serialization below |
+
+> The code labels these "ChargeItemDefinition Category" in docstrings; the actual model is `ResourceCategory`. There is no separate `*ListSpec`/`*RetrieveSpec` — `ResourceCategoryReadSpec` serves both.
+
+### `ResourceCategoryReadSpec` serialization (`perform_extra_serialization`)
+
+- `id = obj.external_id`
+- `parent = obj.get_parent_json()` — nested ancestor snapshot (shape above)
+- `slug_config = obj.parse_slug(obj.slug)` — for a facility-scoped slug returns `{"facility": <uuid str>, "slug_value": <str>}`; for an instance slug `{"slug_value": <str>}`
+- `calculated_monetary_components` / `configured_monetary_components` — set **only** when `resource_type == "charge_item_definition"`; otherwise the (default-`None`) fields are omitted
+
+### `SlugType` validation
+
+`slug_value` is `Annotated[str, Field(min_length=5, max_length=50), AfterValidator(slug_validator)]`:
+
+- length 5–50
+- regex `^[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]$` — URL-safe (letters, digits, `-`, `_`), must start and end alphanumeric
+
+The stored `slug` is the encoded form `f-<facility_external_id>-<slug_value>` (via `SlugBaseModel.calculate_slug()`); `slug_config` round-trips it back to `{facility, slug_value}`.
+
+### `MonetaryComponent` (nested shape)
+
+Element type of `configured_monetary_components` / `calculated_monetary_components` (`common/monetary_component.py`).
+
+| Field | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `monetary_component_type` | `MonetaryComponentType` enum | — | required; see [values](#monetarycomponenttype-values) |
+| `code` | `Coding \| None` | `None` | `Coding { system?: str, version?: str, code: str, display?: str }` (`extra="forbid"`) |
+| `factor` | `Decimal \| None` | `None` | `max_digits=20, decimal_places=6` |
+| `amount` | `Decimal \| None` | `None` | `max_digits=20, decimal_places=6` |
+| `tax_included_amount` | `Decimal \| None` | `None` | `max_digits=20, decimal_places=6`; allowed only on `base` |
+| `global_component` | `bool` | `False` | |
+| `conditions` | `list[EvaluatorConditionSpec]` | `[]` | each `{ metric: str, operation: str, value: dict \| str }`, validated against the evaluator-metrics registry |
+
+`MonetaryComponent` model validators:
+
+- `tax_included_amount` only allowed when type is `base`
+- `base` must have no `conditions`
+- `base` must have an `amount`
+- `amount` and `factor` are mutually exclusive (not both)
+- either `amount` or `factor` must be present (unless `global_component and code`)
+
+> The category's monetary fields are stored/validated per-element as `MonetaryComponent`. The stricter collection validators (`MonetaryComponents`/`MonetaryComponentsWithoutBase`: single base, no duplicate codes, tax-sum balance) live with the charge-item resources, not the category list itself.
+
+## Methods & save behaviour
+
+`ResourceCategory` overrides `save()` and maintains tree/charge caches through several methods plus a Celery task.
+
+### `save()`
+
+- On **create** (`self.id` not yet set): calls `super().save()`, then `set_organization_cache()`, then enqueues monetary-component summarisation via `summarise_monetary_components(self)`.
+- On **update**: a plain `super().save(*args, **kwargs)` with no cache rebuild.
+
+### `set_organization_cache()`
+
+Run once on creation when a `parent` is present:
+
+- Sets `parent_cache = [*parent.parent_cache, parent.id]` and `level_cache = parent.level_cache + 1`.
+- Sets `root_org` to the parent's `root_org`, or to the parent itself if the parent is a root.
+- If the parent's `has_children` was `False`, flips it to `True` and persists it with `save(update_fields=["has_children"])`.
+- Persists the node via `super().save()`.
+
+### `get_parent_json()`
+
+Returns (and lazily rebuilds) `cached_parent_json`. If a cached snapshot exists and is not past its `cache_expiry`, it is returned as-is; otherwise the parent chain is walked, a fresh nested snapshot is built with a new expiry (`now + cache_expiry_days`), persisted via `save(update_fields=["cached_parent_json"])`, and returned. Root nodes (no `parent_id`) return `{}`.
+
+### `summarise_monetary_components(category)` — Celery task
+
+A `@shared_task` that recomputes `calculated_monetary_components` down the subtree:
+
+- For a root (no `parent`), `calculated_monetary_components = configured_monetary_components`.
+- Otherwise, merges the parent's `calculated_monetary_components` with this node's `configured_monetary_components` via `merge_monetary_components()`, then persists with `save(update_fields=["calculated_monetary_components"])`.
+- Re-dispatches itself (`.delay(component.id)`) for every child, propagating changes through the tree.
+
+`merge_monetary_components(parent, child)` keys components by `code.system + code.code`; child components override parent components sharing a key, while components without a `code` are appended unmerged.
+
+## API integration notes
+
+- Categories are facility-scoped; the `(slug, facility)` index and `SlugBaseModel` slug encoding (`f-<facility>-<slug>`) make slugs unique per facility. Clients send `slug_value` (5–50, URL-safe); the server encodes and `slug_config` decodes it.
+- `parent` is written by **slug** (`ResourceCategoryWriteSpec.parent` → `ResourceCategory.objects.get(slug=...)`), not id; on read it is the nested `get_parent_json()` snapshot.
+- `parent_cache`, `level_cache`, `root_org`, `has_children`, `cached_parent_json`, and `calculated_monetary_components` are platform-maintained — do not set them directly; write `parent` and `configured_monetary_components` and let `save()`/the Celery task derive the rest.
+- Cache rebuilds (`set_organization_cache`, monetary-component summarisation) run only on **create**; updating an existing node's `parent` or configured components does not auto-rebuild the caches.
+- Monetary-component propagation is asynchronous (Celery), so `calculated_monetary_components` on descendants is eventually consistent after a write.
+- Monetary-component fields are serialized only for `resource_type == "charge_item_definition"`; component identity in merges relies on the nested `code.system` + `code.code` pair.
+
+## Related
+
+- Reference: [Charge Item Definition](../billing/charge-item-definition.mdx)
+- Reference: [Charge Item](../billing/charge-item.mdx)
+- Reference: [Activity Definition](../clinical/activity-definition.mdx)
+- Reference: [Product Knowledge](../supply/product-knowledge.mdx)
+- Reference: [Facility](../facility/facility.mdx)
+- Reference: [Base Model](../foundation/base-model.mdx)
+- Source: [resource_category.py (model)](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/resource_category.py) · [spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/resource_category/spec.py) · [monetary_component.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/monetary_component.py)

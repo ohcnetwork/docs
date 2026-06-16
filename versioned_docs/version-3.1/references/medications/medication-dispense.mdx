@@ -1,0 +1,330 @@
+---
+sidebar_position: 3
+---
+
+# Medication Dispense
+
+Technical reference for the `MedicationDispense` module in Care EMR.
+
+**Source:**
+- Model: [`care/emr/models/medication_dispense.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/medication_dispense.py)
+- Spec: [`care/emr/resources/medication/dispense/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/dispense/spec.py)
+- Spec: [`care/emr/resources/medication/dispense/dispense_order.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/dispense/dispense_order.py)
+- Viewset: [`care/emr/api/viewsets/medication_dispense.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/medication_dispense.py)
+
+`MedicationDispense` records products that have been dispensed to a patient. It both completes the workflow started by a [Medication Request](./medication-request.mdx) and drives inventory consumption within a location. It applies to inpatient settings (items dispensed and held in the room, refilled as needed) and outpatient settings (dispensed after an encounter is completed). A dispense may optionally carry a [Charge Item](../billing/charge-item.mdx) for billing.
+
+The Django model is the **storage** layer — several fields are opaque `JSONField`s. The Pydantic **resource specs** (`care/emr/resources/medication/dispense/`) define the API schema: enums, JSON-field shapes, validation, and the read/write contracts. Where the two disagree, the spec is the source of truth (e.g. `status` stores enum values with underscores such as `in_progress`, not the FHIR hyphenated forms).
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `MedicationDispense` | A single dispense event: a quantity of one inventory item handed to a patient |
+| `DispenseOrder` | Groups dispense events at a location into a named order with a shared status |
+
+Both models extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, audit fields, and soft-delete semantics).
+
+## `MedicationDispense` fields
+
+### Status & classification
+
+| Field | Model type | Spec type | Notes |
+| --- | --- | --- | --- |
+| `status` | `CharField(100)` | `MedicationDispenseStatus` | Required. See [status values](#medicationdispensestatus-values). Cancelling statuses block further updates |
+| `not_performed_reason` | `CharField(100)`, null | `MedicationDispenseNotPerformedReason \| None` | Coded reason a dispense was not performed. See [values](#medicationdispensenotperformedreason-values) |
+| `category` | `CharField(100)`, null | `MedicationDispenseCategory \| None` | Setting/location. See [values](#medicationdispensecategory-values) |
+
+### Timing & instructions
+
+| Field | Model type | Spec type | Notes |
+| --- | --- | --- | --- |
+| `when_prepared` | `DateTimeField`, null | `datetime \| None` | When the product was prepared |
+| `when_handed_over` | `DateTimeField`, null | `datetime \| None` | When the product was handed to the patient |
+| `note` | `TextField`, null | `str \| None` | Free-text annotation |
+| `dosage_instruction` | `JSONField` (default `list`) | `list[DosageInstruction]` (default `[]`) | List of structured dosage directions. See [`DosageInstruction` shape](#dosageinstruction-shape) |
+| `substitution` | `JSONField` (default `dict`) | `MedicationDispenseSubstitution \| None` | Substitution record. See [shape](#medicationdispensesubstitution-shape) |
+
+### Quantities
+
+| Field | Model type | Spec type | Notes |
+| --- | --- | --- | --- |
+| `quantity` | `DecimalField(20, 6)` | `Decimal` (write: `max_digits=20, decimal_places=0`) | Required. Amount dispensed. Validated against inventory stock on create |
+| `days_supply` | `DecimalField(20, 6)`, null | `Decimal \| None` (`max_digits=20, decimal_places=0`) | Expected number of days the dispensed amount lasts |
+
+### Relationships
+
+| Field | Model type | Notes |
+| --- | --- | --- |
+| `encounter` | `FK → Encounter` | `CASCADE`. Resolved from `encounter` UUID on write; `patient` is derived from it (not sent directly) |
+| `patient` | `FK → Patient` | `CASCADE`. Server-set from `encounter.patient` |
+| `location` | `FK → FacilityLocation` | `CASCADE`. Must belong to the encounter's facility |
+| `authorizing_request` | `FK → MedicationRequest` | `SET_NULL`, null. The prescription this dispense fulfils; must be on the same encounter. Cleared server-side when the dispense is cancelled |
+| `item` | `FK → InventoryItem` | `CASCADE`. Stock item consumed; must be in a location of the encounter's facility |
+| `charge_item` | `FK → ChargeItem` | `CASCADE`, null. Server-created from the product's charge item definition when one exists |
+| `order` | `FK → DispenseOrder` | `CASCADE`, null. Parent dispense order, when grouped |
+
+`patient`, `encounter`, `authorizing_request`, `item`, and `location` are listed in `__exclude__` on the spec base — they are resolved manually in `perform_extra_deserialization` rather than copied straight off the Pydantic object.
+
+## Enum values
+
+### `MedicationDispenseStatus` values
+
+From `MedicationDispenseStatus` (`spec.py`).
+
+| Value |
+| --- |
+| `preparation` |
+| `in_progress` |
+| `cancelled` |
+| `on_hold` |
+| `completed` |
+| `entered_in_error` |
+| `stopped` |
+| `declined` |
+
+The set `MEDICATION_DISPENSE_CANCELLED_STATUSES = [cancelled, entered_in_error, stopped, declined]` is treated as terminal/cancelling: no updates are allowed once a dispense is in one of these, and transitioning into one triggers charge-item cancellation (see [Methods & save behaviour](#methods--save-behaviour)).
+
+### `MedicationDispenseNotPerformedReason` values
+
+From `MedicationDispenseNotPerformedReason` (`spec.py`). Coded reasons (FHIR `medicationdispense-status-reason`).
+
+| Value | Meaning |
+| --- | --- |
+| `outofstock` | Out of stock |
+| `washout` | Washout |
+| `surg` | Surgery |
+| `sintol` | Sensitivity / intolerance to drug |
+| `sddi` | Drug interaction |
+| `sdupther` | Duplicate therapy |
+| `saig` | Allergy to ingredient of medication |
+| `preg` | Patient pregnant |
+
+### `MedicationDispenseCategory` values
+
+From `MedicationDispenseCategory` (`spec.py`).
+
+| Value |
+| --- |
+| `inpatient` |
+| `outpatient` |
+| `community` |
+| `discharge` |
+
+### `SubstitutionType` values
+
+From `SubstitutionType` (`spec.py`) — used in `substitution.substitution_type`.
+
+| Value | Meaning |
+| --- | --- |
+| `E` | Equivalent |
+| `EC` | Equivalent composition |
+| `BC` | Brand composition |
+| `G` | Generic composition |
+| `TE` | Therapeutic alternative |
+| `TB` | Therapeutic brand |
+| `TG` | Therapeutic generic |
+| `F` | Formulary |
+| `N` | None |
+
+### `SubstitutionReason` values
+
+From `SubstitutionReason` (`spec.py`) — used in `substitution.reason`.
+
+| Value | Meaning |
+| --- | --- |
+| `CT` | Continuing therapy |
+| `FP` | Formulary policy |
+| `OS` | Out of stock |
+| `RR` | Regulatory requirement |
+
+## JSON field shapes
+
+### `MedicationDispenseSubstitution` shape
+
+`substitution` field (`MedicationDispenseSubstitution`). All three fields required when `substitution` is present:
+
+```text
+substitution = {
+  was_substituted:   bool                # required
+  substitution_type: SubstitutionType    # required; see SubstitutionType values
+  reason:            SubstitutionReason   # required; see SubstitutionReason values
+}
+```
+
+### `DosageInstruction` shape
+
+`dosage_instruction` is a `list[DosageInstruction]`. `DosageInstruction` is reused from the [Medication Request](./medication-request.mdx) spec (`care/emr/resources/medication/request/spec.py`):
+
+```text
+DosageInstruction {
+  sequence:               int | None
+  text:                   str | None
+  additional_instruction: list[Coding]@system-additional-instruction | None
+  patient_instruction:    str | None
+  timing:                 Timing | None
+  as_needed_boolean:      bool                                     # required
+  as_needed_for:          Coding@system-as-needed-reason | None
+  site:                   Coding@system-body-site | None
+  route:                  Coding@system-route | None
+  method:                 Coding@system-administration-method | None
+  dose_and_rate:          DoseAndRate | None
+  max_dose_per_period:    DoseRange | None
+}
+
+Timing      { repeat: TimingRepeat, code: Coding | None }
+TimingRepeat{ frequency: int, period: Decimal(20,0), period_unit: TimingUnit, bounds_duration: TimingQuantity }
+TimingQuantity { value: Decimal(20,0), unit: TimingUnit }
+DoseAndRate { type: DoseType, dose_range: DoseRange | None, dose_quantity: DosageQuantity | None }
+DoseRange   { low: DosageQuantity, high: DosageQuantity }
+DosageQuantity { value: Decimal(20,6), unit: Coding }
+```
+
+`Coding@<slug>` denotes a `Coding` bound to a Care value set (`ValueSetBoundCoding`); `Coding = { system?, version?, code (required), display? }`. `TimingUnit ∈ {s, min, h, d, wk, mo, a}`; `DoseType ∈ {ordered, calculated}`. The shared `PeriodSpec` (from `base.py`) — `{ start: datetime, end: datetime }`, both tz-aware, `start ≤ end` — is the standard period shape used elsewhere; `MedicationDispense` itself does not expose a period field.
+
+## Resource specs (API schema)
+
+All specs extend `EMRResource` (`base.py`) and use its `serialize` / `de_serialize` plumbing; the `serialize`-side data is assembled in `perform_extra_serialization`, and write-side resolution/side effects happen in `perform_extra_deserialization`.
+
+| Spec class | Role | Notes |
+| --- | --- | --- |
+| `BaseMedicationDispenseSpec` | shared base | `__model__ = MedicationDispense`. Exposes `status`, `not_performed_reason`, `category`, `when_prepared`, `when_handed_over`, `note`, `dosage_instruction`, `substitution`. Excludes the FK fields |
+| `MedicationDispenseWriteSpec` | write · create | Adds `encounter`, `location`, `authorizing_request`, `item` (UUIDs), `quantity`, `days_supply`, `fully_dispensed`, `order`, `create_dispense_order`. Resolves FKs and runs create-time logic |
+| `MedicationDispenseUpdateSpec` | write · update | Base fields plus `fully_dispensed` and `order`. Cannot re-point `encounter`/`item`/`location` |
+| `MedicationDispenseReadSpec` | read · list | Serializes nested `item`, `charge_item`, `location`, `authorizing_request`, `order`; adds `created_date`, `modified_date` |
+| `MedicationDispenseRetrieveSpec` | read · detail | Extends `ReadSpec`, additionally serializes the full `encounter` |
+| `MedicationDispenseSubstitution` | nested | Shape of the `substitution` JSON field |
+| `CreateDispenseOrder` | nested (write) | Inline order creation payload — see below |
+
+### Write-spec fields
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `encounter` | `UUID4` | yes | Resolved to `Encounter`; `patient` derived from it |
+| `location` | `UUID4` | yes | Must be in `encounter.facility` |
+| `item` | `UUID4` | yes | `InventoryItem` in a location of `encounter.facility` |
+| `authorizing_request` | `UUID4 \| None` | no | `MedicationRequest` on the same encounter |
+| `quantity` | `Decimal` | yes | Write spec constrains to `decimal_places=0` (whole units) |
+| `days_supply` | `Decimal \| None` | no | `decimal_places=0` |
+| `fully_dispensed` | `bool \| None` | no | Drives the authorizing request's `dispense_status` (see below). Stashed on `instance._fully_dispensed`, not persisted on `MedicationDispense` |
+| `order` | `UUID4 \| None` | no | Existing `DispenseOrder` to attach to |
+| `create_dispense_order` | `CreateDispenseOrder \| None` | no | Inline order creation (get-or-create) |
+
+**Validation:** `validate_prescription` rejects sending both `order` and `create_dispense_order`.
+
+### `CreateDispenseOrder`
+
+Inline order payload on the write spec. When the matching order (by `alternate_identifier` + `patient` + `location`) does not exist it is created; if it exists but its status is not `draft`/`in_progress`, the request is rejected (`"Prescription is not active"`).
+
+```text
+CreateDispenseOrder {
+  name:                 str | None
+  note:                 str | None
+  alternate_identifier: str                              # required
+  status:               CreateDispenseOrderStatusOptions # default "draft"
+}
+```
+
+`CreateDispenseOrderStatusOptions ∈ {draft, in_progress}`.
+
+### Bound value sets
+
+`dosage_instruction` codings bind to Care value sets (all SNOMED CT, registered as systems):
+
+| Field (within `DosageInstruction`) | Value set slug |
+| --- | --- |
+| `additional_instruction` | `system-additional-instruction` |
+| `as_needed_for` | `system-as-needed-reason` |
+| `site` | `system-body-site` |
+| `route` | `system-route` |
+| `method` | `system-administration-method` |
+
+The dispense-level `not_performed_reason` aligns with the `system-medication-not-given` value set (`medication_not_given_reason.py`) but is stored/validated as the `MedicationDispenseNotPerformedReason` enum, not a bound `Coding`.
+
+## Related models
+
+### `DispenseOrder`
+
+Groups one or more `MedicationDispense` events at a location into a named order with a single status.
+
+```text
+location              → FK FacilityLocation (CASCADE)
+patient               → FK Patient (CASCADE)
+facility              → FK Facility (CASCADE)
+name                  → CharField(255), nullable
+status                → CharField(255)
+note                  → TextField, nullable
+tags                  → ArrayField[int], default []
+alternate_identifier  → CharField(100), nullable
+```
+
+`DispenseOrder` enforces the uniqueness constraint `unique_alternate_identifier_encounter_location` on `(alternate_identifier, patient, location)`, so an external identifier can appear at most once per patient and location.
+
+**Source / specs:**
+- Model: `DispenseOrder` in [`medication_dispense.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/medication_dispense.py)
+- Specs: [`dispense_order.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/dispense/dispense_order.py)
+- Viewset: [`api/viewsets/inventory/dispense_order.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/inventory/dispense_order.py)
+
+#### `MedicationDispenseOrderStatusOptions` values
+
+| Value |
+| --- |
+| `draft` |
+| `in_progress` |
+| `completed` |
+| `abandoned` |
+| `entered_in_error` |
+
+`MEDICATION_DISPENSE_ORDER_COMPLETED_STATUSES = [abandoned, entered_in_error, completed]` are terminal-ish. `abandoned` and `entered_in_error` are the cancel transitions.
+
+#### `DispenseOrder` specs
+
+| Spec class | Role | Notes |
+| --- | --- | --- |
+| `BaseMedicationDispenseOrderSpec` | shared base / update | Exposes `status`, `name`, `note`. Used directly as the update spec |
+| `MedicationDispenseOrderWriteSpec` | write · create | Adds `patient`, `location` (UUIDs), resolved in deserialization. `facility` is set server-side from the URL |
+| `MedicationDispenseOrderReadSpec` | read · list | Serializes nested `patient` (list spec), `location`; adds `created_date`, `modified_date` |
+| `MedicationDispenseOrderRetrieveSpec` | read · detail | Full `patient` (retrieve spec) plus `created_by` / `updated_by` audit users |
+
+## Methods & save behaviour
+
+The model has no custom `save()`; the dispense workflow lives in the viewset (`MedicationDispenseViewSet`) inside a `transaction.atomic()` block, with side effects layered on top of the spec's `perform_extra_deserialization`.
+
+**On create (`perform_create`):**
+- Acquires an `InventoryItemLock` on `item` and rejects if `item.net_content < quantity` (`"Inventory item does not have enough stock"`).
+- If `item.product.charge_item_definition` exists, applies it to create a `ChargeItem` (resource `medication_dispense`, linked to this dispense's `external_id`; `performer_actor` = the authorizing request's requester when present) and attaches it via `charge_item`.
+- Calls `sync_inventory_item(item.location, item.product)` to draw down stock.
+- If `fully_dispensed` is set and an `authorizing_request` exists, sets that request's `dispense_status` to `complete` (when `True`) or `partial` (when `False`).
+- Order resolution: `create_dispense_order` does a get-or-create by `(alternate_identifier, patient, location)`; an existing non-`draft`/`in_progress` order is rejected.
+
+**On update (`perform_update`):**
+- `validate_data` rejects any update when the current status is in `MEDICATION_DISPENSE_CANCELLED_STATUSES`.
+- A transition **into** a cancelling status while a `charge_item` is attached cancels the charge item (`handle_charge_item_cancel`, status → `aborted`), sets the authorizing request's `dispense_status` to `incomplete`, and detaches `authorizing_request` (`SET_NULL`).
+- Re-syncs inventory and re-applies the `fully_dispensed` → `dispense_status` (`complete`/`partial`) logic.
+
+**Dispense-order cancellation (`cancel_dispense_order` in the order viewset):** moving an order to `abandoned` or `entered_in_error` cascades to every member dispense — cancels their charge items, marks each dispense `cancelled` / `entered_in_error` respectively, sets authorizing requests' `dispense_status` to `incomplete`, and detaches them. An order already `abandoned`/`entered_in_error` cannot transition; a `completed` order can only be cancelled.
+
+## API integration notes
+
+- Exposed through `MedicationDispenseViewSet` (create, retrieve, update, list, upsert) and aligns with the FHIR `MedicationDispense` resource; API field names may differ from FHIR (e.g. `authorizing_request` ≈ FHIR `authorizingPrescription`). Enum **values** use underscores (`in_progress`, `entered_in_error`), not FHIR hyphens.
+- List/summary require either a `location` or `encounter` query param (else `400`); `include_children=true` widens a location query to descendant locations via `parent_cache`. Filters: `status`, `exclude_status`, `category`, `encounter`, `patient`, `item`, `authorizing_prescription`, `authorizing_request`, `location`, `order`. A `summary` action returns per-encounter dispense counts.
+- Permissions are location-centric: creates only require write access to the dispensing `location` (pharmacists often lack encounter access); reads require either location-list or encounter-view permission.
+- Send `item` as an `InventoryItem` UUID, not a bare product code — this is what draws down stock.
+- `quantity` / `days_supply` are constrained to whole units (`decimal_places=0`) on the write spec even though the column stores 6 decimal places.
+- `charge_item` is server-managed (created from the product's charge item definition, cancelled on dispense/order cancellation) — do not set it directly.
+- Use `fully_dispensed` to roll the linked [Medication Request](./medication-request.mdx) into `complete` / `partial` so pharmacists do not re-dispense an already-fulfilled request.
+- Use `create_dispense_order` to start an order inline, or `order` to attach to an existing one — never both.
+
+## Related
+
+- Reference: [Medication Request](./medication-request.mdx)
+- Reference: [Medication Administration](./medication-administration.mdx)
+- Reference: [Medication Statement](./medication-statement.mdx)
+- Reference: [Inventory Item](../supply/inventory-item.mdx)
+- Reference: [Charge Item](../billing/charge-item.mdx)
+- Reference: [Location](../facility/location.mdx)
+- Reference: [Encounter](../clinical/encounter.mdx)
+- Reference: [Base model](../foundation/base-model.mdx)
+- Source: [medication_dispense.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/medication_dispense.py)
+- Spec: [dispense/spec.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/dispense/spec.py)
+- Spec: [dispense/dispense_order.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/dispense/dispense_order.py)
