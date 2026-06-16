@@ -59,20 +59,42 @@ Supply ties together several other parts of Care:
 
 ## Permissions
 
-Access to supply resources is governed by facility-scoped permissions. The main ones, with the roles that hold them by default:
+Access to supply resources is governed by facility-scoped permissions. The complete set, grouped by resource, with the system roles that hold each by default:
 
-| Permission | Roles |
-| --- | --- |
-| Can Read Product | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| Can Create Product on Facility | Facility Admin, Admin |
-| Can Read Product Knowledge | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| Can Create Product Knowledge on Facility | Facility Admin, Admin |
-| Can Read Inventory Item | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| Can Read Supply Request | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| Can Create Supply Request on Facility | Facility Admin, Admin, Staff, Doctor, Nurse |
-| Can Read Supply Delivery | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| Can Create Supply Delivery on Facility | Facility Admin, Admin |
-| Can Create External Supply Delivery on Facility | Facility Admin, Admin |
+### Product
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Read Product | View batch-level product instances stocked at a facility | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Create Product on Facility | Add a new batch-level product instance to a facility | Facility Admin, Admin |
+
+### Product knowledge
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Read Product Knowledge | View catalogue definitions of stockable items | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Create Product Knowledge on Facility | Define a new catalogue item for a facility | Facility Admin, Admin |
+
+### Inventory item
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Read Inventory Item | View on-hand stock quantities at facility locations | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+
+### Supply request
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Read Supply Request | View requests to move stock into a location | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Create Supply Request on Facility | Raise a request to move stock into a location | Facility Admin, Admin, Staff, Doctor, Nurse |
+
+### Supply delivery
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Read Supply Delivery | View records of stock moving in, between, or out | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Create Supply Delivery on Facility | Record a delivery moving stock at a facility | Facility Admin, Admin |
+| Can Create External Supply Delivery on Facility | Record a delivery of goods arriving from a supplier | Facility Admin, Admin |
 
 Roles are granted to users through organization, facility-organization, and patient memberships. Access to a location's inventory, requests, and deliveries is checked against the facility organizations that own that location, and a permission held at a parent organization cascades to its descendants in the organization tree. In practice, clinical and pharmacy staff can read stock and raise supply requests, while creating catalogue items and recording deliveries is reserved for facility administrators.
 

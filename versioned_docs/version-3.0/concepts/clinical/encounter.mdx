@@ -65,17 +65,17 @@ An encounter sits at the centre of an episode of care and connects to:
 
 ## Permissions
 
-Access to encounters is governed by the encounter permission set. The core permissions and the roles that hold them:
+Access to encounters is governed by the encounter permission set. The complete set of permissions, what each allows, and the system roles that hold them by default:
 
-| Permission | Roles |
-| --- | --- |
-| Can Create encounter | Admin, Doctor, Nurse, Facility Admin |
-| Can list encounters | Admin, Doctor, Nurse, Facility Admin |
-| Can Read encounter | Admin, Doctor, Nurse, Facility Admin |
-| Can Read encounter related clinical data | Admin, Doctor, Nurse, Facility Admin |
-| Update Encounter non clinical | Admin, Doctor, Nurse, Facility Admin |
-| Update Encounter related clinical data | Admin, Doctor, Nurse, Facility Admin |
-| Can submit questionnaire about patient encounters | Staff, Doctor, Nurse, Admin, Facility Admin |
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create encounter | Create a new encounter for a patient | Admin, Doctor, Nurse, Facility Admin |
+| Can list encounters | List encounters; no clinical data is exposed | Admin, Doctor, Nurse, Facility Admin |
+| Update Encounter non clinical | Edit an encounter's non-clinical fields | Admin, Doctor, Nurse, Facility Admin |
+| Update Encounter related clinical data | Edit clinical data recorded against the encounter | Admin, Doctor, Nurse, Facility Admin |
+| Can Read encounter | View an encounter's non-clinical details | Admin, Doctor, Nurse, Facility Admin |
+| Can Read encounter related clinical data | View clinical data recorded against the encounter | Admin, Doctor, Nurse, Facility Admin |
+| Can submit questionnaire about patient encounters | Submit questionnaire responses about a patient's encounters | Staff, Doctor, Nurse, Admin, Facility Admin |
 
 Roles are granted to users through facility-organization memberships, and access is scoped by the organization tree: a permission held at a parent organization cascades to its descendant organizations. A user can reach an encounter when they hold the relevant permission in any organization linked to that encounter — either through the encounter's responsible organizations or through the patient's current location. Writes are additionally blocked once an encounter is in a closed (terminal) state.
 

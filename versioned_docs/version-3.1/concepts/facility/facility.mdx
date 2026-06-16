@@ -40,13 +40,13 @@ Each facility can carry its own monetary configuration: facility-defined discoun
 
 ## Permissions
 
-Access to facilities is governed by the `FacilityPermissions` enum. The key permissions and the roles that hold them:
+Access to facilities is governed by the `FacilityPermissions` enum. The complete set of permissions, what each allows, and the system roles that hold them by default:
 
-| Permission | Roles |
-| --- | --- |
-| Can Create on Facility | Administrator, Admin, Facility Admin |
-| Can Read on Facility | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer |
-| Can Update on Facility | Facility Admin, Administrator, Admin, Staff |
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create on Facility | Register a new facility in the deployment | Administrator, Admin, Facility Admin |
+| Can Read on Facility | View a facility's details and configuration | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer |
+| Can Update on Facility | Edit a facility's details and configuration | Facility Admin, Administrator, Admin, Staff |
 
 Roles are granted to users through organization memberships — a user holds a role within a facility's root organization, a facility sub-organization (team or department), or the geographic organization tree. Access is then scoped by that tree: a permission held at a parent organization cascades to its descendants, so a role granted high in the geographic hierarchy can authorize action on the facilities beneath it, while a role on a facility's own root org governs that site directly.
 

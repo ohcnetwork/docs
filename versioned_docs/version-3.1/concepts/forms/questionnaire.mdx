@@ -45,17 +45,24 @@ Questions are typed, which is what makes the captured data structured. Common ty
 
 ## Permissions
 
-Access to questionnaires is governed by a dedicated permission set; response templates have their own. The key permissions and the roles that hold them:
+Access to questionnaires is governed by a dedicated permission set; response templates have their own. The complete set of permissions and the system roles that hold them by default:
 
-| Permission | Roles |
-| --- | --- |
-| Can Read Questionnaires | Administrator, Doctor, Nurse, Staff, Volunteer, Pharmacist, Facility Admin, Organization Admin/Manager/Member |
-| Can Submit Questionnaires | Administrator, Doctor, Nurse, Staff, Volunteer, Facility Admin, Organization Admin/Manager/Member |
-| Can Create/Update Questionnaires | Administrator, Facility Admin |
-| Can Archive Questionnaires | Administrator, Facility Admin |
-| Can Manage Questionnaires | Administrator, Facility Admin, Organization Admin |
-| Can Read Questionnaire Response Templates | Administrator, Doctor, Nurse, Staff, Volunteer, Pharmacist, Facility Admin |
-| Can Create/Update Questionnaire Response Templates | Administrator, Doctor, Nurse, Staff, Volunteer, Pharmacist, Facility Admin |
+### Questionnaire
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Read Questionnaires | View questionnaire definitions and their questions | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist, Admin (role org), Manager (role org), Member (role org) |
+| Can Submit Questionnaires | Fill out and submit responses to a questionnaire | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Admin (role org), Manager (role org), Member (role org) |
+| Can Create/Update Questionnaires | Author new questionnaires and edit existing ones | Admin, Facility Admin |
+| Can Archive Questionnaires | Retire a questionnaire so it stops accepting submissions | Admin, Facility Admin |
+| Can Manage Questionnaires | Add or remove organizations from questionnaires to control access | Admin, Facility Admin, Admin (role org) |
+
+### Questionnaire Response Template
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Read Questionnaire Response Templates | View saved response templates and order sets | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist |
+| Can Create/Update Questionnaire Response Templates | Create and edit reusable response templates | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist |
 
 Roles are granted to users through organization, facility-organization, and patient memberships. A questionnaire is attached to organizations, and access is decided by checking the user's roles against those organizations. Because permissions cascade down the organization tree, a role held at a parent organization also applies to the questionnaires scoped to its descendants.
 

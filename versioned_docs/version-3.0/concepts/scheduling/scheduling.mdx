@@ -48,15 +48,15 @@ Other terminal or branch states include `noshow` (patient did not arrive), `wait
 
 ## Permissions
 
-Access to schedules and bookings is governed by the schedule permission set. The key permissions and the roles that hold them:
+Access to schedules and bookings is governed by the schedule permission set. This is the complete set of schedule permissions and the system roles that hold them by default:
 
-| Permission | Roles |
-| --- | --- |
-| Can Create on Schedule | Admin, Staff, Facility Admin, Doctor, Nurse |
-| Can list schedule on Object | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
-| Can list bookings on Object | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
-| Can update bookings on Object | Admin, Staff, Facility Admin, Doctor, Nurse |
-| Can reschedule bookings on Object | Doctor, Staff, Nurse, Administrator, Facility Admin, Admin |
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create on Schedule | Create and edit schedules and availability for a resource | Admin, Staff, Facility Admin, Doctor, Nurse |
+| Can list schedule on Object | View the schedules and availability of a resource | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
+| Can list bookings on Object | View the bookings (appointments) made against a resource | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
+| Can update bookings on Object | Create and update bookings, including status changes | Admin, Staff, Facility Admin, Doctor, Nurse |
+| Can reschedule bookings on Object | Reschedule or cancel a booking to a different slot | Doctor, Staff, Nurse, Administrator, Facility Admin, Admin |
 
 Roles are granted to users through facility-organization memberships, and access is scoped by the organization tree: a permission held at a parent organization cascades to its descendants. For practitioner schedules, access is decided against the organizations the practitioner belongs to within the facility; for locations and healthcare services, against that resource's managing organization.
 

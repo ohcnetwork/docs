@@ -56,28 +56,32 @@ Membership is also deliberate: belonging to an organization does not automatical
 
 ## Permissions
 
-Access to organizations is governed by two permission sets — `OrganizationPermissions` for the instance-wide tree and `FacilityOrganizationPermissions` for facility-scoped organizations.
+Access to organizations is governed by two permission sets — `OrganizationPermissions` for the instance-wide tree and `FacilityOrganizationPermissions` for facility-scoped organizations. The tables below list the complete set of permissions in each, with the system roles that hold them by default.
 
-Key instance-wide organization permissions:
+### Organization permissions
 
-| Permission | Roles |
-| --- | --- |
-| Can View Organizations | Facility Admin, Admin, Administrator, Staff, Doctor, Nurse, Volunteer, Pharmacist, plus role-org Admin / Manager / Member |
-| Can Create Organizations | Admin |
-| Can Delete Organizations | Admin |
-| Can Manage Organizations | Admin, role-org Admin |
-| Can Manage Users in an Organization | Admin, Administrator, Facility Admin, role-org Admin |
-| Can List Users in an Organizations | Facility Admin, Admin, Administrator, Staff, Doctor, Nurse, Volunteer, Pharmacist, plus role-org Admin / Manager |
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can View Organizations | View organizations and their details in the tree | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (role org), Manager (role org), Member (role org) |
+| Can Create Organizations | Create new organizations in the instance-wide tree | Admin |
+| Can Delete Organizations | Remove organizations from the tree | Admin |
+| Can Manage Organizations | This includes changing names, descriptions, metadata, etc. | Admin, Admin (role org) |
+| Can Manage Users in an Organization | Add, remove, and assign roles to users in an organization | Admin, Administrator, Facility Admin, Admin (role org) |
+| Can Manage Connected Role Organizations | Add, remove, and assign roles to users in connected role organizations | Admin (role org), Manager (role org) |
+| Can List Users in an Organizations | List the users who belong to an organization | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (role org), Manager (role org) |
+| Is Geo Admin | Geo Admins can manage facilities in their organization | None by default |
 
-Key facility-organization permissions:
+### Facility organization permissions
 
-| Permission | Roles |
-| --- | --- |
-| Can View Facility Organizations | Facility Admin, Admin, Administrator, Staff, Doctor, Nurse, Volunteer |
-| Can Create Facility Organizations | Facility Admin |
-| Can Delete Facility Organizations | Facility Admin |
-| Can Manage Facility Organizations | Facility Admin, Administrator |
-| Can Manage Users in a Facility Organization | Facility Admin, Administrator |
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create Facility Organizations | Create departments and teams within a facility | Facility Admin |
+| Can Create Facility Organizations Root | Create the root facility organization for a facility | Facility Admin |
+| Can View Facility Organizations | View a facility's internal organizations and their details | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer |
+| Can Delete Facility Organizations | Remove organizations from a facility's internal tree | Facility Admin |
+| Can Manage Facility Organizations | This includes changing names, descriptions, metadata, etc. | Facility Admin, Administrator |
+| Can List Users in a Facility Organizations | List the users who belong to a facility organization | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse |
+| Can Manage Users in a Facility Organization | Add, remove, and assign roles to users in a facility organization | Facility Admin, Administrator |
 
 Roles are granted to users through organization and facility-organization memberships. Access is then scoped by the tree: a permission held at a parent organization cascades to all of its descendants, so checks walk the chain of ancestors above a given organization. Geo admins are a special case — they can manage and view facility organizations within the geography they administer, regardless of facility membership. When assigning a role to another user, an admin can only grant a role whose permissions are a subset of their own.
 

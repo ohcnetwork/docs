@@ -52,15 +52,29 @@ An observation always belongs to a **patient** and is normally recorded within a
 
 ## Permissions
 
-Observations are clinical data, so access is governed by the **patient** permission set rather than a dedicated observation permission. Whether a user can record or read observations depends on the roles they hold for that patient.
+Observation instances are clinical data, so access is governed by the **patient** permission set rather than a dedicated observation permission. Whether a user can record or read observations depends on the roles they hold for that patient. The **observation definitions** that template these readings are a separate resource, governed at the facility level by their own permission set.
 
-| Permission | Roles |
-| --- | --- |
-| Can view clinical data about patients | Staff, Doctor, Nurse, Admin, Facility Admin |
-| Can submit questionnaire about patients | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator |
-| Can view questionnaire responses on patient | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator, Pharmacist |
+### Patient clinical data permissions
 
-Separately, the **observation definitions** that template these readings are governed at the facility level: "Can Read Observation Definition" is held by most clinical and admin roles, while "Can Create Observation Definition on Facility" is restricted to Facility Admin and Admin.
+These are the complete patient-context permissions that govern observation instances and the surrounding patient record.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create Patient | Register a new patient record | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
+| Can Update a Patient's data | Edit an existing patient's details | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
+| Can list patients | View the list of patients in scope | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer, Pharmacist |
+| Can view clinical data about patients | Read a patient's clinical data, including observations | Staff, Doctor, Nurse, Admin, Facility Admin |
+| Can view questionnaire responses on patient | Read questionnaire responses recorded for a patient | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator, Pharmacist |
+| Can submit questionnaire about patients | Submit questionnaires that create patient observations | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator |
+
+### Observation definition permissions
+
+These facility-context permissions govern the definitions that standardise codes, units, and reference ranges for observations — distinct from the observation instances above.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create Observation Definition on Facility | Create observation definition templates for a facility | Facility Admin, Admin |
+| Can Read Observation Definition | Read a facility's observation definition templates | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
 
 Roles are granted to users through organization, facility-organization, encounter, and direct patient memberships. Access is scoped by the organization tree: a permission held at a parent organization cascades to its descendants, so a role granted at a facility flows down to the patients and encounters beneath it.
 

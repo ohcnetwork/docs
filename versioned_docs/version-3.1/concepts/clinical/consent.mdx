@@ -64,12 +64,18 @@ A consent belongs to a single **encounter**, and an encounter can carry many con
 
 ## Permissions
 
-Consent is patient clinical data, so it has no dedicated permission of its own — access is governed by the patient permissions defined in `PatientPermissions`. Reading consents requires the clinical-data permission; creating or updating them requires patient write access.
+Consent is patient clinical data, so it has no dedicated permission of its own — access is governed by the complete patient permission set defined in `PatientPermissions`. Reading consents requires the clinical-data permission; creating or updating them requires patient write access. The full set of patient permissions is listed below.
 
-| Permission | Roles |
-| --- | --- |
-| Can view clinical data about patients | Staff, Doctor, Nurse, Admin, Facility Admin |
-| Can Update a Patient's data | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
+### Patient
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create Patient | Register a new patient record | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
+| Can Update a Patient's data | Modify an existing patient's data, including their consents | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
+| Can list patients | List and search patient records | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer, Pharmacist |
+| Can view clinical data about patients | View a patient's clinical data, including their consents | Staff, Doctor, Nurse, Admin, Facility Admin |
+| Can view questionnaire responses on patient | View questionnaire responses recorded for a patient | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator, Pharmacist |
+| Can submit questionnaire about patients | Submit a questionnaire about a patient | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator |
 
 Roles are granted to users through organization, facility-organization, and patient memberships. Access to a specific consent is decided by the roles a user holds on its patient — gathered through the patient's encounters, locations, owning organizations, and any direct patient association. Because access is scoped by the organization tree, a permission held at a parent organization cascades to its descendants.
 

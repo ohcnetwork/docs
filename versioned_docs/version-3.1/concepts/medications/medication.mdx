@@ -56,18 +56,18 @@ Medication access splits along two access models.
 
 **Dispense** has dedicated, location-centric permissions — pharmacists work in the pharmacy and often have no encounter access, so dispensing keys off the dispensing location instead:
 
-| Permission | Roles |
-| --- | --- |
-| Pharmacist in Care | Facility Admin, Administrator, Pharmacist |
-| Medication Dispense Read | Facility Admin, Administrator, Staff, Doctor, Nurse, Pharmacist |
-| Write Medication Dispense | Facility Admin, Administrator, Staff, Doctor, Nurse, Pharmacist |
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Pharmacist in Care | Grants full access to medication requests and lets the holder create dispenses for patients | Facility Admin, Admin, Pharmacist |
+| Medication Dispense Read | Allows reading medication dispense records | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| Write Medication Dispense | Allows creating and updating medication dispense records | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
 
 **Requests, administrations, and statements** are clinical data on the encounter, so they are governed by the encounter clinical-data permissions:
 
-| Permission | Roles |
-| --- | --- |
-| Can Read encounter related clinical data | Administrator, Doctor, Nurse, Facility Admin |
-| Update Encounter related clinical data | Administrator, Doctor, Nurse, Facility Admin |
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Read encounter related clinical data | Allows reading clinical data recorded on an encounter | Admin, Doctor, Nurse, Facility Admin |
+| Update Encounter related clinical data | Allows creating and updating clinical data on an encounter | Admin, Doctor, Nurse, Facility Admin |
 
 Roles are granted to users through organization, facility-organization, and patient memberships. Access is scoped by the organization tree — a permission held at a parent organization cascades to its descendants — and dispense access is checked against the location's facility-organization rather than the encounter.
 

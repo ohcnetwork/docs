@@ -49,12 +49,21 @@ Each specimen carries an **accession identifier** — the lab accession number o
 
 ## Permissions
 
-Access to specimens is controlled by role-based permissions, scoped to the facility:
+Access to specimens is controlled by role-based permissions, scoped to the facility. The tables below list the complete set of permissions that govern specimens and the specimen-definition templates they are based on.
 
-| Permission | Roles |
-| --- | --- |
-| Can Read Specimen | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Pharmacist |
-| Can Create Specimen on Facility | Facility Admin, Admin, Doctor, Nurse |
+### Specimen
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Read Specimen | View specimen records within a facility | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Pharmacist |
+| Can Create Specimen on Facility | Register a new specimen within a facility | Facility Admin, Admin, Doctor, Nurse |
+
+### Specimen Definition
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Read Specimen Definition | View specimen-definition templates within a facility | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Create Specimen Definition on Facility | Create a specimen-definition template within a facility | Facility Admin, Admin |
 
 In practice, viewing and creating a specimen are also gated by access to the linked service request, so a user must be able to reach the underlying order. Roles are granted to users through organization, facility-organization, and patient memberships, and access is scoped by the organization tree — a permission held at a parent organization cascades to its descendants.
 

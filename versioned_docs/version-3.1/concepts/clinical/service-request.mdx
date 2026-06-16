@@ -51,12 +51,12 @@ A service request never stands alone. It is always created within an **encounter
 
 ## Permissions
 
-Access to service requests is governed by a dedicated permission set:
+Access to service requests is governed by a dedicated permission set. The table below lists the complete set of permissions and the system roles that hold each by default:
 
-| Permission | Roles |
-| --- | --- |
-| Can Read Service Request | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| Can Write Service Request on Facility | Facility Admin, Admin, Doctor, Nurse |
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Write Service Request on Facility | Create or update service requests within a facility | Facility Admin, Admin, Doctor, Nurse |
+| Can Read Service Request | View service requests for a facility's patients | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
 
 Roles are granted to users through organization, facility-organization, and patient memberships, and access is scoped by the organization tree — a permission held at a parent organization cascades to its descendants. A user reaches a specific request either through their membership in the encounter's facility organization (and its current location) or through the facility organizations of the locations the request is attached to.
 

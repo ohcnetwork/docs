@@ -48,12 +48,7 @@ This split lets the platform ship sensible defaults while still letting each sit
 
 ## Permissions
 
-Value sets are **shared terminology**, so they do not have a dedicated permission context the way patients or encounters do. Any authenticated user can read and search them — that is what powers the code pickers throughout the product. Authoring is gated to administrators.
-
-| Permission | Roles |
-| --- | --- |
-| Read / search value sets | Any authenticated user (shared reference data) |
-| Create / update value sets | Administrator, Facility Admin |
+Value sets are **shared terminology**, so they do not have a dedicated permission context the way patients or encounters do. There is no value-set permission enum to enumerate: any authenticated user can read and search value sets — that is what powers the code pickers throughout the product — while authoring (creating or changing value sets) is gated to administrators, and system-defined value sets are read-only for everyone.
 
 Roles are granted to users through organization, facility-organization, and patient memberships, and access is scoped by the organization tree — a role held at a parent organization cascades to its descendants. Because value sets are global reference data rather than patient- or encounter-scoped, read access is universal; the administrative roles above are what control who may author or change them, and system-defined value sets are read-only for everyone.
 

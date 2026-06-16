@@ -62,24 +62,50 @@ A new account opens as `active` / `open` and keeps accruing charges until billin
 
 ## Permissions
 
-Billing data is sensitive financial information, so access is governed by dedicated, facility-scoped permissions for each resource. The key permissions:
+Billing data is sensitive financial information, so access is governed by dedicated, facility-scoped permissions for each resource. The complete set of billing permissions and the system roles that hold them by default is listed below, grouped by resource.
 
-| Permission | Roles |
-| --- | --- |
-| Can Read Account | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| Can Create Account / Can Update Account | Facility Admin, Admin |
-| Can Create Charge Item | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
-| Can Update Charge Item / Can Cancel Charge Item | Facility Admin, Admin |
-| Can Create Negative Charge Item | Facility Admin, Admin |
-| Can Read Charge Item | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| Can Read Charge Item Definition | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| Can Create Charge Item Definition on Facility / Can Set Charge Item Definition on Facility | Facility Admin, Admin |
-| Can Write Invoice | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
-| Can Read Invoice | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| Can Destroy Invoice / Can Manage Locked Invoice | Facility Admin, Admin |
-| Can Write Payment Reconciliation | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
-| Can Read Payment Reconciliation | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| Can Destroy Payment Reconciliation | Facility Admin, Admin |
+### Account
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create Account | Open a new financial account for a patient at a facility | Facility Admin, Admin |
+| Can Update Account | Edit an existing account, including its billing status | Facility Admin, Admin |
+| Can Read Account | View a patient's account and its running balances | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+
+### Charge item
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create Negative Charge Item | Raise a charge with a negative amount, such as a refund or adjustment | Facility Admin, Admin |
+| Can Create Charge Item | Add a billable line for a service or product to an account | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| Can Update Charge Item | Edit an existing charge item's details | Facility Admin, Admin |
+| Can Read Charge Item | View charge items recorded on an account | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Cancel Charge Item | Cancel a charge item so it no longer counts toward billing | Facility Admin, Admin |
+
+### Charge item definition
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create Charge Item Definition on Facility | Create a reusable pricing template for a facility | Facility Admin, Admin |
+| Can Read Charge Item Definition | View pricing templates and their rates, surcharges, and taxes | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Set Charge Item Definition on Facility | Assign or activate a pricing template for use at a facility | Facility Admin, Admin |
+
+### Invoice
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Write Invoice | Create or edit an invoice grouping charge items for an account | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| Can Read Invoice | View invoices, their line items, and computed totals | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Destroy Invoice | Delete an invoice from an account | Facility Admin, Admin |
+| Can Manage Locked Invoice | Modify or unlock an invoice that has been locked | Facility Admin, Admin |
+
+### Payment reconciliation
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Write Payment Reconciliation | Record a payment, advance, or credit note against an account | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| Can Read Payment Reconciliation | View payments and credit notes recorded against an account | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Destroy Payment Reconciliation | Delete a recorded payment reconciliation | Facility Admin, Admin |
 
 A broad set of clinical roles can read billing and raise charges, invoices, and payments, while creating or editing accounts, editing or cancelling charges, defining prices, and destroying or unlocking invoices are reserved for administrators. Roles are granted to users through organization, facility-organization, and patient memberships, and access is scoped by the organization tree — a permission held at a parent organization cascades to its descendant facilities and locations.
 

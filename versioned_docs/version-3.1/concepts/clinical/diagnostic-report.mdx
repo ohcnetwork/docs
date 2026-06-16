@@ -45,10 +45,10 @@ A diagnostic report sits downstream of an order and pulls together the data arou
 
 Access to diagnostic reports is governed by a dedicated permission enum:
 
-| Permission | Roles |
-| --- | --- |
-| Can Create Diagnostic Report on Facility | Facility Admin, Admin, Doctor, Nurse |
-| Can Read Diagnostic Report | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer |
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create Diagnostic Report on Facility | Create diagnostic reports for a facility's patients | Facility Admin, Admin, Doctor, Nurse |
+| Can Read Diagnostic Report | View diagnostic reports and their results | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer |
 
 Roles are granted to users through organization, facility-organization, and patient memberships. Access is then scoped by the organization tree: a permission held at a parent organization cascades to its descendants. In practice, Care decides report access via the originating service request — a user can act on a report if they hold the matching permission on the encounter (or on a facility organization tied to the request's locations) that the report belongs to.
 

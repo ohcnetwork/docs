@@ -50,12 +50,12 @@ Queue progression — which token is current and who is next — is maintained b
 
 Token access is governed by facility-scoped permissions. Whether a user can see or manage a queue is decided by their membership in the facility organization that owns the resource the queue is bound to.
 
-| Permission | Roles |
-| --- | --- |
-| Can Create on Token | Administrator, Staff, Facility Admin, Doctor, Nurse |
-| Can list token on Object | Administrator, Staff, Facility Admin, Doctor, Nurse |
-| Can Create on Token Category | Administrator, Staff, Facility Admin |
-| Can list token category on Facility | Administrator, Staff, Facility Admin, Doctor, Nurse |
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create on Token | Issue and update tokens in a facility queue | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
+| Can list token on Object | View the tokens issued for a queue | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
+| Can Create on Token Category | Create and manage token categories for a facility | Admin, Staff, Facility Admin |
+| Can list token category on Facility | View the token categories defined for a facility | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
 
 Roles are granted to users through facility-organization memberships. Access is scoped by the organization tree: a permission held at a parent organization cascades to its descendants, so a user's reach over a queue follows the organization that manages the queue's practitioner, location, or healthcare service.
 

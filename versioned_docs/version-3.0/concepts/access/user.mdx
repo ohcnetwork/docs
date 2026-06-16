@@ -40,12 +40,12 @@ Each user has a stable public identifier (surfaced as `id` in the API) that is s
 
 ## Permissions
 
-User administration is governed by the user permission set. The two key permissions and the roles that hold them:
+User administration is governed by the user permission set. The complete set of user permissions, what each allows, and the system roles that hold it by default:
 
-| Permission | Roles |
-| --- | --- |
-| Can create User in care | Admin, Facility Admin, Administrator |
-| Can list Users in Care | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist |
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can create User in care | Create new user accounts within a facility | Admin, Facility Admin, Administrator |
+| Can list Users in Care | List and view user accounts in the facility | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist |
 
 Creating users is reserved for administrators, while most clinical and support roles can list and view other users in their facility. Roles are granted to a user through organization, facility-organization, and patient memberships, and access is scoped by the organization tree — a permission held at a parent organization cascades to its descendants. A superuser bypasses these checks entirely.
 

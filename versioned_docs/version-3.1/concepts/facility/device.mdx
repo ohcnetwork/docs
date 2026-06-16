@@ -48,11 +48,11 @@ Care also keeps a **service history** — a log of maintenance and servicing eve
 
 Access to devices is governed by the device permissions, granted to users through their roles:
 
-| Permission | Roles |
-| --- | --- |
-| Can List Devices on Facility | Staff, Administrator, Doctor, Nurse, Facility Admin, Pharmacist |
-| Can Manage Devices on Facility | Staff, Administrator, Facility Admin, Pharmacist |
-| Can Manage Device Associations to Encounters | Staff, Administrator, Doctor, Nurse, Facility Admin |
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can List Devices on Facility | View the devices registered on a facility | Staff, Admin, Doctor, Nurse, Facility Admin, Pharmacist |
+| Can Manage Device Associations to Encounters | Attach devices to or detach them from encounters | Staff, Admin, Doctor, Nurse, Facility Admin |
+| Can Manage Devices on Facility | Create, update, and manage devices on a facility | Staff, Admin, Facility Admin, Pharmacist |
 
 Roles are granted to users through facility-organization memberships, and access is scoped by the organization tree: a permission held at a parent organization cascades to its descendants. A device is visible to users whose memberships overlap its managing organization (or the organization of the location it currently sits in), so listing and management follow the facility's organization hierarchy rather than being open to everyone in the facility.
 

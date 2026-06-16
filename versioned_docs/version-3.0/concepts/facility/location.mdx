@@ -52,12 +52,12 @@ Separately, an **operational status** describes the live state of a bed or room 
 
 Access to locations is governed by the facility-location permissions:
 
-| Permission | Roles |
-| --- | --- |
-| Can List Facility Locations | Administrator, Doctor, Nurse, Staff, Pharmacist, Facility Admin, Admin |
-| Can Create/Update Facility Locations | Facility Admin, Staff, Admin |
-| Can List Facility Location Organizations | Facility Admin, Staff, Admin |
-| Can Create/Update Facility Location Organizations | Facility Admin, Staff, Admin |
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can List Facility Locations | View the locations and location tree within a facility | Admin, Doctor, Facility Admin, Administrator, Nurse, Staff, Pharmacist |
+| Can Create/Update Facility Locations | Add new locations or edit existing ones in a facility | Facility Admin, Admin, Staff |
+| Can List Facility Location Organizations | View the organizations granted access to a location | Facility Admin, Admin, Staff |
+| Can Create/Update Facility Location Organizations | Grant or update organization access to a location | Facility Admin, Admin, Staff |
 
 Roles are granted to users through facility-organization membership, and access is scoped by the organization tree: a permission held on an organization applies to the locations that organization can reach, and grants at a parent location cascade to its children. Because that cascade is computed asynchronously, newly granted access settles a moment after the change is made.
 

@@ -72,18 +72,27 @@ So a request to read a patient resolves to "which roles do I hold that reach thi
 
 ## Permissions
 
-Permissions are declared in code with a display name, a context, and the default roles that hold them. A few representative examples:
+Permissions are declared in code with a display name, a context, and the default roles that hold them. The complete set of organization- and user-related permissions follows.
 
-| Permission | Roles |
-| --- | --- |
-| Can Create Patient | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
-| Can view clinical data about patients | Staff, Doctor, Nurse, Admin, Facility Admin |
-| Can Create encounter | Doctor, Nurse, Admin, Facility Admin |
-| Can create User in care | Admin, Facility Admin, Administrator |
-| Can View Organizations | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, plus role-org Admin / Manager / Member |
-| Can Manage Users in an Organization | Admin, Administrator, Facility Admin, role-org Admin |
-| Can Create Organizations | Admin |
-| Can Delete Organizations | Admin |
+### Organization permissions
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can View Organizations | View organizations the user can reach | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (role org), Manager (role org), Member (role org) |
+| Can Create Organizations | Create new organizations in the tree | Admin |
+| Can Delete Organizations | Delete existing organizations | Admin |
+| Can Manage Organizations | Change an organization's name, description, metadata, etc. | Admin, Admin (role org) |
+| Can Manage Users in an Organization | Add, remove, and assign roles to users in an organization | Admin, Administrator, Facility Admin, Admin (role org) |
+| Can Manage Connected Role Organizations | Add, remove, and assign roles to users in connected role organizations | Admin (role org), Manager (role org) |
+| Can List Users in an Organizations | List the users who belong to an organization | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (role org), Manager (role org) |
+| Is Geo Admin | Geo Admins can manage facilities in their organization | (no default roles) |
+
+### User permissions
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can create User in care | Create new user accounts in Care | Admin, Facility Admin, Administrator |
+| Can list Users in Care | List user accounts in Care | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist |
 
 Roles are granted to users through organization, facility-organization, or patient memberships, and access is scoped by the organization tree: a permission held at a parent organization cascades to its descendants, and a user's effective permissions in any context are the union of all roles that reach it. Permissions themselves are platform-maintained reference data — administrators assign roles, not individual permissions.
 

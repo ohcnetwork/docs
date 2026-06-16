@@ -45,10 +45,10 @@ Because of these links, a healthcare service is what scheduling, ordering, and s
 
 Access to healthcare services is governed by the `HealthcareService` permissions:
 
-| Permission | Roles |
-| --- | --- |
-| Can Read Healthcare Service | Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| Can Create Healthcare Service on Facility | Facility Admin, Administrator |
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create Healthcare Service on Facility | Create a healthcare service under a facility | Facility Admin, Admin |
+| Can Read Healthcare Service | View a facility's healthcare services | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
 
 Reading the catalogue of services is broadly available to clinical and support staff, while creating or changing services is restricted to facility administrators. Roles are granted to users through facility-organization memberships, and access is scoped by the organization tree: a permission held at a parent organization cascades to its descendants. Creating a service additionally requires the permission at the facility root.
 

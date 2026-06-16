@@ -48,13 +48,30 @@ Alongside the clinical state, a **verification status** (unconfirmed, presumed, 
 
 ## Permissions
 
-Allergy & Intolerance has no dedicated permission of its own. Access is governed by the **patient clinical-data** and **encounter clinical-data** permissions, checked against the patient the entry belongs to and the encounter it is recorded in.
+Allergy & Intolerance has no dedicated permission of its own. Access is governed by the **patient** and **encounter** permissions, checked against the patient the entry belongs to and the encounter it is recorded in. The tables below list the complete set of permissions for both resources.
 
-| Permission | Roles |
-| --- | --- |
-| Can view clinical data about patients | Doctor, Nurse, Staff, Administrator, Facility Admin |
-| Can Update a Patient's data | Doctor, Nurse, Staff, Administrator, Facility Admin |
-| Update Encounter related clinical data | Doctor, Nurse, Administrator, Facility Admin |
+### Patient
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create Patient | Register a new patient in the system | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
+| Can Update a Patient's data | Modify an existing patient's record | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
+| Can list patients | Browse and search the patient list | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer, Pharmacist |
+| Can view clinical data about patients | Read a patient's clinical records, including allergies | Staff, Doctor, Nurse, Admin, Facility Admin |
+| Can view questionnaire responses on patient | Read questionnaire responses recorded for a patient | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator, Pharmacist |
+| Can submit questionnaire about patients | Fill and submit questionnaires about a patient | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator |
+
+### Encounter
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create encounter | Start a new encounter for a patient | Admin, Doctor, Nurse, Facility Admin |
+| Can list encounters | Browse encounters; no clinical data is exposed | Admin, Doctor, Nurse, Facility Admin |
+| Update Encounter non clinical | Edit an encounter's non-clinical details | Admin, Doctor, Nurse, Facility Admin |
+| Update Encounter related clinical data | Create or modify clinical data on an encounter, including allergies | Admin, Doctor, Nurse, Facility Admin |
+| Can Read encounter | View an encounter's non-clinical details | Admin, Doctor, Nurse, Facility Admin |
+| Can Read encounter related clinical data | Read clinical data recorded on an encounter, including allergies | Admin, Doctor, Nurse, Facility Admin |
+| Can submit questionnaire about patient encounters | Fill and submit questionnaires about an encounter | Staff, Doctor, Nurse, Admin, Facility Admin |
 
 Reading allergies requires "Can view clinical data about patients"; creating an entry requires "Can Update a Patient's data"; updating one requires "Update Encounter related clinical data" on its encounter. These roles are granted to users through organization, facility-organization, or direct patient memberships, and access is scoped by the organization tree — a permission held at a parent organization cascades to its descendants, so a user with the right role on a facility automatically reaches the patients and encounters beneath it.
 
