@@ -1,0 +1,143 @@
+---
+sidebar_position: 3
+---
+
+# Inventory Item
+
+Technical reference for the `InventoryItem` module in Care EMR.
+
+**Source:**
+- Model: [`care/emr/models/inventory_item.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/inventory_item.py)
+- Spec: [`care/emr/resources/inventory/inventory_item/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/inventory_item/spec.py)
+- Helpers: [`create_inventory_item.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/inventory_item/create_inventory_item.py), [`sync_inventory_item.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/inventory_item/sync_inventory_item.py)
+
+`InventoryItem` represents the availability of a single [`Product`](../supply/product.mdx) at a single [facility location](../facility/location.mdx). It is the on-hand counterpart to the supply workflow: deliveries move product into a location and dispenses move it out, and the resulting balance is recomputed into `net_content`. Inventory rows are **created and maintained automatically by the server** — they are not directly created through a write API; the only client-facing mutation is changing `status` (e.g. marking a line `inactive` when an item is damaged or no longer dispensed).
+
+The Django model is the **storage** layer. The Pydantic **resource specs** (`care/emr/resources/inventory/inventory_item/`) define the `status` enum and the read schema, including the nested `product` / `location` objects that the model exposes only as foreign keys.
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `InventoryItem` | Stock of one product at one location, with its current net quantity |
+
+`InventoryItem` extends `EMRBaseModel` (shared Care EMR base with `external_id`, audit fields, and soft-delete semantics). See [Base model](../foundation/base-model.mdx).
+
+## `InventoryItem` fields
+
+| Field | Type | Required | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `location` | `FK → FacilityLocation` | yes | — | `on_delete=PROTECT`. The facility location holding the stock (e.g. central store, ward pharmacy). |
+| `product` | `FK → Product` | yes | — | `on_delete=PROTECT`. The product being tracked. |
+| `status` | `CharField(255)` | yes | — | Lifecycle/availability status. Spec constrains values to `InventoryItemStatusOptions` (see below). |
+| `net_content` | `DecimalField` | no | `Decimal(0)` | `max_digits=20`, `decimal_places=6`. Current on-hand quantity. Server-computed (see [`sync()`](#sync_inventory_item)). May go negative if dispenses/outgoing deliveries exceed incoming. |
+
+The pair `(location, product)` is treated as unique — there is at most one inventory item per product per location (enforced in `save()`, see [Methods & save behaviour](#methods--save-behaviour)).
+
+### `InventoryItemStatusOptions` values
+
+Defined in [`spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/inventory_item/spec.py). The spec restricts `status` to these values (the model field itself is an unconstrained `CharField`):
+
+| Value | Meaning |
+| --- | --- |
+| `active` | Stock line is live and dispensable. Default applied when the server auto-creates a row. |
+| `inactive` | No longer actively dispensed (e.g. damaged stock, or other concern). |
+| `entered_in_error` | Record created in error. |
+
+## Related models
+
+`InventoryItem` references two models from other domains, plus the transactional records that drive its quantity:
+
+```text
+location → FK FacilityLocation (PROTECT)
+product  → FK Product (PROTECT)
+
+drives net_content (read in sync_inventory_item):
+  SupplyDelivery       (incoming completed, outgoing in-progress/completed)
+  MedicationDispense   (dispensed-out, excluding cancelled statuses)
+```
+
+Both foreign keys use `on_delete=PROTECT`, so a location or product cannot be hard-deleted while inventory rows reference it. See [Supply Delivery](../supply/supply-delivery.mdx) and [Medication Dispense](../medications/medication-dispense.mdx) for the records that adjust `net_content`.
+
+## Resource specs (API schema)
+
+All specs extend `EMRResource` (`care/emr/resources/base.py`), which provides `serialize` / `de_serialize` and the `perform_extra_serialization` hook used to inline the nested `product` and `location` objects.
+
+| Spec class | Role | Fields exposed | Notes |
+| --- | --- | --- | --- |
+| `BaseInventoryItemSpec` | shared | `id`, `status` | `__model__ = InventoryItem`, `__exclude__ = []`. `status` typed as `InventoryItemStatusOptions`. |
+| `InventoryItemWriteSpec` | write | `id`, `status` | Inherits `BaseInventoryItemSpec` unchanged — only `status` is client-writable; `product`, `location`, and `net_content` are server-maintained. |
+| `InventoryItemReadSpec` | read · list | `id`, `status`, `net_content`, `product`, `location` | See serialization below. |
+| `InventoryItemRetrieveSpec` | read · detail | same as `InventoryItemReadSpec` | `pass` subclass — identical shape to the list spec. |
+
+### Read serialization (`InventoryItemReadSpec.perform_extra_serialization`)
+
+| Field | Serialized shape | Source |
+| --- | --- | --- |
+| `id` | `UUID4` | `obj.external_id` (the public id, not the internal pk). |
+| `net_content` | `Decimal` (`max_digits=20`, `decimal_places=0` on the read field) | model `net_content`. |
+| `product` | nested `dict` | `ProductReadSpec.serialize(obj.product).to_json()` — includes nested `product_knowledge` and optional `charge_item_definition`. See [Product](../supply/product.mdx). |
+| `location` | nested `dict` | `FacilityLocationListSpec.serialize(obj.location).to_json()` — includes `parent`, `mode`, `has_children`, `system_availability_status`, and optional `current_encounter`. See [Location](../facility/location.mdx). |
+
+`status` (typed `InventoryItemStatusOptions`) is carried through from `BaseInventoryItemSpec`. There is no separate `CreateSpec` — inventory rows are not created via a client write path.
+
+## Methods & save behaviour
+
+### `save()`
+
+On creation only (when `self.id` is unset), `save()` enforces uniqueness of the `(location, product)` pair:
+
+```text
+if creating and InventoryItem with same (location, product) exists:
+    raise ValueError("Inventory item already exists")
+```
+
+- The check runs **only for new rows**; updates to an existing item skip it.
+- Violations raise a plain `ValueError`, not a database `IntegrityError` — callers creating items through the ORM should handle it.
+
+### `create_inventory_item(product, location)`
+
+Helper in [`create_inventory_item.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/inventory_item/create_inventory_item.py). Idempotent get-or-create:
+
+- Returns the existing `(product, location)` row if one exists.
+- Otherwise creates one with `status=active`, `net_content=0`, and saves it.
+
+### `sync_inventory_item()`
+
+Helper in [`sync_inventory_item.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/inventory_item/sync_inventory_item.py) — the source of truth for `net_content`. It runs under `InventoryLock(product, location)` and recomputes the balance from transactional records, then writes it back:
+
+```text
+net_content =
+    Σ incoming completed deliveries  (SupplyDelivery.status == completed,
+                                      order.destination == location,
+                                      supplied_inventory_item.product == product)
+  - Σ outgoing in-progress + completed deliveries
+                                     (SupplyDelivery.order.origin is not null,
+                                      supplied_inventory_item == this item,
+                                      status in {in_progress, completed})
+  - Σ dispenses                      (MedicationDispense.item == this item,
+                                      excluding cancelled statuses)
+```
+
+- If no row exists for `(product, location)`, it is auto-created (`status=active`, `net_content=0`) before computing.
+- `net_content` is the **aggregate sum** of `supplied_item_quantity` / dispense `quantity`; it can be negative.
+- Called whenever a delivery is completed or a dispense changes, keeping availability current.
+
+## API integration notes
+
+- Inventory items are **server-maintained**: created via `create_inventory_item` / `sync_inventory_item`, never through a direct client create. The only meaningful client write is changing `status` (e.g. to `inactive`).
+- One inventory row exists per `(location, product)` pair — `net_content` is adjusted on the existing row rather than by inserting duplicates.
+- `net_content` is recomputed by `sync_inventory_item` under an `InventoryLock`; do not patch it directly — it will be overwritten on the next sync.
+- Read responses inline the full `product` (with `product_knowledge`) and `location` objects, not just their ids.
+- `location` and `product` are `PROTECT` foreign keys — referenced products and locations cannot be hard-deleted while stock rows exist.
+
+## Related
+
+- Reference: [Product](../supply/product.mdx)
+- Reference: [Supply Request](../supply/supply-request.mdx)
+- Reference: [Supply Delivery](../supply/supply-delivery.mdx)
+- Reference: [Medication Dispense](../medications/medication-dispense.mdx)
+- Reference: [Location](../facility/location.mdx)
+- Reference: [Base model](../foundation/base-model.mdx)
+- Source: [inventory_item.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/inventory_item.py)
+- Source: [inventory_item spec on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/inventory_item/spec.py)

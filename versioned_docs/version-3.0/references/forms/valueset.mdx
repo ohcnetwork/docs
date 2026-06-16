@@ -1,0 +1,196 @@
+---
+sidebar_position: 4
+---
+
+# Value Set
+
+Technical reference for the `ValueSet` module in Care EMR. A value set is a FHIR-aligned composition of coded concepts drawn from one or more code systems; it constrains the valid options a [questionnaire](../forms/questionnaire.mdx) can offer for a coded answer.
+
+The Django model is the **storage layer** — `compose` is an opaque `JSONField`. The actual structure (include/exclude clauses, filters, status enum, validation, and the read/write API schemas) lives in the Pydantic **resource specs**. This page documents both.
+
+**Source:**
+- Model: [`care/emr/models/valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/valueset.py)
+- Resource spec: [`care/emr/resources/valueset/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/valueset/spec.py)
+- Compose schema: [`care/emr/resources/common/valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/valueset.py)
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `ValueSet` | A named, FHIR-compatible composition of codes from one or more code systems |
+| `UserValueSetPreference` | Stores a user's favorited codes within a value set |
+| `RecentViewsManager` | Redis-backed helper for tracking a user's recently used codes (not a database model) |
+
+`ValueSet` and `UserValueSetPreference` extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, audit fields, `history`/`meta` JSON, and soft-delete semantics). `RecentViewsManager` is a plain Python class backed by Redis, not a Django model.
+
+## `ValueSet` fields
+
+A value set is **not** stored as a flat list of codes. It is stored as a `compose` object describing *rules* (include/exclude clauses against code systems); the actual member codes are resolved in real time against terminology servers when the value set is searched or a code is looked up.
+
+| Field | Model type | Spec type | Required | Default | Notes |
+| --- | --- | --- | --- | --- | --- |
+| `slug` | `SlugField(255)` | `SlugType` | yes | — | `unique`, indexed. Public identifier. Spec constrains to min 5 / max 50 chars, URL-safe (`^[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]$`); must start/end alphanumeric. Uniqueness re-checked in spec; `system-` prefix reserved (see validation) |
+| `name` | `CharField(255)` | `str` | yes | — | Display name. Spec rejects blank/whitespace-only and strips surrounding whitespace |
+| `description` | `TextField` | `str` | yes (in spec) | `""` (model) | Free text. Model defaults to empty string; spec requires the field present |
+| `compose` | `JSONField` | `ValueSetCompose` | yes | `dict` | Composition rules — structured `include`/`exclude` clauses (see [`compose` shape](#compose-shape)). On write, persisted via `compose.model_dump(exclude_defaults=True, exclude_none=True)` |
+| `status` | `CharField(255)` | `ValueSetStatusOptions` | yes | — | Publication status enum (see [status values](#valuesetstatusoptions-values)) |
+| `is_system_defined` | `BooleanField` | `bool` | no | `False` | Marks value sets shipped/maintained by the platform rather than authored by a deployment |
+
+### `ValueSetStatusOptions` values
+
+Enum (`str`) defined in `resources/valueset/spec.py`. The model column is a free `CharField`, but the spec restricts writes to these values.
+
+| Value | Meaning |
+| --- | --- |
+| `draft` | Authored, not yet in use |
+| `active` | Published and usable |
+| `retired` | No longer recommended for use |
+| `unknown` | Status not known |
+
+### `compose` shape
+
+`compose` holds a `ValueSetCompose` structure (`care.emr.resources.common.valueset`). All nested models set `extra="forbid"` — unknown keys are rejected. Each clause targets a `system` (code system URI) and may select concepts directly or via filters.
+
+#### `ValueSetCompose`
+
+| Field | Type | Required | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `id` | `str \| None` | no | `None` | Optional identifier |
+| `include` | `list[ValueSetInclude]` | yes | — | Inclusion clauses (at least the field must be present) |
+| `exclude` | `list[ValueSetInclude] \| None` | no | `None` | Exclusion clauses; same shape as `include` |
+| `property` | `list[str] \| None` | no | `None` | Properties to return for member concepts |
+
+#### `ValueSetInclude` (used for both `include` and `exclude`)
+
+| Field | Type | Required | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `id` | `str \| None` | no | `None` | Optional identifier |
+| `system` | `str \| None` | no | `None` | Code system URI this clause targets |
+| `version` | `str \| None` | no | `None` | Optional code system version |
+| `concept` | `list[ValueSetConcept] \| None` | no | `None` | Explicitly pinned concepts |
+| `filter` | `list[ValueSetFilter] \| None` | no | `None` | Rule-based selection |
+
+Validation: a single clause may set **`concept` or `filter`, not both** (`check_concept_or_filter`, mode=after).
+
+#### `ValueSetConcept`
+
+| Field | Type | Required | Default |
+| --- | --- | --- | --- |
+| `id` | `str \| None` | no | `None` |
+| `code` | `str \| None` | no | `None` |
+| `display` | `str \| None` | no | `None` |
+
+#### `ValueSetFilter`
+
+| Field | Type | Required | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `id` | `str \| None` | no | `None` | |
+| `property` | `str \| None` | no | `None` | The concept property to filter on |
+| `op` | `str \| None` | no | `None` | Filter operator — validated against the allowed list below |
+| `value` | `str \| None` | no | `None` | Value to compare against |
+
+##### `op` allowed values
+
+`op` is validated by `validate_op`; any other value raises. Allowed: `=`, `is-a`, `descendent-of`, `is-not-a`, `regex`, `in`, `not-in`, `generalizes`, `child-of`, `descendent-leaf`, `exists`.
+
+```text
+compose:
+  include:
+    - system:  <code system uri>
+      version: <optional system version>
+      concept: [ { code, display } ]      # pin concepts (mutually exclusive with filter)
+      filter:  [ { property, op, value } ] # rule-based selection
+  exclude:
+    - ... same ValueSetInclude shape ...
+  property: [ <property names to return> ]
+```
+
+`create_composition()` regroups these clauses by `system` into `{ <system>: {include: [...], exclude: [...]} }` so each system can be queried independently, dumping each clause with `exclude_defaults=True`.
+
+> Note: a second, simpler `ValueSet` BaseModel (`name`, `status`, `compose`) and `ValueSetConcept`/`ValueSetFilter`/`ValueSetInclude`/`ValueSetCompose` all live in `resources/common/valueset.py`. The persisted/API resource model is `ValueSetBaseSpec` in `resources/valueset/spec.py`, which reuses the same `ValueSetCompose`.
+
+## Resource specs (API schema)
+
+All specs extend `EMRResource` (`resources/base.py`), which provides `serialize` (DB object → pydantic, via `model_construct`) and `de_serialize` (pydantic → DB object). `ValueSet` does not set `__store_metadata__`, so spec fields map directly to model columns (no `meta` bag).
+
+| Spec class | Role | Fields exposed |
+| --- | --- | --- |
+| `ValueSetBaseSpec` | shared base (`__model__ = ValueSet`) | `id` (UUID4), `slug`, `name`, `description`, `compose`, `status`, `is_system_defined` |
+| `ValueSetSpec` | write · create & update | inherits base + validation + `perform_extra_deserialization` |
+| `ValueSetReadSpec` | read · list & detail | inherits base + `created_by`, `updated_by` (dicts) |
+
+### Validation (`ValueSetSpec`)
+
+| Rule | Where | Behaviour |
+| --- | --- | --- |
+| Name not empty | `validate_name` (field) | Rejects blank/whitespace-only; strips surrounding whitespace |
+| Slug unique | `validate_slug` (field) | Queries existing `ValueSet` rows; on update, excludes the current object (via `context["object"].id` when `context["is_update"]`); raises `"Slug must be unique"` otherwise |
+| Reserved slug | `validate_slug_system` (model, after) | If **not** `is_system_defined` and slug contains `"system-"`, raises `"Cannot create valueset with system like slug"` |
+| Slug format | `SlugType` | min 5 / max 50 chars, URL-safe, alphanumeric start/end |
+| `op` allowlist | `ValueSetFilter.validate_op` | See [op allowed values](#op-allowed-values) |
+| `concept` xor `filter` | `ValueSetInclude.check_concept_or_filter` | Both present → error |
+
+### Server-side serialization hooks
+
+| Hook | Spec | Effect |
+| --- | --- | --- |
+| `perform_extra_deserialization(is_update, obj)` | `ValueSetSpec` | On write, sets `obj.compose = self.compose.model_dump(exclude_defaults=True, exclude_none=True)` — normalizes the JSON stored in the model |
+| `perform_extra_serialization(mapping, obj)` | `ValueSetReadSpec` | On read, sets `mapping["id"] = obj.external_id` and populates `created_by` / `updated_by` via `serialize_audit_users` |
+
+`ValueSetSpec.model_rebuild()` is called at module load so the forward reference to `ValueSetCompose` resolves.
+
+## Related models
+
+### `UserValueSetPreference`
+
+Stores per-user favorited codes for a value set.
+
+```text
+user          → FK users.User (CASCADE)
+valueset      → FK emr.ValueSet (CASCADE)
+favorite_codes → JSONField (default=list)
+```
+
+`unique_together = ("user", "valueset")` — one preference row per user per value set. The class constant `MAX_FAVORITES` (default `50`, overridable via `settings.MAX_FAVORITES_FOR_VALUESET`) caps how many codes a user may favorite.
+
+### `RecentViewsManager`
+
+Not a database model — a classmethod-only helper that tracks a user's recently viewed codes in a Redis list (one list per `cache_key`). Used to surface recently used codes alongside favorites in pickers.
+
+| Member | Behaviour |
+| --- | --- |
+| `get_client()` | Lazily opens the `"default"` Redis connection |
+| `get_recent_views(cache_key)` | Returns the decoded list of recent code objects |
+| `add_recent_view(cache_key, code_obj)` | De-dupes by `code` (no-op if `code` missing), `LPUSH`es the entry, then `LTRIM`s to `MAX_RECENT_VIEW` |
+| `remove_recent_view(cache_key, code_obj)` | Removes any list entry matching `code` (no-op if `code` missing) |
+| `clear_recent_views(cache_key)` | Deletes the whole list |
+| `_remove_by_code(cache_key, code)` | Internal: scans the list and `LREM`s matching entries; malformed JSON entries are skipped |
+
+`MAX_RECENT_VIEW` defaults to `20` (overridable via `settings.MAX_RECENT_VIEW_FOR_VALUESET`). Entries are JSON-encoded; malformed entries are skipped on read/remove.
+
+## Methods & save behaviour
+
+`ValueSet` does not override `save()`/`delete()` (soft-delete is inherited from the base). Its notable methods drive terminology resolution:
+
+- `create_composition()` — converts `compose` (dict or `ValueSetCompose`) into a per-system map of `include`/`exclude` clauses, dumping each clause with `exclude_defaults=True`.
+- `search(search="", count=10, display_language=None)` — for each system in the composition, runs `ValueSetResource().filter(...).search()` (optionally filtered by `display_language`) and concatenates the results. Codes are fetched from the terminology server at request time; nothing is materialized into the value set.
+- `lookup(code)` — checks whether `code` is a member of the value set by running `ValueSetResource().filter(...).lookup(code)` against each system; returns `True` if **any** system matches.
+
+Because membership is resolved live, editing `compose` immediately changes which codes the value set yields — there is no expansion/cache to rebuild.
+
+## API integration notes
+
+- Value sets are exposed through Care's REST API and align with the FHIR `ValueSet` resource; writes go through `ValueSetSpec`, reads through `ValueSetReadSpec`. `search` powers code pickers and `lookup` validates submitted codes.
+- The model column `compose` is opaque JSON; always write through the `ValueSetCompose` schema (clauses, filters, `op` allowlist, `concept` xor `filter`) — `perform_extra_deserialization` re-dumps it with `exclude_defaults`/`exclude_none` so stored JSON stays normalized.
+- Value sets store composition *rules*, not expanded code lists. Members are queried in real time from terminology servers, so results can vary as upstream systems change.
+- `is_system_defined` value sets are platform-maintained; deployments should treat them as read-only and author their own value sets for local terminology. The `system-` slug prefix is reserved for system value sets.
+- `favorite_codes` (via `UserValueSetPreference`) and recent views (via `RecentViewsManager`/Redis) are per-user personalization, not part of the value set definition.
+
+## Related
+
+- Reference: [Questionnaire](../forms/questionnaire.mdx) — consumes value sets to constrain coded answers
+- Reference: [Observation definition](../clinical/observation-definition.mdx) — binds coded fields to value sets
+- Reference: [Base models & conventions](../foundation/base-model.mdx)
+- Source (model): [valueset.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/valueset.py)
+- Source (spec): [resources/valueset/spec.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/valueset/spec.py)
+- Source (compose): [resources/common/valueset.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/valueset.py)

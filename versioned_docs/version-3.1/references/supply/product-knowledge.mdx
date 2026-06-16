@@ -1,0 +1,250 @@
+---
+sidebar_position: 2
+---
+
+# Product Knowledge
+
+Technical reference for the `ProductKnowledge` module in Care EMR.
+
+`ProductKnowledge` stores the foundational, reusable information about a product that need not be duplicated across individual stock items — for example its coding, base presentation unit, ingredient/nutrient definition, drug characteristics, and storage guidelines. Every concrete `Product` in Care references a `ProductKnowledge` entry, which may be defined instance-wide or scoped to a single facility.
+
+The Django model is only the **storage layer**: `code`, `names`, `storage_guidelines`, `definitional`, and `base_unit` are opaque `JSONField`s whose real structure is defined by the Pydantic **resource specs** (the API/implementation layer). The enum values, nested JSON shapes, validation, and read/write schemas below all come from those specs.
+
+**Source:**
+- Model: [`care/emr/models/product_knowledge.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/product_knowledge.py)
+- Spec: [`care/emr/resources/inventory/product_knowledge/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/product_knowledge/spec.py)
+- Value sets: [`care/emr/resources/inventory/product_knowledge/valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/product_knowledge/valueset.py)
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `ProductKnowledge` | Foundational, reusable definition of a product (medication, nutritional product, or consumable) |
+
+`ProductKnowledge` extends [`SlugBaseModel`](../foundation/base-model.mdx), which itself extends `EMRBaseModel` (shared Care EMR base with `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON). `SlugBaseModel` sets `FACILITY_SCOPED = True` and adds slug helpers (`calculate_slug`, `parse_slug`), so a record can be addressed by an instance slug (`i-<slug>`) or a facility slug (`f-<facility_external_id>-<slug>`).
+
+## `ProductKnowledge` fields
+
+### Identity & scope
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `facility` | `FK → facility.Facility` | `PROTECT`, nullable. Null = instance-level definition; set = facility-scoped. Excluded from the spec base (`__exclude__ = ["facility"]`); set on write via `facility` UUID, surfaced on read as `is_instance_level` |
+| `slug` | `CharField(255)` | Slug value; combined with `facility` to form the addressable slug. Set server-side from `slug_value` on write |
+| `alternate_identifier` | `CharField(255)` | Nullable; secondary external identifier |
+| `status` | `CharField(255)` | Lifecycle status. Spec-constrained to `ProductKnowledgeStatusOptions` (required) |
+| `product_type` | `CharField(255)` | Product category. Spec-constrained to `ProductTypeOptions` (required) |
+| `category` | `FK → emr.ResourceCategory` | `CASCADE`, nullable; classifies the product into a [resource category](../platform/resource-category.mdx). On write supplied as a category **slug** string and resolved via `ResourceCategory.objects.get(slug=...)`; on read serialized as a nested object |
+
+### Naming
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `name` | `CharField(255)` | Primary display name (required in spec) |
+| `names` | `JSONField` (list) | Nullable; list of `ProductName { name_type: ProductNameTypes, name: str }`. `name_type` is bound to the `ProductNameTypes` enum (not a FHIR value set) |
+| `names_cache` | `CharField(2048)` | Nullable; denormalized space-joined string of `name` + all `names` entries, rebuilt on every `save()` for search. Platform-maintained — not in any spec, do not set from clients |
+
+### Coding & definition (JSON fields)
+
+The model declares these as bare `JSONField`s. Their real shape is enforced by the spec:
+
+| Field | Model type | Spec type / shape | Notes |
+| --- | --- | --- | --- |
+| `code` | `JSONField` (dict) | `Coding \| None` | Nullable; product code as a [`Coding`](#coding) (not value-set bound at the spec layer) |
+| `base_unit` | `JSONField` (dict) | `ValueSetBoundCoding[CARE_UCUM_UNITS]` | **Required** in spec. A `Coding` bound to the UCUM units value set (`system-ucum-units`) |
+| `names` | `JSONField` (list) | `list[ProductName] \| None` | See [ProductName](#productname) |
+| `storage_guidelines` | `JSONField` (list) | `list[StorageGuideline] \| None` | See [StorageGuideline](#storageguideline) |
+| `definitional` | `JSONField` (dict) | `ProductDefinitionSpec \| None` | Type-specific definition payload. See [ProductDefinitionSpec](#productdefinitionspec) |
+
+## Enums
+
+### `ProductTypeOptions` (`product_type`)
+
+| Value |
+| --- |
+| `medication` |
+| `nutritional_product` |
+| `consumable` |
+
+### `ProductKnowledgeStatusOptions` (`status`)
+
+| Value |
+| --- |
+| `draft` |
+| `active` |
+| `retired` |
+| `unknown` |
+
+### `ProductNameTypes` (`names[].name_type`)
+
+| Value |
+| --- |
+| `trade_name` |
+| `alias` |
+| `original_name` |
+| `preferred` |
+
+### `DrugCharacteristicCode` (`definitional.drug_characteristic[].code`)
+
+| Value |
+| --- |
+| `imprint_code` |
+| `size` |
+| `shape` |
+| `color` |
+| `coating` |
+| `scoring` |
+| `logo` |
+| `image` |
+
+## Nested spec shapes
+
+These are the structured shapes of the JSON fields, defined as plain Pydantic `BaseModel`s in `spec.py`.
+
+### `ProductName`
+
+`names[]` — alternate names for the product.
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `name_type` | `ProductNameTypes` | yes | Enum, see above |
+| `name` | `str` | yes | |
+
+### `StorageGuideline`
+
+`storage_guidelines[]` — storage notes with a stability duration.
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `note` | `str` | yes | |
+| `stability_duration` | `DurationSpec { value: int, unit: Coding }` | yes | `value` is an integer count; `unit` is a free `Coding` |
+
+### `ProductDefinitionSpec`
+
+`definitional` — type-specific definition payload.
+
+| Field | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `dosage_form` | `ValueSetBoundCoding[MEDICATION_FORM_CODES] \| None` | required (nullable) | `Coding` bound to medication form codes (`system-medication-form-codes`, SNOMED is-a `736542009`) |
+| `intended_routes` | `list[Coding]` | `[]` | Free `Coding`s (not value-set bound) |
+| `ingredients` | `list[ProductIngredient]` | `[]` | See [ProductIngredient](#productingredient) |
+| `nutrients` | `list[ProductNutrient]` | `[]` | See [ProductNutrient](#productnutrient) |
+| `drug_characteristic` | `list[DrugCharacteristic]` | `[]` | See [DrugCharacteristic](#drugcharacteristic) |
+
+### `ProductIngredient`
+
+`definitional.ingredients[]`.
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `is_active` | `bool` | yes | Active vs. inactive ingredient |
+| `substance` | `ValueSetBoundCoding[CARE_SUBSTANCE_VALUSET]` | yes | `Coding` bound to the substance value set (`system-substance`, SNOMED is-a `105590001`) |
+| `strength` | `ProductStrength` | yes | See [ProductStrength](#productstrength) |
+
+### `ProductNutrient`
+
+`definitional.nutrients[]`.
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `item` | `ValueSetBoundCoding[CARE_NUTRIENTS_VALUESET]` | yes | `Coding` bound to the nutrients value set (`system-nutrients`, SNOMED is-a `226355009`) |
+| `amount` | `ProductStrength` | yes | See [ProductStrength](#productstrength) |
+
+### `ProductStrength`
+
+Shared by `ProductIngredient.strength` and `ProductNutrient.amount`.
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `ratio` | `Ratio { numerator: Quantity, denominator: Quantity }` | yes | |
+| `quantity` | `Quantity` | yes | See [Quantity](#quantity) |
+
+### `DrugCharacteristic`
+
+`definitional.drug_characteristic[]`.
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `code` | `DrugCharacteristicCode` | yes | Enum, see above |
+| `value` | `str` | yes | |
+
+## Shared common types
+
+### `Coding`
+
+From `care/emr/resources/common/coding.py` (`extra="forbid"`).
+
+| Field | Type | Required |
+| --- | --- | --- |
+| `system` | `str \| None` | no |
+| `version` | `str \| None` | no |
+| `code` | `str` | yes |
+| `display` | `str \| None` | no |
+
+A `ValueSetBoundCoding[<slug>]` is a `Coding` subclass that additionally validates `code` against the named value set on deserialization.
+
+### `Quantity`
+
+From `care/emr/resources/common/quantity.py` (`extra="forbid"`).
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `value` | `Decimal \| None` | max 20 digits, 6 decimal places |
+| `unit` | `Coding \| None` | human-readable unit |
+| `code` | `Coding \| None` | machine-processable unit |
+| `meta` | `dict \| None` | |
+
+`Ratio { numerator: Quantity, denominator: Quantity }` (both required).
+
+## Resource specs (API schema)
+
+All specs build on `EMRResource` (`care/emr/resources/base.py`), which provides `serialize` (DB → Pydantic), `de_serialize` (Pydantic → DB), and the `perform_extra_serialization` / `perform_extra_deserialization` hooks. `EMRResource.serialize` only copies non-FK database fields that are also declared spec fields and not in `__exclude__`.
+
+| Spec class | Role | Adds / behaviour |
+| --- | --- | --- |
+| `BaseProductKnowledgeSpec` | shared base | `__exclude__ = ["facility"]`. Fields: `id`, `alternate_identifier`, `status`, `product_type`, `code`, `base_unit` (required, UCUM-bound), `name`, `names`, `storage_guidelines`, `definitional` |
+| `ProductKnowledgeUpdateSpec` | write · update | Adds `category: str \| None` (resource-category **slug**) and `slug_value: SlugType` (required). On deserialize: resolves `category` via `ResourceCategory.objects.get(slug=...)` and sets `obj.slug = self.slug_value` |
+| `ProductKnowledgeWriteSpec` | write · create | Extends the update spec; adds `facility: UUID4 \| None`. On deserialize: runs the update-spec logic, then resolves `facility` via `Facility.objects.get(external_id=...)` when supplied |
+| `ProductKnowledgeReadSpec` | read · detail/list | Adds `is_instance_level: bool`, `category: dict \| None`, `slug_config: dict`, `slug: str`. On serialize: sets `id = external_id`; `is_instance_level = not facility_id`; serializes `category` via `ResourceCategoryReadSpec`; sets `slug_config = parse_slug(slug)` |
+
+### Validation & bound value sets
+
+- `status` ∈ `ProductKnowledgeStatusOptions`; `product_type` ∈ `ProductTypeOptions` — both required.
+- `base_unit` is **required** and bound to `CARE_UCUM_UNITS` (`system-ucum-units`, system `http://unitsofmeasure.org`).
+- `definitional.dosage_form` bound to `MEDICATION_FORM_CODES`; `ingredients[].substance` bound to `CARE_SUBSTANCE_VALUSET`; `nutrients[].item` bound to `CARE_NUTRIENTS_VALUESET`. `code` and `intended_routes` are free `Coding`s.
+- `slug_value` uses `SlugType`: 5–50 chars, URL-safe (`^[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]$`), must start/end alphanumeric.
+- `category` on write is a slug string; an unknown slug raises (`.get(...)` `DoesNotExist`).
+
+### Server-maintained behaviour
+
+- `facility` is never copied through the generic field loop (it is in `__exclude__`); it is set explicitly from the `facility` UUID only by `ProductKnowledgeWriteSpec` (create).
+- `slug` is set server-side from `slug_value`; `names_cache` is rebuilt in the model's `save()` (see below).
+- On read, `is_instance_level`, `slug_config`, and the serialized `category` are computed in `perform_extra_serialization` — they are not stored columns.
+
+## Methods & save behaviour
+
+### `save()` side effects
+
+`save()` is overridden to rebuild `names_cache` before persisting:
+
+1. `names_cache` is reset to `"<name> "`.
+2. For each entry in `names`, the entry's `name` (dict key or attribute) is appended, space-separated.
+3. `super().save()` persists the record (including slug logic inherited from `SlugBaseModel`).
+
+`names_cache` is therefore platform-maintained — clients should not set it directly; write to `name`/`names` instead.
+
+## API integration notes
+
+- Exposed through Care's REST API; aligns with FHIR `MedicationKnowledge` / `NutritionProduct` concepts.
+- `product_type` selects the meaning of `definitional` (`medication`, `nutritional_product`, or `consumable`).
+- `facility` controls scope: omit (instance-wide) vs. set (facility-local). Address records by slug (`i-<slug>` or `f-<facility_external_id>-<slug>`); the parsed parts are returned as `slug_config`.
+- `code`, `names`, `storage_guidelines`, `definitional`, and `base_unit` are JSON fields whose structure and value-set binding live in the spec, not the model. `base_unit` is required.
+- `names_cache` is maintained by the platform on save — do not set it from clients.
+
+## Related
+
+- Reference: [Product](../supply/product.mdx)
+- Reference: [Inventory Item](../supply/inventory-item.mdx)
+- Reference: [Resource Category](../platform/resource-category.mdx)
+- Base: [Base model](../foundation/base-model.mdx)
+- Source: [model](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/product_knowledge.py) · [spec](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/product_knowledge/spec.py) · [value sets](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/product_knowledge/valueset.py)

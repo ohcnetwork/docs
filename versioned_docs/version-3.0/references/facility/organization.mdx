@@ -1,0 +1,215 @@
+---
+sidebar_position: 4
+---
+
+# Organization
+
+Technical reference for the `Organization` module in Care EMR.
+
+**Source:**
+[`care/emr/models/organization.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/organization.py) ·
+[`resources/organization/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/organization/spec.py) ·
+[`resources/organization/organization_user_spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/organization/organization_user_spec.py)
+
+Organizations are Care's FHIR-aligned grouping primitive: a nested tree used to group permissions and resources. An organization might represent all doctors, a `Cardiology` sub-team, or a governance unit. Permissions attached to a parent are implicitly available in its descendants.
+
+The Django model is the **storage** layer — several columns are opaque `JSONField`s (`metadata`, `cached_parent_json`) and arrays (`parent_cache`, `managing_organizations`) whose real structure lives in the **resource specs** (`care/emr/resources/organization/`). The specs define the `org_type` enum, validation, the nested JSON shape returned for `parent`, and the read/write API schemas. See [Resource specs (API schema)](#resource-specs-api-schema).
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `OrganizationCommonBase` | Abstract base holding the tree structure, caching, and uniqueness logic shared by both organization types |
+| `Organization` | Instance-wide organization (permission/governance tree, not tied to a facility) |
+| `FacilityOrganization` | Facility-scoped organization (departments/teams within one `Facility`) |
+| `OrganizationUser` | Membership row linking a `User` to an `Organization` with a `RoleModel` |
+| `FacilityOrganizationUser` | Membership row linking a `User` to a `FacilityOrganization` with a `RoleModel` |
+
+`Organization` and `FacilityOrganization` extend `OrganizationCommonBase`, which itself extends [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base giving `external_id`, audit fields, soft-delete, and `history`/`meta` JSON). `OrganizationUser` and `FacilityOrganizationUser` extend `EMRBaseModel` directly. `OrganizationCommonBase` is `abstract = True` and defines no table of its own.
+
+## `OrganizationCommonBase` fields
+
+These columns are contributed to both the `Organization` and `FacilityOrganization` tables.
+
+### Identity & classification
+
+| Field | Type | Required | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `name` | `CharField(255)` | yes | — | Display name; participates in the sibling uniqueness check (`validate_uniqueness`) |
+| `org_type` | `CharField(255)` | yes | — | Category of the organization. Free text in the DB, but writes bind to the `OrganizationTypeChoices` enum. See [Organization type values](#organization-type-values) |
+| `description` | `TextField` | no | `null` | Nullable, blank-able. On the API the write/read specs default it to `""` |
+| `active` | `BooleanField` | no | `True` | |
+| `system_generated` | `BooleanField` | no | `False` | System-generated orgs cannot be edited or deleted. Read-only on the API (only surfaced by `OrganizationReadSpec`) |
+| `metadata` | `JSONField` | no | `{}` (`dict`) | Open key-value bag for deployment-specific data; no fixed schema, no migration needed. Exposed verbatim by the specs as `metadata: dict` |
+
+### Tree structure
+
+| Field | Type | Required | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `parent` | `FK → self` | no | `null` | `CASCADE`, `related_name="children"`. Null parent means a root org. On write, supplied as the parent's `external_id` (UUID); on read, replaced by a nested JSON object — see [`parent` read shape](#parent-read-shape) |
+| `root_org` | `FK → self` | no | `null` | `CASCADE`, `related_name="root"`. Top of the tree, derived on save by `set_organization_cache()` |
+| `has_children` | `BooleanField` | no | `False` | Flipped to `True` on the parent when its first child is created. Read-only on the API |
+
+### Denormalized caches
+
+Platform-maintained — do **not** set these from clients. Rebuilt on insert to avoid recursive joins when reading the tree.
+
+| Field | Type | Default | Rebuilt by | Shape |
+| --- | --- | --- | --- | --- |
+| `level_cache` | `IntegerField` | `0` | `set_organization_cache()` | Depth in the tree (`parent.level_cache + 1`) |
+| `parent_cache` | `ArrayField[int]` | `[]` (`list`) | `set_organization_cache()` | Full ancestor **internal id** chain (`parent.parent_cache + [parent.id]`) |
+| `cached_parent_json` | `JSONField` | `{}` (`dict`) | `get_parent_json()` | Materialized parent record; see shape below. Rebuilt after `cache_expiry_days` (15) |
+
+`cached_parent_json` shape (built in `get_parent_json()`; `{}` for root orgs):
+
+```text
+{
+  id:           str   (parent.external_id, UUID as string)
+  name:         str
+  description:  str | null
+  org_type:     str   (OrganizationTypeChoices value)
+  metadata:     dict
+  parent:       dict  (recursively, the parent's own cached_parent_json)
+  level_cache:  int
+  cache_expiry: str   (ISO datetime; cache is reused while now < cache_expiry)
+}
+```
+
+This same structure is what `OrganizationReadSpec.parent` returns on read (see [`parent` read shape](#parent-read-shape)).
+
+## Related models
+
+### `Organization`
+
+Instance-wide organization. Adds one field on top of `OrganizationCommonBase`:
+
+| Field | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `managing_organizations` | `ArrayField[int]` | `[]` (`list`) | Internal ids of orgs that manage this one. Expanded to a list of nested org JSON (`OrganizationReadSpec`) only by `OrganizationRetrieveSpec` |
+
+### `FacilityOrganization`
+
+Facility-scoped organization. Adds one field on top of `OrganizationCommonBase`:
+
+```text
+facility → FK facility.Facility  (CASCADE)
+```
+
+See [Facility](../facility/facility.mdx).
+
+### `OrganizationUser`
+
+Grants a user access to resources owned by an organization through a role. Membership does not imply access to all resources of the org — only those assigned to it.
+
+```text
+organization → FK Organization (CASCADE)
+user         → FK users.User   (CASCADE)
+role         → FK security.RoleModel (CASCADE)
+```
+
+### `FacilityOrganizationUser`
+
+The facility-scoped equivalent of `OrganizationUser`.
+
+```text
+organization → FK FacilityOrganization (CASCADE)
+user         → FK users.User           (CASCADE)
+role         → FK security.RoleModel    (CASCADE)
+```
+
+## Enum & coded values
+
+### Organization type values
+
+`org_type` is a `CharField` in the DB, but all writes bind to `OrganizationTypeChoices` (`resources/organization/spec.py`).
+
+| Value | Meaning |
+| --- | --- |
+| `team` | A team / department-style grouping |
+| `govt` | Governance / governmental unit (typically superadmin-managed) |
+| `role` | Role-grouping org. An `OrganizationUser` on a `role`-typed org invalidates the user's cached role-org list (see [`OrganizationUser.save()`](#organizationusersave)) |
+| `product_supplier` | Supplier organization (links to the supply chain) |
+
+`FacilityOrganization` in practice uses `team` and `root` types; the enum bound on the spec is the same `OrganizationTypeChoices` (instance scope). `govt`/`role` orgs and root orgs are restricted to superadmin management.
+
+## Resource specs (API schema)
+
+Resource specs (`EMRResource` subclasses) are the API/implementation layer. `serialize` builds a read object from a DB row (running `perform_extra_serialization` / `perform_extra_user_serialization` hooks); `de_serialize` builds a DB row from a write payload (running `perform_extra_deserialization`). `__exclude__` lists model fields the base serializer skips (handled manually in the hooks).
+
+### Organization specs (`resources/organization/spec.py`)
+
+| Spec | Role | Fields exposed | Notes |
+| --- | --- | --- | --- |
+| `OrganizationBaseSpec` | shared | `id`, `active`, `org_type`, `name`, `description`, `metadata` | `__model__ = Organization`, `__exclude__ = ["parent"]`. `org_type` bound to `OrganizationTypeChoices`; `description` defaults `""`; `metadata` defaults `{}` |
+| `OrganizationUpdateSpec` | write · update | (inherits `OrganizationBaseSpec`) | No extra fields — `parent` cannot be changed on update |
+| `OrganizationWriteSpec` | write · create | base + `parent: UUID4 \| null` | Validates `parent` exists (`validate_parent_organization`); on create, `perform_extra_deserialization` resolves `parent` from `external_id` (or sets `None`) |
+| `OrganizationReadSpec` | read · list | base + `level_cache`, `system_generated`, `has_children`, `parent: dict` | `perform_extra_serialization` sets `id = external_id` and `parent = obj.get_parent_json()` — see [`parent` read shape](#parent-read-shape) |
+| `OrganizationRetrieveSpec` | read · detail | `OrganizationReadSpec` + `permissions: list[str]`, `managing_organizations: list[dict]` | `perform_extra_user_serialization` fills `permissions` (via `AuthorizationController.get_permission_on_organization` for the requesting user), expands `managing_organizations` to nested `OrganizationReadSpec` JSON, and adds audit users (`serialize_audit_users`) |
+
+#### `parent` read shape
+
+`OrganizationReadSpec.parent` (and `OrganizationRetrieveSpec.parent`) is **not** a UUID — it is the nested object returned by `get_parent_json()`. Same shape as [`cached_parent_json`](#denormalized-caches): `{ id, name, description, org_type, metadata, parent (recursive), level_cache, cache_expiry }`, or `{}` for root orgs. On write, `parent` is instead a plain `UUID4` (the parent's `external_id`).
+
+### Membership specs (`resources/organization/organization_user_spec.py`)
+
+| Spec | Role | Fields exposed | Notes |
+| --- | --- | --- | --- |
+| `OrganizationUserBaseSpec` | shared | (none) | `__model__ = OrganizationUser`, `__exclude__ = ["user", "role"]` |
+| `OrganizationUserUpdateSpec` | write · update | `role: UUID4` | `validate_role` requires the `RoleModel` to exist; `perform_extra_deserialization` resolves `role` from `external_id`. Only the role can change on update |
+| `OrganizationUserWriteSpec` | write · create | `role: UUID4` + `user: UUID4` | Extends update spec; `validate_user` requires the `User` to exist. On create, resolves both `user` and `role` from `external_id` |
+| `OrganizationUserReadSpec` | read | `id: UUID4`, `user: dict`, `role: dict` | `user` = cached `UserSpec` JSON (`model_from_cache`); `role` = `RoleReadSpec` JSON (full permissions) |
+| `OrganizationUserExtendedReadSpec` | read | `id: UUID4`, `role: dict`, `organization: dict` | Used by `OrganizationUser.get_cached_role_orgs()`. `organization` = `OrganizationReadSpec` JSON; `role` = `RoleReadMinimalSpec` JSON (no permission list) |
+
+Nested membership JSON shapes (from `resources/role/spec.py`, `resources/user/spec.py`):
+
+```text
+role  (RoleReadSpec):        { id: UUID, name, description, is_system: bool,
+                               is_archived: bool, contexts: [RoleContext],
+                               permissions: [{ name, description, slug, context }] }
+role  (RoleReadMinimalSpec): same as above without `permissions`
+user  (UserSpec):            cached user summary JSON
+```
+
+## Methods & save behaviour
+
+### `OrganizationCommonBase.save()`
+
+On **insert** (no `id` yet) the base saves the row, then calls `set_organization_cache()` to populate the tree caches. On **update** it saves normally without recomputing caches.
+
+`set_organization_cache()` side effects when a `parent` is set:
+
+1. Computes `parent_cache` = `parent.parent_cache + [parent.id]` and `level_cache` = `parent.level_cache + 1`.
+2. Derives `root_org` from the parent (`parent.root_org`, or the parent itself if the parent is a root).
+3. If the parent did not previously have children, flips `parent.has_children = True` and persists only that field.
+
+### `get_parent_json()`
+
+Returns the cached parent JSON if `cached_parent_json` is present and `cache_expiry` is still in the future; otherwise it recursively rebuilds the nested parent record, stamps a new expiry (`cache_expiry_days = 15`), and persists `cached_parent_json`. Returns `{}` for root orgs. This is what `OrganizationReadSpec.parent` exposes on every read.
+
+### `validate_uniqueness(queryset, pydantic_instance, model_instance)`
+
+Classmethod enforcing that `name` is unique among **siblings** — same `root_org` and same `level_cache`. For a new org it derives `level_cache`/`root_org` from the supplied `parent` (`external_id`); a null parent means `level_cache = 0` and a null `root_org`. Used by the resource layer before create/update.
+
+### `OrganizationUser.save()`
+
+After saving, if the linked organization's `org_type` is `role` (`OrganizationTypeChoices.role`), it clears `user.cached_role_orgs` (sets it to `None` and persists that field) so the user's role-org cache is rebuilt on next read.
+
+`OrganizationUser.get_cached_role_orgs(user_id)` is a classmethod that serializes all `role`-typed org memberships for a user via `OrganizationUserExtendedReadSpec`.
+
+## API integration notes
+
+- Organizations are exposed through Care's REST API and align with the FHIR `Organization` resource. Tree position (`level_cache`, `parent_cache`, `root_org`), `has_children`, and `cached_parent_json` are platform-maintained — do not set them directly from clients.
+- **Write path:** `OrganizationWriteSpec` (create) / `OrganizationUpdateSpec` (update). `org_type` is constrained to `OrganizationTypeChoices`; `parent` is supplied as the parent's `external_id` (UUID) and validated to exist; `validate_uniqueness` enforces sibling-name uniqueness. `parent` is immutable after create (the update spec omits it).
+- **Read path:** `OrganizationReadSpec` (list) returns `parent` as nested JSON (`get_parent_json()`) plus `level_cache`/`system_generated`/`has_children`; `OrganizationRetrieveSpec` (detail) additionally returns the caller's `permissions`, expanded `managing_organizations`, and audit users.
+- Membership is managed through `OrganizationUser` / `FacilityOrganizationUser` (specs above); `role` is required and bounded by the assigning user's own role in that org. Adding a member to a `role`-typed org invalidates that user's `cached_role_orgs`.
+- `metadata` is the supported place for deployment-specific key-value data without schema migrations; it is passed through the specs verbatim as `dict`.
+- Soft-delete applies (via `EMRBaseModel`); an organization cannot be deleted while it still has children, and system-generated orgs cannot be deleted.
+
+## Related
+
+- Reference: [Facility](../facility/facility.mdx)
+- Reference: [Base models & conventions](../foundation/base-model.mdx)
+- Reference: [User](../access/user.mdx) · [Role](../access/role.mdx) · [Permission](../access/permission.mdx)
+- Source — models: [organization.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/organization.py)
+- Source — specs: [organization/spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/organization/spec.py) · [organization/organization_user_spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/organization/organization_user_spec.py) · [resources/base.py (`EMRResource`)](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)
+- Source — related: [role/spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/role/spec.py) · [user/spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/user/spec.py) · [security/models/role.py](https://github.com/ohcnetwork/care/blob/develop/care/security/models/role.py) · [users/models.py](https://github.com/ohcnetwork/care/blob/develop/care/users/models.py)

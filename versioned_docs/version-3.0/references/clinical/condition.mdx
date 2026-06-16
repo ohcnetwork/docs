@@ -1,0 +1,194 @@
+---
+sidebar_position: 3
+---
+
+# Condition
+
+Technical reference for the `Condition` module in Care EMR. A condition captures a clinical problem, diagnosis, or symptom recorded for a patient. In the Care product UI conditions are also surfaced as **Symptoms** (the FHIR `Condition` resource).
+
+**Source:**
+- Model: [`care/emr/models/condition.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/condition.py)
+- Resource spec: [`care/emr/resources/condition/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/condition/spec.py)
+- Value set: [`care/emr/resources/condition/valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/condition/valueset.py)
+
+Two layers define a `Condition`:
+
+- The **Django model** (`care/emr/models/condition.py`) is the storage layer. Coded/timing fields (`code`, `body_site`, `onset`, `abatement`) are opaque `JSONField`s — their real structure lives in the spec layer, not the model.
+- The **Pydantic resource specs** (`care/emr/resources/condition/spec.py`) are the API layer. They define the enums, the structured shape of the JSON fields, field validation, the value-set binding for `code`, and the read/write schemas.
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `Condition` | A clinical condition, problem, diagnosis, or symptom recorded for a patient |
+
+`Condition` extends [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base providing `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON.
+
+## `Condition` fields
+
+### Status & classification
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `clinical_status` | `CharField(100)`, nullable | Clinical state. Spec binds to [`ClinicalStatusChoices`](#clinicalstatuschoices-values); optional on write. |
+| `verification_status` | `CharField(100)`, nullable | Level of certainty. Spec binds to [`VerificationStatusChoices`](#verificationstatuschoices-values); **required** on write (`ConditionSpec`/`ConditionUpdateSpec`). |
+| `category` | `CharField(100)`, nullable | Classification. Spec binds to [`CategoryChoices`](#categorychoices-values); **required** on create (`ConditionSpec`). |
+| `severity` | `CharField(100)`, nullable | Subjective severity. Spec binds to [`SeverityChoices`](#severitychoices-values); optional on write. |
+
+### Coded concepts
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `code` | `JSONField` (`default=dict`, not null/blank) | The condition itself. On write a single [`Coding`](#coding-shape) bound to the [`CARE_CODITION_CODE_VALUESET`](#code-value-set-binding) value set (SNOMED CT clinical findings). On read serialized as a plain `Coding`. |
+| `body_site` | `JSONField` (`default=dict`, not null/blank) | Anatomical location(s). Present in the model but **not exposed by any current spec** — not written or read through the standard `Condition` API schemas. |
+
+### Timing
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `onset` | `JSONField` (`default=dict`) | Choice-of-type onset. Shape = [`ConditionOnSetSpec`](#conditiononsetspec-onset-shape). Defaults to `{}`. |
+| `abatement` | `JSONField` (`default=dict`) | When the condition resolved / went into remission. Shape = [`ConditionAbatementSpec`](#conditionabatementspec-abatement-shape). Defaults to `{}`. |
+| `recorded_date` | `DateTimeField`, nullable | When the condition was first recorded. Not exposed by the current specs. |
+
+### Context & notes
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `patient` | `FK → Patient`, `on_delete=CASCADE` | Subject of the condition. Server-set from the encounter on create — never accepted directly from clients (`__exclude__`). |
+| `encounter` | `FK → Encounter`, nullable, `on_delete=CASCADE` | Encounter the condition was recorded in. Server-set on create (`__exclude__`); supplied as a UUID in the spec and validated to exist. |
+| `note` | `TextField`, nullable | Free-text clinical note. |
+
+## Enums
+
+All enum classes are defined in `care/emr/resources/condition/spec.py` as `str, Enum`. The stored/serialized value is the string on the right.
+
+### `ClinicalStatusChoices` values
+
+| Value |
+| --- |
+| `active` |
+| `recurrence` |
+| `relapse` |
+| `inactive` |
+| `remission` |
+| `resolved` |
+| `unknown` |
+
+### `VerificationStatusChoices` values
+
+| Value |
+| --- |
+| `unconfirmed` |
+| `provisional` |
+| `differential` |
+| `confirmed` |
+| `refuted` |
+| `entered_in_error` |
+
+### `CategoryChoices` values
+
+| Value |
+| --- |
+| `problem_list_item` |
+| `encounter_diagnosis` |
+| `chronic_condition` |
+
+### `SeverityChoices` values
+
+| Value |
+| --- |
+| `mild` |
+| `moderate` |
+| `severe` |
+
+## Nested JSON shapes
+
+These spec classes (all extend `EMRResource`) define the real structure of the model's JSON fields.
+
+### `ConditionOnSetSpec` (`onset` shape)
+
+| Field | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `onset_datetime` | `datetime \| None` | `None` | Coerced to timezone-aware (`make_aware`) if naive. Validated: **cannot be in the future** (`> care_now()` raises). |
+| `onset_age` | `int \| None` | `None` | Age at onset. |
+| `onset_string` | `str \| None` | `None` | Free-text onset description. |
+| `note` | `str \| None` | `None` | Note about the onset. |
+
+### `ConditionAbatementSpec` (`abatement` shape)
+
+| Field | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `abatement_datetime` | `datetime \| None` | `None` | No future-date validation (unlike `onset_datetime`). |
+| `abatement_age` | `int \| None` | `None` | Age at abatement. |
+| `abatement_string` | `str \| None` | `None` | Free-text abatement description. |
+| `note` | `str \| None` | `None` | Note about the abatement. |
+
+### `Coding` shape
+
+`code` is a single [`Coding`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/coding.py) (not a `CodeableConcept`). `extra="forbid"`.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `system` | `str \| None` | Code system URI (e.g. `http://snomed.info/sct`). |
+| `version` | `str \| None` | Code system version. |
+| `code` | `str` | **Required.** The code value. |
+| `display` | `str \| None` | Human-readable label. |
+
+### `code` value-set binding
+
+On write, `code` is typed `ValueSetBoundCoding[CARE_CODITION_CODE_VALUESET.slug]` — a `Coding` validated against the **Condition code** value set (`care/emr/resources/condition/valueset.py`, slug `system-condition-code`). The value set includes SNOMED CT concepts that are `is-a` `404684003` (*Clinical finding*). Codes outside the value set are rejected on `ConditionSpec` / `ConditionUpdateSpec` / `ChronicConditionUpdateSpec`. The read spec uses a plain `Coding` (no value-set validation, for read performance).
+
+## Resource specs (API schema)
+
+All specs extend `BaseConditionSpec` → `EMRResource` and convert via `serialize` (DB → Pydantic) / `de_serialize` (Pydantic → DB). `BaseConditionSpec` sets `__model__ = Condition`, `__exclude__ = ["patient", "encounter"]` (these are server-maintained, never trusted from the client), and exposes `id: UUID4`.
+
+| Spec class | Role | Exposes / behaviour |
+| --- | --- | --- |
+| `BaseConditionSpec` | shared base | `id`; excludes `patient` and `encounter` from direct mapping. |
+| `ConditionSpec` | write · create | `clinical_status?`, `verification_status` (**required**), `severity?`, `code` (value-set bound, **required**), `encounter` (UUID4, **required**), `onset` (`={}`), `abatement` (`={}`), `note?`, `category` (**required**). Validates the encounter exists; on create sets `obj.encounter` and `obj.patient = encounter.patient`. |
+| `ConditionUpdateSpec` | write · update | `clinical_status?`, `verification_status` (**required**), `severity?`, `code` (value-set bound, **required**), `onset` (`={}`), `abatement` (`={}`), `note?`. Does **not** accept `encounter`, `category`, `patient`. |
+| `ChronicConditionUpdateSpec` | write · update (chronic) | Extends `ConditionUpdateSpec` and adds `encounter` (UUID4). On deserialize, if `encounter` is set, resolves it (`get_object_or_404`) and assigns `obj.encounter`. |
+| `ConditionReadSpec` | read · detail/list | `clinical_status`, `verification_status`, `category`, `criticality`, `severity` (all plain `str`), `code` (plain `Coding`), `encounter` (UUID4), `onset`, `abatement`, `created_by?`, `updated_by?`, `note?`, `created_date`, `modified_date`. |
+
+### Validation & server-side behaviour
+
+- **Encounter required and verified on create.** `ConditionSpec.validate_encounter_exists` rejects unknown encounter UUIDs; `perform_extra_deserialization` (create only) loads the encounter and derives `patient` from it. Clients never set `patient`/`encounter` fields directly.
+- **`verification_status` is mandatory** on both `ConditionSpec` and `ConditionUpdateSpec`; `category` is mandatory only on create (`ConditionSpec`).
+- **`code` must be in the bound value set** (SNOMED CT clinical findings) on all write specs.
+- **`onset_datetime` cannot be in the future** and is forced timezone-aware; `abatement_datetime` has no such constraint.
+- **`ConditionReadSpec` exposes `criticality`**, a string that is present in the read schema but has no backing column on the `Condition` model — it is not populated by the standard serializer and is effectively unset on read.
+- **Read serialization** (`perform_extra_serialization`) maps `id = external_id`, replaces `encounter` with its `external_id`, and expands `created_by`/`updated_by` via `serialize_audit_users` (cached `UserSpec`).
+- The Django model carries `body_site` and `recorded_date`, but **no current spec reads or writes them** — they are storage-only fields not part of the standard `Condition` API surface.
+
+## Related models
+
+`Condition` links to two clinical records:
+
+```text
+patient   → FK Patient   (CASCADE, server-derived from encounter)
+encounter → FK Encounter (CASCADE, nullable; required on create)
+```
+
+Deleting a `Patient` or `Encounter` cascades to its `Condition` rows. Although the model allows a null `encounter`, the standard create flow always derives `patient` from a supplied encounter.
+
+## Methods & save behaviour
+
+- `serialize(obj)` / `de_serialize(obj)` (from `EMRResource`) convert between the `Condition` model and the spec. Field mapping uses the model's non-FK column names; `__exclude__` (`patient`, `encounter`) and `id`/`external_id` are skipped during deserialization.
+- `ConditionSpec.perform_extra_deserialization(is_update=False, obj)` — create path: resolves the encounter and sets `obj.patient = obj.encounter.patient`.
+- `ChronicConditionUpdateSpec.perform_extra_deserialization` — resolves and assigns `encounter` when provided.
+- `ConditionReadSpec.perform_extra_serialization` — sets `id`/`encounter` external ids and serializes audit users.
+- `external_id`, audit fields, `meta`/`history`, and soft-delete (`deleted`) are platform-maintained via [`EMRBaseModel`](../foundation/base-model.mdx).
+
+## API integration notes
+
+- `Condition` aligns with the FHIR `Condition` resource and is surfaced in the product as **Symptoms**.
+- Write `code` as a structured `Coding` (`{system, code, display}`) drawn from the SNOMED CT clinical-finding value set — not free text. `verification_status` must always be provided; `category` and `encounter` are required when creating.
+- `onset` / `abatement` are structured choice-of-type objects (`*_datetime`, `*_age`, `*_string`, `note`) — not arbitrary JSON. `onset_datetime` must be timezone-aware and not in the future.
+- Do not send `patient`, `external_id`, audit fields, or `deleted` from clients — the server maintains them.
+
+## Related
+
+- Reference: [Patient](../clinical/patient.mdx)
+- Reference: [Encounter](../clinical/encounter.mdx)
+- Reference: [Base model](../foundation/base-model.mdx)
+- Source: [condition.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/condition.py) · [spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/condition/spec.py) · [valueset.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/condition/valueset.py)

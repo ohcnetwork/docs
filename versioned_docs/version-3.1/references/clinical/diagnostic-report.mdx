@@ -1,0 +1,143 @@
+---
+sidebar_position: 7
+---
+
+# Diagnostic Report
+
+Technical reference for the `DiagnosticReport` module in Care EMR.
+
+The Django model (`care/emr/models/diagnostic_report.py`) is the **storage** layer: it persists `category` and `code` as opaque `JSONField`s and `status` as a free `CharField`. The real structure of those fields — the status enum, the coded-concept shape, the bound value sets, and the read/write API schemas — lives in the Pydantic **resource specs** (`care/emr/resources/diagnostic_report/`), which build on `EMRResource` and serialize/deserialize between the API and the model.
+
+**Source:**
+- Model: [`care/emr/models/diagnostic_report.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/diagnostic_report.py)
+- Spec: [`care/emr/resources/diagnostic_report/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/diagnostic_report/spec.py)
+- Valueset: [`care/emr/resources/diagnostic_report/valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/diagnostic_report/valueset.py)
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `DiagnosticReport` | Results and interpretation of a diagnostic test or investigation, tied to a `ServiceRequest` |
+
+`DiagnosticReport` extends [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base providing `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON).
+
+## `DiagnosticReport` fields
+
+### Classification
+
+| Field | Model type | Spec shape | Notes |
+| --- | --- | --- | --- |
+| `status` | `CharField(255)` | `DiagnosticReportStatusChoices` (enum, required) | Lifecycle status of the report. Constrained to the enum below by the spec. Optional on update. |
+| `category` | `JSONField` (null) | `Coding { system, version?, code, display? }`, **required** | Coded service section the report belongs to. Bound to the **Diagnostic Service Sections** value set (`code` is validated against it). |
+| `code` | `JSONField` (null) | `Coding { system, version?, code, display? }`, optional | Coded name/type of the report (test or panel performed). Bound to the **Observation** value set (LOINC). Nullable. |
+
+The `Coding` shape (from `care/emr/resources/common/coding.py`, `extra="forbid"`):
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `system` | `str` | optional | Code system URI (e.g. `http://terminology.hl7.org/CodeSystem/v2-0074`, `http://loinc.org`) |
+| `version` | `str` | optional | Code system version |
+| `code` | `str` | **required** | The code; validated against the bound value set |
+| `display` | `str` | optional | Human-readable label |
+
+### Narrative
+
+| Field | Model type | Spec shape | Notes |
+| --- | --- | --- | --- |
+| `note` | `TextField` (null) | `str \| None` | Free-text comments about the report. Not parsed by the platform. |
+| `conclusion` | `TextField` (null) | `str \| None` | Clinical interpretation/summary of the results. Not parsed by the platform. |
+
+### Relationships
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `facility` | `FK → facility.Facility` | `PROTECT`, nullable. Facility the report is scoped to. Set server-side; not a writable spec field. |
+| `patient` | `FK → emr.Patient` | `CASCADE`. Subject of the report. Set server-side; not a writable spec field. |
+| `encounter` | `FK → emr.Encounter` | `CASCADE`. Encounter the report was produced under. Set server-side; not a writable spec field. |
+| `service_request` | `FK → emr.ServiceRequest` | `CASCADE`. The order/request this report fulfils. Write-only on create (resolved from `external_id`); excluded from base serialization via `__exclude__`. |
+
+## Enum values
+
+### `DiagnosticReportStatusChoices`
+
+From `spec.py`. (`modified` is defined in source but commented out and is **not** an active value.)
+
+| Value | Meaning |
+| --- | --- |
+| `registered` | Report exists / has been registered |
+| `partial` | Some results available, report incomplete |
+| `preliminary` | Provisional results pending verification |
+| `final` | Verified, complete report |
+
+## Bound value sets
+
+The coded fields validate their `code` against a registered Care value set (`ValueSetBoundCoding`).
+
+| Field | Value set | Slug | Included system(s) |
+| --- | --- | --- | --- |
+| `category` | Diagnostic Service Sections | `system-diagnostic-service-sections-code` | `http://terminology.hl7.org/CodeSystem/v2-0074` |
+| `code` | Observation | `system-observation` | `http://loinc.org` |
+
+## Resource specs (API schema)
+
+All specs extend `EMRResource` (`care/emr/resources/base.py`) via `DiagnosticReportSpecBase`. `serialize` builds the read payload from the model (mapping `external_id` → `id`); `de_serialize` writes spec fields back to the model, with `perform_extra_serialization`/`perform_extra_deserialization` hooks for server-side behaviour.
+
+| Spec class | Role | Fields / behaviour |
+| --- | --- | --- |
+| `DiagnosticReportSpecBase` | shared base | `id?`, `status` (enum, required), `category` (bound Coding, required), `code?` (bound Coding), `note?`, `conclusion?`. `__model__ = DiagnosticReport`, `__exclude__ = ["service_request"]`. |
+| `DiagnosticReportCreateSpec` | write · create | Base + `service_request: UUID4` (required, the report's `external_id`). `perform_extra_deserialization` resolves it via `get_object_or_404(ServiceRequest, external_id=...)` and sets `obj.service_request`. |
+| `DiagnosticReportUpdateSpec` | write · update | Base, but `status` is optional (`DiagnosticReportStatusChoices \| None`). `service_request` is **not** writable on update. |
+| `DiagnosticReportListSpec` | read · list | Base + `created_date`, `modified_date`, `service_request: dict \| None`. `perform_extra_serialization` sets `id = external_id` and embeds the linked request via `BaseServiceRequestSpec.serialize(...)`. |
+| `DiagnosticReportRetrieveSpec` | read · detail | Extends `ListSpec` + `observations: list[dict]`, `encounter: dict`, `created_by?`, `updated_by?`, `requester?`. See serialization below. |
+
+### `DiagnosticReportRetrieveSpec.perform_extra_serialization` (server-side, read)
+
+- Calls the `ListSpec` hook (sets `id`, embeds `service_request`).
+- `serialize_audit_users` → populates `created_by` / `updated_by` from cache (`UserSpec`).
+- `observations` → all `Observation` rows where `diagnostic_report == obj`, each via `ObservationRetrieveSpec.serialize(...)`.
+- `requester` → if `service_request.requester_id` is set, loaded from cache via `UserSpec`.
+- `encounter` → `EncounterListSpec.serialize(obj.encounter)`, with `encounter["patient"]` set to `PatientRetrieveSpec.serialize(obj.encounter.patient, facility=obj.facility)`.
+
+These embedded fields (`service_request`, `observations`, `encounter`, `requester`, audit users) are **read-only**; they are not accepted on create/update.
+
+## Related models
+
+`DiagnosticReport` is the only model defined in this file. It sits downstream of a `ServiceRequest` and is anchored to a patient and encounter:
+
+```text
+diagnostic_report
+  facility        → FK facility.Facility (PROTECT, nullable)
+  patient         → FK emr.Patient (CASCADE)
+  encounter       → FK emr.Encounter (CASCADE)
+  service_request → FK emr.ServiceRequest (CASCADE)
+```
+
+Deleting a `Patient`, `Encounter`, or `ServiceRequest` cascades to its diagnostic reports; the `facility` link is `PROTECT`ed and only soft-deletes apply through `EMRBaseModel`. On retrieve, related `Observation` records are pulled in via the reverse FK (`Observation.diagnostic_report`).
+
+## Methods & save behaviour
+
+- **Create** (`DiagnosticReportCreateSpec.de_serialize`): writes `status`, `category`, `code`, `note`, `conclusion` onto the model; `perform_extra_deserialization` resolves `service_request` from its `external_id` (404 if missing). `facility`, `patient`, and `encounter` are set by the view layer from the request context, not from the payload.
+- **Update** (`DiagnosticReportUpdateSpec`): same base fields; `status` is optional so a partial status change is allowed. `service_request` cannot be reassigned.
+- **Read** (`List`/`Retrieve`): no model writes; all enrichment happens in `perform_extra_serialization` (see above). User and service-request lookups go through the serializer cache (`model_from_cache`).
+- Coded fields are validated at deserialization: `category.code` must be in the Diagnostic Service Sections value set; `code.code` (when present) must be in the Observation value set. `status` must be a `DiagnosticReportStatusChoices` value.
+
+## API integration notes
+
+- Diagnostic reports are exposed through Care's REST API and align with the FHIR `DiagnosticReport` resource; payload field names follow the spec classes above.
+- `category` and `code` are coded concepts (`Coding`: `system`/`code`/`display`), not free strings — `code` is validated against the bound value set, so populate from the relevant value set. `Coding` forbids extra keys.
+- `status` is stored as a free `CharField` but the spec restricts writes to the `DiagnosticReportStatusChoices` enum (`registered`, `partial`, `preliminary`, `final`).
+- A report fulfils exactly one `service_request`; create the [Service Request](./service-request.mdx) first, then pass its `external_id` as `service_request` on create.
+- `note` and `conclusion` carry human-readable narrative and are not parsed by the platform.
+- The detail (`Retrieve`) payload embeds the linked service request, its requester, the encounter (with patient), audit users, and all child observations — none of which are writable.
+
+## Related
+
+- Reference: [Service Request](./service-request.mdx)
+- Reference: [Observation](./observation.mdx)
+- Reference: [Specimen](./specimen.mdx)
+- Reference: [Encounter](./encounter.mdx)
+- Reference: [Patient](./patient.mdx)
+- Reference: [Base Model](../foundation/base-model.mdx)
+- Source: [diagnostic_report.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/diagnostic_report.py)
+- Source: [resources/diagnostic_report/spec.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/diagnostic_report/spec.py)
+- Source: [resources/diagnostic_report/valueset.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/diagnostic_report/valueset.py)

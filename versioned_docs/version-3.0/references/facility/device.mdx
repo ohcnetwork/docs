@@ -1,0 +1,231 @@
+---
+sidebar_position: 7
+---
+
+# Device
+
+Technical reference for the `Device` module in Care EMR.
+
+The Django model is the **storage layer** — several fields are typed only loosely (`CharField` for status enums, `JSONField` for `contact`/`metadata`). The **Pydantic resource specs** under `care/emr/resources/device/` are the API/implementation layer: they define the enums those `CharField`s are constrained to, the structured shape of the JSON fields, validation rules, the read/write schemas, and server-maintained side effects.
+
+**Source:**
+- Model: [`care/emr/models/device.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/device.py)
+- Spec: [`care/emr/resources/device/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/device/spec.py)
+- History spec: [`care/emr/resources/device/history_spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/device/history_spec.py)
+- Viewset: [`care/emr/api/viewsets/device.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/device.py)
+- Device-type registry: [`care/emr/registries/device_type/device_registry.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/registries/device_type/device_registry.py)
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `Device` | A physical or logical device tracked within a facility |
+| `DeviceEncounterHistory` | Records each period a device was associated with an `Encounter` |
+| `DeviceLocationHistory` | Records each period a device was placed at a `FacilityLocation` |
+| `DeviceServiceHistory` | Records servicing/maintenance events for a device |
+
+All models extend [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, audit fields, and soft-delete semantics).
+
+## `Device` fields
+
+### Device data
+
+| Field | Type | Spec constraint | Notes |
+| --- | --- | --- | --- |
+| `identifier` | `CharField(1024)` | `str \| None` | Optional; free-form device identifier. Filterable via `?identifier=` (case-insensitive exact match) |
+| `status` | `CharField(16)` | `DeviceStatusChoices` (**required**) | Lifecycle status — see [enum](#devicestatuschoices-values) |
+| `availability_status` | `CharField(14)` | `DeviceAvailabilityStatusChoices` (**required**) | Physical availability — see [enum](#deviceavailabilitystatuschoices-values) |
+| `manufacturer` | `CharField(1024)` | `str \| None` | Optional in spec (model column itself is non-null) |
+| `manufacture_date` | `DateTimeField` | `datetime \| None` | Optional, tz-aware |
+| `expiration_date` | `DateTimeField` | `datetime \| None` | Optional, tz-aware |
+| `lot_number` | `CharField(1024)` | `str \| None` | Optional |
+| `serial_number` | `CharField(1024)` | `str \| None` | Optional |
+| `registered_name` | `CharField(1024)` | `str` (**required**) | Formal/registered device name; required by all write specs. Searchable via `?search=` |
+| `user_friendly_name` | `CharField(1024)` | `str \| None` | Display name. Searchable via `?search=` |
+| `model_number` | `CharField(1024)` | `str \| None` | Optional |
+| `part_number` | `CharField(1024)` | `str \| None` | Optional |
+| `contact` | `JSONField` (default `{}`) | `list[ContactPoint]` (default `[]`) | NOT a free-form dict — a list of structured contact points. See [`ContactPoint` shape](#contactpoint-shape) |
+| `care_type` | `CharField(1024)` (default `None`) | `str \| None` (create only) | Discriminator selecting a registered device-type plugin. Validated against `DeviceTypeRegistry` on create (must be a registered key, e.g. `"camera"`, or `null`). Filterable via `?care_type=` |
+| `metadata` | `JSONField` (default `{}`) | not exposed directly | Excluded from all specs. Written server-side by the `care_type` plugin's `handle_create`/`handle_update`. Read back through the virtual `care_metadata` field (below) |
+
+#### Virtual / spec-only field
+
+| Field | Spec type | Notes |
+| --- | --- | --- |
+| `care_metadata` | `dict` (default `{}`) | Not a DB column. On read, populated by the `care_type` plugin: `DeviceListSpec` uses the plugin's `list(obj)`, `DeviceRetrieveSpec` uses `retrieve(obj)`. On write it carries plugin-specific data consumed by `handle_create`/`handle_update` (which typically persist into the model's `metadata` column). Empty `{}` when no `care_type` or the plugin lookup fails |
+
+### Relations
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `facility` | `FK → Facility` | `CASCADE`; owning facility (required). Set server-side from the URL (`facility_external_id`), not from the request body |
+| `managing_organization` | `FK → FacilityOrganization` | `SET_NULL`, nullable; org responsible for the device. Excluded from create/update body — managed via dedicated endpoints (see [API integration notes](#api-integration-notes)) |
+| `current_location` | `FK → FacilityLocation` | `SET_NULL`, nullable; where the device is currently placed. Excluded from create/update body — managed via `associate_location` |
+| `current_encounter` | `FK → Encounter` | `SET_NULL`, nullable; encounter the device is currently attached to. Excluded from create/update body — managed via `associate_encounter` |
+
+### Access cache
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `facility_organization_cache` | `ArrayField[int]` | **Denormalized cache** of facility-organization IDs, rebuilt on every `save()`. Do not set directly. Used by `get_queryset` to scope which devices a user may see |
+
+## Enum values
+
+### `DeviceStatusChoices` values
+
+`status` field. Defined in `spec.py`.
+
+| Value | Meaning |
+| --- | --- |
+| `active` | Device is in service |
+| `inactive` | Device is not currently in service |
+| `entered_in_error` | Record created in error |
+
+### `DeviceAvailabilityStatusChoices` values
+
+`availability_status` field. Defined in `spec.py`.
+
+| Value | Meaning |
+| --- | --- |
+| `lost` | Device cannot be located |
+| `damaged` | Device is damaged |
+| `destroyed` | Device is destroyed |
+| `available` | Device is available for use |
+
+### `ContactPoint` shape
+
+`contact` is `list[ContactPoint]`. Each item (from `care/emr/resources/common/contact_point.py`):
+
+```text
+ContactPoint {
+  system: ContactPointSystemChoices   # required
+  value:  str                         # required
+  use:    ContactPointUseChoices      # required
+}
+```
+
+| `system` values | `use` values |
+| --- | --- |
+| `phone`, `fax`, `email`, `pager`, `url`, `sms`, `other` | `home`, `work`, `temp`, `old`, `mobile` |
+
+## Related models
+
+### `DeviceEncounterHistory`
+
+Audit trail of device-to-encounter associations. A new row is created when a device is attached to an encounter; `end` is stamped when it detaches. Read-only via the API (`EMRModelReadOnlyViewSet`), ordered by `-end`.
+
+```text
+device    → FK Device (CASCADE)
+encounter → FK Encounter (CASCADE)
+start     → DateTimeField
+end       → DateTimeField (nullable)
+```
+
+### `DeviceLocationHistory`
+
+Audit trail of device placements. A new row is created when a device moves to a location; `end` is stamped when it leaves. Read-only via the API, ordered by `-end`.
+
+```text
+device   → FK Device (CASCADE)
+location → FK FacilityLocation (CASCADE)
+start    → DateTimeField
+end      → DateTimeField (nullable)
+```
+
+### `DeviceServiceHistory`
+
+Servicing/maintenance log for a device. Writable via the API (create + update + list + retrieve).
+
+```text
+device       → FK Device (PROTECT, required)
+serviced_on  → DateTimeField (nullable, default None)
+note         → TextField (default "")
+edit_history → JSONField (default [])
+```
+
+`device` uses `PROTECT`, so a `Device` with service-history rows cannot be hard-deleted while they exist. `edit_history` is an append-only audit list maintained server-side on every update (see [Methods & save behaviour](#deviceservicehistory-edit-history)).
+
+## Resource specs (API schema)
+
+The viewset wires these specs as: create = `DeviceCreateSpec`, update = `DeviceUpdateSpec`, list = `DeviceListSpec`, retrieve = `DeviceRetrieveSpec`. All extend `EMRResource` (`serialize` / `de_serialize`, with `perform_extra_serialization` / `perform_extra_deserialization` hooks).
+
+### Device specs
+
+| Spec class | Role | Adds / overrides | Excludes |
+| --- | --- | --- | --- |
+| `DeviceSpecBase` | shared base | `id`, all device-data fields, `status`/`availability_status` enums, `contact: list[ContactPoint]`, `registered_name` required | `facility`, `managing_organization`, `current_location`, `current_encounter`, `care_metadata` |
+| `DeviceCreateSpec` | write · create | `care_type` (validated against `DeviceTypeRegistry`), `care_metadata: dict` | (inherits base excludes) |
+| `DeviceUpdateSpec` | write · update | `care_metadata: dict` — note: **no `care_type`**, so `care_type` is immutable after create | (inherits base excludes) |
+| `DeviceListSpec` | read · list | `id = external_id`; `care_metadata` from plugin `list(obj)` | (inherits) |
+| `DeviceRetrieveSpec` | read · detail | full nested objects: `current_location` (`FacilityLocationListSpec`), `current_encounter` (`EncounterListSpec`), `managing_organization` (`FacilityOrganizationReadSpec`), `created_by`/`updated_by` (audit users); `care_metadata` from plugin `retrieve(obj)` | (inherits) |
+
+### Device history specs
+
+| Spec class | Role | Fields | Excludes |
+| --- | --- | --- | --- |
+| `DeviceLocationHistoryListSpec` | read · list | `id`, `location` (nested `FacilityLocationListSpec`), `created_by`, `start`, `end?` | `device`, `location` (raw FK) |
+| `DeviceEncounterHistoryListSpec` | read · list | `id`, `encounter` (nested `EncounterListSpec`), `created_by`, `start`, `end?` | `device`, `encounter` (raw FK) |
+| `DeviceServiceHistorySpecBase` | shared base | `id` | `device`, `edit_history` |
+| `DeviceServiceHistoryWriteSpec` | write | `serviced_on: datetime` (required), `note: str` (required) | (inherits) |
+| `DeviceServiceHistoryListSpec` | read · list | adds `created_date`, `modified_date`; `id = external_id` | (inherits) |
+| `DeviceServiceHistoryRetrieveSpec` | read · detail | adds `edit_history: list[dict]` (each entry's `updated_by` hydrated to a `UserSpec` from cache), `created_by`, `updated_by` | (inherits) |
+
+### Validation rules
+
+- `status` and `availability_status` must be one of their enum values (request rejected otherwise).
+- `registered_name` is required on every write.
+- `care_type` (create only) must be a registered device-type key or `null`; `DeviceCreateSpec.validate_care_type` calls `DeviceTypeRegistry.get_care_device_class(value)`, which raises for unknown types.
+- `care_type` cannot be changed on update (`DeviceUpdateSpec` does not expose it).
+- `DeviceServiceHistory.serviced_on` and `note` are required on write; updates are blocked once `edit_history` reaches 50 entries (`"Cannot Edit instance anymore"`).
+- `ContactPoint.system`, `value`, and `use` are all required for each contact entry.
+
+## Methods & save behaviour
+
+### `Device.save()` — organization cache
+
+On every save the `facility_organization_cache` is rebuilt:
+
+1. Look up the `FacilityOrganization` with `org_type="root"` for the device's `facility`; its ID seeds the cache.
+2. If `managing_organization` is set, add its `id` and its `parent_cache` (full ancestor chain).
+3. Persist the resulting set as `facility_organization_cache`.
+
+This cache lets the device be filtered by organization hierarchy without traversing joins. Treat it as platform-maintained and rely on `managing_organization` / `facility` as the writable inputs.
+
+### `care_type` plugin hooks
+
+When `care_type` is set, the matching `DeviceTypeBase` subclass from `DeviceTypeRegistry` is invoked inside the create/update/delete transaction:
+
+| Stage | Hook | Effect |
+| --- | --- | --- |
+| create | `handle_create(request_data, obj)` | May mutate `obj` / `obj.metadata` and persist (e.g. the bundled `camera` plugin stores `request_data["some_data"]` into `metadata`) |
+| update | `handle_update(request_data, obj)` | Same, on update |
+| destroy | `handle_delete(obj)` | Validation/cleanup before the device is soft-deleted (`deleted=True`) |
+| list | `list(obj)` | Supplies `care_metadata` for `DeviceListSpec` |
+| retrieve | `retrieve(obj)` | Supplies `care_metadata` for `DeviceRetrieveSpec` |
+
+### `DeviceServiceHistory` edit history
+
+On `perform_update`, the viewset snapshots the **current** DB row and appends `{serviced_on, note, updated_by}` to `edit_history` before saving the new values — so `edit_history` is a server-maintained, append-only trail of previous states. Updates are refused once it holds 50 entries.
+
+## API integration notes
+
+- `facility` is taken from the URL (`facility_external_id`) on create — not from the body.
+- `current_location`, `current_encounter`, and `managing_organization` are **not** writable through the device create/update body. They are mutated through dedicated detail actions, each of which closes the open history row (stamps `end`) and opens a new one:
+  - `POST associate_encounter` — `{ encounter: uuid | null }`; closes the open `DeviceEncounterHistory`, sets `current_encounter`, opens a new history row (returns it). `null` detaches.
+  - `POST associate_location` — `{ location: uuid | null }`; same pattern against `DeviceLocationHistory`.
+  - `POST add_managing_organization` — `{ managing_organization: uuid }`.
+  - `POST remove_managing_organization` — clears `managing_organization`.
+- When an encounter reaches a completed status, `disassociate_device_from_encounter` clears `current_encounter` on all attached devices and stamps `end` on their open `DeviceEncounterHistory` rows.
+- `metadata` (model column) is plugin-owned; clients read deployment-specific data back through the `care_metadata` virtual field, not `metadata`.
+- `facility_organization_cache` is maintained by the platform — do not set it directly. The list endpoint scopes results to devices whose cache overlaps the requesting user's facility-organization memberships (or, when `?location=` is supplied, by location permission / `parent_cache` with `?include_children=`).
+
+## Related
+
+- Reference: [Facility](./facility.mdx)
+- Reference: [Organization](./organization.mdx)
+- Reference: [Location](./location.mdx)
+- Reference: [Encounter](../clinical/encounter.mdx)
+- Source: [device.py model](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/device.py)
+- Source: [device spec](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/device/spec.py)
+- Source: [device history spec](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/device/history_spec.py)
+- Source: [ContactPoint](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/contact_point.py)
