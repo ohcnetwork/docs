@@ -1,0 +1,73 @@
+---
+sidebar_position: 3
+---
+
+# Location
+
+A **location** in Care is a physical place where care happens or where resources sit — a building, a wing, a ward, a room, or a single bed. Locations form a hierarchy inside a facility, and encounters attach to them so you always know where a patient is.
+
+## What it represents
+
+In Care's FHIR-aligned model, a location maps to the **Location** resource. It captures:
+
+- **Identity** — a name and description for the place
+- **Physical form** — what kind of place it is (site, building, wing, ward, room, bed, vehicle, and so on)
+- **Where it sits** — its parent location and the tree it belongs to, so a bed knows it lives in a room, inside a ward, inside a building
+- **Occupancy** — the encounter currently associated with it, used for bed and room management
+- **Operational state** — whether it is occupied, unoccupied, closed, being cleaned, contaminated, or isolated
+
+Locations are nested without limit: every location may have a parent and children, letting a deployment model its real-world geography as deep as it needs.
+
+## Mode: kind vs instance
+
+Every location is one of two modes, fixed when it is created:
+
+- **kind** — a class or type of place, such as "a ward" or "a building". A kind can contain child locations.
+- **instance** — a single, concrete place, such as "Bed 1". Instances are leaf nodes and **cannot have children**.
+
+This is why beds are just locations in `instance` mode, not a separate concept.
+
+## Lifecycle
+
+A location's administrative status moves between a small set of values:
+
+```
+active → inactive → unknown
+```
+
+- **active** — the location is in use
+- **inactive** — retained but no longer in service
+- **unknown** — status is not known
+
+Separately, an **operational status** describes the live state of a bed or room — closed, housekeeping, occupied, unoccupied, contaminated, or isolated — and a server-maintained **availability** flag marks whether the location is currently tied to an encounter (reserved) or free (available).
+
+## Relationships
+
+- **Facility** — every location belongs to exactly one [facility](./facility.mdx).
+- **Parent and children** — locations form a tree; a permission or organization grant at a parent cascades down to its descendants.
+- **Organization** — a [facility organization](./organization.mdx) can be granted access to a location, which is how users gain access to it and the encounters within.
+- **Encounter** — an [encounter](../clinical/encounter.mdx) is associated with a location over a time window (for example, a bed assignment), and the location surfaces its current encounter for occupancy views.
+
+## Permissions
+
+Access to locations is governed by the facility-location permissions:
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can List Facility Locations | View the locations and location tree within a facility | Admin, Doctor, Facility Admin, Administrator, Nurse, Staff, Pharmacist |
+| Can Create/Update Facility Locations | Add new locations or edit existing ones in a facility | Facility Admin, Admin, Staff |
+| Can List Facility Location Organizations | View the organizations granted access to a location | Facility Admin, Admin, Staff |
+| Can Create/Update Facility Location Organizations | Grant or update organization access to a location | Facility Admin, Admin, Staff |
+
+Roles are granted to users through facility-organization membership, and access is scoped by the organization tree: a permission held on an organization applies to the locations that organization can reach, and grants at a parent location cascade to its children. Because that cascade is computed asynchronously, newly granted access settles a moment after the change is made.
+
+## Related
+
+- Reference: [Location (technical)](../../references/facility/location.mdx)
+- Concept: [Facility](./facility.mdx)
+- Concept: [Organization](./organization.mdx)
+- Concept: [Encounter](../clinical/encounter.mdx)
+
+## FHIR reference
+
+Care's location is modelled on the [FHIR Location](https://build.fhir.org/location.html) resource, including its `mode` (kind/instance), physical form, and operational status concepts. API field names may differ from the internal model.

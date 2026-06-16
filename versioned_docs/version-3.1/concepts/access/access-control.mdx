@@ -1,0 +1,110 @@
+---
+sidebar_position: 1
+---
+
+# Roles & Permissions
+
+Care decides what each person can see and do using **role-based access control (RBAC)**. A **permission** is the right to perform one action (for example, "Can Create Patient"); a **role** is a named bundle of permissions; and a role is granted to a user *within a boundary* — a facility, an organization, or a single patient. Access is never assigned to a user directly: it always flows permission → role → membership.
+
+## What it represents
+
+The access-control model captures three things working together:
+
+- **Permissions** — the smallest unit of access, one per action, each tagged with a **context** (the kind of resource it governs). Permissions are defined in code, not edited by users.
+- **Roles** — flat, named collections of permissions (for example, *Doctor* or *Nurse*). A role is not a job title or a type; it is just "this set of permissions." Built-in roles ship with Care; deployments can add their own.
+- **Memberships** — the link that grants a role to a user inside a specific boundary. The same user can hold *Nurse* in one facility and *Administrator* in an organization at the same time.
+
+A user's effective access in any context is the **union** of all permissions from every role they hold that reaches that context.
+
+## Standard roles
+
+Care seeds a set of built-in (system) roles. These cannot be edited or deleted, and they apply within the boundaries shown below.
+
+| Role | Applies in | What it is for |
+| --- | --- | --- |
+| Doctor | Facility, Government org | Clinicians who create encounters and read/write clinical data |
+| Nurse | Facility, Government org | Bedside care staff with clinical read/write access |
+| Staff | Facility, Government org | Front-desk and operational staff: registration, scheduling, non-clinical work |
+| Pharmacist | Facility | Medication and pharmacy workflows |
+| Volunteer | Facility, Government org | Limited helpers — can list patients and view responses, but not full clinical data |
+| Administrator | Facility, Government org | Operational admin within a boundary: manages users, facilities, and organizations |
+| Facility Admin | Facility | Full administrator of a single facility (assigned to whoever creates it) |
+| Admin | Facility, Government org | The broadest administrative role, including creating and deleting organizations |
+| Admin (role org) | Role organization | Administers a user-group ("role") organization and its connected groups |
+| Manager (role org) | Role organization | Manages members within a role organization |
+| Member (role org) | Role organization | Plain membership in a role organization |
+
+Deployments can also define **custom roles** with any chosen set of permissions — for example "Doctor (Read Only)" or "Scheduler." A custom role is just a different bundle; the system treats it exactly like a built-in one.
+
+## Boundaries and the organization tree
+
+A role is always granted *inside a boundary*, and the boundary type is one of three **role contexts**:
+
+```
+FACILITY → role applies within a facility
+GOVT_ORG → role applies within a government organization
+ROLE_ORG → role applies within a role (user-group) organization
+```
+
+Memberships are recorded by boundary type:
+
+- **OrganizationUser** — a user holds a role in a government or role organization.
+- **FacilityOrganizationUser** — a user holds a role in a facility (or one of its sub-departments).
+- **PatientUser** — a user holds a role scoped to a single patient.
+
+Organizations form a **tree**: a government organization can contain sub-organizations, and a facility can contain departments. A role granted at a parent **cascades to every descendant** — if you are an Administrator of a district, you hold that access in all facilities and units beneath it, without a membership at each one. When Care checks access, it looks at the target plus all of its ancestors and collects every permission you hold along that chain.
+
+## How a permission is decided
+
+Each permission carries a **permission context** describing the resource it governs. When Care serializes a resource for a user, it only counts permissions in the relevant contexts:
+
+| Context | Governs |
+| --- | --- |
+| `GENERIC` | Not tied to a specific resource type |
+| `FACILITY` | Facility-level actions |
+| `PATIENT` | A patient record and its data |
+| `ENCOUNTER` | A single encounter |
+| `ORGANIZATION` | A government or role organization |
+| `FACILITY_ORGANIZATION` | A facility organization (department) |
+| `QUESTIONNAIRE` | Questionnaires |
+
+So a request to read a patient resolves to "which roles do I hold that reach this patient, and do any of them carry a `PATIENT`/`FACILITY` permission for this action?" The answer is computed live from the user's memberships and the organization tree.
+
+## Permissions
+
+Permissions are declared in code with a display name, a context, and the default roles that hold them. The complete set of organization- and user-related permissions follows.
+
+### Organization permissions
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can View Organizations | View organizations the user can reach | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (role org), Manager (role org), Member (role org) |
+| Can Create Organizations | Create new organizations in the tree | Admin |
+| Can Delete Organizations | Delete existing organizations | Admin |
+| Can Manage Organizations | Change an organization's name, description, metadata, etc. | Admin, Admin (role org) |
+| Can Manage Users in an Organization | Add, remove, and assign roles to users in an organization | Admin, Administrator, Facility Admin, Admin (role org) |
+| Can Manage Connected Role Organizations | Add, remove, and assign roles to users in connected role organizations | Admin (role org), Manager (role org) |
+| Can List Users in an Organizations | List the users who belong to an organization | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (role org), Manager (role org) |
+| Is Geo Admin | Geo Admins can manage facilities in their organization | (no default roles) |
+
+### User permissions
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can create User in care | Create new user accounts in Care | Admin, Facility Admin, Administrator |
+| Can list Users in Care | List user accounts in Care | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist |
+
+Roles are granted to users through organization, facility-organization, or patient memberships, and access is scoped by the organization tree: a permission held at a parent organization cascades to its descendants, and a user's effective permissions in any context are the union of all roles that reach it. Permissions themselves are platform-maintained reference data — administrators assign roles, not individual permissions.
+
+## Related
+
+- Reference: [Role (technical)](../../references/access/role.mdx)
+- Reference: [Permission (technical)](../../references/access/permission.mdx)
+- Reference: [Permission association (technical)](../../references/access/permission-association.mdx)
+- Concept: [User](./user.mdx)
+- Concept: [Organization](../facility/organization.mdx)
+- Concept: [Facility](../facility/facility.mdx)
+
+## FHIR reference
+
+Care's roles and permissions are an internal authorization model rather than a clinical resource, so they do not map to a single FHIR resource. They align in spirit with FHIR's access-control concepts (such as the `Permission` and `Role`/`PractitionerRole` resources), but enforcement is Care-specific.

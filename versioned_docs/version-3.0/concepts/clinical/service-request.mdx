@@ -1,0 +1,73 @@
+---
+sidebar_position: 7
+---
+
+# Service Request
+
+A **service request** in Care is an order or proposal to perform an action — a lab test, an imaging study, a procedure, counselling — for a patient. It is the instruction that sets clinical work in motion: the specimens collected, the reports produced, and the observations recorded all trace back to the request that asked for them.
+
+## What it represents
+
+In Care's FHIR-aligned model, a service request maps to the **ServiceRequest** resource. It captures:
+
+- **What is being asked for** — a human-readable title and a coded service or procedure
+- **Why and how** — its category (laboratory, imaging, counselling, surgical, education), priority, and whether it is a firm order or just a proposal
+- **Clinical context** — the patient and encounter it belongs to, optional notes, patient instructions, and a target body site
+- **Who and where** — the requesting clinician, the healthcare service expected to fulfil it, and the facility locations it applies to
+- **Downstream linkage** — the specimens and diagnostic reports generated in response to it
+
+A service request is not the result — it is the ask. The findings it produces live in separate observation, specimen, and diagnostic report records that point back to it.
+
+## Lifecycle
+
+A request moves through a small set of statuses from draft to a terminal state:
+
+```
+draft → active → on_hold → completed
+                       ↘ ended / revoked / entered_in_error
+```
+
+- **draft** — being prepared, not yet actionable
+- **active** — placed and in progress
+- **on_hold** — temporarily paused
+- **completed** — fulfilled
+- **ended**, **revoked**, **entered_in_error** — terminal closures (ended, cancelled, or logged as a mistake)
+
+## Intent and priority
+
+Two fields shape how a request is read and acted on:
+
+- **Intent** — how binding the request is: `proposal`, `plan`, `directive`, or `order`. A proposal is a suggestion; an order is a committed instruction.
+- **Priority** — how urgently it should be handled: `routine`, `urgent`, `asap`, or `stat`.
+
+## Relationships
+
+A service request never stands alone. It is always created within an **encounter**, and the patient is taken from that encounter rather than set directly — you cannot file a request without a clinical context. From there it connects outward:
+
+- The **encounter** supplies the patient and the clinical setting.
+- A **healthcare service** and one or more **locations** describe who fulfils the request and where.
+- **Specimens** and **diagnostic reports** are produced in response and reference the request as their origin.
+- A request can be created from an activity-definition template that supplies its category and the value set its code is drawn from.
+
+## Permissions
+
+Access to service requests is governed by a dedicated permission set. The table below lists the complete set of permissions and the system roles that hold each by default:
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Write Service Request on Facility | Create or update service requests within a facility | Facility Admin, Admin, Doctor, Nurse |
+| Can Read Service Request | View service requests for a facility's patients | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+
+Roles are granted to users through organization, facility-organization, and patient memberships, and access is scoped by the organization tree — a permission held at a parent organization cascades to its descendants. A user reaches a specific request either through their membership in the encounter's facility organization (and its current location) or through the facility organizations of the locations the request is attached to.
+
+## Related
+
+- Reference: [Service Request (technical)](../../references/clinical/service-request.mdx)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Specimen](../clinical/specimen.mdx)
+- Concept: [Diagnostic Report](../clinical/diagnostic-report.mdx)
+- Concept: [Observation](../clinical/observation.mdx)
+
+## FHIR reference
+
+The service request aligns with the FHIR **ServiceRequest** resource, implementing a focused subset. Care follows its own conventions for some values — statuses, intents, and priorities are snake_case rather than the hyphenated FHIR codes.

@@ -1,0 +1,80 @@
+---
+sidebar_position: 1
+---
+
+# Questionnaires & Structured Data
+
+A **questionnaire** (also called a **form**) is a reusable, versioned definition of questions that Care presents to capture structured data about a patient or an encounter. It is how Care turns clinical and operational data entry — vitals, intake forms, assessments, checklists — into consistent, query-friendly records instead of free text.
+
+## What it represents
+
+A questionnaire and its answers together capture:
+
+- **The form definition** — a titled, versioned tree of questions (groups, text, numbers, dates, choices, quantities) with display rules and validation
+- **The subject** — whether the form is answered about a **patient** or an **encounter**
+- **The answers** — a stored set of responses for a subject, recorded when someone fills out and submits the form
+- **Derived clinical data** — coded answers can automatically become [observations](../clinical/observation.mdx) on the encounter, so a vitals form populates the clinical record directly
+- **Reusable templates** — saved "favourites" or order sets that pre-fill a response, optionally bundling medication requests and service orders
+
+A questionnaire is the blueprint; a response is one filled-out copy. One questionnaire can be answered many times, by many people, for many subjects.
+
+## Lifecycle
+
+A questionnaire definition moves through a small set of publication states:
+
+```
+draft → active → retired
+```
+
+- **draft** — being authored; not yet available for data entry
+- **active** — published and accepting submissions. Active forms should not be edited in place
+- **retired** — withdrawn from use; existing responses remain readable
+
+Only **active** questionnaires accept submissions. A submitted response is normally **completed**, and can later be marked **entered in error** to void it without deleting the history. Forms that support a save-then-finalise flow carry a submission envelope that moves from **draft** to **submitted**.
+
+## Types of question
+
+Questions are typed, which is what makes the captured data structured. Common types include groups (containers), text, numbers (integer, decimal), booleans, dates and times, single- or multi-select **choices**, **quantities** with units, and display-only notes. Choice and quantity questions draw their allowed answers from a [value set](./valueset.mdx), and conditional rules can show or hide a question based on earlier answers.
+
+## Relationships
+
+- **Patient / encounter** — every response is anchored to a [patient](../clinical/patient), and to an [encounter](../clinical/encounter.mdx) when answered during a visit
+- **Observations** — coded answers materialise as [observations](../clinical/observation.mdx) linked back to the response
+- **Value sets** — choice and quantity questions reference a [value set](./valueset.mdx) for their allowed answers
+- **Organizations** — a questionnaire is scoped to one or more [organizations](../facility/organization.mdx), which controls who can see and submit it
+
+## Permissions
+
+Access to questionnaires is governed by a dedicated permission set; response templates have their own. The complete set of permissions and the system roles that hold them by default:
+
+### Questionnaire
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Read Questionnaires | View questionnaire definitions and their questions | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist, Admin (role org), Manager (role org), Member (role org) |
+| Can Submit Questionnaires | Fill out and submit responses to a questionnaire | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Admin (role org), Manager (role org), Member (role org) |
+| Can Create/Update Questionnaires | Author new questionnaires and edit existing ones | Admin, Facility Admin |
+| Can Archive Questionnaires | Retire a questionnaire so it stops accepting submissions | Admin, Facility Admin |
+| Can Manage Questionnaires | Add or remove organizations from questionnaires to control access | Admin, Facility Admin, Admin (role org) |
+
+### Questionnaire Response Template
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Read Questionnaire Response Templates | View saved response templates and order sets | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist |
+| Can Create/Update Questionnaire Response Templates | Create and edit reusable response templates | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist |
+
+Roles are granted to users through organization, facility-organization, and patient memberships. A questionnaire is attached to organizations, and access is decided by checking the user's roles against those organizations. Because permissions cascade down the organization tree, a role held at a parent organization also applies to the questionnaires scoped to its descendants.
+
+## Related
+
+- Reference: [Questionnaire (technical)](../../references/forms/questionnaire.mdx)
+- Reference: [Questionnaire Response (technical)](../../references/forms/questionnaire-response.mdx)
+- Reference: [Questionnaire Response Template (technical)](../../references/forms/questionnaire-response-template.mdx)
+- Concept: [Value sets](./valueset.mdx)
+- Concept: [Observation](../clinical/observation.mdx)
+- Concept: [Encounter](../clinical/encounter.mdx)
+
+## FHIR reference
+
+Care's questionnaires are inspired by the FHIR **Questionnaire** resource, and stored answers align loosely with **QuestionnaireResponse**. The publication states (draft, active, retired) mirror FHIR's publication-status model, so forms map cleanly onto FHIR-based exchange.
