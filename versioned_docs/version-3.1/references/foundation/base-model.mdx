@@ -287,7 +287,7 @@ A means of contact (phone, email, etc.). All three fields are **required**.
 
 ### `MonetaryComponent` and pricing types
 
-Pricing line components used by billing resources (see [Charge Item Definition](../billing/charge-item-definition.mdx), [Charge Item](../billing/charge-item.mdx)).
+Pricing line components used by billing resources (see [Charge Item Definition](../definitions/charge-item-definition.mdx), [Charge Item](../billing/charge-item.mdx)).
 
 `MonetaryComponent`:
 
@@ -348,7 +348,7 @@ A single condition evaluated against a registered metric — used inside `Moneta
 
 ### ValueSet definition types
 
-The shapes used to *define* a value set (the FHIR `compose` structure), used by [ValueSet](../forms/valueset.mdx).
+The shapes used to *define* a value set (the FHIR `compose` structure), used by [ValueSet](../definitions/valueset.mdx).
 
 - `ValueSet` — `name: str` (required), `status: str | None`, `compose: ValueSetCompose` (required).
 - `ValueSetCompose` — `id`, `include: list[ValueSetInclude]` (required), `exclude: list[ValueSetInclude] | None`, `property: list[str] | None`.
@@ -390,8 +390,8 @@ Defined in `common/mail_type.py`.
 ## Related
 
 - Reference: [Patient](../clinical/patient) — a representative `EMRBaseModel` + `EMRResource` subclass
-- Reference: [ValueSet](../forms/valueset.mdx) — uses `SlugBaseModel` and the ValueSet compose types
-- Reference: [Charge Item Definition](../billing/charge-item-definition.mdx) — uses `MonetaryComponent` pricing types
+- Reference: [ValueSet](../definitions/valueset.mdx) — uses `SlugBaseModel` and the ValueSet compose types
+- Reference: [Charge Item Definition](../definitions/charge-item-definition.mdx) — uses `MonetaryComponent` pricing types
 - Source: [`base.py` (emr models)](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/base.py)
 - Source: [`base.py` (utils models)](https://github.com/ohcnetwork/care/blob/develop/care/utils/models/base.py)
 - Source: [`base.py` (resources / `EMRResource`)](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)

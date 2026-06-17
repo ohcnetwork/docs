@@ -87,9 +87,9 @@ Both are `JSONField(default=list)` in the model; the spec types each element as 
 
 | Value | Meaning |
 | --- | --- |
-| `product_knowledge` | Category classifies [Product Knowledge](../supply/product-knowledge.mdx) entries |
-| `activity_definition` | Category classifies [Activity Definitions](../clinical/activity-definition.mdx) |
-| `charge_item_definition` | Category classifies [Charge Item Definitions](../billing/charge-item-definition.mdx); enables the monetary-component fields |
+| `product_knowledge` | Category classifies [Product Knowledge](../definitions/product-knowledge.mdx) entries |
+| `activity_definition` | Category classifies [Activity Definitions](../definitions/activity-definition.mdx) |
+| `charge_item_definition` | Category classifies [Charge Item Definitions](../definitions/charge-item-definition.mdx); enables the monetary-component fields |
 
 ### `MonetaryComponentType` values
 
@@ -199,10 +199,10 @@ A `@shared_task` that recomputes `calculated_monetary_components` down the subtr
 
 ## Related
 
-- Reference: [Charge Item Definition](../billing/charge-item-definition.mdx)
+- Reference: [Charge Item Definition](../definitions/charge-item-definition.mdx)
 - Reference: [Charge Item](../billing/charge-item.mdx)
-- Reference: [Activity Definition](../clinical/activity-definition.mdx)
-- Reference: [Product Knowledge](../supply/product-knowledge.mdx)
+- Reference: [Activity Definition](../definitions/activity-definition.mdx)
+- Reference: [Product Knowledge](../definitions/product-knowledge.mdx)
 - Reference: [Facility](../facility/facility.mdx)
 - Reference: [Base Model](../foundation/base-model.mdx)
 - Source: [resource_category.py (model)](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/resource_category.py) · [spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/resource_category/spec.py) · [monetary_component.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/monetary_component.py)

@@ -62,7 +62,7 @@ Both extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR 
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `facility_organization_cache` | `ArrayField[int]` | Platform-maintained cache of facility-[organization](../facility/organization.mdx) IDs (incl. parent chains). Rebuilt by `sync_organization_cache()` |
+| `facility_organization_cache` | `ArrayField[int]` | Platform-maintained cache of facility-[organization](../access-governance/organization.mdx) IDs (incl. parent chains). Rebuilt by `sync_organization_cache()` |
 | `tags` | `ArrayField[int]` | Tag IDs applied to the encounter. Serialized via `SingleFacilityTagManager().render_tags()` |
 | `extensions` | `JSONField` | Default `{}`. Open extension bag for deployment-specific metadata. Validated by `ExtensionValidator` against `ExtensionResource.encounter` |
 
@@ -190,8 +190,8 @@ All specs build on `EMRResource`, which provides `serialize` / `de_serialize` pl
 | `EncounterSpecBase` | shared | Fields: `id`, `status`, `encounter_class`, `period` (`PeriodSpec`, default `{}`), `hospitalization` (`HospitalizationSpec \| None`, default `{}`), `priority`, `external_identifier`, `discharge_summary_advice`. `__model__ = Encounter` |
 | `EncounterCreateSpec` | write · create | Extends base + `ExtensionValidator`. Adds `patient: UUID4`, `facility: UUID4`, `organizations: list[UUID4] = []`, `appointment: UUID4 \| None`. Resolves FKs by `external_id`; validates appointment belongs to the patient and facility |
 | `EncounterUpdateSpec` | write · update | Extends base + `ExtensionValidator`. Does not accept `patient`/`facility`/`organizations`/`appointment` — only mutable fields. Appends to status/class history on change |
-| `EncounterListSpec` | read · list | Adds serialized `patient` ([`PatientListSpec`](./patient)), `facility` (`FacilityBareMinimumSpec`), `status_history`, `encounter_class_history`, `created_date`, `modified_date`, `tags`, `current_location` (`FacilityLocationMinimalListSpec \| None`), `care_team` (`[{ member, role }]`) |
-| `EncounterRetrieveSpec` | read · detail | Extends list + `EncounterPermissionsMixin`. Adds `appointment` (`TokenBookingReadSpec`), `created_by`/`updated_by` ([`UserSpec`](../access/user.mdx)), `organizations` (`FacilityOrganizationReadSpec[]`), `location_history` (`FacilityLocationEncounter[]`, newest first), `extensions`; patient via `PatientRetrieveSpec` |
+| `EncounterListSpec` | read · list | Adds serialized `patient` ([`PatientListSpec`](../clinical/patient)), `facility` (`FacilityBareMinimumSpec`), `status_history`, `encounter_class_history`, `created_date`, `modified_date`, `tags`, `current_location` (`FacilityLocationMinimalListSpec \| None`), `care_team` (`[{ member, role }]`) |
+| `EncounterRetrieveSpec` | read · detail | Extends list + `EncounterPermissionsMixin`. Adds `appointment` (`TokenBookingReadSpec`), `created_by`/`updated_by` ([`UserSpec`](../access-governance/user.mdx)), `organizations` (`FacilityOrganizationReadSpec[]`), `location_history` (`FacilityLocationEncounter[]`, newest first), `extensions`; patient via `PatientRetrieveSpec` |
 | `HospitalizationSpec` | nested | Plain `BaseModel`; see shape above |
 | `EncounterCareTeamMemberSpec` | nested (write) | `{ user_id: UUID4, role: Coding }`, `role` bound to the `system-practitioner-role-code` value set |
 | `EncounterCareTeamMemberWriteSpec` | write · care team | `{ members: list[EncounterCareTeamMemberSpec] }`. Dedicated payload for replacing the care team |
@@ -208,7 +208,7 @@ All specs build on `EMRResource`, which provides `serialize` / `de_serialize` pl
 
 ### `EncounterOrganization`
 
-Associates an encounter with a facility-scoped [organization](../facility/organization.mdx) to drive organization-based access control on encounters.
+Associates an encounter with a facility-scoped [organization](../access-governance/organization.mdx) to drive organization-based access control on encounters.
 
 ```text
 encounter    → FK Encounter (CASCADE)
@@ -255,13 +255,13 @@ Expect two write passes per create or update through the ORM, plus identifier-de
 
 ## Related
 
-- Reference: [Patient](./patient)
-- Reference: [Service request](./service-request.mdx)
+- Reference: [Patient](../clinical/patient)
+- Reference: [Service request](../clinical/service-request.mdx)
 - Reference: [Booking](../scheduling/booking.mdx)
 - Reference: [Location](../facility/location.mdx)
-- Reference: [Organization](../facility/organization.mdx)
+- Reference: [Organization](../access-governance/organization.mdx)
 - Reference: [Facility](../facility/facility.mdx)
-- Reference: [User](../access/user.mdx)
+- Reference: [User](../access-governance/user.mdx)
 - Concept: [Patient](../../concepts/clinical/patient)
 - Source (model): [encounter.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/encounter.py)
 - Source (specs): [resources/encounter on GitHub](https://github.com/ohcnetwork/care/tree/develop/care/emr/resources/encounter)

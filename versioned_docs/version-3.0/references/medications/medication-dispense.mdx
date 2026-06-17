@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # Medication Dispense
 
-`MedicationDispense` records products handed to a patient and draws down the location's inventory as it does so. It closes out the workflow a [Medication Request](./medication-request.mdx) opens: in inpatient settings, items are dispensed into the room and refilled as needed; in outpatient settings, they go out once an encounter completes. A dispense can carry a [Charge Item](../billing/charge-item.mdx) for billing.
+`MedicationDispense` records products handed to a patient and draws down the location's inventory as it does so. It closes out the workflow a [Medication Request](../medications/medication-request.mdx) opens: in inpatient settings, items are dispensed into the room and refilled as needed; in outpatient settings, they go out once an encounter completes. A dispense can carry a [Charge Item](../billing/charge-item.mdx) for billing.
 
 **Source:**
 - Model: [`care/emr/models/medication_dispense.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/medication_dispense.py)
@@ -152,7 +152,7 @@ substitution = {
 
 ### `DosageInstruction` shape
 
-`dosage_instruction` is a `list[DosageInstruction]`. `DosageInstruction` comes straight from the [Medication Request](./medication-request.mdx) spec (`care/emr/resources/medication/request/spec.py`):
+`dosage_instruction` is a `list[DosageInstruction]`. `DosageInstruction` comes straight from the [Medication Request](../medications/medication-request.mdx) spec (`care/emr/resources/medication/request/spec.py`):
 
 ```text
 DosageInstruction {
@@ -310,14 +310,14 @@ The model has no custom `save()`. The dispense workflow lives in `MedicationDisp
 - Send `item` as an `InventoryItem` UUID, not a bare product code; that UUID is what draws down stock.
 - `quantity` and `days_supply` are constrained to whole units (`decimal_places=0`) on the write spec, even though the column stores 6 decimal places.
 - Leave `charge_item` alone. It is server-managed: created from the product's charge item definition and cancelled on dispense or order cancellation.
-- Set `fully_dispensed` to roll the linked [Medication Request](./medication-request.mdx) into `complete` / `partial`, so pharmacists don't re-dispense an already-fulfilled request.
+- Set `fully_dispensed` to roll the linked [Medication Request](../medications/medication-request.mdx) into `complete` / `partial`, so pharmacists don't re-dispense an already-fulfilled request.
 - Use `create_dispense_order` to start an order inline, or `order` to attach to an existing one — never both.
 
 ## Related
 
-- Reference: [Medication Request](./medication-request.mdx)
-- Reference: [Medication Administration](./medication-administration.mdx)
-- Reference: [Medication Statement](./medication-statement.mdx)
+- Reference: [Medication Request](../medications/medication-request.mdx)
+- Reference: [Medication Administration](../medications/medication-administration.mdx)
+- Reference: [Medication Statement](../medications/medication-statement.mdx)
 - Reference: [Inventory Item](../supply/inventory-item.mdx)
 - Reference: [Charge Item](../billing/charge-item.mdx)
 - Reference: [Location](../facility/location.mdx)

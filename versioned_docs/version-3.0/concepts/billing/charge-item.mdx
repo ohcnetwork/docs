@@ -15,17 +15,17 @@ In Care's FHIR-aligned model, a charge item maps to the **ChargeItem** resource.
 - **Why** — the activity that produced it, such as a service request, a dispensed medication, an appointment, or a bed stay, and who performed it
 - **Where** — the patient and the account it sits on, and optionally the encounter it relates to
 
-The key idea is that a charge item is *self-contained*: it carries its own pricing rather than looking up a live rate, so the cost is locked at the moment of charging and never drifts when the catalogue changes later. And a charge item is not an invoice. Charges accumulate on an account as care happens; an [invoice](./invoice.mdx) is the separate, later act of selecting some of them and presenting them for payment.
+The key idea is that a charge item is *self-contained*: it carries its own pricing rather than looking up a live rate, so the cost is locked at the moment of charging and never drifts when the catalogue changes later. And a charge item is not an invoice. Charges accumulate on an account as care happens; an [invoice](../billing/invoice.mdx) is the separate, later act of selecting some of them and presenting them for payment.
 
 ## How it connects
 
 A charge item never floats on its own — it always points back at the records around it:
 
-- **Account** — every charge item lives on exactly one [account](./account.mdx), the running ledger for a patient. Omit the account and it lands on the patient's default one.
+- **Account** — every charge item lives on exactly one [account](../billing/account.mdx), the running ledger for a patient. Omit the account and it lands on the patient's default one.
 - **Patient** — the person being billed. Charge against an [encounter](../clinical/encounter.mdx) and the patient is inherited from it automatically.
 - **Encounter** — the visit or admission the charge relates to. Optional: charges can also exist outside any single encounter.
-- **Charge item definition** — an optional template. Applying a [charge item definition](./charge-item-definition.mdx) builds a fully-priced charge item from the facility's catalogue, so staff never re-key prices by hand.
-- **Invoice** — once a charge is billed and settled, it links back to the [invoice](./invoice.mdx) that paid it.
+- **Charge item definition** — an optional template. Applying a [charge item definition](../definitions/charge-item-definition.mdx) builds a fully-priced charge item from the facility's catalogue, so staff never re-key prices by hand.
+- **Invoice** — once a charge is billed and settled, it links back to the [invoice](../billing/invoice.mdx) that paid it.
 
 ## Pricing model
 
@@ -64,6 +64,6 @@ Roles are granted to users through facility and organization memberships, and pe
 ## Related
 
 - Reference: [Charge Item (technical)](../../references/billing/charge-item.mdx)
-- Concept: [Account](./account.mdx)
-- Concept: [Charge Item Definition](./charge-item-definition.mdx)
-- Concept: [Invoice](./invoice.mdx)
+- Concept: [Account](../billing/account.mdx)
+- Concept: [Charge Item Definition](../definitions/charge-item-definition.mdx)
+- Concept: [Invoice](../billing/invoice.mdx)

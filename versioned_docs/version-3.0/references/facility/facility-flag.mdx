@@ -39,7 +39,7 @@ The model has no `JSONField`s, so there is no opaque JSON shape to document.
 
 | `FlagType` member | Value | Used by |
 | --- | --- | --- |
-| `USER` | `"USER"` | `UserFlag` ([User](../access/user.mdx)) |
+| `USER` | `"USER"` | `UserFlag` ([User](../access-governance/user.mdx)) |
 | `FACILITY` | `"FACILITY"` | `FacilityFlag` (this model) |
 
 The `flag` values themselves are not enumerated in source. They are registered at runtime via `FlagRegistry.register(FlagType.FACILITY, "<name>")`, and a name absent from the `FACILITY` registry raises `FlagNotFoundError` on save.
@@ -106,7 +106,7 @@ Flags reach API clients in exactly one place: the Facility resource exposes them
 | --- | --- | --- | --- |
 | `FacilityRetrieveSpec` ([`facility/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/facility/spec.py)) | `flags: list[str]` | read · detail | Populated in `perform_extra_serialization` via `mapping["flags"] = obj.get_facility_flags()`. Server-maintained and read-only; clients cannot set or mutate flags through the Facility write specs |
 
-The `flags` array is the materialized list of registered flag names attached to the facility, from `FacilityFlag.get_all_flags` (cache-backed, 1-day TTL). No value set is bound to it — entries are the runtime `FACILITY` registry names, not a coded concept. The User resource mirrors this, exposing `flags` via `obj.get_all_flags()` backed by `UserFlag` (see [User](../access/user.mdx)).
+The `flags` array is the materialized list of registered flag names attached to the facility, from `FacilityFlag.get_all_flags` (cache-backed, 1-day TTL). No value set is bound to it — entries are the runtime `FACILITY` registry names, not a coded concept. The User resource mirrors this, exposing `flags` via `obj.get_all_flags()` backed by `UserFlag` (see [User](../access-governance/user.mdx)).
 
 ## Related models
 
@@ -149,6 +149,6 @@ A flag must be registered before a `FacilityFlag` referencing it can be saved. S
 
 - Reference: [Facility](../facility/facility.mdx)
 - Reference: [Facility Config](../facility/facility-config.mdx)
-- Reference: [User](../access/user.mdx) — the `USER` flag counterpart of the same `BaseFlag` machinery
+- Reference: [User](../access-governance/user.mdx) — the `USER` flag counterpart of the same `BaseFlag` machinery
 - Reference: [Base model](../foundation/base-model.mdx)
 - Source: [facility_flag.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/facility/models/facility_flag.py)

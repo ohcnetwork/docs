@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Product
 
-A `Product` is a concrete batch of stock at a facility — a single lot of a medication, nutritional product, or consumable, with its own expiry, lot number, and purchase price. It instantiates a catalogue entry: everything generic about the item (name, codes, dosage form, `product_type`) lives on the linked [`ProductKnowledge`](../supply/product-knowledge.mdx), and a `Product` adds only what's true of one batch.
+A `Product` is a concrete batch of stock at a facility — a single lot of a medication, nutritional product, or consumable, with its own expiry, lot number, and purchase price. It instantiates a catalogue entry: everything generic about the item (name, codes, dosage form, `product_type`) lives on the linked [`ProductKnowledge`](../definitions/product-knowledge.mdx), and a `Product` adds only what's true of one batch.
 
 The Django model is storage; the shape you send and receive is defined by the Pydantic resource specs, which set the enums, narrow the model's opaque `JSONField`s, enforce validation, and split read from write. The fields below note where the spec diverges from the column; [Resource specs (API schema)](#resource-specs-api-schema) covers the full read/write split.
 
@@ -29,15 +29,15 @@ All three foreign keys are `PROTECT`, so a referenced row can't be deleted while
 | Field | Type | Notes |
 | --- | --- | --- |
 | `facility` | `FK → facility.Facility` (`PROTECT`) | Required at storage, but not a spec field — the viewset sets it from the URL, never the request body. |
-| `product_knowledge` | `FK → emr.ProductKnowledge` (`PROTECT`) | The catalogue definition this batch instantiates. Write takes a `slug` string and resolves it; read returns the nested [`ProductKnowledge`](../supply/product-knowledge.mdx) object. |
-| `charge_item_definition` | `FK → emr.ChargeItemDefinition` (`PROTECT`, nullable) | Drives charge-item creation when the product is billed. Write takes a `slug` string; read returns the nested [`ChargeItemDefinition`](../billing/charge-item-definition.mdx) object. |
+| `product_knowledge` | `FK → emr.ProductKnowledge` (`PROTECT`) | The catalogue definition this batch instantiates. Write takes a `slug` string and resolves it; read returns the nested [`ProductKnowledge`](../definitions/product-knowledge.mdx) object. |
+| `charge_item_definition` | `FK → emr.ChargeItemDefinition` (`PROTECT`, nullable) | Drives charge-item creation when the product is billed. Write takes a `slug` string; read returns the nested [`ChargeItemDefinition`](../definitions/charge-item-definition.mdx) object. |
 
 ### Classification & status
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `status` | `CharField(255)` | yes (spec) | The spec restricts it to [`ProductStatusOptions`](#productstatusoptions-values): `active` / `inactive` / `entered_in_error`. |
-| `product_type` | `CharField(255)` | — | A storage column the `Product` spec does not expose. The authoritative `product_type` lives on the linked [`ProductKnowledge`](../supply/product-knowledge.mdx) (`ProductTypeOptions`: `medication` / `nutritional_product` / `consumable`). |
+| `product_type` | `CharField(255)` | — | A storage column the `Product` spec does not expose. The authoritative `product_type` lives on the linked [`ProductKnowledge`](../definitions/product-knowledge.mdx) (`ProductTypeOptions`: `medication` / `nutritional_product` / `consumable`). |
 
 ### Batch & pricing
 
@@ -63,7 +63,7 @@ Defined in [`spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/
 
 ### `ProductTypeOptions` values
 
-Not a field on the `Product` spec. It's defined in [`product_knowledge/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/product_knowledge/spec.py) and carried on the linked [`ProductKnowledge`](../supply/product-knowledge.mdx); it appears here only because the model keeps a `product_type` storage column.
+Not a field on the `Product` spec. It's defined in [`product_knowledge/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/product_knowledge/spec.py) and carried on the linked [`ProductKnowledge`](../definitions/product-knowledge.mdx); it appears here only because the model keeps a `product_type` storage column.
 
 | Value |
 | --- |
@@ -110,7 +110,7 @@ Consequences for an integrator:
 
 ## API integration notes
 
-- A `Product` carries batch data only. Pull name, codes, dosage form, and `product_type` from the linked [`ProductKnowledge`](../supply/product-knowledge.mdx) — they aren't duplicated here.
+- A `Product` carries batch data only. Pull name, codes, dosage form, and `product_type` from the linked [`ProductKnowledge`](../definitions/product-knowledge.mdx) — they aren't duplicated here.
 - Send `product_knowledge` and `charge_item_definition` as slugs on write; both return as full nested objects on read.
 - Set `charge_item_definition` to wire the product into billing — charge items are created automatically when it's billed.
 - `batch` is a structured `{ lot_number }`, not a free-form dict, even though the column is a `JSONField`.
@@ -118,11 +118,11 @@ Consequences for an integrator:
 
 ## Related
 
-- Reference: [Product knowledge](../supply/product-knowledge.mdx)
+- Reference: [Product knowledge](../definitions/product-knowledge.mdx)
 - Reference: [Inventory item](../supply/inventory-item.mdx)
 - Reference: [Supply request](../supply/supply-request.mdx)
 - Reference: [Supply delivery](../supply/supply-delivery.mdx)
-- Reference: [Charge item definition](../billing/charge-item-definition.mdx)
+- Reference: [Charge item definition](../definitions/charge-item-definition.mdx)
 - Reference: [Facility](../facility/facility.mdx)
 - Reference: [Base model](../foundation/base-model.mdx)
 - Source: [model `product.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/product.py)

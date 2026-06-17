@@ -40,12 +40,12 @@ The API constrains `resource_type` to the string values of `FavoriteResourceChoi
 
 | Value | Bound resource | Wired viewset |
 | --- | --- | --- |
-| `activity_definition` | [Activity definition](../clinical/activity-definition.mdx) | `ActivityDefinitionViewSet` |
-| `charge_item_definition` | [Charge item definition](../billing/charge-item-definition.mdx) | `ChargeItemDefinitionViewSet` |
-| `product_knowledge` | [Product knowledge](../supply/product-knowledge.mdx) | `ProductKnowledgeViewSet` |
-| `observation_definition` | [Observation definition](../clinical/observation-definition.mdx) | _(enum value defined; no viewset wires it yet)_ |
-| `questionnaire` | [Questionnaire](../forms/questionnaire.mdx) | `QuestionnaireViewSet` |
-| `facility_organization` | [Organization](../facility/organization.mdx) (facility org) | `FacilityOrganizationViewSet` |
+| `activity_definition` | [Activity definition](../definitions/activity-definition.mdx) | `ActivityDefinitionViewSet` |
+| `charge_item_definition` | [Charge item definition](../definitions/charge-item-definition.mdx) | `ChargeItemDefinitionViewSet` |
+| `product_knowledge` | [Product knowledge](../definitions/product-knowledge.mdx) | `ProductKnowledgeViewSet` |
+| `observation_definition` | [Observation definition](../definitions/observation-definition.mdx) | _(enum value defined; no viewset wires it yet)_ |
+| `questionnaire` | [Questionnaire](../definitions/questionnaire.mdx) | `QuestionnaireViewSet` |
+| `facility_organization` | [Organization](../access-governance/organization.mdx) (facility org) | `FacilityOrganizationViewSet` |
 
 ## Resource specs (API schema)
 
@@ -69,7 +69,7 @@ Favorited objects have no read schema of their own. They come back through the o
 
 ## Related models
 
-- [`User`](../access/user.mdx) — owner of every favorites row (`user` FK)
+- [`User`](../access-governance/user.mdx) — owner of every favorites row (`user` FK)
 - [`Facility`](../facility/facility.mdx) — optional scope (`facility` FK); `null` = instance-wide
 - Each `resource_type` binds to one favoritable resource — see the [`FavoriteResourceChoices` table](#resource_type-values--favoriteresourcechoices)
 
@@ -135,8 +135,8 @@ What's server-maintained or validated:
 
 ## Related
 
-- Reference: [User](../access/user.mdx)
+- Reference: [User](../access-governance/user.mdx)
 - Reference: [Facility](../facility/facility.mdx)
 - Reference: [Base model](../foundation/base-model.mdx)
-- Favoritable resources: [Activity definition](../clinical/activity-definition.mdx), [Charge item definition](../billing/charge-item-definition.mdx), [Product knowledge](../supply/product-knowledge.mdx), [Observation definition](../clinical/observation-definition.mdx), [Questionnaire](../forms/questionnaire.mdx), [Organization](../facility/organization.mdx)
+- Favoritable resources: [Activity definition](../definitions/activity-definition.mdx), [Charge item definition](../definitions/charge-item-definition.mdx), [Product knowledge](../definitions/product-knowledge.mdx), [Observation definition](../definitions/observation-definition.mdx), [Questionnaire](../definitions/questionnaire.mdx), [Organization](../access-governance/organization.mdx)
 - Source: [favorites.py (model)](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/favorites.py), [spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/favorites/spec.py), [filters.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/favorites/filters.py), [viewset mixin](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/favorites.py)

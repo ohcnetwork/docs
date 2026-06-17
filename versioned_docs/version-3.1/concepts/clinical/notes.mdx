@@ -15,7 +15,7 @@ In Care's FHIR-aligned model, clinical notes map to the **Communication** resour
 - **Messages** — the entries posted into the thread over time by the care team
 - **A preserved history** — authorship, timestamps, and prior versions of every edited message
 
-A note is not a substitute for structured clinical data. Diagnoses belong in [conditions](./condition.mdx), allergies in [allergy records](./allergy-intolerance.mdx), and measurements in [observations](./observation.mdx). Notes are the human layer that ties that data together — the reasoning, context, and discussion that coded fields can't hold.
+A note is not a substitute for structured clinical data. Diagnoses belong in [conditions](../clinical/condition.mdx), allergies in [allergy records](../clinical/allergy-intolerance.mdx), and measurements in [observations](../clinical/observation.mdx). Notes are the human layer that ties that data together — the reasoning, context, and discussion that coded fields can't hold.
 
 ## Threads and messages
 
@@ -29,7 +29,7 @@ That anchoring gives a thread its scope:
 | Scope | What it means | Typical use |
 | --- | --- | --- |
 | Patient-level | Attached to the patient, not to any one visit | Longitudinal commentary across encounters — care coordination, ongoing concerns |
-| Encounter-level | Attached to a specific [encounter](./encounter.mdx) | Discussion tied to one admission or visit — shift hand-offs, ward notes |
+| Encounter-level | Attached to a specific [encounter](../clinical/encounter.mdx) | Discussion tied to one admission or visit — shift hand-offs, ward notes |
 
 Because threads hang off the patient record, they follow the patient over time. Deleting a patient removes their threads; deleting a thread removes its messages.
 
@@ -45,7 +45,7 @@ Each edit appends the prior text, its author, and the time of the change to the 
 
 ## Permissions
 
-Notes have no permission file of their own. Access follows the [patient](../clinical/patient) and [encounter](./encounter.mdx) permissions, since every thread is anchored to a patient and may be scoped to an encounter.
+Notes have no permission file of their own. Access follows the [patient](../clinical/patient) and [encounter](../clinical/encounter.mdx) permissions, since every thread is anchored to a patient and may be scoped to an encounter.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
@@ -60,5 +60,5 @@ Roles are granted through a person's organization, facility, or patient membersh
 
 - Reference: [Notes (technical)](../../references/clinical/notes.mdx)
 - Concept: [Patient](../clinical/patient)
-- Concept: [Encounter](./encounter.mdx)
-- Concept: [Observation](./observation.mdx)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Observation](../clinical/observation.mdx)

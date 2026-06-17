@@ -10,7 +10,7 @@ A **medication administration** is the record that a dose was actually given to 
 
 In Care's FHIR-aligned model, this maps to the **MedicationAdministration** resource. A single record answers four questions about one dose: what was given, how and when it was given, who gave it, and — if it was not given — why.
 
-The distinction that matters most is between the administration and the order behind it. The order ([Medication Request](./medication-request.mdx)) is the plan: *what should be given*. The administration is the event: *was this dose actually given?* One order produces many administrations over time, one for each scheduled dose, so the two together tell you whether the plan was followed.
+The distinction that matters most is between the administration and the order behind it. The order ([Medication Request](../medications/medication-request.mdx)) is the plan: *what should be given*. The administration is the event: *was this dose actually given?* One order produces many administrations over time, one for each scheduled dose, so the two together tell you whether the plan was followed.
 
 This is also why recording a "not given" event matters as much as recording a completed one. It makes a gap in the patient's medication history explicit and auditable, rather than leaving it silent.
 
@@ -48,8 +48,8 @@ A medication administration sits at the centre of the medication workflow and ti
 
 - **Patient** — every administration belongs to a [patient](../clinical/patient). The patient is derived automatically from the encounter, never entered directly, so the record can never drift from the visit it happened in.
 - **Encounter** — the [encounter](../clinical/encounter.mdx) during which the dose was given anchors it in time and place.
-- **Medication Request** — the [order](./medication-request.mdx) this administration fulfils, which is what turns a list of given doses back into "did we follow the plan?".
-- **Product** — when a specific catalogued item was used, the administration points to that [product knowledge](../supply/product-knowledge.mdx) entry so the dose can be reconciled against supply.
+- **Medication Request** — the [order](../medications/medication-request.mdx) this administration fulfils, which is what turns a list of given doses back into "did we follow the plan?".
+- **Product** — when a specific catalogued item was used, the administration points to that [product knowledge](../definitions/product-knowledge.mdx) entry so the dose can be reconciled against supply.
 
 A record names either a coded medication or a specific product, never both. The coded form describes the substance; the product form ties the dose to a real item that left your stores.
 
@@ -68,11 +68,11 @@ Roles are granted through a user's facility and organization memberships, and pe
 ## Related
 
 - Reference: [Medication Administration (technical)](../../references/medications/medication-administration.mdx)
-- Concept: [Medication Request](./medication-request.mdx)
-- Concept: [Medication Dispense](./medication-dispense.mdx)
-- Concept: [Medication Statement](./medication-statement.mdx)
+- Concept: [Medication Request](../medications/medication-request.mdx)
+- Concept: [Medication Dispense](../medications/medication-dispense.mdx)
+- Concept: [Medication Statement](../medications/medication-statement.mdx)
 - Concept: [Encounter](../clinical/encounter.mdx)
-- Concept: [Product Knowledge](../supply/product-knowledge.mdx)
+- Concept: [Product Knowledge](../definitions/product-knowledge.mdx)
 
 ## FHIR reference
 

@@ -22,9 +22,9 @@ An account is not an invoice and not a single visit. It is a long-lived containe
 The account sits between a patient's clinical activity and the money owed for it:
 
 - **Patient and facility** — every account belongs to exactly one [patient](../clinical/patient) at one [facility](../facility/facility.mdx).
-- **Charge items** — each billable line item ([charge item](./charge-item.mdx)) is placed on the patient's account, and those items are what actually drive the totals.
+- **Charge items** — each billable line item ([charge item](../billing/charge-item.mdx)) is placed on the patient's account, and those items are what actually drive the totals.
 - **Encounters** — charges accumulate across many [encounters](../clinical/encounter.mdx), but an account can optionally be tied to one primary encounter for reporting and insurance paperwork.
-- **Invoices and payments** — [invoices](./invoice.mdx) are raised against an account (or against specific items in it), and [payment reconciliations](./payment-reconciliation.mdx) record what has been settled.
+- **Invoices and payments** — [invoices](../billing/invoice.mdx) are raised against an account (or against specific items in it), and [payment reconciliations](../billing/payment-reconciliation.mdx) record what has been settled.
 
 In practice, clients rarely create an account by hand. The platform materializes a patient's default account automatically the first time a charge item is added for that patient at a facility.
 
@@ -59,9 +59,9 @@ Roles are granted to users through their organization and facility memberships, 
 ## Related
 
 - Reference: [Account (technical)](../../references/billing/account.mdx)
-- Concept: [Charge item](./charge-item.mdx)
-- Concept: [Invoice](./invoice.mdx)
-- Concept: [Payment reconciliation](./payment-reconciliation.mdx)
+- Concept: [Charge item](../billing/charge-item.mdx)
+- Concept: [Invoice](../billing/invoice.mdx)
+- Concept: [Payment reconciliation](../billing/payment-reconciliation.mdx)
 - Concept: [Patient](../clinical/patient)
 
 ## FHIR reference

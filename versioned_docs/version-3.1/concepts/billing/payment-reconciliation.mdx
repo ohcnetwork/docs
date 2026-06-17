@@ -15,7 +15,7 @@ In Care's FHIR-aligned model, a payment reconciliation maps to the **PaymentReco
 - **How much** — the amount tendered, any amount returned as change, and the net amount that lands on the account
 - **Context** — when the payment happened, where it was taken (e.g. a billing counter), and references such as a cheque or authorization number
 
-A payment reconciliation is not a bill. The [invoice](./invoice.mdx) states what is owed; the payment reconciliation records what was actually paid. Several payments can be recorded against one account over time, and a payment can also be a refund or credit note rather than money coming in.
+A payment reconciliation is not a bill. The [invoice](../billing/invoice.mdx) states what is owed; the payment reconciliation records what was actually paid. Several payments can be recorded against one account over time, and a payment can also be a refund or credit note rather than money coming in.
 
 ## How money is calculated
 
@@ -54,8 +54,8 @@ draft → active → cancelled / entered_in_error
 
 A payment reconciliation always sits inside the billing picture for one patient:
 
-- It is recorded against an **[account](./account.mdx)** — the running ledger for a patient, which is always required.
-- It may optionally be allocated to one **[invoice](./invoice.mdx)**, settling that specific bill. With no invoice, the payment simply credits the account balance.
+- It is recorded against an **[account](../billing/account.mdx)** — the running ledger for a patient, which is always required.
+- It may optionally be allocated to one **[invoice](../billing/invoice.mdx)**, settling that specific bill. With no invoice, the payment simply credits the account balance.
 - It is anchored to a **[facility](../facility/facility.mdx)** and may record the location where the payment was taken (e.g. a billing counter).
 
 Because it points at an account and, through that account, at the [patient](../clinical/patient), a payment reconciliation ties financial activity back to the same person whose [encounters](../clinical/encounter.mdx) and orders drove the charges.
@@ -75,9 +75,9 @@ Roles are granted through a user's facility and organization memberships, and pe
 ## Related
 
 - Reference: [Payment Reconciliation (technical)](../../references/billing/payment-reconciliation.mdx)
-- Concept: [Account](./account.mdx)
-- Concept: [Invoice](./invoice.mdx)
-- Concept: [Charge item](./charge-item.mdx)
+- Concept: [Account](../billing/account.mdx)
+- Concept: [Invoice](../billing/invoice.mdx)
+- Concept: [Charge item](../billing/charge-item.mdx)
 
 ## FHIR reference
 

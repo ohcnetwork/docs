@@ -19,7 +19,7 @@ An observation is a snapshot, not a running tally. It records one fact at one po
 
 ## How it is captured
 
-Observations are rarely entered field by field. Most are produced as a side effect of submitting a [questionnaire](../forms/questionnaire.mdx): each answer on the form becomes an observation, and that observation keeps a link back to the questionnaire response that produced it. This is also why every observation carries both a *value* and a *value type* — the value type tells any reader how to interpret what the form captured, whether it was a number, a date, a yes/no, or a coded choice.
+Observations are rarely entered field by field. Most are produced as a side effect of submitting a [questionnaire](../definitions/questionnaire.mdx): each answer on the form becomes an observation, and that observation keeps a link back to the questionnaire response that produced it. This is also why every observation carries both a *value* and a *value type* — the value type tells any reader how to interpret what the form captured, whether it was a number, a date, a yes/no, or a coded choice.
 
 Care strongly prefers **structured, coded** observations over free text. Downstream safety logic — allergy checks, medication interactions, alerting — reads coded values, so a temperature stored as a number with a LOINC code is far more useful than the same reading typed into a note.
 
@@ -42,7 +42,7 @@ An observation rarely stands alone. It links to the primitives around it:
 
 - **Patient** — every observation belongs to one [patient](../clinical/patient); this anchor is what makes it part of a chart.
 - **Encounter** — it is normally recorded within an [encounter](../clinical/encounter.mdx), tying the fact to a specific visit or admission.
-- **Observation definition** — an [observation definition](../clinical/observation-definition.mdx) can act as the template, supplying expected codes, units, and reference ranges.
+- **Observation definition** — an [observation definition](../definitions/observation-definition.mdx) can act as the template, supplying expected codes, units, and reference ranges.
 - **Diagnostic report** — lab and imaging results are observations grouped under a [diagnostic report](../clinical/diagnostic-report.mdx).
 - **Other observations** — observations can nest. A panel such as a blood-pressure reading is a grouping observation whose components each carry their own code and value.
 
@@ -60,8 +60,8 @@ Roles are granted through a user's organization, facility, or patient membership
 ## Related
 
 - Reference: [Observation (technical)](../../references/clinical/observation.mdx)
-- Concept: [Observation Definition](../clinical/observation-definition.mdx)
+- Concept: [Observation Definition](../definitions/observation-definition.mdx)
 - Concept: [Diagnostic Report](../clinical/diagnostic-report.mdx)
-- Concept: [Questionnaire](../forms/questionnaire.mdx)
+- Concept: [Questionnaire](../definitions/questionnaire.mdx)
 - Concept: [Encounter](../clinical/encounter.mdx)
 - Concept: [Patient](../clinical/patient)

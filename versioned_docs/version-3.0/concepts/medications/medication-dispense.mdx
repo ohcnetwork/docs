@@ -16,13 +16,13 @@ In Care's FHIR-aligned model, a medication dispense maps to the **MedicationDisp
 - **Substitution** — whether a different product was supplied in place of the one prescribed, and why
 - **Context** — the patient, encounter, location it was dispensed from, and the prescription it fulfils
 
-A dispense is not a prescription, and it is not an administration. A [medication request](./medication-request.mdx) is the *intent* to give a drug; a dispense is the *act* of supplying it; a [medication administration](./medication-administration.mdx) records the drug actually entering the body. One prescription can be filled by several dispenses over time, which is why these three are kept distinct.
+A dispense is not a prescription, and it is not an administration. A [medication request](../medications/medication-request.mdx) is the *intent* to give a drug; a dispense is the *act* of supplying it; a [medication administration](../medications/medication-administration.mdx) records the drug actually entering the body. One prescription can be filled by several dispenses over time, which is why these three are kept distinct.
 
 ## How it connects
 
 A dispense sits where clinical orders, pharmacy stock, and billing meet:
 
-- **Authorizing request** — the [medication request](./medication-request.mdx) it fulfils. Marking a dispense as fully or partially dispensed updates the prescription so it is not filled again by mistake.
+- **Authorizing request** — the [medication request](../medications/medication-request.mdx) it fulfils. Marking a dispense as fully or partially dispensed updates the prescription so it is not filled again by mistake.
 - **Inventory item** — the specific stock item consumed. Dispensing draws its quantity down, and Care blocks the dispense when there is not enough stock.
 - **Charge item** — when the product is priced, Care automatically creates a [charge item](../../references/billing/charge-item.mdx) so the dispense flows through to billing. Cancelling the dispense cancels its charge.
 - **Encounter, patient, and location** — every dispense belongs to a patient's [encounter](../clinical/encounter.mdx) and is supplied from a [location](../../references/facility/location.mdx) within the facility.
@@ -76,7 +76,7 @@ Roles are granted through a user's facility and organization memberships, and th
 
 - Reference: [Medication Dispense (technical)](../../references/medications/medication-dispense.mdx)
 - Reference: [Medication Request](../../references/medications/medication-request.mdx)
-- Concept: [Medication Administration](./medication-administration.mdx)
+- Concept: [Medication Administration](../medications/medication-administration.mdx)
 - Concept: [Inventory Item](../supply/inventory-item.mdx)
 - Reference: [Charge Item](../../references/billing/charge-item.mdx)
 

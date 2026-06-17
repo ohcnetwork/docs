@@ -28,8 +28,8 @@ Both extend [`EMRBaseModel`](../foundation/base-model.mdx), which supplies `exte
 | Field | Type | Notes |
 | --- | --- | --- |
 | `title` | `CharField(255)` | Nullable and blank-allowed in the column, but the spec requires it on write (`title: str`, `max_length=255`) |
-| `patient` | `FK → Patient` | `on_delete=CASCADE`; deleting the [patient](./patient) deletes the thread. Excluded from spec serialization (`__exclude__`) and set from the URL/viewset context, never the request body |
-| `encounter` | `FK → Encounter` | Nullable, blank-allowed, `on_delete=CASCADE`. Scopes the thread to one [encounter](./encounter.mdx). Excluded from spec serialization; on create it is resolved from a UUID in the request body (see specs below) |
+| `patient` | `FK → Patient` | `on_delete=CASCADE`; deleting the [patient](../clinical/patient) deletes the thread. Excluded from spec serialization (`__exclude__`) and set from the URL/viewset context, never the request body |
+| `encounter` | `FK → Encounter` | Nullable, blank-allowed, `on_delete=CASCADE`. Scopes the thread to one [encounter](../clinical/encounter.mdx). Excluded from spec serialization; on create it is resolved from a UUID in the request body (see specs below) |
 
 A thread with no `encounter` is patient-level; a thread with an `encounter` is pinned to that visit. A `TODO` in the source flags organization-based access restriction as planned but not yet implemented.
 
@@ -123,6 +123,6 @@ Payload field names follow the spec classes above, not the Django model names.
 
 - Source: [notes.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/notes.py)
 - Specs: [thread_spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/notes/thread_spec.py), [notes_spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/notes/notes_spec.py)
-- Reference: [Patient](./patient)
-- Reference: [Encounter](./encounter.mdx)
+- Reference: [Patient](../clinical/patient)
+- Reference: [Encounter](../clinical/encounter.mdx)
 - Reference: [Base model](../foundation/base-model.mdx)

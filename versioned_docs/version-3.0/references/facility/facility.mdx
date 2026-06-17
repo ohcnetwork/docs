@@ -239,7 +239,7 @@ created_by                     → FK users.User (SET_NULL)
 FacilityMonetoryConfig         → OneToOne facility.Facility (CASCADE)   # billing/discount config
 ```
 
-On creation, `save()` provisions a root [`FacilityOrganization`](organization.mdx) named `Administration` (`org_type="root"`, `system_generated=True`) and a `FacilityOrganizationUser` linking `created_by` to it with the `FACILITY_ADMIN_ROLE`. Feature flags live in [`FacilityFlag`](facility-flag.mdx) and surface via `get_facility_flags()`.
+On creation, `save()` provisions a root [`FacilityOrganization`](../access-governance/organization.mdx) named `Administration` (`org_type="root"`, `system_generated=True`) and a `FacilityOrganizationUser` linking `created_by` to it with the `FACILITY_ADMIN_ROLE`. Feature flags live in [`FacilityFlag`](facility-flag.mdx) and surface via `get_facility_flags()`.
 
 ## Methods & save behaviour
 
@@ -275,7 +275,7 @@ Deletes are soft (inherited `BaseModel.delete()` sets `deleted=True`); the row a
 - Reference: [Base models & conventions](../foundation/base-model.mdx)
 - Reference: [Facility config](facility-config.mdx)
 - Reference: [Facility flag](facility-flag.mdx)
-- Reference: [Organization](organization.mdx)
+- Reference: [Organization](../access-governance/organization.mdx)
 - Reference: [Location](location.mdx)
 - Reference: [Healthcare service](healthcare-service.mdx)
 - Reference: [Device](device.mdx)

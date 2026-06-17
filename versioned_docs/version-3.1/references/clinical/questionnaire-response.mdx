@@ -1,0 +1,139 @@
+---
+sidebar_position: 14
+---
+
+# Questionnaire Response
+
+A `QuestionnaireResponse` is the set of answers a patient gives to a [questionnaire](../definitions/questionnaire.mdx); a `FormSubmission` is the envelope that carries that payload through a draft-to-finalised lifecycle. You touch these when reading back what was answered or when submitting new answers.
+
+The Django models are the storage; the Pydantic resource specs define the submit payload, answer structure, status enums, and read/write API schemas.
+
+**Source:**
+- Model: [`care/emr/models/questionnaire.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/questionnaire.py)
+- Specs: [`resources/questionnaire_response/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/questionnaire_response/spec.py) · [`resources/form_submission/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/form_submission/spec.py)
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `QuestionnaireResponse` | A completed set of answers to a `Questionnaire` for a subject (patient/encounter) |
+| `FormSubmission` | A submission envelope (draft → submitted) holding a raw response dump for a questionnaire |
+
+Both extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base that provides `external_id`, audit fields, soft-delete via `deleted`, and `history`/`meta` JSON.
+
+## `QuestionnaireResponse` fields
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `questionnaire` | `FK → Questionnaire` | `CASCADE`, nullable. The questionnaire that was answered |
+| `subject_id` | `UUIDField` | The subject the response is about (e.g. patient external id) |
+| `responses` | `JSONField` | `default=list`. The raw answers — a list of `{ "question_id": UUID, ... }` entries |
+| `structured_responses` | `JSONField` | `default=dict`. Extracted/structured representation of the answers |
+| `structured_response_type` | `CharField` | Nullable. Discriminator for the structured payload |
+| `patient` | `FK → Patient` | `CASCADE`. The patient |
+| `encounter` | `FK → Encounter` | `CASCADE`, nullable. Set when the response is captured in a visit context |
+| `form_submission` | `FK → FormSubmission` | `CASCADE`, nullable. The submission this response came from |
+| `status` | `CharField(255)` | `default="completed"`. One of `QuestionnaireResponseStatusChoices` (see [enum](#questionnaire-response-status)) |
+
+### `render_responses()`
+
+Joins each entry in `responses` with its matching question definition from `questionnaire.get_questions_by_id()`, returning a list of `{ "answer": <response>, "question": <question> }` for display. Returns `[]` when `responses` is empty or no questionnaire is linked.
+
+## `FormSubmission` fields
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `questionnaire` | `FK → Questionnaire` | `CASCADE`. The questionnaire being submitted |
+| `patient` | `FK → Patient` | `CASCADE`. The patient |
+| `encounter` | `FK → Encounter` | `CASCADE`, nullable. Encounter context, if any |
+| `status` | `CharField(255)` | One of `FormSubmissionStatusChoices` (see [enum](#form-submission-status)) |
+| `response_dump` | `JSONField` | `default=dict`. Raw submitted payload |
+
+## Enums
+
+### Questionnaire response status
+
+`QuestionnaireResponseStatusChoices` (`resources/questionnaire_response/spec.py`), `str` values.
+
+| Value | Meaning |
+| --- | --- |
+| `completed` | The response is finalised (default) |
+| `entered_in_error` | The response was recorded in error |
+
+### Form submission status
+
+`FormSubmissionStatusChoices` (`resources/form_submission/spec.py`), `str` values.
+
+| Value | Meaning |
+| --- | --- |
+| `draft` | Saved but not finalised |
+| `submitted` | Finalised submission |
+| `entered_in_error` | Recorded in error |
+
+## Submit payload (nested shapes)
+
+Answers go through the questionnaire submit endpoint, whose body is `QuestionnaireSubmitRequest`. Group questions nest via `sub_results`, and each answer can carry multiple values:
+
+```text
+QuestionnaireSubmitRequest {
+  resource_id:     UUID4                          # questionnaire being answered
+  patient:         UUID4                           (required)
+  encounter:       UUID4 | None
+  form_submission: UUID4 | None
+  results:         list[QuestionnaireSubmitResult]
+}
+
+QuestionnaireSubmitResult {
+  question_id: UUID4 | UUID5                        (required)
+  body_site:   Coding | None
+  method:      Coding | None
+  taken_at:    datetime | None
+  values:      list[QuestionnaireSubmitResultValue]
+  note:        str | None
+  sub_results: list[list[QuestionnaireSubmitResult]]   # nested, for group questions
+}
+
+QuestionnaireSubmitResultValue {
+  value:  str | None
+  unit:   Coding | None      # for Quantity answers
+  coding: Coding | None      # for coded answers
+}
+```
+
+## Resource specs (API schema)
+
+All specs extend `EMRResource` (`resources/base.py`).
+
+### `QuestionnaireResponse` (`resources/questionnaire_response/spec.py`)
+
+There is no generic create spec — new responses come from the questionnaire submit flow (`QuestionnaireSubmitRequest`). The update spec carries `status` only, so the one write you make directly is flagging a response `entered_in_error`.
+
+| Spec class | Role | Notes |
+| --- | --- | --- |
+| `EMRQuestionnaireResponseBase` | shared | `__model__ = QuestionnaireResponse` |
+| `QuestionnaireResponseUpdate` | write · update | Only `status` (`QuestionnaireResponseStatusChoices`, default `completed`) — used to mark a response `entered_in_error` |
+| `QuestionnaireResponseReadSpec` | read | `id`, `status`, `questionnaire` (nested `QuestionnaireReadSpec`), `subject_id`, `responses`, `encounter` (external id or `null`), `structured_responses`, `structured_response_type`, `created_by`/`updated_by` (`UserSpec`), `created_date`/`modified_date` |
+
+### `FormSubmission` (`resources/form_submission/spec.py`)
+
+| Spec class | Role | Notes |
+| --- | --- | --- |
+| `BaseFormSubmissionSpec` | shared | `__model__ = FormSubmission`; `id` (`UUID4?`) |
+| `FormSubmissionUpdateSpec` | write · update | `status` (`FormSubmissionStatusChoices`), `response_dump` (`dict`) |
+| `FormSubmissionWriteSpec` | write · create | Adds `questionnaire` (slug `str`), `patient` (`UUID4`), `encounter` (`UUID4?`). `perform_extra_deserialization` resolves the questionnaire by slug and the patient/encounter by external id; when an encounter is given, the patient is taken from it |
+| `FormSubmissionReadSpec` | read | `status`, `response_dump`, `created_date`/`modified_date`, `created_by`/`updated_by` (`UserSpec?`) |
+
+## API integration notes
+
+- Both map loosely onto the FHIR `QuestionnaireResponse` resource: `responses` holds the raw answers, and `structured_responses` is the extracted, query-friendly form.
+- Create a `QuestionnaireResponse` by submitting a `QuestionnaireSubmitRequest`. The update spec exists to flag responses `entered_in_error`.
+- `FormSubmission` runs a draft→submitted lifecycle. Its `response_dump` is opaque JSON — the questionnaire definition validates it, the model does not.
+- The server maintains the audit users (`created_by`/`updated_by`); don't set them on write.
+
+## Related
+
+- Reference: [Questionnaire](../definitions/questionnaire.mdx) — the form definition being answered
+- Reference: [Questionnaire Response Template](../definitions/questionnaire-response-template.mdx) — reusable pre-fill templates
+- Reference: [Encounter](../clinical/encounter.mdx)
+- Concept: [Patient](../../concepts/clinical/patient)
+- Source: [questionnaire.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/questionnaire.py)

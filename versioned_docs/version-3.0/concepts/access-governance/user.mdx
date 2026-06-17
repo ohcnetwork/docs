@@ -1,0 +1,65 @@
+---
+sidebar_position: 4
+---
+
+# User
+
+A **user** in Care is an account that a person — or an automated integration — uses to sign in and act on the platform. It is the identity behind every action in the record: the doctor who writes a note, the nurse who records an observation, and the operator who registers a patient all do so as a user.
+
+## What it represents
+
+In Care's FHIR-aligned model, a user corresponds most closely to the **Practitioner** resource — the person delivering or supporting care. The account captures:
+
+- **Identity** — name (with a prefix such as "Dr."), username, gender, date of birth, and a profile photo
+- **Contact** — the phone number and email used for sign-in and notifications
+- **Credentials** — qualification, medical council registration, and working hours, for staff who provide care
+- **Account context** — the user's geographic organization, who created the account, and whether it is human or automated
+
+A user is not the same as their permissions. The account holds *who someone is*; what they are allowed to do comes from the roles they hold in organizations and facilities — see [Access control](../access-governance/access-control.mdx). Granting or removing a role changes a user's reach without touching their identity, which is why the same account can move between facilities or change duties without being recreated.
+
+## Types
+
+Not every account belongs to a person logging in by hand:
+
+- **Human accounts** — clinicians and operators who sign in with a username and password, and optionally a one-time code
+- **Service accounts** — machine or integration identities used by other systems to call Care's API on a defined, auditable basis rather than as a person
+
+Both leave the same accountable trail; the distinction matters for how they sign in and for telling automated activity apart from human activity in an audit.
+
+## How it connects
+
+A user is the actor that ties the rest of the record together:
+
+- **Authorship** — encounters, observations, orders, and notes record the user who created or updated them, giving every entry an accountable owner
+- **Organization & facility** — a user is granted roles inside [organizations](../access-governance/organization.mdx) and [facilities](../facility/facility.mdx); these memberships decide which patients and data the user can reach
+- **Scheduling** — clinician users back [schedules](../scheduling/schedule.mdx) and [bookings](../scheduling/booking.mdx), so credentials and working hours shape who can be booked
+- **Account creator** — each account records the user who created it, preserving an onboarding trail
+
+## Sign-in and security
+
+Care protects accounts with layered sign-in controls:
+
+- **Password** — every human account sets a password that must pass a strength check; service accounts may sign in without one
+- **Multi-factor authentication** — users can enable a time-based one-time code (TOTP) from an authenticator app, with single-use backup codes for recovery
+- **Verification** — accounts carry a verified status, and a user can be reached for a password reset through their registered username
+
+## Permissions
+
+User permissions govern who can create other accounts and assign their roles. They do not control what a user can do clinically — that flows from the roles a user holds. Listing and retrieving user accounts are not gated by a dedicated permission in the viewset, and updating or deleting an account is restricted to the account owner or a superuser rather than to a role permission.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| `can_create_user` | Create a new human user account | Admin, Facility Admin, Administrator |
+| `can_create_service_account` | Create a new service (machine) account | Admin, Facility Admin, Administrator |
+| `can_manage_organization_users` | Assign the requested roles to the new account within an organization | Admin, Administrator, Facility Admin, Admin (role org) |
+| `can_manage_connected_role_organizations` | Assign roles in a connected role organization when onboarding the account | Admin (role org), Manager (role org) |
+
+Roles are granted through organization, facility, and patient memberships, and permissions cascade down the organization tree — a role held at a higher level applies to the facilities and teams beneath it.
+
+## Related
+
+- Reference: [User & Skills (technical)](../../references/access-governance/user.mdx)
+- Concept: [Access control](../access-governance/access-control.mdx)
+- Concept: [Organization](../access-governance/organization.mdx)
+- Concept: [Facility](../facility/facility.mdx)
+- Concept: [Patient](../clinical/patient)

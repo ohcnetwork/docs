@@ -17,7 +17,7 @@ In Care's FHIR-aligned model, this maps to the **AllergyIntolerance** resource. 
 - **Category and type** — what kind of substance it is, and whether it is a true allergy or a non-immune intolerance
 - **Timing and notes** — when it was first recorded, the most recent known reaction, structured onset details, and a free-text clinical note
 
-An allergy record is an assertion about a *risk*, not a log of a reaction that occurred. A single confirmed peanut allergy stays on the record over time even if the patient never reacts again — it is the patient's standing safety profile, distinct from a one-off [Observation](./observation.mdx) or a documented [Condition](./condition.mdx).
+An allergy record is an assertion about a *risk*, not a log of a reaction that occurred. A single confirmed peanut allergy stays on the record over time even if the patient never reacts again — it is the patient's standing safety profile, distinct from a one-off [Observation](../clinical/observation.mdx) or a documented [Condition](../clinical/condition.mdx).
 
 ## Type and classification
 
@@ -50,7 +50,7 @@ These axes move independently: a record can be clinically `active` yet only `unc
 ## How it connects
 
 - **Patient** — every allergy belongs to one [patient](../clinical/patient) and is part of their standing clinical profile. The patient is derived automatically and is never set by the client.
-- **Encounter** — each allergy is recorded against the [encounter](./encounter.mdx) in which a clinician asserted it, anchoring it to a moment in the patient's timeline. Records are tied to both, so an allergy never outlives the patient or encounter it belongs to.
+- **Encounter** — each allergy is recorded against the [encounter](../clinical/encounter.mdx) in which a clinician asserted it, anchoring it to a moment in the patient's timeline. Records are tied to both, so an allergy never outlives the patient or encounter it belongs to.
 - **Medications** — because the substance is a code from a curated value set rather than free text, an allergy can be matched against a [medication request](../medications/medication-request.mdx) and other ordering logic, instead of relying on a clinician to read a note.
 
 ## Permissions
@@ -70,9 +70,9 @@ Roles are granted to users through organization, facility, and patient membershi
 
 - Reference: [Allergy Intolerance (technical)](../../references/clinical/allergy-intolerance.mdx)
 - Concept: [Patient](../clinical/patient)
-- Concept: [Encounter](./encounter.mdx)
-- Concept: [Condition](./condition.mdx)
-- Concept: [Observation](./observation.mdx)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Condition](../clinical/condition.mdx)
+- Concept: [Observation](../clinical/observation.mdx)
 
 ## FHIR reference
 

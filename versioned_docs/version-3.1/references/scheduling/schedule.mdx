@@ -51,7 +51,7 @@ Discriminates the kind of entity a schedule or exception attaches to. On write, 
 
 | Value | Resolves to |
 | --- | --- |
-| `practitioner` | A [`User`](../access/user.mdx) who is a member of the facility (serialized via `UserSpec`) |
+| `practitioner` | A [`User`](../access-governance/user.mdx) who is a member of the facility (serialized via `UserSpec`) |
 | `location` | A `FacilityLocation` in the facility (serialized via `FacilityLocationListSpec`) |
 | `healthcare_service` | A [`HealthcareService`](../facility/healthcare-service.mdx) in the facility (serialized via `HealthcareServiceReadSpec`) |
 
@@ -175,10 +175,10 @@ Every spec extends `EMRResource` ([`base.py`](https://github.com/ohcnetwork/care
 
 - Reference: [Booking](../scheduling/booking.mdx)
 - Reference: [Token](../scheduling/token.mdx)
-- Reference: [Charge item definition](../billing/charge-item-definition.mdx)
+- Reference: [Charge item definition](../definitions/charge-item-definition.mdx)
 - Reference: [Healthcare service](../facility/healthcare-service.mdx)
 - Reference: [Location](../facility/location.mdx)
 - Reference: [Facility](../facility/facility.mdx)
-- Reference: [User](../access/user.mdx)
+- Reference: [User](../access-governance/user.mdx)
 - Source (model): [schedule.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/scheduling/schedule.py)
 - Source (specs): [schedule/spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/scheduling/schedule/spec.py), [availability_exception/spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/scheduling/availability_exception/spec.py), [resource/spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/scheduling/resource/spec.py)

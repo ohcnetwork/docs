@@ -189,14 +189,14 @@ service_request     → FK ServiceRequest (CASCADE, nullable) [set via request]
 specimen_definition → FK SpecimenDefinition (CASCADE, nullable)
 ```
 
-A `Specimen` is created to fulfill a [`ServiceRequest`](./service-request.mdx) (a lab order) and may be shaped by a [`SpecimenDefinition`](./specimen-definition.mdx) describing the expected sample. Results derived from a specimen surface through a [`DiagnosticReport`](./diagnostic-report.mdx).
+A `Specimen` is created to fulfill a [`ServiceRequest`](../clinical/service-request.mdx) (a lab order) and may be shaped by a [`SpecimenDefinition`](../definitions/specimen-definition.mdx) describing the expected sample. Results derived from a specimen surface through a [`DiagnosticReport`](../clinical/diagnostic-report.mdx).
 
 ## Related
 
-- Reference: [Specimen Definition](./specimen-definition.mdx)
-- Reference: [Service Request](./service-request.mdx)
-- Reference: [Diagnostic Report](./diagnostic-report.mdx)
-- Reference: [Patient](./patient)
+- Reference: [Specimen Definition](../definitions/specimen-definition.mdx)
+- Reference: [Service Request](../clinical/service-request.mdx)
+- Reference: [Diagnostic Report](../clinical/diagnostic-report.mdx)
+- Reference: [Patient](../clinical/patient)
 - Reference: [Base Model](../foundation/base-model.mdx)
 - Source (model): [specimen.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/specimen.py)
 - Source (spec): [specimen/spec.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/specimen/spec.py)

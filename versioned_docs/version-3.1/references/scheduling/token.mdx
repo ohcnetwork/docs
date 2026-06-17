@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # Token
 
-A `Token` is a numbered ticket a patient holds in a walk-in queue — use it when scheduling runs on first-come flow rather than fixed appointment slots. The patient gets a number against a [schedulable resource](./schedule.mdx) (practitioner, location, or healthcare service), optionally routed to a sub-queue or room.
+A `Token` is a numbered ticket a patient holds in a walk-in queue — use it when scheduling runs on first-come flow rather than fixed appointment slots. The patient gets a number against a [schedulable resource](../scheduling/schedule.mdx) (practitioner, location, or healthcare service), optionally routed to a sub-queue or room.
 
 The Django models store the data; the rules that make a token correct — status enums, the resource binding, queue progression — live in the Pydantic resource specs and the API viewsets. Both layers are covered here.
 
@@ -26,7 +26,7 @@ Four models make up the subsystem.
 
 All four extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base that supplies `external_id`, audit fields `created_by`/`updated_by`/`created_date`/`modified_date`, and soft-delete via `deleted`.
 
-`TokenQueue` and `TokenSubQueue` both carry a `resource` FK to `emr.SchedulableResource`, a polymorphic binding to a practitioner (`user`), `location`, or `healthcare_service`, distinguished by `resource_type`. See [Schedule](./schedule.mdx).
+`TokenQueue` and `TokenSubQueue` both carry a `resource` FK to `emr.SchedulableResource`, a polymorphic binding to a practitioner (`user`), `location`, or `healthcare_service`, distinguished by `resource_type`. See [Schedule](../scheduling/schedule.mdx).
 
 ## `Token` fields
 
@@ -41,7 +41,7 @@ All four extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care 
 | `status` | `CharField(255)` | yes (server) | `TokenStatusOptions` enum (below). Starts at `CREATED` |
 | `is_next` | `BooleanField` (default `False`) | server | Queue-progression flag; clients never write it |
 | `note` | `TextField` | optional | Nullable free-text note |
-| `booking` | `FK → emr.TokenBooking` (CASCADE) | optional | Nullable. Links the token to a [booking](./booking.mdx). `related_name="booking_token"` |
+| `booking` | `FK → emr.TokenBooking` (CASCADE) | optional | Nullable. Links the token to a [booking](../scheduling/booking.mdx). `related_name="booking_token"` |
 
 `number` is unique per category within a queue, not across the whole queue — so one patient can hold several tokens in the same queue, and two categories can both have a token `1`.
 
@@ -202,12 +202,12 @@ What happens on write, from `perform_extra_deserialization` and the viewset:
 - The update spec accepts only `TokenStatusOptions` values for `status`, and `TokenSubQueue.status` only `TokenSubQueueStatusOptions`. Both columns are plain `CharField`s, so the spec layer enforces this, not the database.
 - Never set `number`, `is_next`, `current_token`, or `is_primary` directly — they're queue-progression state owned by the viewset actions above.
 - `TokenCategory.metadata` is an open JSON bag for deployment-specific config; `shorthand` is capped at 5 characters by the spec.
-- `booking` links a token back to a [`TokenBooking`](./booking.mdx); on retrieve it expands to the booking and its associated [encounter](../clinical/encounter.mdx).
+- `booking` links a token back to a [`TokenBooking`](../scheduling/booking.mdx); on retrieve it expands to the booking and its associated [encounter](../clinical/encounter.mdx).
 
 ## Related
 
-- Reference: [Schedule](./schedule.mdx)
-- Reference: [Booking](./booking.mdx)
+- Reference: [Schedule](../scheduling/schedule.mdx)
+- Reference: [Booking](../scheduling/booking.mdx)
 - Reference: [Base model](../foundation/base-model.mdx)
 - Concept: [Patient](../../concepts/clinical/patient)
 - Reference: [Encounter](../clinical/encounter.mdx)

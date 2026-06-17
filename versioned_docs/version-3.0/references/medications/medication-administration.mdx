@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Medication Administration
 
-`MedicationAdministration` records that a medication was given to a patient — or that giving it was attempted — fulfilling a [`MedicationRequest`](./medication-request.mdx). You write one each time a dose is administered against an order. The Django model is the storage layer; several columns are opaque `JSONField`s whose structure comes from the Pydantic resource specs in `care/emr/resources/medication/administration/`. Both layers are documented below.
+`MedicationAdministration` records that a medication was given to a patient — or that giving it was attempted — fulfilling a [`MedicationRequest`](../medications/medication-request.mdx). You write one each time a dose is administered against an order. The Django model is the storage layer; several columns are opaque `JSONField`s whose structure comes from the Pydantic resource specs in `care/emr/resources/medication/administration/`. Both layers are documented below.
 
 **Source:**
 - Model: [`care/emr/models/medication_administration.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/medication_administration.py)
@@ -15,7 +15,7 @@ sidebar_position: 2
 
 | Model | Purpose |
 | --- | --- |
-| `MedicationAdministration` | The administration event that fulfils a [`MedicationRequest`](./medication-request.mdx) |
+| `MedicationAdministration` | The administration event that fulfils a [`MedicationRequest`](../medications/medication-request.mdx) |
 
 `MedicationAdministration` extends `EMRBaseModel`, the shared Care EMR base that provides `external_id`, audit fields, and soft-delete semantics (see [Base model](../foundation/base-model.mdx)). It maps to the FHIR [`MedicationAdministration`](https://hl7.org/fhir/medicationadministration.html) resource.
 
@@ -117,7 +117,7 @@ Element shape of the `performer` `JSONField` list.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `actor` | `UUID4` (required) | The user who performed the administration. Validated server-side to reference an existing [`User`](../access/user.mdx) (`field_validator` raises "User not found") |
+| `actor` | `UUID4` (required) | The user who performed the administration. Validated server-side to reference an existing [`User`](../access-governance/user.mdx) (`field_validator` raises "User not found") |
 | `function` | `MedicationAdministrationPerformerFunction \| None` | The performer's function — see [enum values](#medicationadministrationperformerfunction-values) |
 
 ## Bound value sets
@@ -197,13 +197,13 @@ request              → FK MedicationRequest (nullable, CASCADE)
 
 ## Related
 
-- Reference: [Medication Request](./medication-request.mdx)
-- Reference: [Medication Dispense](./medication-dispense.mdx)
-- Reference: [Medication Statement](./medication-statement.mdx)
-- Reference: [Product Knowledge](../supply/product-knowledge.mdx)
+- Reference: [Medication Request](../medications/medication-request.mdx)
+- Reference: [Medication Dispense](../medications/medication-dispense.mdx)
+- Reference: [Medication Statement](../medications/medication-statement.mdx)
+- Reference: [Product Knowledge](../definitions/product-knowledge.mdx)
 - Reference: [Encounter](../clinical/encounter.mdx)
 - Reference: [Patient](../clinical/patient)
-- Reference: [User](../access/user.mdx)
+- Reference: [User](../access-governance/user.mdx)
 - Reference: [Base model](../foundation/base-model.mdx)
 - Source: [medication_administration.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/medication_administration.py)
 - Source: [administration/spec.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/administration/spec.py)

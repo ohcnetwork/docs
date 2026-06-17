@@ -15,7 +15,7 @@ In Care's FHIR-aligned model, a schedule maps to the **Schedule** resource, and 
 - **Availabilities** — one or more recurring time blocks (a morning OPD, an afternoon clinic) that say which days and hours are open and how that time divides into slots
 - **Exceptions** — specific dates and times when the resource is unavailable, such as leave or a public holiday
 
-A schedule is not a list of appointments. It is the rule that *generates* bookable slots; the actual reservations live in [bookings](./booking.mdx) and, where queues are used, in [tokens](./token.mdx). Slots are never stored as rows — they are computed on demand from a schedule's availabilities with exceptions subtracted, so the schedule is always the single source of truth for what is bookable. Editing a schedule changes what *can* be booked going forward; it does not touch appointments that already exist.
+A schedule is not a list of appointments. It is the rule that *generates* bookable slots; the actual reservations live in [bookings](../scheduling/booking.mdx) and, where queues are used, in [tokens](../scheduling/token.mdx). Slots are never stored as rows — they are computed on demand from a schedule's availabilities with exceptions subtracted, so the schedule is always the single source of truth for what is bookable. Editing a schedule changes what *can* be booked going forward; it does not touch appointments that already exist.
 
 ## How a schedule is built up
 
@@ -43,10 +43,10 @@ An appointment or open block can also issue a **token** for each booking, feedin
 
 A schedule sits at the center of the booking flow and links outward to several other primitives:
 
-- **Resource** — every schedule attaches to exactly one practitioner ([user](../access/user.mdx)), [location](../facility/location.mdx), or [healthcare service](../facility/healthcare-service.mdx) within a [facility](../facility/facility.mdx).
-- **Bookings** — patients reserve generated slots, creating [bookings](./booking.mdx) against the schedule.
-- **Tokens** — in queue-based clinics, a booking can also issue a [token](./token.mdx) for the waiting line.
-- **Billing** — a schedule can carry a charge that applies to its bookings, with an optional reduced charge for follow-up visits within a configured window, drawn from a [charge item definition](../billing/charge-item-definition.mdx).
+- **Resource** — every schedule attaches to exactly one practitioner ([user](../access-governance/user.mdx)), [location](../facility/location.mdx), or [healthcare service](../facility/healthcare-service.mdx) within a [facility](../facility/facility.mdx).
+- **Bookings** — patients reserve generated slots, creating [bookings](../scheduling/booking.mdx) against the schedule.
+- **Tokens** — in queue-based clinics, a booking can also issue a [token](../scheduling/token.mdx) for the waiting line.
+- **Billing** — a schedule can carry a charge that applies to its bookings, with an optional reduced charge for follow-up visits within a configured window, drawn from a [charge item definition](../definitions/charge-item-definition.mdx).
 
 ## Permissions
 
@@ -63,6 +63,6 @@ Roles are granted through a user's facility and organization memberships, and pe
 ## Related
 
 - Reference: [Schedule & Availability (technical)](../../references/scheduling/schedule.mdx)
-- Concept: [Booking](./booking.mdx)
-- Concept: [Token](./token.mdx)
+- Concept: [Booking](../scheduling/booking.mdx)
+- Concept: [Token](../scheduling/token.mdx)
 - Concept: [Healthcare service](../facility/healthcare-service.mdx)

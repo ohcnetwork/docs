@@ -127,7 +127,7 @@ Server-maintained read behaviour (`perform_extra_serialization`):
 - `created_by` / `updated_by` populated from the user cache via `serialize_audit_users`.
 - **Signed URLs (retrieve only):** a freshly created object (`_just_created`) gets a write/upload `signed_url` via `files_manager.signed_url(obj)`; any other read gets a `read_signed_url` via `files_manager.read_signed_url(obj)`. Exactly one is populated per response.
 
-> `ReportUpload` has no `CreateSpec`/`UpdateSpec` in this module. Uploads come from the file-upload flow ([File Upload](./file-upload.mdx)), and the report metadata and `internal_name` are platform-maintained. See [save behaviour](#methods--save-behaviour).
+> `ReportUpload` has no `CreateSpec`/`UpdateSpec` in this module. Uploads come from the file-upload flow ([File Upload](../platform/file-upload.mdx)), and the report metadata and `internal_name` are platform-maintained. See [save behaviour](#methods--save-behaviour).
 
 ### `Template` specs (`report/template/spec.py`)
 
@@ -190,10 +190,10 @@ Alias for `report_type`, kept for compatibility with `S3FilesManager`.
 
 ## Related
 
-- Reference: [File Upload](./file-upload.mdx)
+- Reference: [File Upload](../platform/file-upload.mdx)
 - Reference: [Encounter](../clinical/encounter.mdx)
 - Reference: [Facility](../facility/facility.mdx)
-- Reference: [User](../access/user.mdx)
+- Reference: [User](../access-governance/user.mdx)
 - Reference: [Base model](../foundation/base-model.mdx)
 - Source: [report_upload.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/report/report_upload.py), [template.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/report/template.py)
 - Source: [report_upload/spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/report/report_upload/spec.py), [template/spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/report/template/spec.py)

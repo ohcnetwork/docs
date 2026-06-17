@@ -15,7 +15,7 @@ In Care's FHIR-aligned model, a consent maps to the **Consent** resource. Each r
 - **When it applies** — the date it was recorded, plus an optional validity window
 - **How it was confirmed** — who witnessed the decision and how, with any signed form attached alongside
 
-The key thing to understand is that a consent is *not* a permission setting. It does not grant anyone access to the system. It documents the **patient's** clinical and legal choice — a fact about the patient's care, not a rule about staff. Who can act in Care is governed separately by the [permission model](../../references/access/permission.mdx).
+The key thing to understand is that a consent is *not* a permission setting. It does not grant anyone access to the system. It documents the **patient's** clinical and legal choice — a fact about the patient's care, not a rule about staff. Who can act in Care is governed separately by the [permission model](../../references/access-governance/permission.mdx).
 
 ## Lifecycle
 
@@ -53,7 +53,7 @@ Every consent carries exactly one decision — **permit** or **deny** — so a r
 
 ## How it connects
 
-A consent is always attached to a single [encounter](./encounter.mdx), and the owning [patient](../clinical/patient) is reached through that encounter. The encounter is fixed at creation and cannot be moved to a different visit later — this is deliberate, because it preserves *when and in what context* the decision was made.
+A consent is always attached to a single [encounter](../clinical/encounter.mdx), and the owning [patient](../clinical/patient) is reached through that encounter. The encounter is fixed at creation and cannot be moved to a different visit later — this is deliberate, because it preserves *when and in what context* the decision was made.
 
 Two neighbouring records hang off a consent:
 
@@ -75,9 +75,9 @@ Roles are granted through organization, facility, or patient memberships, and pe
 ## Related
 
 - Reference: [Consent (technical)](../../references/clinical/consent.mdx)
-- Concept: [Encounter](./encounter.mdx)
+- Concept: [Encounter](../clinical/encounter.mdx)
 - Concept: [Patient](../clinical/patient)
-- Reference: [Permission](../../references/access/permission.mdx)
+- Reference: [Permission](../../references/access-governance/permission.mdx)
 
 ## FHIR reference
 

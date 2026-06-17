@@ -10,7 +10,7 @@ In the Care product UI, conditions are surfaced as **Symptoms**.
 
 ## What it represents
 
-A condition is a *standing statement* about a patient's health, not a one-time reading. A blood pressure value or a lab result is an [observation](./observation.mdx) — true at the moment it was taken. A condition is a claim the care team is making and tracking: "this patient has diabetes," "this patient presented with chest pain." That claim persists across visits until someone changes its status, which is why a condition needs two things an observation does not — a statement of **how certain** the team is, and a statement of **how the condition is progressing**.
+A condition is a *standing statement* about a patient's health, not a one-time reading. A blood pressure value or a lab result is an [observation](../clinical/observation.mdx) — true at the moment it was taken. A condition is a claim the care team is making and tracking: "this patient has diabetes," "this patient presented with chest pain." That claim persists across visits until someone changes its status, which is why a condition needs two things an observation does not — a statement of **how certain** the team is, and a statement of **how the condition is progressing**.
 
 To keep problems comparable across patients and facilities, the condition itself is recorded as a coded clinical finding (drawn from a SNOMED CT vocabulary) rather than free text. Onset, optional severity, the encounter it was noted in, and a free-text note round out the record.
 
@@ -51,7 +51,7 @@ A condition never stands alone — it is always anchored to a patient and the vi
 - **Patient** — the person the condition describes. Care derives this automatically from the encounter, so the condition is always attached to the right record; clients never set it directly.
 - **Encounter** — the visit during which the condition was recorded. Every condition is created in the context of an encounter; chronic conditions can later be re-associated with a new encounter as care continues.
 
-Conditions sit alongside the patient's other clinical records — most closely [allergies and intolerances](./allergy-intolerance.mdx), which capture a different kind of standing risk, and [observations](./observation.mdx), which capture point-in-time measurements and findings.
+Conditions sit alongside the patient's other clinical records — most closely [allergies and intolerances](../clinical/allergy-intolerance.mdx), which capture a different kind of standing risk, and [observations](../clinical/observation.mdx), which capture point-in-time measurements and findings.
 
 ## Permissions
 
@@ -71,6 +71,6 @@ Roles are granted to users through facility, organization, or patient membership
 
 - Reference: [Condition (technical)](../../references/clinical/condition.mdx)
 - Concept: [Patient](../clinical/patient)
-- Concept: [Encounter](./encounter.mdx)
-- Concept: [Allergy / intolerance](./allergy-intolerance.mdx)
-- Concept: [Observation](./observation.mdx)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Allergy / intolerance](../clinical/allergy-intolerance.mdx)
+- Concept: [Observation](../clinical/observation.mdx)

@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Charge Item
 
-A `ChargeItem` is a single billable line for a service or product supplied to a patient — what was charged, the quantity, the unit and total price components, and any discounts or override reasons. You create one against a patient (and optionally an encounter); it always settles onto an [`Account`](./account.mdx).
+A `ChargeItem` is a single billable line for a service or product supplied to a patient — what was charged, the quantity, the unit and total price components, and any discounts or override reasons. You create one against a patient (and optionally an encounter); it always settles onto an [`Account`](../billing/account.mdx).
 
 **Source:**
 - Model: [`care/emr/models/charge_item.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/charge_item.py)
@@ -213,9 +213,9 @@ Notable validation and binding:
 | `MonetaryComponent` | `unit_price_components`, `total_price_components` | see [MonetaryComponent shape](#monetarycomponent-shape) |
 | `ChargeItemOverrideReason` | `override_reason` | `{ text, code? }` |
 | `DiscountConfiguration` | `discount_configuration` | `{ max_applicable, applicability_order }` |
-| `ChargeItemDefinitionReadSpec` | `charge_item_definition` (read) | full nested definition — see [Charge Item Definition](./charge-item-definition.mdx) |
-| `InvoiceReadSpec` | `paid_invoice` (read) | full nested invoice — see [Invoice](./invoice.mdx) |
-| `UserSpec` | `performer_actor`, audit users (read) | see [User](../access/user.mdx) |
+| `ChargeItemDefinitionReadSpec` | `charge_item_definition` (read) | full nested definition — see [Charge Item Definition](../definitions/charge-item-definition.mdx) |
+| `InvoiceReadSpec` | `paid_invoice` (read) | full nested invoice — see [Invoice](../billing/invoice.mdx) |
+| `UserSpec` | `performer_actor`, audit users (read) | see [User](../access-governance/user.mdx) |
 
 ## Related models
 
@@ -252,13 +252,13 @@ Cost resolution and status side effects live in the spec helpers and the viewset
 
 ## Related
 
-- Reference: [Account](./account.mdx)
-- Reference: [Charge Item Definition](./charge-item-definition.mdx)
-- Reference: [Invoice](./invoice.mdx)
-- Reference: [Payment Reconciliation](./payment-reconciliation.mdx)
+- Reference: [Account](../billing/account.mdx)
+- Reference: [Charge Item Definition](../definitions/charge-item-definition.mdx)
+- Reference: [Invoice](../billing/invoice.mdx)
+- Reference: [Payment Reconciliation](../billing/payment-reconciliation.mdx)
 - Reference: [Patient](../clinical/patient)
 - Reference: [Encounter](../clinical/encounter.mdx)
-- Reference: [User](../access/user.mdx)
+- Reference: [User](../access-governance/user.mdx)
 - Reference: [Base model](../foundation/base-model.mdx)
 - Source: [charge_item.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/charge_item.py)
 - Source: [charge_item resource specs on GitHub](https://github.com/ohcnetwork/care/tree/develop/care/emr/resources/charge_item)

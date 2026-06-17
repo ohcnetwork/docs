@@ -1,0 +1,57 @@
+---
+sidebar_position: 3
+---
+
+# Value Set
+
+A **value set** is a curated, named list of the answer options allowed for a coded field — the menu of choices behind a dropdown in a form. It is how Care keeps clinical data consistent: instead of free text, a question pulls from an agreed set of codes, so the same finding is recorded the same way every time.
+
+## What it represents
+
+In Care's FHIR-aligned model, a value set maps to the **ValueSet** resource. It captures:
+
+- **A set of allowed concepts** — the codes a field may use, drawn from one or more standard code systems such as SNOMED CT, LOINC, or ICD
+- **Composition rules** — clauses that *include* or *exclude* whole branches of a code system, rather than spelling out every code by hand
+- **Publication status** — whether the set is a draft, in active use, or retired
+- **Origin** — whether it ships with the platform or was authored for your deployment
+
+A value set is not a list of codes frozen in a column. It stores the *rules* for what belongs, and the member codes are resolved live against a terminology server each time the set is searched. Edit the rules and the available choices change immediately — there is nothing to rebuild. This is also what separates it from a [questionnaire](../definitions/questionnaire.mdx): the questionnaire decides *which questions are asked*; the value set decides *what answers each coded question accepts*.
+
+## Lifecycle
+
+A value set moves through publication states that signal how much to trust it:
+
+```text
+draft → active → retired
+                 (unknown)
+```
+
+- **draft** — authored but not yet ready for use; safe to edit and refine
+- **active** — published and in use by forms and coded fields
+- **retired** — no longer recommended; kept for history but not chosen for new work
+- **unknown** — status has not been established
+
+## Types
+
+Value sets come in two kinds, and the distinction decides who may change them:
+
+- **System-defined** — shipped and maintained by the platform as shared terminology. Deployments treat these as read-only, and their identifiers are reserved with a `system-` prefix.
+- **Deployment-authored** — created locally to capture terminology specific to your facility or program. This is where a deployment adds its own pick-lists.
+
+## How it connects
+
+- **Forms** — a [questionnaire](../definitions/questionnaire.mdx) references a value set to constrain a coded answer, so the form only accepts valid options.
+- **Definitions** — clinical definitions such as an [observation definition](../definitions/observation-definition.mdx) bind their coded fields to a value set, anchoring what counts as a valid result.
+- **Code systems** — a value set does not invent codes; it selects from external standard vocabularies, keeping Care interoperable with the wider health ecosystem.
+- **Personalization** — users can favorite frequently used codes, and Care remembers recently picked ones. This speeds up data entry, but it sits on top of the value set as personal preference, not part of its definition.
+
+## Permissions
+
+Value sets are shared terminology and are not gated by the usual role-based permissions. Any authenticated user can read and search them — listing, retrieval, code lookup, expansion, validation, and the personal favourites and recent-views actions are all open — because they power the code pickers everyone relies on while documenting care. Creating, updating, or deleting a value set is restricted to superusers (`is_superuser`); no organization role grants write access, which is why system-defined value sets are not editable by deployments.
+
+## Related
+
+- Reference: [Value Set (technical)](../../references/definitions/valueset.mdx)
+- Concept: [Questionnaire](../definitions/questionnaire.mdx) — uses value sets to constrain coded answers
+- Concept: [Questionnaire Response](../clinical/questionnaire-response.mdx) — the captured answers those choices feed into
+- Concept: [Observation Definition](../definitions/observation-definition.mdx) — binds coded result fields to value sets

@@ -1,0 +1,82 @@
+---
+sidebar_position: 1
+---
+
+# Questionnaire
+
+A **questionnaire** is a reusable form definition in Care — a set of questions you design once and then collect answers to, again and again, about a patient or an encounter. It is how Care lets a deployment build its own intake sheets, assessments, and checklists instead of waiting for them to be coded into the software.
+
+## What it represents
+
+In Care's FHIR-aligned model, a questionnaire maps to the **Questionnaire** resource. It defines:
+
+- **The questions** — an ordered, nestable tree, each question with a type (text, number, date, choice, group, and so on)
+- **The subject** — whether the form is answered about a *patient* or about an *encounter*
+- **The behaviour** — conditional logic, required fields, units, and allowed choices that shape how the form fills in
+- **The clinical meaning** — questions can carry a clinical code (e.g. LOINC) so their answers land in the record as real [Observations](../clinical/observation.mdx), not just stored text
+
+The key distinction: a questionnaire is the *blank form*, never a filled-in one. Each set of answers a clinician submits is stored separately as a [Questionnaire Response](../clinical/questionnaire-response.mdx), so a single definition can accumulate thousands of responses across many patients over time.
+
+## Question types
+
+Each question declares a type, which controls how it is rendered and how its answer is validated on submit. The common ones:
+
+| Type | Captures |
+| --- | --- |
+| `group` | A container that holds related sub-questions (must have at least one child) |
+| `string` / `text` | Short or long free text |
+| `integer` / `decimal` | Numbers |
+| `boolean` | Yes / no |
+| `date` / `dateTime` / `time` | Points in time |
+| `choice` | A pick from a fixed list or a [ValueSet](../definitions/valueset.mdx) |
+| `quantity` | A number plus a unit (e.g. blood pressure, dose) |
+| `display` | Static text shown to the user, with no answer |
+
+Two features turn a flat list of fields into a form that feels intelligent. **Conditional display** lets a question appear only when an earlier answer meets a condition, so the clinician sees follow-ups instead of every field at once. **Coded questions** attach a clinical code, so the answer is filed as an Observation in the patient record; a question without a code simply stores its answer as form data.
+
+## Lifecycle
+
+A questionnaire moves through three publication states, modelled on FHIR. The important rule: once a form goes live it is treated as immutable — you retire it and publish a replacement rather than editing it in place, so every response ever submitted keeps pointing at a stable, unchanged definition.
+
+```text
+draft → active → retired
+```
+
+- **draft** — being authored; not yet available for submission
+- **active** — published and accepting submissions; should not be edited or deleted
+- **retired** — withdrawn from use, but kept so the responses that reference it stay meaningful
+
+Only `active` questionnaires accept submissions; a draft or retired form rejects them.
+
+## How it connects
+
+A questionnaire sits at the centre of Care's data-collection flow and ties together several other primitives:
+
+- **Patient / Encounter** — every response is recorded against a [Patient](../clinical/patient), and against an [Encounter](../clinical/encounter.mdx) too when the form's subject type is *encounter*
+- **Questionnaire Response** — each submission produces a stored [Questionnaire Response](../clinical/questionnaire-response.mdx), the answers separated from the form
+- **Observation** — coded questions materialise their answers as [Observations](../clinical/observation.mdx) on submit, so vitals and findings flow into the clinical record
+- **ValueSet** — choice and quantity questions draw their allowed answers from a [ValueSet](../definitions/valueset.mdx)
+- **Organization** — a questionnaire is scoped to one or more organizations, which decides who can see and use it
+- **Response Template** — a [Questionnaire Response Template](../definitions/questionnaire-response-template.mdx) can pre-fill answers to speed up repetitive forms
+
+## Permissions
+
+Access to questionnaires is governed by these permissions, granted to users through their roles.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| `can_write_questionnaire` | Create a questionnaire and set the organizations it is scoped to | Admin, Facility Admin |
+| `can_read_questionnaire` | View questionnaire definitions, list them, and see the organizations a questionnaire is scoped to | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist, Admin (role org), Manager (role org), Member (role org) |
+| `can_submit_patient_questionnaire` | Submit a questionnaire about a patient (no encounter) | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator |
+| `can_submit_encounter_questionnaire` | Submit a questionnaire against a patient encounter | Staff, Doctor, Nurse, Admin, Facility Admin |
+
+Roles are granted to users through organization, facility, or patient memberships, and the access they confer cascades down the organization tree. Editing and deleting a questionnaire are restricted to superusers, while most clinical roles can read and submit.
+
+## Related
+
+- Reference: [Questionnaire (technical)](../../references/definitions/questionnaire.mdx)
+- Concept: [Questionnaire Response](../clinical/questionnaire-response.mdx)
+- Concept: [Questionnaire Response Template](../definitions/questionnaire-response-template.mdx)
+- Concept: [ValueSet](../definitions/valueset.mdx)
+- Concept: [Observation](../clinical/observation.mdx)
+- Standard: FHIR [Questionnaire](https://www.hl7.org/fhir/questionnaire.html) and [QuestionnaireResponse](https://www.hl7.org/fhir/questionnaireresponse.html), which Care's `draft` / `active` / `retired` model and nested question tree follow

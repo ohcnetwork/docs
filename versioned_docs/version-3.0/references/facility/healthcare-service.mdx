@@ -96,7 +96,7 @@ Constrains `internal_type` in the specs (`str` enum). The model column is a plai
 facility → FK Facility (PROTECT, nullable)
 ```
 
-The facility offering the service. `PROTECT` blocks deleting a facility that still has healthcare services. Excluded from specs and set from the request context. See [Facility](./facility.mdx).
+The facility offering the service. `PROTECT` blocks deleting a facility that still has healthcare services. Excluded from specs and set from the request context. See [Facility](../facility/facility.mdx).
 
 ### `emr.FacilityOrganization`
 
@@ -104,11 +104,11 @@ The facility offering the service. `PROTECT` blocks deleting a facility that sti
 managing_organization → FK FacilityOrganization (PROTECT, nullable)
 ```
 
-The facility-scoped organization (department/team) that owns the service. Write specs take its `external_id` (UUID); the retrieve spec embeds it, serialized via `FacilityOrganizationReadSpec`. See [Organization](./organization.mdx).
+The facility-scoped organization (department/team) that owns the service. Write specs take its `external_id` (UUID); the retrieve spec embeds it, serialized via `FacilityOrganizationReadSpec`. See [Organization](../access-governance/organization.mdx).
 
 ### Locations
 
-`locations` is an `ArrayField` of integer PKs, not a relational join — each entry references a `FacilityLocation` row by primary key, with resolution and validation handled in application code rather than by a database foreign key. Write specs take location `external_id`s (UUIDs); the retrieve spec embeds each location, serialized via `FacilityLocationListSpec`. See [Location](./location.mdx).
+`locations` is an `ArrayField` of integer PKs, not a relational join — each entry references a `FacilityLocation` row by primary key, with resolution and validation handled in application code rather than by a database foreign key. Write specs take location `external_id`s (UUIDs); the retrieve spec embeds each location, serialized via `FacilityLocationListSpec`. See [Location](../facility/location.mdx).
 
 ## Resource specs (API schema)
 
@@ -159,10 +159,10 @@ The API surface is built from the spec classes, not the raw model. Three things 
 
 ## Related
 
-- Reference: [Facility](./facility.mdx)
-- Reference: [Organization](./organization.mdx)
-- Reference: [Location](./location.mdx)
-- Reference: [Value set](../forms/valueset.mdx)
+- Reference: [Facility](../facility/facility.mdx)
+- Reference: [Organization](../access-governance/organization.mdx)
+- Reference: [Location](../facility/location.mdx)
+- Reference: [Value set](../definitions/valueset.mdx)
 - Reference: [Base models & conventions](../foundation/base-model.mdx)
 - Source: [healthcare_service.py model on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/healthcare_service.py)
 - Source: [healthcare_service spec.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/healthcare_service/spec.py)

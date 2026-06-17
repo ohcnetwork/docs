@@ -12,7 +12,7 @@ In Care's FHIR-aligned model, a medication statement maps to the **MedicationSta
 
 So every statement carries two things a prescription does not: a single coded drug taken from a SNOMED CT value set rather than free text, and an explicit account of *who said so* — the patient, a relative, or a clinician. Around that core it records the status, the period the drug is or was taken, free-text dosage instructions, and the encounter it was recorded in.
 
-If your facility is actively prescribing a drug, that belongs in a [medication request](./medication-request.mdx). Reach for a statement when the source of truth lives outside that order — a home medication list, a drug started elsewhere, or a patient's own account of what they take.
+If your facility is actively prescribing a drug, that belongs in a [medication request](../medications/medication-request.mdx). Reach for a statement when the source of truth lives outside that order — a home medication list, a drug started elsewhere, or a patient's own account of what they take.
 
 ## Lifecycle
 
@@ -46,7 +46,7 @@ Because a statement is reported rather than ordered, it always names its source.
 
 - **Patient** — every statement is about one [patient](../clinical/patient). The patient is derived automatically from the encounter, so it is never set by hand.
 - **Encounter** — a statement is recorded within an [encounter](../clinical/encounter.mdx), anchoring it to a specific visit and clinician.
-- **Medication request** — the active-order counterpart. Use a [medication request](./medication-request.mdx) when your facility is the one prescribing; use a statement to capture everything else.
+- **Medication request** — the active-order counterpart. Use a [medication request](../medications/medication-request.mdx) when your facility is the one prescribing; use a statement to capture everything else.
 
 ## Permissions
 
@@ -63,7 +63,7 @@ Roles are granted through a user's organization and facility memberships, and pe
 ## Related
 
 - Reference: [Medication Statement (technical)](../../references/medications/medication-statement.mdx)
-- Concept: [Medication Request](./medication-request.mdx)
-- Concept: [Medication Administration](./medication-administration.mdx)
+- Concept: [Medication Request](../medications/medication-request.mdx)
+- Concept: [Medication Administration](../medications/medication-administration.mdx)
 - Concept: [Patient](../clinical/patient)
 - Concept: [Encounter](../clinical/encounter.mdx)

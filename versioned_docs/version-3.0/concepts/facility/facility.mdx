@@ -16,7 +16,7 @@ In Care's FHIR-aligned model, a facility maps to the **Organization** resource, 
 - **Geographic placement** — the government/administrative region it sits under, which is how deployments roll facilities up into districts and states
 - **Billing** — its own discount codes, tax components, and invoice-number format
 
-A facility is not a department or a ward — those are [locations](../../references/facility/location.mdx) and [facility organizations](./facility-organization.mdx) *within* it. The facility is the outer container; the same [patient](../clinical/patient) can be seen across many facilities while remaining one person, but staff roles, inventory, and invoices never cross the facility line.
+A facility is not a department or a ward — those are [locations](../../references/facility/location.mdx) and [facility organizations](../access-governance/facility-organization.mdx) *within* it. The facility is the outer container; the same [patient](../clinical/patient) can be seen across many facilities while remaining one person, but staff roles, inventory, and invoices never cross the facility line.
 
 ## Lifecycle
 
@@ -38,7 +38,7 @@ The facility is the hub most other primitives hang off of:
 - **People** — staff gain access through the facility's organizations; every role and permission is scoped to a facility
 - **Places & equipment** — [locations](../../references/facility/location.mdx) (wards, beds, rooms), [healthcare services](../../references/facility/healthcare-service.mdx), and [devices](../../references/facility/device.mdx) are registered under it
 - **Care delivery** — [encounters](../clinical/encounter.mdx) take place at a facility, anchoring where care was given
-- **Geography** — each facility sits under a geographic [organization](./organization.mdx), the bridge that connects it to the wider administrative map
+- **Geography** — each facility sits under a geographic [organization](../access-governance/organization.mdx), the bridge that connects it to the wider administrative map
 - **Billing** — discounts, taxes, and invoice numbering are set per facility (see [Facility config](../../references/facility/facility-config.mdx))
 
 ## Permissions
@@ -58,4 +58,4 @@ Permissions cascade down the organization tree: a role held at a parent organiza
 
 - Reference: [Facility (technical)](../../references/facility/facility.mdx)
 - Reference: [Facility config](../../references/facility/facility-config.mdx)
-- Concept: [Organization](./organization.mdx)
+- Concept: [Organization](../access-governance/organization.mdx)

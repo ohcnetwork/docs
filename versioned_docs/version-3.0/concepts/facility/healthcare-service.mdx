@@ -15,7 +15,7 @@ In Care's FHIR-aligned model, a healthcare service maps to the **HealthcareServi
 - **Placement** — the locations within the facility where the service is delivered
 - **Ownership** — the managing organization (a department or team) accountable for running it
 
-A healthcare service is a *description of an offering*, not an appointment and not a place. It says "this facility offers cardiology, run by the cardiology department, in these rooms" — but the act of seeing a patient is an [encounter](../clinical/encounter.mdx), and the room itself is a [location](./location.mdx). The service is the stable bridge that ties offering, owner, and place together; patients flow through it, but it outlives any single visit.
+A healthcare service is a *description of an offering*, not an appointment and not a place. It says "this facility offers cardiology, run by the cardiology department, in these rooms" — but the act of seeing a patient is an [encounter](../clinical/encounter.mdx), and the room itself is a [location](../facility/location.mdx). The service is the stable bridge that ties offering, owner, and place together; patients flow through it, but it outlives any single visit.
 
 ## Classification
 
@@ -30,9 +30,9 @@ Read service type as the public-facing name and internal type as the behavioral 
 
 A healthcare service is owned and placed, never free-floating:
 
-- It belongs to exactly one [facility](./facility.mdx) — the place that offers it — set automatically from context, never chosen by hand.
-- It is owned by one [facility organization](./facility-organization.mdx), the department or team accountable for it.
-- It is delivered across one or more [locations](./location.mdx), so a single service can span several rooms or wards.
+- It belongs to exactly one [facility](../facility/facility.mdx) — the place that offers it — set automatically from context, never chosen by hand.
+- It is owned by one [facility organization](../access-governance/facility-organization.mdx), the department or team accountable for it.
+- It is delivered across one or more [locations](../facility/location.mdx), so a single service can span several rooms or wards.
 
 Schedulable services are also what patients reserve time against, through [schedules](../scheduling/schedule.mdx) and [bookings](../scheduling/booking.mdx). The service stays put; the encounters and bookings move through it.
 
@@ -50,7 +50,7 @@ Roles are granted through a user's membership in an organization or facility, an
 ## Related
 
 - Reference: [Healthcare Service (technical)](../../references/facility/healthcare-service.mdx)
-- Concept: [Facility](./facility.mdx)
-- Concept: [Facility Organization](./facility-organization.mdx)
-- Concept: [Location](./location.mdx)
+- Concept: [Facility](../facility/facility.mdx)
+- Concept: [Facility Organization](../access-governance/facility-organization.mdx)
+- Concept: [Location](../facility/location.mdx)
 - Concept: [Schedule](../scheduling/schedule.mdx)

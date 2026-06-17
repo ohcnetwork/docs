@@ -16,7 +16,7 @@ In Care's FHIR-aligned model, a location maps to the **Location** resource. Each
 - **Who is in it** — the encounter, if any, currently occupying the place (most meaningful for a bed)
 - **Who may work there** — the organizations granted access to this part of the facility
 
-A location is a *place*, not a *department* or a *team*. A ward as a physical space is a location; the unit of staff and responsibility that runs it is an [organization](./organization.mdx). The two are linked, but they are different primitives — you nest places inside places, and you grant an organization access to a place.
+A location is a *place*, not a *department* or a *team*. A ward as a physical space is a location; the unit of staff and responsibility that runs it is an [organization](../access-governance/organization.mdx). The two are linked, but they are different primitives — you nest places inside places, and you grant an organization access to a place.
 
 ## Classification
 
@@ -47,8 +47,8 @@ Separately, beds and rooms carry an **operational status** that changes far more
 Locations are the spatial backbone that other primitives attach to.
 
 - **Encounters** occupy locations over time. When a patient is admitted to a bed, a record captures *which* place, *when* occupancy began, and *whether* it is planned, active, reserved, or completed. From these records the platform derives a location's current encounter and whether it is free or reserved — which is how a bed knows it is taken.
-- **Organizations** are granted access to locations. Giving a [facility organization](./facility-organization.mdx) access to a ward lets every user under that organization work in the ward and its descendants, through the role they hold. Access flows *downward*: grant it at the building and it reaches every room and bed inside.
-- **Facility** owns the whole tree. Every location belongs to exactly one [facility](./facility.mdx), and the root of its tree sits at the facility level.
+- **Organizations** are granted access to locations. Giving a [facility organization](../access-governance/facility-organization.mdx) access to a ward lets every user under that organization work in the ward and its descendants, through the role they hold. Access flows *downward*: grant it at the building and it reaches every room and bed inside.
+- **Facility** owns the whole tree. Every location belongs to exactly one [facility](../facility/facility.mdx), and the root of its tree sits at the facility level.
 
 One important consequence of the tree: access and other inherited properties cascade to descendants asynchronously. When you change who can reach a ward, the rooms and beds beneath it settle a moment later rather than instantly — expect it to be eventually consistent, not immediate.
 
@@ -69,8 +69,8 @@ Roles are granted through facility and organization memberships, and because loc
 ## Related
 
 - Reference: [Location (technical)](../../references/facility/location.mdx)
-- Concept: [Facility](./facility.mdx)
-- Concept: [Facility organization](./facility-organization.mdx)
+- Concept: [Facility](../facility/facility.mdx)
+- Concept: [Facility organization](../access-governance/facility-organization.mdx)
 - Concept: [Encounter](../clinical/encounter.mdx)
 
 ## FHIR reference

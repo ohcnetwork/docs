@@ -21,7 +21,7 @@ An inventory item is not a catalogue entry and not a single transaction. The cat
 
 You do not type stock counts into Care by hand. The system creates and updates inventory items for you as supply events happen, so the count always reflects what actually moved rather than what someone remembered to enter.
 
-- **Deliveries in** raise the count — completed [supply deliveries](./supply-delivery.mdx) arriving at the location add to the balance
+- **Deliveries in** raise the count — completed [supply deliveries](../supply/supply-delivery.mdx) arriving at the location add to the balance
 - **Deliveries out** lower the count — stock sent onward to another location is subtracted
 - **Dispenses** lower the count — each [medication dispense](../medications/medication-dispense.mdx) drawn from the line removes units
 
@@ -44,9 +44,9 @@ Changing the status is the one thing people do to an inventory item directly; th
 
 An inventory item sits at the centre of the supply picture, linking the catalogue to real-world movement:
 
-- It points to a [product](./product.mdx), which in turn describes the substance or device through [product knowledge](./product-knowledge.mdx)
+- It points to a [product](../supply/product.mdx), which in turn describes the substance or device through [product knowledge](../definitions/product-knowledge.mdx)
 - It belongs to a [location](../facility/location.mdx) inside a facility — the physical place the stock lives
-- Its balance is driven by [supply deliveries](./supply-delivery.mdx) (replenishment and transfers) and [medication dispenses](../medications/medication-dispense.mdx) (consumption at the bedside)
+- Its balance is driven by [supply deliveries](../supply/supply-delivery.mdx) (replenishment and transfers) and [medication dispenses](../medications/medication-dispense.mdx) (consumption at the bedside)
 
 Because a location or product cannot be deleted while stock rows still reference it, the inventory layer protects the integrity of your supply history.
 
@@ -63,7 +63,7 @@ Roles are granted through a user's facility and organization memberships, and pe
 ## Related
 
 - Reference: [Inventory Item (technical)](../../references/supply/inventory-item.mdx)
-- Concept: [Product](./product.mdx)
-- Concept: [Supply Delivery](./supply-delivery.mdx)
+- Concept: [Product](../supply/product.mdx)
+- Concept: [Supply Delivery](../supply/supply-delivery.mdx)
 - Concept: [Medication Dispense](../medications/medication-dispense.mdx)
 - Concept: [Location](../facility/location.mdx)

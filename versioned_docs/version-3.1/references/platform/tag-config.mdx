@@ -47,7 +47,7 @@ A tag is scoped to at most one owner — an instance-wide organization, a facili
 
 ### Tree structure & caches
 
-`TagConfig` is self-referential — tags form a tree, and denormalized caches are rebuilt on insert to avoid recursive joins (the same pattern as [`Organization`](../facility/organization.mdx)). These fields are platform-maintained and never writable through the create/update specs.
+`TagConfig` is self-referential — tags form a tree, and denormalized caches are rebuilt on insert to avoid recursive joins (the same pattern as [`Organization`](../access-governance/organization.mdx)). These fields are platform-maintained and never writable through the create/update specs.
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -181,7 +181,7 @@ Each operation maps to one spec:
 
 ## Related
 
-- Reference: [Organization](../facility/organization.mdx) — tags reuse the same tree-cache pattern and can be org-scoped
+- Reference: [Organization](../access-governance/organization.mdx) — tags reuse the same tree-cache pattern and can be org-scoped
 - Reference: [Patient](../clinical/patient) — carries `instance_tags` / `facility_tags`
 - Reference: [Encounter](../clinical/encounter.mdx) — carries `tags`
 - Reference: [Facility](../facility/facility.mdx) — facility-scoped tags; read spec inlines a `FacilityBareMinimumSpec`
