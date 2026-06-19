@@ -1,0 +1,79 @@
+---
+sidebar_position: 2
+---
+
+# Lab diagnostics
+
+Take a lab investigation from the clinician's order all the way to a published, patient-visible report. This playbook chains the **lab test request** flow with the laboratory's **review → collect → result → publish** flow, and is owned jointly by clinicians and lab staff.
+
+## Flows involved
+
+| Order | Flow | Purpose |
+| --- | --- | --- |
+| 1 | Raise a lab test request *(coming soon)* | Clinician orders the investigation from the encounter |
+| 2 | Review service request *(coming soon)* | Lab triages and accepts the order |
+| 3 | Specimen collection *(coming soon)* | Sample is drawn, labelled, and logged |
+| 4 | Result entry *(coming soon)* | Technician records values against the test |
+| 5 | Report publication *(coming soon)* | Verified report is released to the record |
+
+## Happy path
+
+1. During an [encounter](/docs/flows/clinical/create-patient), the clinician raises a **lab test request** for the required panel.
+2. The order appears in the lab's service-request queue; lab staff **review and accept** it.
+3. **Specimen is collected**, labelled with the request identifier, and marked collected in Care.
+4. The technician performs the test and **enters results** against each parameter.
+5. A reviewer **verifies and publishes** the report; it becomes visible on the patient record and to the ordering clinician.
+
+## Edge cases
+
+### Sample rejected or insufficient
+
+**Symptom:** Specimen is haemolysed, clotted, or below required volume.
+
+**Action:**
+
+1. Mark the specimen rejected with a reason.
+2. Notify the ordering team to **re-collect**; the original request stays open or is re-issued per lab policy.
+3. Do not enter results against a rejected specimen.
+
+### STAT / urgent order
+
+**Symptom:** Clinician flags the order as urgent.
+
+**Action:**
+
+1. Order is prioritised in the review queue.
+2. Provisional results may be communicated verbally; the **published report remains the system of record**.
+
+### Result amendment after publication
+
+**Symptom:** An error is found in an already-published value.
+
+**Action:**
+
+1. Issue a corrected report rather than editing silently.
+2. The amendment is retained in history so the original and corrected values are both auditable.
+
+### Add-on test on an existing sample
+
+**Symptom:** Clinician wants another test on a sample already collected.
+
+**Action:**
+
+1. Raise a new lab test request and link it to the existing specimen where the analyte allows.
+2. If the sample type or stability does not permit it, a fresh collection is required.
+
+## Roles
+
+| Role | Can |
+| --- | --- |
+| Clinician | Raise requests, view published reports |
+| Lab reception / phlebotomist | Review requests, collect and log specimens |
+| Lab technician | Enter results |
+| Lab reviewer / pathologist | Verify and publish reports, issue amendments |
+
+## Related
+
+- Flow: Raise a lab test request *(coming soon)*
+- Flow: Laboratory review, collection, result entry, and publication *(coming soon)*
+- Playbook: [OP consultation](./op-consultation) — where most orders originate

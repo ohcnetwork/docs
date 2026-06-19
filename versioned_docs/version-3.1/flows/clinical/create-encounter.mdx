@@ -1,0 +1,65 @@
+---
+sidebar_position: 2
+---
+
+# Create an encounter
+
+This flow covers opening a new **encounter** for an existing patient — the record of a single visit or admission that all clinical documentation hangs off.
+
+:::info Prerequisite
+The patient must already exist. If not, run [Create a patient](./create-patient) first.
+:::
+
+## Before you start
+
+- You need a role with **encounter create** permission for the facility.
+- Know the **encounter type** (e.g. outpatient, inpatient, emergency) and the **department** the visit belongs to.
+
+## Steps
+
+### 1. Search for the patient
+
+![Search for the patient](/img/flows/clinical/create-encounter/01-loom.jpg)
+
+From the left navigation bar, click **Search Patients** and search using any patient identifier (name, phone, MRN). Wait for the patient details to load.
+
+### 2. Open the create form
+
+![Open the create form](/img/flows/clinical/create-encounter/02-loom.jpg)
+
+On the patient record, under **Actions**, click **Create Encounter**. A new encounter form opens.
+
+### 3. Fill encounter details
+
+![Fill encounter details](/img/flows/clinical/create-encounter/03-loom.jpg)
+
+| Field | Notes |
+| --- | --- |
+| Encounter type | Select from the dropdown (outpatient, inpatient, etc.) |
+| Status | Adjust if the default does not match the visit |
+| Department | Add the department associated with the encounter |
+
+### 4. Create
+
+![Create](/img/flows/clinical/create-encounter/04-loom.jpg)
+
+Click **Create Encounter** to save. The encounter opens, ready for documentation.
+
+## After creation
+
+| Next step | When |
+| --- | --- |
+| [Submit a clinical form](./submit-clinical-forms) | Documenting the consultation |
+| [Update diagnosis](./update-diagnosis) / [symptoms](./update-symptoms) | Recording clinical findings |
+| [Mark encounter complete](./complete-encounter) | Visit is finished |
+
+## Edge cases
+
+End-to-end visit handling is documented in playbooks.
+
+→ See [OP consultation](/deployments/hmis/playbooks/op-consultation) and [IP rounds](/deployments/hmis/playbooks/ip-rounds).
+
+## Related
+
+- Flow: [Create a patient](./create-patient)
+- Concept: [Patient](../../concepts/clinical/patient)

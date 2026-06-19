@@ -1,0 +1,77 @@
+---
+sidebar_position: 7
+---
+
+# OP consultation
+
+Run an outpatient consultation end to end: open a fresh encounter for the visit, document the consultation through clinical forms, and complete the encounter. This playbook covers **creating**, **form filling**, and **completing** an OP encounter.
+
+## Flows involved
+
+| Order | Flow | Purpose |
+| --- | --- | --- |
+| 1 | Create an encounter *(coming soon)* | Open today's OP visit for the patient |
+| 2 | Submit clinical forms *(coming soon)* | Document history, examination, and plan |
+| 3 | Update symptoms, diagnosis & prescribe *(coming soon)* | Record the clinical decision |
+| 4 | Mark the encounter complete *(coming soon)* | Close the visit and generate the summary |
+
+## Happy path
+
+1. The clinician **creates an OP encounter** for the patient at check-in (registering the patient first via [create patient](/docs/flows/clinical/create-patient) if they are new).
+2. They **submit the consultation form(s)** — presenting complaint, history, examination.
+3. They record the decision: **update symptoms and diagnosis**, and **prescribe** any medication or **order** labs.
+4. They **mark the encounter complete**; a treatment/visit summary can then be generated and printed for the patient.
+
+## Edge cases
+
+### Walk-in vs scheduled
+
+**Symptom:** Patient arrives without an appointment.
+
+**Action:**
+
+1. Create the encounter directly for a walk-in; link to the appointment if one exists.
+2. Scheduled patients are checked in first, then the encounter is opened.
+
+### Follow-up referencing a prior visit
+
+**Symptom:** This visit continues a previous problem.
+
+**Action:**
+
+1. Open **previous encounters** read-only for context.
+2. Document on the **new** encounter; carry forward the diagnosis rather than editing the old visit.
+
+### Referral / needs admission
+
+**Symptom:** The OP visit escalates to inpatient or specialist care.
+
+**Action:**
+
+1. Complete the OP encounter with the decision documented.
+2. Hand over to admission or referral; the IP stay is tracked under [IP rounds](./ip-rounds).
+
+### Completed in error
+
+**Symptom:** Encounter marked complete prematurely.
+
+**Action:**
+
+1. Reopen per facility policy to add the missing documentation, then re-complete.
+2. Avoid creating a duplicate encounter for the same visit.
+
+## Roles
+
+| Role | Can |
+| --- | --- |
+| Clinician | Create encounter, submit forms, diagnose, prescribe, complete |
+| Nurse | Record vitals/observations, assist documentation |
+| Front desk | Check-in, link appointment to encounter |
+
+## Related
+
+- Flow: Create an encounter *(coming soon)*
+- Flow: Submit clinical forms *(coming soon)*
+- Flow: Generate treatment summary *(coming soon)*
+- Playbook: [IP rounds](./ip-rounds) — the inpatient counterpart
+- Playbook: [Pharmacy dispensing](./pharmacy-dispensing), [Lab diagnostics](./lab-diagnostics) — where consultation orders go

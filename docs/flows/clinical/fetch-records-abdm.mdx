@@ -1,0 +1,64 @@
+---
+sidebar_position: 21
+---
+
+# Fetch patient records via ABDM
+
+This flow requests and retrieves a patient's external health records through **ABDM**, including submitting the consent request and monitoring its status.
+
+:::info Availability
+ABDM record fetch applies to **ABDM-enabled deployments** and requires patient consent. Access records only per patient consent and applicable privacy policies.
+:::
+
+## Before you start
+
+- Have the required **date range** and **consent expiry date** ready.
+- Confirm the **purpose of request** for the access.
+
+## Steps
+
+### 1. Open Encounter Actions
+
+![Open Encounter Actions (1)](/img/flows/clinical/fetch-records-abdm/01-loom.jpg)
+
+![Open Encounter Actions (2)](/img/flows/clinical/fetch-records-abdm/02-loom.jpg)
+
+On the patient dashboard, click **Encounter Actions** (top-right).
+
+### 2. Choose Fetch Records over ABDM
+
+![Choose Fetch Records over ABDM (1)](/img/flows/clinical/fetch-records-abdm/03-loom.jpg)
+
+![Choose Fetch Records over ABDM (2)](/img/flows/clinical/fetch-records-abdm/04-loom.jpg)
+
+Select **Fetch Records over ABDM** to open the request form.
+
+### 3. Set the purpose
+
+![Set the purpose](/img/flows/clinical/fetch-records-abdm/05-loom.jpg)
+
+In **Purpose of Request**, select the reason that matches the use case (e.g. **Care Management**).
+
+### 4. Set the date range and consent expiry
+
+![Set the date range and consent expiry](/img/flows/clinical/fetch-records-abdm/06-loom.jpg)
+
+Enter the **Health Record Date Range** for the records you need, then set the **Consent Expiry Date**, allowing enough time for processing.
+
+### 5. Submit the consent request
+
+![Submit the consent request](/img/flows/clinical/fetch-records-abdm/07-loom.jpg)
+
+Review the details and click **Request Consent**. Confirm the request shows as successfully submitted.
+
+### 6. Check status and view records
+
+![Check status and view records](/img/flows/clinical/fetch-records-abdm/08-loom.jpg)
+
+Open **ABDM Records**, click **Check Status** (processing may take time), then open the fetched records once available and review them for completeness.
+
+## Related
+
+- Flow: [Register a patient through ABHA](./register-patient-abha)
+- Flow: [View previous encounters](./view-previous-encounters)
+- Playbook: [OP consultation](/deployments/hmis/playbooks/op-consultation)

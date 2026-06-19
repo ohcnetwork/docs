@@ -1,7 +1,8 @@
 import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 import siteConfig from '@generated/docusaurus.config';
+import i18n from '@generated/i18n';
 
-function getPathLocale(pathname, i18n) {
+function getPathLocale(pathname) {
   const baseUrl = siteConfig.baseUrl.replace(/\/$/, '');
 
   for (const locale of i18n.locales) {
@@ -20,8 +21,7 @@ function getPathLocale(pathname, i18n) {
 
 if (ExecutionEnvironment.canUseDOM && process.env.NODE_ENV === 'development') {
   const {pathname} = window.location;
-  const {i18n} = siteConfig;
-  const pathLocale = getPathLocale(pathname, i18n);
+  const pathLocale = getPathLocale(pathname);
 
   if (pathLocale !== i18n.currentLocale) {
     const banner = document.createElement('div');

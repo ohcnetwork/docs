@@ -1,0 +1,53 @@
+---
+sidebar_position: 2
+---
+
+# Create a discount code and component
+
+This flow creates a **discount code** and a **discount component** in billing settings, with a condition so eligible patients (e.g. those with a given tag) receive the discount automatically.
+
+## Before you start
+
+- You need access to **Settings → Billing**.
+- Decide the eligibility condition (patient tag, age, or gender) and the discount value.
+
+## Steps
+
+### 1. Open Billing discount settings
+
+![Open Billing discount settings (1)](/img/flows/billing/create-discount/01-screenshot-2026-06-17-at-6.51.23-pm.png)
+
+![Open Billing discount settings (2)](/img/flows/billing/create-discount/02-da6af6433f7b4b3ca7e554f0618d35ec-workflows_screenshot-true.jpg)
+
+Go to **Settings** → **Billing**. You'll see two sections: **Discount Code** and **Discount Components**. Create the code first.
+
+### 2. Create the discount code
+
+![Create the discount code](/img/flows/billing/create-discount/03-ac957d2284f74cc8a57432596083e361-workflows_screenshot-true.jpg)
+
+Under **Discount Code** → **Create Discount Code**, enter a clear name (e.g. *Hospital Staff*) and a short code (e.g. *HSF*). Confirm it was created.
+
+### 3. Create the discount component
+
+![Create the discount component](/img/flows/billing/create-discount/04-loom.jpg)
+
+Under **Discount Components** → **Create Discount Component**, enter a name and choose the type:
+
+- **Amount** — a fixed value
+- **Factor** — a percentage (e.g. select Factor and enter 70% for a 70% discount)
+
+### 4. Add the condition
+
+![Add the condition](/img/flows/billing/create-discount/05-loom.jpg)
+
+Set the condition by **Patient Tag**, **Patient Age**, or **Patient Gender** (e.g. tag = *Hospital Staff*), add it, and **Save**. Verify that matching patients receive the discount automatically.
+
+:::caution
+Create the discount code before the component. Use **Factor** for percentage discounts and **Amount** for fixed values. Test with a sample patient after saving.
+:::
+
+## Related
+
+- Flow: [Add a service request](./add-service-request)
+- Flow: [Add patient tags](../clinical/patient-tags)
+- Playbook: [Billing and payment](/deployments/hmis/playbooks/billing-and-payment)

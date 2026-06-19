@@ -1,0 +1,72 @@
+---
+sidebar_position: 18
+---
+
+# Register a patient through ABHA
+
+This flow registers a patient via **ABHA** (Ayushman Bharat Health Account) — generating a new ABHA number or linking an existing one, verifying identity, and completing registration.
+
+:::info Availability
+ABHA registration applies to **ABDM-enabled deployments**. The patient's Aadhaar-linked mobile must be available for OTP verification.
+:::
+
+## Before you start
+
+- Select the correct **facility** first.
+- Obtain the patient's consent and confirm their **Aadhaar number** is accurate.
+
+## Steps
+
+### 1. Open patient registration
+
+![Open patient registration (1)](/img/flows/clinical/register-patient-abha/01-image-20260508-092514.png)
+
+![Open patient registration (2)](/img/flows/clinical/register-patient-abha/02-image-20260508-092523.png)
+
+Go to **Patients** → **Search Patients**, then click **Add New Patient** and select **Generate or Link ABHA**.
+
+### 2. Choose the ABHA path
+
+![Choose the ABHA path (1)](/img/flows/clinical/register-patient-abha/03-loom.jpg)
+
+![Choose the ABHA path (2)](/img/flows/clinical/register-patient-abha/04-loom.jpg)
+
+Decide whether to **generate a new ABHA number** or **link an existing** one. To generate via Aadhaar, enter the patient's **Aadhaar number**.
+
+### 3. Complete consent and details
+
+![Complete consent and details (1)](/img/flows/clinical/register-patient-abha/05-loom.jpg)
+
+![Complete consent and details (2)](/img/flows/clinical/register-patient-abha/06-loom.jpg)
+
+Review and accept the required **consents**, then confirm the patient's name and displayed details.
+
+### 4. Verify identity
+
+![Verify identity (1)](/img/flows/clinical/register-patient-abha/07-loom.jpg)
+
+![Verify identity (2)](/img/flows/clinical/register-patient-abha/08-loom.jpg)
+
+Choose a verification method — **OTP**, **Demographics**, **Biometrics**, or **Face**. For OTP, wait for the code sent to the Aadhaar-linked mobile, enter it (and the mobile number if required), and click **Verify**.
+
+### 5. Create the ABHA address
+
+![Create the ABHA address](/img/flows/clinical/register-patient-abha/09-loom.jpg)
+
+If prompted, create a new **ABHA address** in the required format (or pick a suggested one) and click **Create ABHA Address**.
+
+### 6. Review and submit
+
+![Review and submit](/img/flows/clinical/register-patient-abha/10-loom.jpg)
+
+Confirm the **ABHA ID** was created, review patient details (download for records if needed), click **Proceed**, then **Submit** on the final review screen.
+
+:::caution
+Enter the OTP within its valid window and verify all details before submitting. If an existing ABHA number/address is found, decide whether to link it or create a new one based on the patient's situation.
+:::
+
+## Related
+
+- Flow: [Register a patient manually](./register-patient-manually)
+- Flow: [Fetch patient records via ABDM](./fetch-records-abdm)
+- Flow: [Add patient tags](./patient-tags)

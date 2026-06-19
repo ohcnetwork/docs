@@ -1,0 +1,79 @@
+---
+sidebar_position: 5
+---
+
+# Facility setup
+
+Stand up a new health facility in Care from an empty shell to ready-to-admit. This playbook sequences the facility, location, department, bed, user, and ABDM linking flows that an administrator runs once per site.
+
+## Flows involved
+
+| Order | Flow | Purpose |
+| --- | --- | --- |
+| 1 | Create & configure a new health facility *(coming soon)* | Register the facility and its core settings |
+| 2 | Add and organize facility locations *(coming soon)* | Build the location hierarchy (wards, rooms) |
+| 3 | Link multiple departments to a location *(coming soon)* | Map departments onto locations |
+| 4 | Create multiple beds in a location *(coming soon)* | Add bed capacity to wards/rooms |
+| 5 | Create a department & link users *(coming soon)* | Set up departments and staff access |
+| 6 | Link HFID for ABDM & generate QR *(coming soon)* | Register the facility with ABDM |
+
+## Happy path
+
+1. Administrator **creates and configures the facility** (name, type, address, core settings).
+2. The **location hierarchy** is built out — buildings, wards, rooms.
+3. **Departments are created** and **linked to locations**.
+4. **Beds are added** to the relevant locations to establish capacity.
+5. **Users are created and linked** to their departments with appropriate roles.
+6. The facility's **HFID is linked for ABDM** and its **QR code generated** for national-network interoperability.
+
+## Edge cases
+
+### Phased go-live
+
+**Symptom:** Only some wards open initially.
+
+**Action:**
+
+1. Configure live locations/beds first; leave the rest inactive.
+2. Activate additional capacity as it comes online — no need to re-create the facility.
+
+### Department spans multiple locations
+
+**Symptom:** One department operates across several wards/floors.
+
+**Action:**
+
+1. Link the department to **each** location it serves.
+2. Assign users once at the department level rather than per location.
+
+### Bed re-numbering / re-org
+
+**Symptom:** Wards are renumbered after go-live.
+
+**Action:**
+
+1. Update the location/bed labels in place.
+2. Avoid deleting occupied beds; move patients first to preserve encounter history.
+
+### ABDM not yet provisioned
+
+**Symptom:** HFID/QR step blocked pending ABDM registration.
+
+**Action:**
+
+1. Complete clinical setup (steps 1–5) so the facility is operational.
+2. Return to **HFID linking and QR generation** once ABDM credentials are available.
+
+## Roles
+
+| Role | Can |
+| --- | --- |
+| Facility administrator | Create facility, locations, departments, beds |
+| User administrator | Create and link users, assign roles |
+| Integrations admin | Link HFID, generate ABDM QR |
+
+## Related
+
+- Flow: Create and configure a new health facility *(coming soon)*
+- Flow: Add and organize facility locations *(coming soon)*
+- Flow: Link HFID in Care for ABDM and generate QR *(coming soon)*

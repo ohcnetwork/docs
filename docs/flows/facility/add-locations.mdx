@@ -1,0 +1,79 @@
+---
+sidebar_position: 1
+---
+
+# Add facility locations
+
+This flow builds the **facility location hierarchy** — buildings, floors/levels, wards, rooms, and beds — and assigns organizations to locations, so beds, departments, and services can be managed correctly.
+
+## Before you start
+
+- Log in as the **facility admin** with the correct permissions.
+- Plan the full hierarchy first (on paper or a spreadsheet) and use consistent naming. Test in a non-production environment before live changes.
+
+## Steps
+
+### 1. Open facility configuration
+
+![Open facility configuration (1)](/img/flows/facility/add-locations/01-loom.jpg)
+
+![Open facility configuration (2)](/img/flows/facility/add-locations/02-loom.jpg)
+
+Go to **Facility Details** → **Settings** → **Manage Facility Configurations**, then open **Locations**.
+
+### 2. Add a building
+
+![Add a building (1)](/img/flows/facility/add-locations/03-loom.jpg)
+
+![Add a building (2)](/img/flows/facility/add-locations/04-loom.jpg)
+
+Click **Add Location**, select the **Building** category, name it (e.g. *Main Building*), and confirm.
+
+### 3. Add floors / levels
+
+![Add floors / levels (1)](/img/flows/facility/add-locations/05-loom.jpg)
+
+![Add floors / levels (2)](/img/flows/facility/add-locations/06-loom.jpg)
+
+Open the building, add a location, select the **Level** category, and name each floor (e.g. *Ground Floor*, *First Floor*). Repeat for all floors.
+
+### 4. Add rooms and wards
+
+![Add rooms and wards (1)](/img/flows/facility/add-locations/07-loom.jpg)
+
+![Add rooms and wards (2)](/img/flows/facility/add-locations/08-loom.jpg)
+
+Open a floor and add locations for rooms, functional areas, and wards (e.g. *Outpatient Pharmacy*, *Outpatient Department*, *Cardiology* ward), choosing the appropriate category for each.
+
+### 5. Add beds within a ward
+
+![Add beds within a ward (1)](/img/flows/facility/add-locations/09-loom.jpg)
+
+![Add beds within a ward (2)](/img/flows/facility/add-locations/10-loom.jpg)
+
+Open the ward, add a location with the **Bed** category, choose **multiple beds** to add several at once, and give them a consistent base name. See [Create multiple beds](./create-beds).
+
+### 6. Assign an organization
+
+![Assign an organization (1)](/img/flows/facility/add-locations/11-loom.jpg)
+
+![Assign an organization (2)](/img/flows/facility/add-locations/12-loom.jpg)
+
+In the ward, open **Manage Organization**, choose the department assignment option, select the department (e.g. *Cardiology*), and save. See [Link departments to a location](./link-departments-location).
+
+### 7. Verify the hierarchy
+
+![Verify the hierarchy](/img/flows/facility/add-locations/13-loom.jpg)
+
+Review that buildings, floors, wards, rooms, and beds are correctly placed before exiting.
+
+:::caution
+Always confirm the correct **parent level** before creating a location, and verify each creation before moving on to prevent hierarchy errors.
+:::
+
+## Related
+
+- Flow: [Create multiple beds](./create-beds)
+- Flow: [Link departments to a location](./link-departments-location)
+- Flow: [Create a department](./create-department)
+- Playbook: [Facility setup](/deployments/hmis/playbooks/facility-setup)

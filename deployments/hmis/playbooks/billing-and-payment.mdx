@@ -1,0 +1,76 @@
+---
+sidebar_position: 3
+---
+
+# Billing and payment
+
+Turn the services a patient received into a priced invoice and a collected payment. This playbook combines the **service request**, **charge item**, and **discount** flows with the **billing → invoice → payment** flow run by front-desk and billing staff.
+
+## Flows involved
+
+| Order | Flow | Purpose |
+| --- | --- | --- |
+| 1 | Add a service request *(coming soon)* | Capture the billable service rendered |
+| 2 | Link a charge item to a schedule *(coming soon)* | Attach the priced item to the appointment/service |
+| 3 | Create a discount code & component *(coming soon)* | Apply staff or scheme concessions |
+| 4 | Build billing, create invoice, collect payment *(coming soon)* | Generate and settle the invoice |
+
+## Happy path
+
+1. As services are delivered, **service requests** are raised against the patient's encounter or appointment.
+2. Each chargeable service has a **charge item** linked so a price is attached.
+3. Billing **assembles the open charges** for the encounter into a draft invoice.
+4. Any applicable **discount component** (staff, scheme, camp) is applied.
+5. The **invoice is generated**, payment is collected, and a receipt is issued.
+
+## Edge cases
+
+### Discount or concession applies
+
+**Symptom:** Patient is staff, or covered by a scheme/camp rate.
+
+**Action:**
+
+1. Apply the relevant **discount code / component** before finalising.
+2. Record the authorisation/reason where the facility requires it; the applied discount is retained on the invoice.
+
+### Partial payment / instalment
+
+**Symptom:** Patient cannot settle the full amount at once.
+
+**Action:**
+
+1. Collect the partial amount against the invoice; the balance remains outstanding.
+2. Subsequent collections are recorded against the same invoice until settled.
+
+### Charge added after invoicing
+
+**Symptom:** A late service (e.g. an add-on test) lands after the invoice was raised.
+
+**Action:**
+
+1. Raise a supplementary charge / invoice rather than reopening a settled one.
+2. Reconcile both invoices on the patient's account.
+
+### Refund or cancellation
+
+**Symptom:** A billed service is cancelled or overcharged.
+
+**Action:**
+
+1. Process the reversal against the original invoice with a reason.
+2. Keep the original and reversal entries for audit.
+
+## Roles
+
+| Role | Can |
+| --- | --- |
+| Service desk / nurse | Raise service requests |
+| Billing clerk | Build invoices, apply charge items, collect payment |
+| Billing supervisor | Approve discounts, process refunds |
+
+## Related
+
+- Flow: Add a service request *(coming soon)*
+- Flow: Building staff billing, invoice creation, and payment collection *(coming soon)*
+- Playbook: [Pharmacy dispensing](./pharmacy-dispensing) and [Lab diagnostics](./lab-diagnostics) — common sources of billable charges

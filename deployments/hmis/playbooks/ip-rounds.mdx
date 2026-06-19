@@ -1,0 +1,75 @@
+---
+sidebar_position: 6
+---
+
+# IP rounds
+
+Run a ward round on an admitted patient: open the active encounter, explore the patient's record, and document findings through clinical forms. This playbook covers **accessing**, **exploring**, and **form filling** on an existing inpatient encounter — it does not create or close the encounter.
+
+## Flows involved
+
+| Order | Flow | Purpose |
+| --- | --- | --- |
+| 1 | Access a patient encounter *(coming soon)* | Open the patient's active admission |
+| 2 | View symptoms, diagnosis, prescriptions & previous encounters *(coming soon)* | Explore the clinical picture before deciding |
+| 3 | Submit clinical forms *(coming soon)* | Record round findings and assessments |
+
+## Happy path
+
+1. On the round, the clinician **accesses the patient's active encounter** from the ward/bed list.
+2. They **explore the record** — current symptoms, diagnoses, active prescriptions, allergies, recent results, and previous encounters — to build the picture.
+3. They **submit the relevant clinical form(s)** to document the day's assessment, observations, and plan.
+4. New orders (medication, lab) flow out to the [pharmacy](./pharmacy-dispensing) and [lab](./lab-diagnostics) playbooks; the encounter stays open for the next round.
+
+## Edge cases
+
+### Patient transferred between beds/wards
+
+**Symptom:** Bed or location changed since the last round.
+
+**Action:**
+
+1. The encounter follows the patient; confirm the **current bed/location** before documenting.
+2. If the assignment looks stale, update it before charting.
+
+### Information from a prior admission needed
+
+**Symptom:** History lives in an earlier encounter.
+
+**Action:**
+
+1. Open **previous encounters** read-only to review.
+2. Document fresh findings on the **current** encounter — do not edit the closed one.
+
+### Form started but round interrupted
+
+**Symptom:** The clinician is pulled away mid-form.
+
+**Action:**
+
+1. Save progress; submit when complete so the record reflects a finished assessment.
+2. Avoid leaving partially-entered clinical data unsubmitted across shifts.
+
+### Multiple clinicians on the same patient
+
+**Symptom:** Consultant and resident both document.
+
+**Action:**
+
+1. Each submits their own form entry; authorship is retained per submission.
+2. Reconcile conflicting plans verbally, then record the agreed plan.
+
+## Roles
+
+| Role | Can |
+| --- | --- |
+| Clinician / consultant | Access encounter, explore record, submit clinical forms, place orders |
+| Nurse | View encounter, record observations and administration |
+| Read-only / allied staff | View the record without editing clinical data |
+
+## Related
+
+- Flow: Submit clinical forms *(coming soon)*
+- Flow: View previous patient encounters *(coming soon)*
+- Playbook: [OP consultation](./op-consultation) — the outpatient counterpart
+- Playbook: [Pharmacy dispensing](./pharmacy-dispensing), [Lab diagnostics](./lab-diagnostics) — where round orders go

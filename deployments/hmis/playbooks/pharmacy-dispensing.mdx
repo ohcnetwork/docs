@@ -1,0 +1,74 @@
+---
+sidebar_position: 4
+---
+
+# Pharmacy dispensing
+
+Move a medication order from the prescriber to the patient's hand. This playbook joins the clinician's **prescribe** flow with the pharmacist's **review and dispense** flow and the ward's **view and administer** flow.
+
+## Flows involved
+
+| Order | Flow | Purpose |
+| --- | --- | --- |
+| 1 | Prescribe medication *(coming soon)* | Clinician orders the drug during the encounter |
+| 2 | Review prescriptions & dispense *(coming soon)* | Pharmacist verifies and issues the medicine |
+| 3 | View prescription & administer *(coming soon)* | Nurse administers and records (inpatient) |
+
+## Happy path
+
+1. The clinician **prescribes** the medication during the [encounter](/docs/flows/clinical/create-patient), with dose, route, and frequency.
+2. The order reaches the pharmacy queue; the pharmacist **reviews** it for interactions, allergies, and stock.
+3. The pharmacist **dispenses** the medicine and records the issue.
+4. For inpatients, the nurse **views the prescription and records administration** at each due time.
+
+## Edge cases
+
+### Allergy or interaction flagged
+
+**Symptom:** The patient has a recorded allergy or the order interacts with an existing medication.
+
+**Action:**
+
+1. Pharmacist holds the order and **queries the prescriber** rather than dispensing.
+2. Prescriber amends or confirms with an override reason; the decision is retained.
+
+### Out of stock / substitution
+
+**Symptom:** The exact drug or strength is unavailable.
+
+**Action:**
+
+1. Pharmacist proposes a **therapeutic equivalent / alternate strength**.
+2. Substitution is confirmed with the prescriber where policy requires, then dispensed and recorded.
+
+### Partial dispense
+
+**Symptom:** Only part of the prescribed quantity is in stock.
+
+**Action:**
+
+1. Dispense the available quantity and mark the balance pending.
+2. Complete the dispense when stock arrives; the order stays open until fulfilled.
+
+### Missed or refused dose (inpatient)
+
+**Symptom:** A scheduled administration is not given.
+
+**Action:**
+
+1. Nurse records the dose as missed/refused with a reason instead of leaving it blank.
+2. The gap is visible to the next shift and the prescriber.
+
+## Roles
+
+| Role | Can |
+| --- | --- |
+| Clinician | Prescribe, amend, respond to pharmacy queries |
+| Pharmacist | Review, dispense, substitute, query |
+| Nurse | View prescription, record administration |
+
+## Related
+
+- Flow: Prescribe medication *(coming soon)*
+- Flow: Review prescriptions and dispense medicines *(coming soon)*
+- Playbook: [OP consultation](./op-consultation) and [IP rounds](./ip-rounds) — where prescriptions originate
