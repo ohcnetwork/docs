@@ -28,6 +28,30 @@ const CARE_DEPLOYMENTS = [
   },
 ];
 
+/**
+ * Cross-cutting guide sections that are not tied to a Care release, so they
+ * live outside the versioned docs as their own (unversioned) plugin instances.
+ * @type {Array<{id: string, label: string, path: string, routeBasePath: string, sidebarPath: string, sidebarId: string}>}
+ */
+const GUIDE_SECTIONS = [
+  {
+    id: 'contributing',
+    label: 'Contributing',
+    path: 'contributing',
+    routeBasePath: 'contributing',
+    sidebarPath: './sidebarsContributing.js',
+    sidebarId: 'contributingSidebar',
+  },
+  {
+    id: 'deployment',
+    label: 'Deployment',
+    path: 'deployment',
+    routeBasePath: 'deployment',
+    sidebarPath: './sidebarsDeployment.js',
+    sidebarId: 'deploymentSidebar',
+  },
+];
+
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 /** @type {import('@docusaurus/types').Config} */
@@ -121,13 +145,13 @@ const config = {
     ],
   ],
 
-  plugins: CARE_DEPLOYMENTS.map((deployment) => [
+  plugins: [...CARE_DEPLOYMENTS, ...GUIDE_SECTIONS].map((instance) => [
     '@docusaurus/plugin-content-docs',
     {
-      id: deployment.id,
-      path: deployment.path,
-      routeBasePath: deployment.routeBasePath,
-      sidebarPath: deployment.sidebarPath,
+      id: instance.id,
+      path: instance.path,
+      routeBasePath: instance.routeBasePath,
+      sidebarPath: instance.sidebarPath,
       editUrl: EDIT_URL,
     },
   ]),
@@ -165,6 +189,13 @@ const config = {
               docsPluginId: deployment.id,
             })),
           },
+          ...GUIDE_SECTIONS.map((section) => ({
+            type: 'docSidebar',
+            sidebarId: section.sidebarId,
+            position: 'left',
+            label: section.label,
+            docsPluginId: section.id,
+          })),
           {
             type: 'localeDropdown',
             position: 'right',
