@@ -66,8 +66,8 @@ const config = {
   },
 
   // GitHub Pages — https://ohcnetwork.github.io/docs/
-  url: 'https://ohcnetwork.github.io',
-  baseUrl: '/docs/',
+  url: 'https://docs.ohc.network/',
+  baseUrl: '/',
 
   organizationName: 'ohcnetwork',
   projectName: 'docs',
