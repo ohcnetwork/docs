@@ -4,13 +4,13 @@ sidebar_position: 1
 
 # Outpatient registration
 
-Register a walk-in or scheduled outpatient at the hospital front desk. This playbook combines the [create patient](/docs/flows/clinical/create-patient) flow with HMIS-specific edge cases your registration team will hit in production.
+Register a walk-in or scheduled outpatient at the hospital front desk. This playbook combines the [create patient](/flows/clinical/create-patient) flow with HMIS-specific edge cases your registration team will hit in production.
 
 ## Flows involved
 
 | Order | Flow | Purpose |
 | --- | --- | --- |
-| 1 | [Create a patient](/docs/flows/clinical/create-patient) | New visitor with no existing record |
+| 1 | [Create a patient](/flows/clinical/create-patient) | New visitor with no existing record |
 | 2 | Patient search & merge *(coming soon)* | Suspected duplicate before creating |
 | 3 | Start OP encounter *(coming soon)* | Open today's visit after registration |
 
@@ -21,7 +21,7 @@ Register a walk-in or scheduled outpatient at the hospital front desk. This play
 3. Print OPD slip / token if enabled.
 4. Route patient to triage or consulting room encounter queue.
 
-This matches the core [create patient](/docs/flows/clinical/create-patient) flow without additional configuration.
+This matches the core [create patient](/flows/clinical/create-patient) flow without additional configuration.
 
 ## Edge cases
 
@@ -78,5 +78,5 @@ Requires `emergency_registration` permission on most HMIS deployments.
 
 ## Related
 
-- Concept: [Patient](/docs/concepts/clinical/patient)
-- Flow: [Create a patient](/docs/flows/clinical/create-patient)
+- Concept: [Patient](/concepts/clinical/patient)
+- Flow: [Create a patient](/flows/clinical/create-patient)
