@@ -66,6 +66,16 @@ Kubernetes reference runs them in-cluster from Helm charts.
 - **[Day-2 operations](./kubernetes/operations.md)** — backups, restores,
   monitoring, and routine maintenance.
 
+### Security & privacy
+
+Applies to every deployment, however you host it:
+
+- **[Data security](./security/data-security.md)** — the standard security
+  practices to enable at the edge, network, transport, data, and operational
+  layers.
+- **[Privacy & data protection](./security/privacy-and-data-protection.md)** —
+  handling patient data responsibly and meeting your regulatory obligations.
+
 :::tip Looking to contribute instead?
 If you want to run Care locally to develop against it rather than operate a
 production instance, see the [Contributor's Guide](/contributing/).
