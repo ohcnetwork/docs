@@ -63,6 +63,13 @@ Load the fixtures (base roles, permissions, and reference data) so the app is us
 make load-fixtures
 ```
 
+This seeds a comprehensive set of development data, including:
+
+- Base roles and permissions
+- Reference data (lab definitions, inventory)
+- Scheduling (slots, appointments)
+- **Billing** — two patient accounts, charge items built from catalogue definitions (lab tests, medicines, consumables), invoices across all statuses (draft, issued, balanced, cancelled, entered\_in\_error) spread across known dates, and payment reconciliations against balanced invoices.
+
 ### 4. Create an admin user
 
 ```bash
