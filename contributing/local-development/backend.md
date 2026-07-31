@@ -63,6 +63,23 @@ Load the fixtures (base roles, permissions, and reference data) so the app is us
 make load-fixtures
 ```
 
+The fixture loader seeds a comprehensive dataset that includes:
+
+| Data category | What is created |
+| --- | --- |
+| Roles & permissions | Base RBAC roles used throughout the app |
+| Facilities & locations | Sample facility with wards and beds |
+| Patients & encounters | Sample patients with active encounters |
+| Lab definitions | Charge item definitions (lab tests, medicines, consumables) |
+| Inventory | Products, stock, and suppliers |
+| Billing | Accounts linked to patients, charge items from the catalogue, invoices across every status (draft, issued, balanced, cancelled, entered-in-error), and payment reconciliations |
+| Scheduling | Slots and appointments |
+| Organizations | Managing-organization hierarchy |
+
+:::tip
+After seeding, two patients have fully populated billing accounts. You can use these to explore the invoicing workflow in the UI or API without creating test data by hand.
+:::
+
 ### 4. Create an admin user
 
 ```bash
