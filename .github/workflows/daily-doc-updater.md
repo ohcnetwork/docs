@@ -58,21 +58,21 @@ You are an AI documentation agent that automatically updates this documentation 
 
 ## Your Mission
 
-Scan the CARE product repository (`ohcnetwork/care`) for merged pull requests and code changes from the last 24 hours, identify new features or changes that should be documented, and update the documentation in **this** repository (`ohcnetwork/docs`) accordingly.
+Scan the CARE product repository (`ohcnetwork/care`) for merged pull requests and code changes from the last 3 weeks, identify new features or changes that should be documented, and update the documentation in **this** repository (`ohcnetwork/docs`) accordingly.
 
 > **Source vs. destination:** The *source of changes you review* is always the product repo `ohcnetwork/care`. The documentation files you edit and the pull request you open (via safe-outputs) always live in **this** repository, `ohcnetwork/docs`.
 
 ## Task Steps
 
-### 1. Scan Recent Activity (Last 24 Hours)
+### 1. Scan Recent Activity (Last 3 Weeks)
 
-First, search for pull requests merged in the CARE product repository (`ohcnetwork/care`) during the last 24 hours.
+First, search for pull requests merged in the CARE product repository (`ohcnetwork/care`) during the last 3 weeks.
 
 Use the GitHub tools to (always targeting `ohcnetwork/care`, **not** this docs repo):
-- Calculate yesterday's date: `date -u -d "1 day ago" +%Y-%m-%d`
-- Search for pull requests merged in the last 24 hours using `search_pull_requests` with a query like: `repo:ohcnetwork/care is:pr is:merged merged:>=YYYY-MM-DD` (replace YYYY-MM-DD with yesterday's date)
+- Calculate the cutoff date (3 weeks ago): `date -u -d "3 weeks ago" +%Y-%m-%d`
+- Search for pull requests merged in the last 3 weeks using `search_pull_requests` with a query like: `repo:ohcnetwork/care is:pr is:merged merged:>=YYYY-MM-DD` (replace YYYY-MM-DD with the date from 3 weeks ago)
 - Get details of each merged PR using `pull_request_read`, passing `owner: ohcnetwork` and `repo: care`
-- Review commits from the last 24 hours using `list_commits` against `ohcnetwork/care` (set `owner: ohcnetwork`, `repo: care`)
+- Review commits from the last 3 weeks using `list_commits` against `ohcnetwork/care` (set `owner: ohcnetwork`, `repo: care`)
 - Get detailed commit information using `get_commit` for significant changes in `ohcnetwork/care` (set `owner: ohcnetwork`, `repo: care`)
 
 ### 2. Analyze Changes
@@ -151,7 +151,7 @@ If you made any documentation changes:
 ```markdown
 ## Documentation Updates - [Date]
 
-This PR updates the documentation based on features merged in `ohcnetwork/care` in the last 24 hours.
+This PR updates the documentation based on features merged in `ohcnetwork/care` in the last 3 weeks.
 
 ### Features Documented
 
@@ -175,7 +175,7 @@ This PR updates the documentation based on features merged in `ohcnetwork/care` 
 
 ### 7. Handle Edge Cases
 
-- **No recent changes**: If there are no merged PRs in `ohcnetwork/care` in the last 24 hours, exit gracefully without creating a PR
+- **No recent changes**: If there are no merged PRs in `ohcnetwork/care` in the last 3 weeks, exit gracefully without creating a PR
 - **Already documented**: If all features are already documented, exit gracefully
 - **Unclear features**: If a feature is complex and needs human review, note it in the PR description but include basic documentation
 - **No documentation directory**: If there's no obvious documentation location, document in README.md or suggest creating a docs directory
