@@ -57,7 +57,7 @@ To attach the VS Code debugger, set `DJANGO_DEBUG=True` in your `.env` file befo
 
 ### 3. Seed data
 
-Load the fixtures (base roles, permissions, and reference data) so the app is usable:
+Load the fixtures (base roles, permissions, reference data, and sample billing data) so the app is usable:
 
 ```bash
 make load-fixtures
@@ -201,7 +201,7 @@ These targets are defined in the repository's `Makefile` and wrap the most commo
 | `make up` | Start the stack in the background and wait until healthy |
 | `make down` | Stop and remove containers, keeping volumes |
 | `make teardown` | Stop and remove containers and volumes (wipes data) |
-| `make load-fixtures` | Load seed/reference data into the database |
+| `make load-fixtures` | Load seed/reference data and sample billing data (accounts, charge items, invoices) into the database |
 | `make migrate` | Apply database migrations |
 | `make makemigrations` | Generate new migrations from model changes |
 | `make test` | Run the test suite (pass `path=<dotted.path>` for one test) |
