@@ -63,6 +63,8 @@ Load the fixtures (base roles, permissions, and reference data) so the app is us
 make load-fixtures
 ```
 
+The default fixture set includes: roles and permissions, a sample facility, patients, encounters, lab definitions, inventory, **billing** (accounts, charge items, invoices across all statuses, and payment reconciliations), and scheduling data. See [`care/fixtures/fixtures.md`](https://github.com/ohcnetwork/care/blob/develop/care/fixtures/fixtures.md) in the care repository for the full fixture helper API.
+
 ### 4. Create an admin user
 
 ```bash
