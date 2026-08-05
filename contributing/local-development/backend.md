@@ -57,11 +57,23 @@ To attach the VS Code debugger, set `DJANGO_DEBUG=True` in your `.env` file befo
 
 ### 3. Seed data
 
-Load the fixtures (base roles, permissions, and reference data) so the app is usable:
+Load the fixtures so the app is usable:
 
 ```bash
 make load-fixtures
 ```
+
+This seeds the following data:
+
+| Category | What is created |
+| --- | --- |
+| **Roles & permissions** | Base roles and permission sets |
+| **Reference data** | Organizations, facilities, departments, locations, users, patients |
+| **Lab definitions** | Specimen types, observation definitions, charge item definitions |
+| **Inventory** | Product catalogue, suppliers, stock items |
+| **Billing** | 2 billing accounts (one per patient), 12 charge items drawn from the catalogue, 8 invoices across all statuses (draft, issued, balanced, cancelled, entered-in-error) with generated invoice numbers, and 2 payments against the balanced invoices |
+| **Scheduling** | Schedules, slots |
+| **Managing organisation** | Org hierarchy |
 
 ### 4. Create an admin user
 
@@ -201,7 +213,7 @@ These targets are defined in the repository's `Makefile` and wrap the most commo
 | `make up` | Start the stack in the background and wait until healthy |
 | `make down` | Stop and remove containers, keeping volumes |
 | `make teardown` | Stop and remove containers and volumes (wipes data) |
-| `make load-fixtures` | Load seed/reference data into the database |
+| `make load-fixtures` | Load seed/reference data into the database (roles, patients, lab definitions, inventory, billing, scheduling) |
 | `make migrate` | Apply database migrations |
 | `make makemigrations` | Generate new migrations from model changes |
 | `make test` | Run the test suite (pass `path=<dotted.path>` for one test) |
