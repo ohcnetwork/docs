@@ -148,7 +148,7 @@ Every spec extends `BaseConditionSpec` → `EMRResource` and round-trips through
 | `ConditionSpec` | write · create | `clinical_status?`, `verification_status` (**required**), `severity?`, `code` (value-set bound, **required**), `encounter` (UUID4, **required**), `onset` (`={}`), `abatement` (`={}`), `note?`, `category` (**required**). Validates that the encounter exists; on create sets `obj.encounter` and `obj.patient = encounter.patient`. |
 | `ConditionUpdateSpec` | write · update | `clinical_status?`, `verification_status` (**required**), `severity?`, `code` (value-set bound, **required**), `onset` (`={}`), `abatement` (`={}`), `note?`. Does **not** accept `encounter`, `category`, or `patient`. |
 | `ChronicConditionUpdateSpec` | write · update (chronic) | Extends `ConditionUpdateSpec` and adds `encounter` (UUID4). On deserialize, if `encounter` is set, resolves it (`get_object_or_404`) and assigns `obj.encounter`. |
-| `ConditionReadSpec` | read · detail/list | `clinical_status`, `verification_status`, `category`, `criticality`, `severity` (all plain `str`), `code` (plain `Coding`), `encounter` (UUID4), `onset`, `abatement`, `created_by?`, `updated_by?`, `note?`, `created_date`, `modified_date`. |
+| `ConditionReadSpec` | read · detail/list | `clinical_status`, `verification_status`, `category`, `severity` (all plain `str`), `code` (plain `Coding`), `encounter` (UUID4), `onset`, `abatement`, `created_by?`, `updated_by?`, `note?`, `created_date`, `modified_date`. |
 
 ### Validation & server-side behaviour
 
@@ -156,7 +156,6 @@ Every spec extends `BaseConditionSpec` → `EMRResource` and round-trips through
 - `verification_status` is mandatory on both `ConditionSpec` and `ConditionUpdateSpec`; `category` is mandatory only on create (`ConditionSpec`).
 - `code` must belong to the bound value set (SNOMED CT clinical findings) on every write spec.
 - `onset_datetime` cannot be in the future and is forced timezone-aware; `abatement_datetime` carries no such constraint.
-- `ConditionReadSpec` exposes `criticality`, a string in the read schema with no backing column on the `Condition` model. The standard serializer never populates it, so it comes back unset.
 - Read serialization (`perform_extra_serialization`) maps `id = external_id`, replaces `encounter` with its `external_id`, and expands `created_by`/`updated_by` via `serialize_audit_users` (cached `UserSpec`).
 - `body_site` and `recorded_date` exist on the model but no current spec reads or writes them — storage-only, outside the standard `Condition` API surface.
 

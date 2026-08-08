@@ -252,6 +252,7 @@ Expect two write passes per create or update through the ORM, plus identifier-de
 - `period` and `hospitalization` carry structured JSON matching the nested-spec shapes above; `period.start` and `period.end` must be timezone-aware.
 - `current_location` is a cached convenience field. The authoritative record is `location_history`, from `FacilityLocationEncounter`.
 - `extensions` holds custom key-value data without a schema migration, validated by `ExtensionValidator`.
+- To set a facility identifier on an encounter, use the `encounter-set-facility-identifier` action (`POST /api/v1/encounter/{external_id}/set_facility_identifier/`).
 
 ## Related
 
