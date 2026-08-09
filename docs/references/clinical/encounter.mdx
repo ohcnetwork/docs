@@ -1,0 +1,105 @@
+---
+sidebar_position: 3
+---
+
+# Encounter
+
+Technical reference for the `Encounter` module in Care EMR.
+
+**Source:** [`care/emr/models/encounter.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/encounter.py) · [`care/emr/api/viewsets/encounter.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/encounter.py)
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `Encounter` | Core encounter record — a clinical visit or admission |
+| `EncounterOrganization` | Links an encounter to a `FacilityOrganization` |
+
+All models extend `EMRBaseModel` (shared Care EMR base with `external_id`, audit fields, and soft-delete semantics).
+
+## `Encounter` fields
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `status` | `CharField(100)` | Current encounter status |
+| `status_history` | `JSONField` | History of status transitions |
+| `encounter_class` | `CharField(100)` | Class of encounter (e.g. inpatient, outpatient, emergency) |
+| `encounter_class_history` | `JSONField` | History of class changes |
+| `patient` | `FK → Patient` | The patient this encounter belongs to |
+| `facility` | `FK → Facility (PROTECT)` | Facility where the encounter takes place |
+| `appointment` | `FK → TokenBooking (SET_NULL)` | Optional link to a scheduled appointment |
+| `period` | `JSONField` | Start and end datetime of the encounter |
+| `hospitalization` | `JSONField` | Hospitalization-specific details |
+| `priority` | `CharField(100)` | Clinical priority level |
+| `external_identifier` | `CharField(100)` | External system identifier for this encounter |
+| `care_team` | `JSONField` | List of care team members (`user_id`, role, etc.) |
+| `care_team_users` | `ArrayField[int]` | Denormalized cache of user IDs from `care_team` |
+| `facility_organization_cache` | `ArrayField[int]` | Denormalized cache of organization IDs for filtering |
+| `current_location` | `FK → FacilityLocation (SET_NULL)` | Current ward/bed location of the patient |
+| `discharge_summary_advice` | `TextField` | Clinical discharge advice text |
+| `tags` | `ArrayField[int]` | Tag IDs applied to this encounter |
+| `extensions` | `JSONField` | Open extension bag for deployment-specific metadata |
+
+## `EncounterOrganization`
+
+Links an encounter to a facility organization for access control and reporting.
+
+```text
+encounter     → FK Encounter
+organization  → FK FacilityOrganization
+```
+
+Saving an `EncounterOrganization` triggers `encounter.sync_organization_cache()`, which rebuilds the encounter's `facility_organization_cache`.
+
+## Methods & save behaviour
+
+### `sync_care_team_users_cache()`
+
+Rebuilds `care_team_users` from the `care_team` JSON list on every `save()`. Integrators writing directly to `care_team` must call `save()` to keep the cache consistent.
+
+### `sync_organization_cache()`
+
+Rebuilds `facility_organization_cache` by collecting all organizations linked via `EncounterOrganization` plus their parent chains and the facility's default internal organization. Called automatically on `save()`.
+
+### `save()` side effects
+
+On every save:
+
+1. `sync_care_team_users_cache()` runs (updates `care_team_users`)
+2. The record is persisted
+3. On **create only** — `evaluate_patient_facility_default_values()` runs to generate facility-scoped patient identifiers
+4. `sync_organization_cache()` runs and issues a second `save(update_fields=[...])` to persist the cache
+
+Integrators should expect **two write passes** when creating or updating encounters through the ORM.
+
+## API actions
+
+### `POST /api/v1/encounter/{id}/set_facility_identifier/`
+
+Sets or deletes a facility-scoped patient identifier for the encounter's patient at the encounter's facility.
+
+**Request body** (`EncounterFacilityIdentifierWriteSpec`):
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `identifier_config` | `UUID4` | UUID of a `PatientIdentifierConfig` scoped to this facility |
+| `value` | `str \| None` | The identifier value; pass `null` to delete the identifier |
+| `set_default` | `bool` | If `true`, sets this config as the default for the facility |
+
+**Requires:** update permission on the encounter.
+
+:::note Breaking change
+This endpoint was renamed from `set_facility_idenitifier` (with a typo) to `set_facility_identifier` in [ohcnetwork/care#3730](https://github.com/ohcnetwork/care/pull/3730). The DRF URL pattern changes from `encounter-set-facility-idenitifier` to `encounter-set-facility-identifier`. Clients using the old URL must update their requests.
+:::
+
+## API integration notes
+
+- `extensions` is the supported place for custom key-value data without schema migrations.
+- `care_team_users` and `facility_organization_cache` are maintained by the platform — do not set them directly from clients.
+- Use `EncounterOrganization` to associate encounters with organizations; the cache is rebuilt automatically.
+
+## Related
+
+- Reference: [Patient](./patient)
+- Reference: [Condition](./condition)
+- Source: [encounter.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/encounter.py)

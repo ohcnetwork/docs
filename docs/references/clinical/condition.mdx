@@ -1,0 +1,130 @@
+---
+sidebar_position: 2
+---
+
+# Condition
+
+Technical reference for the `Condition` module in Care EMR.
+
+**Source:** [`care/emr/models/condition.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/condition.py) · [`care/emr/resources/condition/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/condition/spec.py)
+
+## Overview
+
+A **Condition** records a clinical problem, diagnosis, or concern linked to a patient and an encounter. It is aligned with the FHIR `Condition` resource.
+
+## Enumerations
+
+### `ClinicalStatusChoices`
+
+| Value | Meaning |
+| --- | --- |
+| `active` | Condition is ongoing |
+| `recurrence` | Has occurred again after remission |
+| `relapse` | Returning after a period of improvement |
+| `inactive` | No longer active |
+| `remission` | Symptoms are absent but not fully resolved |
+| `resolved` | Condition is no longer present |
+| `unknown` | Status cannot be determined |
+
+### `VerificationStatusChoices`
+
+| Value | Meaning |
+| --- | --- |
+| `unconfirmed` | Awaiting confirmation |
+| `provisional` | Preliminary diagnosis |
+| `differential` | One of several possible diagnoses |
+| `confirmed` | Definitively established |
+| `refuted` | Ruled out |
+| `entered_in_error` | Recorded in error |
+
+### `CategoryChoices`
+
+| Value | Meaning |
+| --- | --- |
+| `problem_list_item` | Long-term problem on the patient's problem list |
+| `encounter_diagnosis` | Diagnosis made during a specific encounter |
+| `chronic_condition` | Ongoing chronic condition |
+
+### `SeverityChoices`
+
+| Value | Meaning |
+| --- | --- |
+| `mild` | Low clinical impact |
+| `moderate` | Significant impact requiring management |
+| `severe` | Serious or life-threatening |
+
+## Write spec (`ConditionSpec`)
+
+Used when **creating** a new condition.
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `clinical_status` | `ClinicalStatusChoices` | No | Defaults to null |
+| `verification_status` | `VerificationStatusChoices` | **Yes** | |
+| `severity` | `SeverityChoices` | No | |
+| `code` | `ValueSetBoundCoding` | **Yes** | Must match `CARE_CONDITION_CODE_VALUESET` |
+| `encounter` | `UUID4` | **Yes** | UUID of an existing encounter; patient is derived from it |
+| `category` | `CategoryChoices` | **Yes** | |
+| `onset` | `ConditionOnSetSpec` | No | See below |
+| `abatement` | `ConditionAbatementSpec` | No | See below |
+| `note` | `str` | No | Free-text clinical note |
+
+### `ConditionOnSetSpec`
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `onset_datetime` | `datetime` | Cannot be in the future |
+| `onset_age` | `int` | Age in years at onset |
+| `onset_string` | `str` | Free-text description when exact date is unknown |
+| `note` | `str` | |
+
+### `ConditionAbatementSpec`
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `abatement_datetime` | `datetime` | |
+| `abatement_age` | `int` | |
+| `abatement_string` | `str` | |
+| `note` | `str` | |
+
+## Update spec (`ConditionUpdateSpec`)
+
+Used when **updating** an existing condition. Same as `ConditionSpec` except `encounter` and `category` are not included (the condition's encounter and category cannot be changed after creation).
+
+## Read spec (`ConditionReadSpec`)
+
+Returned when **reading** a condition.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `id` | `UUID4` | External ID of the condition |
+| `clinical_status` | `str` | |
+| `verification_status` | `str` | |
+| `category` | `str` | |
+| `severity` | `str` | |
+| `code` | `Coding` | |
+| `encounter` | `UUID4` | UUID of the linked encounter |
+| `onset` | `ConditionOnSetSpec` | |
+| `abatement` | `ConditionAbatementSpec` | |
+| `note` | `str` | |
+| `created_by` | `dict` | Audit: user who created the record |
+| `updated_by` | `dict` | Audit: user who last updated the record |
+| `created_date` | `datetime` | |
+| `modified_date` | `datetime` | |
+
+:::note Breaking change
+The `criticality` field was **removed** from `ConditionReadSpec` in [ohcnetwork/care#3729](https://github.com/ohcnetwork/care/pull/3729). API clients that previously consumed this field will no longer receive it in responses.
+:::
+
+## API integration notes
+
+- Conditions are linked to both a patient and an encounter. The patient is derived automatically from the encounter on create.
+- `code` must be a coding from the configured `CARE_CONDITION_CODE_VALUESET` — typically ICD-10 or SNOMED CT codes depending on your deployment.
+- Use `category: encounter_diagnosis` for diagnoses made during a visit and `category: problem_list_item` for ongoing concerns tracked on the problem list.
+- For chronic conditions that span encounters, use `ChronicConditionUpdateSpec` which accepts an `encounter` field to associate the chronic condition with a new encounter.
+
+## Related
+
+- Reference: [Patient](./patient)
+- Reference: [Encounter](./encounter)
+- Source: [condition/spec.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/condition/spec.py)
