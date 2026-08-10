@@ -1,0 +1,76 @@
+---
+sidebar_position: 1
+---
+
+# How to create a tag
+
+## Overview
+
+This flow describes how to create a [tag](../../concepts/platform/tagging.mdx) for a facility, and how to add a child tag below it. Staff can then apply the tag to records of the resource type that you select.
+
+## Pre-requisites
+
+- You are a member of the facility for which you create the tag.
+- You know the resource type that the tag applies to. You cannot change the resource type later.
+- If you create a child tag, the parent tag exists.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Read Tag Config | See the tag list and the details of a tag in the facility. |
+| Can Create Tag Config on Facility | Create a tag and edit a tag in the facility. |
+
+Only an administrator of the deployment can create a tag that has no facility. Such a tag is available in every facility.
+
+## Steps
+
+### 1. Open the tag list of the facility
+
+Go to the facility. Select **Settings**, then select **Tag config**. Care shows the tags of the facility. The list shows Active tags first.
+
+### 2. Start a new tag
+
+Select **Add tag config**. Care opens the tag form.
+
+### 3. Complete the tag form
+
+| Components | What it captures |
+| --- | --- |
+| Display name | The label that users see. This field is mandatory. |
+| Category | The group of the tag, for example Clinical or Safety. |
+| Resource | The record type that the tag applies to, for example Patient. |
+| Priority | The order weight of the tag. Use a value of 0 or more. |
+| Status | Select **Active** to let staff apply the tag. |
+| Description | A short text that tells staff when to use the tag. |
+| Facility Organisation | The facility department that governs the tag. This field is optional. |
+
+### 4. Save the tag
+
+Select **Create tag config**. Care shows the message "Tag Config created successfully" and adds the tag to the list.
+
+### 5. Add a child tag
+
+Select **View** on the tag to open its details. Select **Add child tag**. Care copies the category, the resource and the priority of the parent into the form. Enter the display name, then select **Create tag config**.
+
+### 6. Edit or archive a tag
+
+Select **Edit tag** on the tag details to change the display name, the category, the priority, the status, or the description. To retire a child tag, select **Archive** on the child, then confirm the action.
+
+## Expected Outcome
+
+- The tag is in the tag list of the facility with the status Active.
+- Staff of the facility can apply the tag to records of the resource type that you selected.
+- Child tags show below the parent tag on the tag details page.
+
+## Related
+
+Concepts:
+
+- [Tag](../../concepts/platform/tagging.mdx)
+- [Organization](../../concepts/access-governance/organization.mdx)
+
+Flows:
+
+- [Apply a tag to a record](./apply-a-tag-to-a-record.mdx)
