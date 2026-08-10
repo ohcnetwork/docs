@@ -11,6 +11,7 @@ on:
       - opened
       - reopened
       - synchronize
+      - ready_for_review
     paths:
       - "versioned_docs/**"
       - "versioned_sidebars/**"

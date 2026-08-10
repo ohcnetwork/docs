@@ -150,8 +150,8 @@ plainly in your comment which part you did not do and why.
   them the way a user meets them: the create task first, then the tasks that depend on
   it. List every flow you wrote in the pull request body.
 
-A missing `<doc-types>` is not ambiguity — it means all three. Ask a question only when
-the domain or the resource itself is genuinely unclear.
+A missing `<doc-types>` is not ambiguity — it means all three. But if the domain, the
+resource, or anything else about the request is unclear, **ask**. See Doubts below.
 
 **Start every run by reading the whole issue thread and the memory comment.** A previous
 run may have asked questions that are now answered in a later comment, and may have
@@ -307,18 +307,57 @@ hides the translated-locale link breakages that the `.mdx` link rule exists to p
 Fix whatever the scan or the build reports, then rebuild until clean. **Do not open a
 pull request on a failing build.**
 
-## Handling ambiguity
+## Doubts
 
-You cannot ask a question and wait. If the request is ambiguous, the domain is unknown,
-or the source does not let you verify something essential:
+**Ask. Always ask.** A question costs one comment. A confidently wrong document costs a
+clinician's trust, and it may be copied into other pages before anyone notices. Asking
+is not a failure of the run — it is part of doing the job properly.
 
-1. Post ONE comment containing specific, numbered, answerable questions. Ask only what
-   actually blocks you.
-2. Record everything you already established in the memory comment, so the next run
-   resumes instead of restarting.
-3. Make no file changes and open no pull request.
+Ask whenever the source is genuinely ambiguous, two places in the code disagree, a
+label or permission has no single obvious reading, the scope of the request could be
+read two ways, or you simply are not sure. Never guess to avoid asking, and never soften
+a guess with "typically" or "usually" to make it look verified.
 
-Never guess in order to avoid asking, and never open a speculative pull request.
+How you ask depends on whether the doubt blocks you:
+
+- **Blocking** — you cannot write anything sound without the answer. Post ONE comment
+  with specific, numbered, answerable questions. Ask only what actually blocks you.
+  Record what you already established in the memory comment, so the next run resumes
+  instead of restarting. Make no file changes and open no pull request.
+- **Not blocking** — you can write the rest honestly without it. Do the work, leave the
+  uncertain part out rather than guessing, and list the open questions in both the pull
+  request body and your comment. Do not hold back a good pull request over a small
+  doubt, and do not quietly drop the doubt either.
+
+Either way, every question must be answerable: name the file you looked at, say what you
+found, and say what you could not resolve. "Please clarify the encounter flow" is not a
+question. "`care_fe` shows a Discharge action but `care` has no discharge permission —
+which is authoritative?" is.
+
+## Bugs and inconsistencies you find
+
+Reading two codebases closely to document them is one of the better ways to find bugs.
+When you find one, **say so** — it is one of the more valuable things a run produces.
+
+You have read-only access to `code/care` and `code/care_fe`, and you must not try to fix
+anything there. Report instead, in your comment on the triggering issue, under a
+`## Bugs and inconsistencies` heading. Include, for each:
+
+- what looks wrong, in one sentence,
+- the file path and the function, class or key you were reading,
+- why you believe it is wrong — the two things that disagree, or the behaviour the code
+  cannot produce,
+- how confident you are, honestly.
+
+Worth reporting: the frontend offers an action the backend has no permission for; an
+enum value with no `PREFIX__value` label in `public/locale/en.json`, so the UI would
+show a raw value; a status the code can never reach; a keyboard shortcut bound to an
+action that no longer exists; a permission granted to a role that contradicts the
+documented model; the two versions of a doc having drifted apart.
+
+Report what you actually saw. Do not speculate about code you did not read, and do not
+pad the list — an empty bug list is a fine outcome. If you find none, say nothing about
+bugs at all.
 
 ## Output
 
@@ -334,5 +373,8 @@ Every run must leave a visible trace, using the safe outputs:
 - **Blocked** — comment with the numbered questions, as above.
 - **Nothing to do** — comment with one short sentence explaining why the request needed
   no change.
+
+Whatever the outcome, include any open questions and any bugs you found. A run that
+found a bug and reported it was worth doing, even if it wrote nothing.
 
 A run that finishes silently is a failed run.
