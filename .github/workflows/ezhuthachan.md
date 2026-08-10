@@ -1,5 +1,5 @@
 ---
-name: Care Docs Author
+name: Ezhuthachan
 description: Authors Care concept, flow, and reference docs into versioned_docs, grounded in the care backend and care_fe frontend source.
 on:
   slash_command:
@@ -45,6 +45,8 @@ steps:
 timeout-minutes: 45
 
 safe-outputs:
+  messages:
+    body-header: "**{workflow_name}**\n\n"
   add-comment:
     max: 1
     hide-older-comments: true
