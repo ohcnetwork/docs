@@ -2,89 +2,95 @@
 sidebar_position: 1
 ---
 
-# Roles & Permissions
+# Roles and permissions
 
-Roles and permissions are how Care decides **who can do what, and where**. A permission is a single action ("Can Create Patient"), a role bundles permissions into a job-shaped set ("Doctor"), and a grant gives a person that role inside one boundary — a facility, an organization, or a single patient.
+## Definition
 
-## What it represents
+Roles and permissions decide who can do what in Care, and where. A **permission** is one action, such as "Can Create Patient". A **role** is a named set of permissions, such as Doctor. You give a user a role inside one boundary, such as a facility or an organization. A user has no access of their own. All access comes from the roles that the user holds.
 
-There is no single FHIR resource for access control. Care builds it from three primitives that only mean something together:
+## Key Attributes
 
-- **Permission** — the smallest unit of access: one action, declared in code (for example `can_create_patient`). Permissions are reference data; users never edit them.
-- **Role** — a flat, named bundle of permissions (Doctor, Nurse, Admin). A role is just a permission set — not a job title, not a person.
-- **Grant** — a role handed to a user *within a context*. The same person can be a Doctor at one facility, an Admin of a district, and have no access anywhere else.
+| Components | What it captures |
+| --- | --- |
+| Permission | One action that a user can do. Care declares each permission in code, and you cannot change the list. |
+| Role | A named set of permissions, such as Doctor or Nurse. |
+| Contexts | The boundary types that the role applies in: Facility, Government Organization, or Responsibility. |
+| System | The mark on a role that Care supplies. You cannot edit or delete a system role. |
+| Description | Free text that explains the purpose of the role. |
 
-The key insight: a user has **no standing powers of their own**. Every ability comes from a role granted at a specific place. Move them to a new facility and their old access does not follow — it was scoped to the boundary where it was granted.
+### Permission
 
-## How a grant works
+Care declares every permission in code, then loads it into the database. You cannot create, edit, or delete a permission. Each permission has a name, such as "Can Manage Users in an Organization", and a context that names the kind of record it applies to.
 
-A grant always answers three questions — *who*, *what role*, *where*:
-
-```text
-User  ──granted──▶  Role  ──scoped to──▶  Context (facility / organization / patient)
-```
-
-The same role at a different context is a separate grant. A grant can also carry an **expiry**, after which it is meant to lapse — handy for locum cover or temporary staff. One user can hold many grants at once; their effective access on any record is the union of every role that reaches it.
-
-## How access cascades
-
-Two things make this manageable at scale rather than a grant-per-record chore.
-
-First, **permissions are context-aware**. Each permission is scoped to a kind of resource, and Care only considers permissions whose context matches what is being acted on. This is why a permission to view a patient does not also let someone administer a facility — they live in different contexts.
+A permission applies only inside its own context. A permission on a patient does not give access to a facility, because the two use different contexts.
 
 | Context | Applies to |
 | --- | --- |
-| `GENERIC` | Actions not tied to a specific resource |
-| `FACILITY` | A facility |
-| `PATIENT` | A patient record |
-| `ENCOUNTER` | A single encounter |
-| `ORGANIZATION` | A government or role (user-group) organization |
-| `FACILITY_ORGANIZATION` | A department or unit inside a facility |
-| `QUESTIONNAIRE` | A questionnaire |
+| Generic | Actions that are not tied to one kind of record |
+| Facility | A facility |
+| Patient | A patient |
+| Encounter | One encounter |
+| Organization | A government organization or a responsibility organization |
+| Facility organization | A department or a team inside a facility |
+| Questionnaire | A questionnaire |
 
-Second, **grants flow down the organization tree**. Care's [organizations](../access-governance/organization.mdx) nest — State → District → Local body → Facility — and a role granted at a node reaches everything beneath it. Grant an Administrator at the district level and they act across every facility in that district with no per-facility grant; grant a role on one facility and it reaches only that facility and its units. The same logic covers patients: a clinician's role at a facility lets them work with the patients seen there, instead of a grant per patient.
+### Role
 
-So you grant broadly at the top of the tree for oversight, and narrowly at a facility or department for day-to-day staff.
+A role is a flat set of permissions. The name of a role carries no meaning of its own. Doctor and Nurse are two different permission sets, and nothing more.
 
-## Standard roles
+Care supplies the roles in the table below. You can add your own roles, and you can copy a system role to start from. A role must hold at least one permission, and the name of a role must be unique.
 
-Every Care deployment ships with these roles. They are platform-maintained — the API will not let anyone edit or delete them — and deployments can add custom roles alongside. A role's *boundaries* are the kinds of context it can be granted in; note that a role name alone is not unique, since "Admin" exists both as a facility role and as a separate role-organization role, distinguished only by boundary.
-
-| Role | Description | Boundaries it applies in |
+| Role | Purpose | Contexts |
 | --- | --- | --- |
-| Doctor | Clinician at a facility | Facility, Government org |
-| Nurse | Nurse at a facility | Facility, Government org |
-| Staff | General staff at a facility | Facility, Government org |
-| Volunteer | Volunteer at a facility | Facility, Government org |
-| Pharmacist | Pharmacist at a facility | Facility |
-| Administrator | Administrator at a given boundary | Facility, Government org |
-| Facility Admin | Facility administrator, assigned to whoever creates the facility | Facility |
-| Admin | Top-level administrator | Facility, Government org |
-| Admin (role org) | Administrator of a role (user-group) organization | Role org |
-| Manager (role org) | Manager of a role organization | Role org |
-| Member (role org) | Member of a role organization | Role org |
+| Doctor | Doctor at some facility | Facility, Government Organization |
+| Nurse | Nurse at some facility | Facility, Government Organization |
+| Staff | Staff at some facility | Facility, Government Organization |
+| Volunteer | Volunteer at some facility | Facility, Government Organization |
+| Pharmacist | Pharmacist at some facility | Facility |
+| Administrator | Administrator at a given boundary | Facility, Government Organization |
+| Facility Admin | Administrator of a facility, given to the person who creates the facility | Facility |
+| Admin | Administrator at the top of the tree | Facility, Government Organization |
+| Admin | Administrator of a responsibility organization | Responsibility |
+| Manager | Manager of a responsibility organization | Responsibility |
+| Member | Member of a responsibility organization | Responsibility |
+
+Two system roles use the name Admin. The contexts of the role keep them apart.
+
+### Contexts
+
+The contexts of a role name the boundary types that you can use the role in. Care shows only the roles that match the boundary when you give a role to a user. A responsibility organization offers only the responsibility roles.
+
+### How a user gets access
+
+You give a user a role in one [organization](../access-governance/organization.mdx), one facility, or one department. The grant reaches the records below that point in the tree. A role at a district reaches every facility in that district. A role at one facility reaches only that facility and its departments.
+
+A user can hold many roles at the same time. The access of the user is the sum of all the roles that reach the record. A grant can also carry an expiry date, after which the grant ends.
+
+You cannot give a user a role that holds more permissions than you hold yourself at that boundary.
 
 ## Permissions
 
-Permissions are declared in code per resource area and assigned to standard roles by default. The slice below — the organization and user permissions — shows which roles hold each out of the box; custom roles can take any subset.
+The permissions below control the roles and permissions themselves.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| `can_create_organization` | Create a new organization under an accessible parent (checked by the organization create flow) | Admin |
-| `can_view_organization` | View organizations; gates which organizations appear in list and retrieve | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (role org), Manager (role org), Member (role org) |
-| `can_list_organization_users` | List the users attached to an organization | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (role org), Manager (role org) |
-| `can_manage_organization` | Update an organization (name, description, metadata) and delete it — the update, delete, and managing-organization actions all check this | Admin, Admin (role org) |
-| `can_manage_organization_users` | Add, remove, and assign roles to users in an organization | Admin, Administrator, Facility Admin, Admin (role org) |
-| `can_manage_connected_role_organizations` | Manage users in connected role organizations | Admin (role org), Manager (role org) |
-| `can_create_user` | Create a user in Care | Admin, Facility Admin, Administrator |
-| `can_create_service_account` | Create a service-account user | Admin, Facility Admin, Administrator |
-| `can_list_user` | List users in Care | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist |
+| Can Manage Users in an Organization | Add a user to an organization, change the role of a user, and remove a user. | Admin, Administrator, Facility Admin, Admin (responsibility) |
+| Can Manage Connected Role Organizations | Manage the users of the responsibility organizations that this organization manages. | Admin (responsibility), Manager (responsibility) |
+| Can List Users in an Organizations | See the users of an organization and the role of each user. | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (responsibility), Manager (responsibility) |
+
+Only a super user can create, change, or delete a role. Every signed-in user can read the list of roles and the list of permissions.
+
+:::note
+Care refuses a change to a system role, and it refuses a request to delete a system role.
+:::
 
 ## Related
 
+- Flow: [Create a role](../../flows/access-governance/create-a-role.mdx)
+- Flow: [Give a user a role in an organization](../../flows/access-governance/assign-a-role-to-a-user.mdx)
+- Concept: [Organization](../access-governance/organization.mdx)
+- Concept: [User](../access-governance/user.mdx)
+- Concept: [Facility organization](../access-governance/facility-organization.mdx)
 - Reference: [Role](../../references/access-governance/role.mdx)
 - Reference: [Permission](../../references/access-governance/permission.mdx)
 - Reference: [Permission association](../../references/access-governance/permission-association.mdx)
-- Concept: [Organization](../access-governance/organization.mdx)
-- Concept: [Facility](../facility/facility.mdx)
-- Concept: [Patient](../clinical/patient)

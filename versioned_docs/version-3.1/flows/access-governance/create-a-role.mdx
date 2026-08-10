@@ -1,0 +1,74 @@
+---
+sidebar_position: 1
+---
+
+# How to create a role
+
+## Overview
+
+This flow describes how to create a custom role in Care. A role is a named set of [permissions](../../concepts/access-governance/access-control.mdx) that you give to a user inside one boundary.
+
+## Pre-requisites
+
+- You are a super user. Care accepts a new role only from a super user.
+- You know which actions the role must allow.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Super user | Create a role, change a role, and delete a role. |
+
+Every signed-in user can see the list of roles. Only a super user can change the list.
+
+## Steps
+
+### 1. Open the roles page
+
+Go to **Administration**. Select **RBAC**, then select **Roles**. Care shows one card for each role. Each card shows the contexts of the role and the number of permissions.
+
+### 2. Start a new role
+
+Select **Add Role**. Care opens the **Add Role** panel.
+
+To start from a role that already exists, select the actions menu on that role. Select **Clone**. Care copies the name, the contexts, and the permissions of that role into the panel.
+
+### 3. Enter the details of the role
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the role. The name must be unique. |
+| Description | Free text that explains the purpose of the role. |
+| Contexts | The boundary types that the role applies in: **Facility**, **Government Organization**, or **Responsibility**. Select at least one. |
+
+### 4. Select the permissions
+
+Select each permission that the role must hold. To find a permission, enter part of its name in the search box. Select **Select All** to select every permission in the list. Select **Clear** to remove your selection.
+
+A role must hold at least one permission. Care shows the count of your selection above the list.
+
+### 5. Save the role
+
+Select the save action. Care shows the message "Role created successfully", then adds the role to the list.
+
+## Expected Outcome
+
+- The new role is in the roles list.
+- The role holds the permissions that you selected.
+- The role is available when you give a user a role in a matching boundary.
+
+:::note
+Care marks the roles that it supplies with the **System** badge. You cannot edit or delete a system role, but you can clone it.
+:::
+
+## Related
+
+Concepts:
+
+- [Roles and permissions](../../concepts/access-governance/access-control.mdx)
+- [Organization](../../concepts/access-governance/organization.mdx)
+
+Flows:
+
+- [Give a user a role in an organization](./assign-a-role-to-a-user.mdx)
