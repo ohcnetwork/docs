@@ -25,6 +25,10 @@ tools:
     target: "triggering"
 
 steps:
+  - name: Checkout docs repository
+    uses: actions/checkout@v7
+    with:
+      persist-credentials: false
   - name: Checkout care backend
     uses: actions/checkout@v7
     with:
