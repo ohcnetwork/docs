@@ -1,0 +1,84 @@
+---
+sidebar_position: 15
+---
+
+# Care team
+
+Technical reference for the encounter care team in Care EMR. See the [care team concept](../../concepts/clinical/care-team.mdx) for the plain-language view.
+
+**Source:**
+- Model: [`care/emr/models/encounter.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/encounter.py)
+- Specs: [`care/emr/resources/encounter/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/encounter/spec.py) · [`valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/encounter/valueset.py)
+- Viewset: [`care/emr/api/viewsets/encounter.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/encounter.py)
+
+The care team has no model of its own. It is stored on the `Encounter` model as an opaque `JSONField`, and the real shape lives in the Pydantic specs. The write path is a dedicated action on the encounter viewset, not the encounter create or update schema.
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `Encounter` | Owns the care team through the `care_team` and `care_team_users` fields |
+
+`Encounter` extends [`EMRBaseModel`](../foundation/base-model.mdx).
+
+## `Encounter` care team fields
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `care_team` | `JSONField` | Default `{}`. Stored as a list of `{ "user_id": int, "role": Coding }` entries. Excluded from `EncounterCreateSpec` and `EncounterUpdateSpec` |
+| `care_team_users` | `ArrayField[int]` | Denormalized cache of the internal user IDs in `care_team`. Platform-maintained |
+
+The stored `user_id` is the internal integer primary key of `User`. The API accepts and returns the `external_id` (UUID) instead.
+
+### Stored shape
+
+```text
+care_team: [
+  {
+    "user_id": int,             # internal User pk
+    "role": Coding { system, code, display }
+  }
+]
+```
+
+## Resource specs (API schema)
+
+| Spec | Role |
+| --- | --- |
+| `EncounterCareTeamMemberSpec` | write · one member: `user_id: UUID4`, `role: ValueSetBoundCoding[system-practitioner-role-code]` |
+| `EncounterCareTeamMemberWriteSpec` | write · the full replacement list: `members: list[EncounterCareTeamMemberSpec]` |
+| `EncounterListSpec` | read · list. Serializes `care_team` as `[{ "member": UserSpec, "role": Coding }]` |
+| `EncounterRetrieveSpec` | read · detail. Same `care_team` serialization as the list spec |
+
+On read, each member is expanded from the cached `UserSpec` for the stored `user_id`. The list order of `care_team` is preserved, so the first entry is the primary member.
+
+### `PRACTITIONER_ROLE_VALUESET`
+
+`role` is bound to the system value set with slug `system-practitioner-role-code`. It composes two SNOMED CT `is-a` filters:
+
+| Concept | Meaning |
+| --- | --- |
+| `223366009` | Healthcare professional |
+| `224930009` | Healthcare related organization |
+
+## API integration notes
+
+- Write endpoint: `POST /api/v1/encounter/{external_id}/set_care_team_members/`. The body is `EncounterCareTeamMemberWriteSpec`, and the response is `EncounterRetrieveSpec` in the schema.
+- The write is a **full replacement**. Send the complete member list on every call. To remove a member, send the list without that member. To change the primary member, send the list with that member first.
+- `set_care_team_members` calls `authorize_update`, which resolves to `can_update_encounter_obj`. That check returns `False` when the encounter status is in `COMPLETED_CHOICES`, so a closed encounter rejects the write.
+- Each member in the body is checked with `can_view_encounter_obj`. A member who cannot view the encounter causes a `PermissionDenied`.
+- A repeated `user_id` in the body causes a `ValidationError` with `{"user": "repeats are not allowed"}`.
+- Filtering: the encounter list supports `care_team_user=<username>`, which resolves the username to a user ID and matches it against `care_team_users`.
+
+## Methods & save behaviour
+
+- `Encounter.sync_care_team_users_cache()` rebuilds `care_team_users` from `care_team`. `Encounter.save()` calls it on every save, so the cache never drifts from the JSON field.
+- `sync_care_team_users_cache()` only rebuilds the cache when `care_team` is a list. The model default is a dict, so an encounter with no care team keeps an empty cache.
+- `set_care_team_members` saves with `update_fields=["care_team", "care_team_users", "updated_by", "modified_date"]`.
+
+## Related
+
+- Concept: [Care team](../../concepts/clinical/care-team.mdx)
+- Reference: [Encounter](../clinical/encounter.mdx)
+- Reference: [User](../access-governance/user.mdx)
+- Flow: [How to manage the care team of an encounter](../../flows/clinical/manage-encounter-care-team.mdx)

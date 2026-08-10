@@ -1,0 +1,52 @@
+---
+sidebar_position: 15
+---
+
+# Care team
+
+## Definition
+
+The **care team** of an [encounter](../clinical/encounter.mdx) is the list of users who look after the patient during that episode of care. Each member holds a practitioner role, such as a physician or a nurse. The first member in the list is the primary member, and Care shows that member on the encounter card and on printed documents. A care team belongs to one encounter, so a patient with two open encounters has two separate care teams.
+
+## Key Attributes
+
+| Components | What it captures |
+| --- | --- |
+| Member | The Care user who takes part in the episode of care. |
+| Role | The practitioner role of the member for this encounter, such as physician or nurse. |
+| Primary | The first member in the list. Care shows this member as the main contact for the encounter. |
+| Order | The position of each member in the list. The order sets which member is primary. |
+
+### Member
+
+You select a member in two steps. First you select a facility department. Then you select a user from that department. A user can appear only once in a care team. Care shows an error if you add the same user two times.
+
+### Role
+
+The role comes from the Practitioner Role value set. The value set holds the SNOMED CT healthcare professional and healthcare-related organization codes. You must select a role for each member.
+
+The care team has no status of its own. It follows the encounter: when the encounter is complete, you can no longer change the care team.
+
+## Permissions
+
+Care controls the care team through the encounter, not through a separate permission of its own.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| `can_read_encounter` | See the care team of an encounter. | Admin, Doctor, Nurse, Facility Admin |
+| `can_write_encounter` | Add a member, remove a member, or change the primary member. | Admin, Doctor, Nurse, Facility Admin |
+
+Two more rules apply to a change:
+
+- Care refuses the change when the encounter is in a completed state.
+- Care refuses a member who cannot see the encounter.
+
+Users get these roles through their organization and facility memberships. Permissions cascade down the organization tree, so a role at a parent organization applies to the facilities and encounters below it.
+
+## Related
+
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Patient](../clinical/patient)
+- Flow: [Manage the care team of an encounter](../../flows/clinical/manage-encounter-care-team.mdx)
+- Reference: [Care team](../../references/clinical/care-team.mdx)
+- Reference: [Encounter](../../references/clinical/encounter.mdx)
