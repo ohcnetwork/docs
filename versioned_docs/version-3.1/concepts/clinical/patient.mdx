@@ -4,16 +4,14 @@ sidebar_position: 1
 
 # Patient
 
-## Definition
-
 A **[patient](https://build.fhir.org/patient.html)** in Care is a person who receives care
 through your facility or program. The patient record holds the demographic and contact
 details of that person. Care ties every encounter, condition, note, appointment, and
 clinical record to a patient record.
 
-## Key Attributes
+## Key attributes
 
-| Components | What it captures |
+| Component | What it captures |
 | --- | --- |
 | Name | The full name of the person. Care stores the name as a single free-text entry. |
 | Gender | The gender of the person: Male, Female, Non-binary, or Transgender. |
@@ -29,21 +27,49 @@ clinical record to a patient record.
 | Patient Identifiers | The identifiers that your deployment configures, for example a national ID or a facility ID. |
 | Patient Tags | The labels that administrators attach to the patient record. |
 | Deceased Status | Whether the person is deceased, with the date and time of death. |
+| Volunteer Contact | The users that a facility assigns to the patient for field support. |
 
+You enter either a date of birth or an age, not both.
 
-Note: You enter either a date of birth or an age, not both.
+{/*
+### Blood group
 
-### Patient Identifiers
+Care offers these blood group values: A Positive, A Negative, B Positive, B Negative,
+AB Positive, AB Negative, O Positive, O Negative, and Unknown.
+
+### Patient identifiers
 
 Your deployment configures the identifier types that Care shows. A facility can define
 its own identifier types, or the instance can define identifier types for all facilities.
 Each identifier type is required or optional. An identifier type can also check the
 format of the value that you enter.
 
-## Status
+### Patient tags
 
-- **Active** — the record is used for encounters and orders
-- **Deceased** — administrative closure; clinical history remains auditable
+Administrators attach tags to a patient record. Tags are labels that help you group and
+find patient records.
+
+### Volunteer contact
+
+A facility assigns specific users, for example volunteers, to a patient. These users
+give field support to the patient. Care shows these users in the Volunteer Contact
+section of the patient profile.
+
+### Profile sections
+
+The patient profile holds these sections:
+
+- General Info
+- Additional Details
+- Identifiers
+- Patient Tags
+- Insurance Details
+- Social Profile
+- Volunteer Contact
+
+The profile also holds tabs for Encounters, Clinical History, Appointments, and
+Questionnaire Updates. Your permissions control which of these tabs you see.
+*/}
 
 ## Permissions
 
@@ -56,16 +82,30 @@ format of the value that you enter.
 | Can view questionnaire responses on patient | View the questionnaire responses of a patient. |
 | Can submit questionnaire about patients | Submit a questionnaire about a patient. |
 
+Only a system administrator can permanently delete a patient record. Regular staff
+roles cannot delete a patient record.
+
+## Configuration
+
+The fields that are mandatory at registration depend on your deployment's
+configuration. The number of geo-organization levels that you must select also depends
+on your deployment's configuration. Some deployments use a minimal registration form
+that asks only for the core fields.
+
 ## Related
 
-- Reference: [Patient (technical)](../../references/clinical/patient)
-- Flow: [Search for a patient](./flows/1.%20Search%20for%20a%20patient.md)
-- Flow: [Register a patient](./flows/2.%20Register%20a%20patient.md)
-- Flow: [View a patient's profile](./flows/3.%20View%20a%20patient's%20profile.md)
-- Flow: [Update patient details](./flows/4.%20Update%20patient%20details.md)
-- Flow: [Manage patient identifiers](./flows/5.%20Manage%20patient%20identifiers.md)
-- Flow: [Manage patient tags](./flows/6.%20Manage%20patient%20tags.md)
-- Flow: [Mark a patient as deceased](./flows/7.%20Mark%20a%20patient%20as%20deceased.md)
-- Flow: [Manage patient users](./flows/8.%20Manage%20patient%20users.md)
-- Flow: [View a patient's appointments and tokens](./flows/9.%20View%20a%20patient's%20appointments%20and%20tokens.md)
+- Flow: [Search for a patient](../../flows/clinical/search-patient.mdx)
+- Flow: [Register a patient](../../flows/clinical/register-patient.mdx)
+- Flow: [View a patient's profile](../../flows/clinical/view-patient-profile.mdx)
+- Flow: [Update patient details](../../flows/clinical/update-patient-details.mdx)
+- Flow: [Manage patient identifiers](../../flows/clinical/manage-patient-identifiers.mdx)
+- Flow: [Manage patient tags](../../flows/clinical/manage-patient-tags.mdx)
+- Flow: [Mark a patient as deceased](../../flows/clinical/mark-patient-deceased.mdx)
+- Flow: [Manage patient users](../../flows/clinical/manage-patient-users.mdx)
+- Flow: [View a patient's appointments and tokens](../../flows/clinical/view-patient-appointments.mdx)
+- Reference: [Patient](../../references/clinical/patient.mdx)
 - Playbook: [Outpatient registration](/deployments/hmis/playbooks/outpatient-registration) (HMIS)
+
+## FHIR reference
+
+Care exposes patients through FHIR R5 `Patient` resources. See your deployment's API base URL for `GET /Patient` and `POST /Patient` when integrating externally.

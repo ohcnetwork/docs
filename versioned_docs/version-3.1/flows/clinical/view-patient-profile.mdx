@@ -1,0 +1,77 @@
+---
+sidebar_position: 3
+---
+
+# View a patient's profile
+
+This flow walks through opening the profile of a **patient** in Care. The profile shows the patient's demographic, contact, and clinical information in tabs.
+
+:::info Prerequisite
+Read [Patient](../../concepts/clinical/patient) to understand what a patient record contains.
+:::
+
+## Before you start
+
+- The patient is registered in Care.
+- You find the patient through a search, or you open the patient from an Encounter, an Appointment, or another clinical record of that patient.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can view clinical data about patients | Open the patient's profile and the Clinical History tab. |
+| Can list patients | See the Encounters tab. A permission to list encounters also gives this access. |
+| Can view questionnaire responses on patient | See the Questionnaire Updates tab. |
+| Permission to view appointments | See the Appointments tab. |
+
+Some deployments relax the check for clinical data — your access to the profile can depend on your deployment's configuration.
+
+## Steps
+
+### 1. Open the patient
+
+Find the patient using [Search for a patient](./search-patient.mdx), then select the patient in the search results. Care opens the patient's profile.
+
+You can also open the profile from a patient's Encounter, Appointment, or other clinical record.
+
+### 2. Read the patient's information
+
+The profile shows the patient's information in tabs:
+
+| Tab | What it shows |
+| --- | --- |
+| General Info | The patient's core demographic and contact details. |
+| Additional Details | The address, geo-organization, blood group, deceased status, and similar information. |
+| Identifiers | The identifiers configured for the patient. |
+| Patient Tags | The labels attached to the patient record. |
+| Insurance Details | The patient's insurance information. |
+| Social Profile | The patient's social information. |
+| Volunteer Contact | The users assigned to support this patient in the field, for example volunteers. |
+
+### 3. Open the other tabs
+
+Care shows more tabs when you have the necessary permissions:
+
+| Tab | What it shows |
+| --- | --- |
+| Encounters | The patient's encounters. |
+| Clinical History | The patient's clinical history. |
+| Appointments | The patient's appointments. |
+| Questionnaire Updates | The questionnaire responses recorded for the patient. |
+
+Which of these tabs you see depends on your permissions.
+
+## Expected outcome
+
+- Care shows the patient's profile.
+- You read the patient's information in the tabs that your permissions allow.
+
+## Related
+
+- Concept: [Patient](../../concepts/clinical/patient)
+- Flow: [Search for a patient](./search-patient.mdx)
+- Flow: [Update patient details](./update-patient-details.mdx)
+- Flow: [Manage patient tags](./manage-patient-tags.mdx)
+- Flow: [Manage patient users](./manage-patient-users.mdx)
+- Flow: [View a patient's appointments and tokens](./view-patient-appointments.mdx)
