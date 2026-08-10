@@ -1,0 +1,87 @@
+---
+sidebar_position: 1
+---
+
+# How to create a report template
+
+## Overview
+
+This flow describes how to create a [report template](../../concepts/definitions/report-template.mdx) for a facility in Care. At the end, the facility has a template that users can generate reports from.
+
+## Pre-requisites
+
+- You are a member of the facility that the template belongs to.
+- You know which record supplies the data for the report, such as an encounter, a patient, or an account.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Read Template | Open the Templates page, and see the template list. |
+| Can Create Template on Facility | Create the template, and save it. |
+| Can View Template Schema | See the data fields that a context supplies. |
+| Can Preview Template | Preview the template before you publish it. |
+
+## Steps
+
+### 1. Open the Templates page
+
+Go to the facility. Select **Settings** in the facility menu. Select **Templates**.
+
+### 2. Start a new template
+
+Select **Create Template**. The template builder opens.
+
+### 3. Enter the template details
+
+Fill in the fields at the top of the builder.
+
+| Components | What it captures |
+| --- | --- |
+| Template Name | The name that users see in the template list. |
+| Slug | A short identifier for the template. Care fills this field from the name. |
+| Status | The stage of the template. Select **Draft** while you write it. |
+| Default Format | The output format of the report, **PDF** or **HTML**. |
+| Report Type | The kind of report, such as **Discharge Summary**. |
+
+Note: You cannot change the slug after you save the template.
+
+### 4. Select the context
+
+Select a context in **Select Context**. The context supplies the data for the report.
+
+The context must agree with the report type. A Discharge Summary report needs an encounter context.
+
+### 5. Add the layout
+
+Write the layout of the document in **Template HTML**.
+
+Care lists the available data fields below the context. Select a group to see the fields inside it. Select a field to add it at the cursor.
+
+### 6. Preview the template
+
+Select **Preview Template**. Care renders the layout with sample values, and shows the result.
+
+Select **Clear Preview** to go back to the editor. Correct the layout, and preview it again.
+
+### 7. Publish the template
+
+Set **Status** to **Active**. Select **Save Template**.
+
+## Expected Outcome
+
+- Care confirms that it saved the template.
+- The template appears in the template list of the facility.
+- Users can generate reports from the template.
+
+## Related
+
+Concepts:
+
+- [Report template](../../concepts/definitions/report-template.mdx)
+- [Encounter](../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [Generate a report from a template](./generate-a-report-from-a-template.mdx)

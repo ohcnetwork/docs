@@ -1,0 +1,176 @@
+---
+sidebar_position: 9
+---
+
+# Report template
+
+Technical reference for the `Template` model in Care EMR, and for the report generation pipeline that renders it. For the plain-language view, read the [report template concept](../../concepts/definitions/report-template.mdx).
+
+**Source:**
+
+- Model: [`report/template.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/report/template.py)
+- Resource spec: [`report/template/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/report/template/spec.py)
+- Viewset: [`report/template.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/report/template.py)
+- Report types: [`report_types.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/reports/report_types.py)
+- Renderer: [`renderer/renderer.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/reports/renderer/renderer.py), [`renderer/template_engine.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/reports/renderer/template_engine.py)
+
+The model stores the template as plain character fields plus an opaque `options` JSON field. The real constraints live in the Pydantic spec layer, which pins the status and format enums, and validates the compatibility of `template_type`, `context`, and `options`.
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `Template` | A facility-scoped or instance-wide report layout, with its report type, context, output format, and render options |
+| `ReportUpload` | One generated report file produced from a `Template`. Documented in [Report & Templates](../platform/report.mdx) |
+
+`Template` extends `SlugBaseModel`, the facility-scoped slug variant of [`EMRBaseModel`](../foundation/base-model.mdx). The base gives `external_id`, audit fields, `meta`/`history` JSON, and soft delete through `deleted`.
+
+## `Template` fields
+
+| Field | Type (model) | Spec constraint | Notes |
+| --- | --- | --- | --- |
+| `facility` | `FK → Facility (PROTECT, nullable)` | `UUID4 \| None` (write) | Null means instance-wide. Excluded from base serialization through `__exclude__`, resolved server-side on write |
+| `slug` | `CharField(255)` | written as `slug_value: SlugType`, read as `slug` plus `slug_config` | Stored with a prefix: `f-<facility_external_id>-<slug>` or `i-<slug>` |
+| `name` | `CharField(255)` | `str`, required | |
+| `status` | `CharField(255)` | `TemplateStatusOptions` | See the status values below |
+| `template_data` | `TextField` | `str`, required on write | The Jinja2 markup of the layout. Returned only by `TemplateRetrieveSpec` |
+| `template_type` | `CharField(255)` | `str`, validated against `ReportTypeRegistry` | See the report type values below |
+| `default_format` | `CharField(255)` | `TemplateFormatOptions` | Selects the generator that validates `options` |
+| `context` | `CharField(100)`, default `"encounter_base"` | `str`, validated against `DataPointRegistry` | See the context values below |
+| `description` | `TextField`, blank, default `""` | `str = ""` | |
+| `options` | `JSONField`, default `{}` | `dict = {}`, validated against the generator's `options_model` | Accepted keys depend on `default_format` |
+
+### `TemplateStatusOptions` values
+
+| Value | Meaning |
+| --- | --- |
+| `draft` | In preparation. Report generation rejects the template |
+| `active` | Published. Report generation accepts the template |
+| `retired` | Withdrawn. Report generation rejects the template |
+
+### `TemplateFormatOptions` values
+
+| Value | Generator | Options model |
+| --- | --- | --- |
+| `pdf` | `WeasyPrintGenerator` | `page_size` (`A4`, `A3`, `A5`, `Letter`, `Legal`), `margin`, `orientation` (`portrait`, `landscape`), `stylesheets` |
+| `html` | `HTMLGenerator` | `wrap_document`, `title`, `charset` |
+
+### Registered report types
+
+Report types are registered in `report_types.py`. Each one binds a display name, an associating model, and an authorizer class.
+
+| Key | Display name | Associating model | Authorizer |
+| --- | --- | --- | --- |
+| `discharge_summary` | Discharge Summary | `Encounter` | `DischargeSummaryReportAuthorizer` |
+| `patient_summary` | Patient Summary | `Patient` | `PatientReportAuthorizer` |
+| `account_report` | Account Report | `Account` | `AccountReportAuthorizer` |
+| `encounter_report` | Encounter Report | `Encounter` | `EncounterReportAuthorizer` |
+
+### Registered contexts
+
+Contexts are registered in `DataPointRegistry` by the data point modules under `care/emr/reports/context_builder/data_points/`.
+
+| Slug | Display name | Context key | Associating model |
+| --- | --- | --- | --- |
+| `encounter_base` | Encounter Report | `encounter` | `Encounter` |
+| `patient_base` | Patient Report | `patient` | `Patient` |
+| `account_base` | Account Report | `account` | `Account` |
+
+A template is valid only when `ReportTypeRegistry.get(template_type).associating_model` equals `DataPointRegistry.get(context).__associating_model__`.
+
+### `slug_config` shape (read)
+
+`TemplateReadSpec` parses the stored prefixed slug back into a dict:
+
+```text
+slug_config (facility-scoped) → { facility: <facility_external_id>, slug_value: <slug> }
+slug_config (instance-wide)   → { slug_value: <slug> }
+```
+
+## Resource specs (API schema)
+
+| Spec class | Role | Fields and behaviour |
+| --- | --- | --- |
+| `TemplateBaseSpec` | shared | `id`, `name`, `status`, `default_format`, `description`, `options`. `__exclude__ = ["facility"]` |
+| `TemplateCreateSpec` | write · create | Adds `facility`, `slug_value`, `template_data`, `template_type`, `context` |
+| `TemplateUpdateSpec` | write · update | Identical to `TemplateCreateSpec` |
+| `TemplateReadSpec` | read · list | Base fields plus `slug`, `slug_config`, `template_type`, `context`. No `template_data` |
+| `TemplateRetrieveSpec` | read · detail | Extends the read spec with `template_data` and a nested `facility` (`FacilityBareMinimumSpec`) |
+
+Write-side validation:
+
+- `template_type` must resolve in `ReportTypeRegistry`, else `Invalid report type`.
+- `context` must resolve in `DataPointRegistry`, else `Invalid Context type`.
+- `validate_report_type_and_context` compares the two associating models, and raises `Report Type and Context are not compatible` when they differ.
+- `options` is validated against `GeneratorRegistry.get(default_format).options_model`.
+- `perform_extra_deserialization` resolves the facility external ID, and sets `obj.slug` to the raw `slug_value`. The viewset prefixes the slug afterwards.
+- The viewset rejects a duplicate slug in the same scope with `Slug already exists.`
+
+## Viewset actions and authorization
+
+`TemplateViewSet` uses `slug` as the lookup field, and supports create, retrieve, update, and list. It filters on `name`, `template_type`, `status`, `facility`, and `facility_only`, and orders by `created_date`, `name`, or `template_type`.
+
+| Action | Authorization |
+| --- | --- |
+| `list` (with `facility`) | `can_list_facility_template` → `can_read_template` |
+| `list` (without `facility`) | Returns instance-wide templates only |
+| `retrieve` | `can_list_facility_template` for a facility template |
+| `create`, `update` | `can_write_facility_template` → `can_write_template`, checked at the facility root. A template with no facility needs a superuser |
+| `GET schema` | `can_view_template_schema` |
+| `POST preview` | `can_preview_template` |
+
+The permissions and their roles are defined in [`permissions/template.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/permissions/template.py).
+
+| Permission | Display name | Roles |
+| --- | --- | --- |
+| `can_read_template` | Can Read Template | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| `can_write_template` | Can Create Template on Facility | Facility Admin, Admin, Doctor, Nurse |
+| `can_preview_template` | Can Preview Template | Facility Admin, Admin |
+| `can_view_template_schema` | Can View Template Schema | Facility Admin, Admin |
+| `can_generate_report_from_template` | Can generate report from template | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+
+## Rendering pipeline
+
+`Renderer` combines a generator with `TemplateEngine`.
+
+- `TemplateEngine` uses a Jinja2 `SandboxedEnvironment` with `StrictUndefined` and autoescape. `trim_blocks` and `lstrip_blocks` are on.
+- Filters: `date`, `datetime`, `time`, `currency`, `phone`.
+- Globals: `current_date`, `current_datetime`, `current_time`.
+- The generator turns the rendered HTML into the output bytes. `WeasyPrintGenerator` produces the PDF; `HTMLGenerator` returns the HTML, and wraps it in a document when `wrap_document` is true.
+
+`GET /schema` returns the contexts, output formats, custom types, and report types the builder needs. Each context lists its fields with a display name, a type, and a preview value.
+
+`POST /preview` renders `template_data` against a preview context that carries sample values, and returns the rendered file. The preview does not read patient data.
+
+## Report generation
+
+`ReportUploadViewSet.generate` creates the report file. It runs these checks in order:
+
+1. Resolves the `Template` from `template_id`.
+2. Calls the report type's authorizer for write access on `associating_id`.
+3. Checks `can_generate_report_from_template` on the template's facility.
+4. Rejects the request when `template.status` is not `active`, with `Template is not active`.
+5. Returns HTTP 409 when a generation for the same report type and associating ID is already in progress. `force` clears the lock, and `status_check` returns the progress instead.
+
+Generation then runs in the `generate_report_task` Celery task, which reports progress and creates a `ReportUpload`.
+
+`care/security/permissions/template.py` also defines `can_generate_report_for_completed_encounter`, granted to Facility Admin and Admin. The encounter authorization module uses it to allow a report on a completed encounter.
+
+## API integration notes
+
+- `template_data` is Jinja2 markup, rendered in a sandbox. An undefined variable fails the render.
+- `template_data` is returned only on retrieve, not in the list response.
+- `slug` is immutable in the frontend builder after creation.
+- `options` is validated server-side against the format generator, so the accepted keys change with `default_format`.
+- A template with no facility is instance-wide, and only a superuser can write it.
+- A list request without a `facility` query parameter returns instance-wide templates only. With `facility_only=true`, the response holds facility templates only.
+
+## Related
+
+- Concept: [Report template](../../concepts/definitions/report-template.mdx)
+- Flow: [Create a report template](../../flows/definitions/create-a-report-template.mdx)
+- Reference: [Report & Templates](../platform/report.mdx)
+- Reference: [Encounter](../clinical/encounter.mdx)
+- Reference: [Facility](../facility/facility.mdx)
+- Reference: [Base model](../foundation/base-model.mdx)
+- Source: [template.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/report/template.py), [template/spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/report/template/spec.py)

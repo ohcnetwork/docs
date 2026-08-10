@@ -1,0 +1,65 @@
+---
+sidebar_position: 9
+---
+
+# Report template
+
+A **report template** is a reusable document layout that Care fills with real data to produce a report, such as a discharge summary or an account report. A facility authors the template once. Care then generates a report from it for each patient, encounter, or account.
+
+## Definition
+
+A report template holds the layout of a printable document and the rules that decide which data Care puts into it. The template stays separate from the reports it produces.
+
+A report template is specific to Care. It has no equivalent FHIR resource.
+
+The important distinction: a template is a layout, not a document. Care creates a separate report file each time a user generates a report. A change to the template does not change a report that Care generated before the change.
+
+A template belongs to one facility, or to the whole deployment. A facility template is visible only inside that facility. A deployment-wide template is visible in every facility.
+
+## Key Attributes
+
+| Components | What it captures |
+| --- | --- |
+| Template Name | The name that users see in the template list. |
+| Slug | A short, unique text identifier for the template inside the facility. |
+| Description | A short note about the purpose of the template. |
+| Status | The stage of the template. See the status table below. |
+| Report Type | The kind of report the template produces, such as Discharge Summary. |
+| Context | The record that supplies the data, such as an encounter or a patient. |
+| Default Format | The output format of the report, PDF or HTML. |
+| Template HTML | The layout of the document, with placeholders for the data fields. |
+
+### Report Type and Context
+
+The Report Type and the Context must agree with each other. Each report type applies to one kind of record, and the context must supply data for that same kind of record. For example, a Discharge Summary applies to an encounter, so it needs an encounter context. Care refuses a template that pairs a report type with an unrelated context.
+
+### Status
+
+| Status | Description |
+| --- | --- |
+| Draft | The template is in preparation. Users cannot generate reports from the template. |
+| Active | The template is published. Users can generate reports from the template. |
+| Retired | The template is withdrawn. Users cannot generate reports from the template. |
+
+## Permissions
+
+Care grants a permission through a role. A user gets a role in a facility organization, and the permission applies to the facilities under that organization.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Read Template | See the template list and open a template. | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Create Template on Facility | Create a template, and change a template. | Facility Admin, Admin, Doctor, Nurse |
+| Can Preview Template | See a preview of a template with sample data. | Facility Admin, Admin |
+| Can View Template Schema | See the list of data fields that a context supplies. | Facility Admin, Admin |
+| Can generate report from template | Generate a report from an Active template. | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+
+Only a superuser can create or change a deployment-wide template.
+
+A user who generates a report also needs read access to the record that supplies the data. For a discharge summary, the user needs access to the encounter.
+
+## Related
+
+- Flow: [Create a report template](../../flows/definitions/create-a-report-template.mdx)
+- Concept: [Questionnaire](../definitions/questionnaire.mdx)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Reference: [Report template](../../references/definitions/report-template.mdx)
