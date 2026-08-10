@@ -1,0 +1,82 @@
+---
+sidebar_position: 2
+---
+
+# How to record a symptom
+
+## Overview
+
+This flow describes how to record a symptom for a patient during an encounter. A symptom is one kind of [condition](../../concepts/clinical/condition.mdx) in Care.
+
+## Pre-requisites
+
+- The patient is registered in Care.
+- The patient has an encounter that is open. You cannot record a symptom in an encounter that is completed, cancelled, discontinued, or marked as entered in error.
+- You are a member of the facility that owns the encounter.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Update Encounter related clinical data | Lets you add, change, and remove symptoms in an encounter. |
+| Can view clinical data about patients | Lets you see the symptoms that the care team already recorded. |
+
+## Steps
+
+### 1. Open the encounter
+
+1. Open the facility.
+2. Find the patient, and open the encounter.
+
+### 2. Open the symptom form
+
+1. Select **Encounter Actions**.
+2. Select **Add Symptom**.
+
+You can press `s` instead, while you view the encounter. The `s` shortcut opens the same symptom form.
+
+### 3. Select the symptom
+
+1. Select **Add Symptom** in the form.
+2. Enter the name of the symptom in the search box.
+3. Select the symptom from the list of results.
+
+Care shows a warning if you select a symptom that the list already contains. Change the existing entry instead of adding a second one.
+
+### 4. Complete the details
+
+Set the details of the symptom. Care fills the values in the Default column for you.
+
+| Components | What it captures | Default |
+| --- | --- | --- |
+| Onset Date | The date the symptom started. You cannot select a date in the future. | Today |
+| Status | The course of the symptom, from Active to Resolved. | Active |
+| Severity | How severe the symptom is: Mild, Moderate, or Severe. | Moderate |
+| Verification | How certain you are about the symptom. | Confirmed |
+| Notes | Free text about the symptom. | Empty |
+
+Repeat step 3 and step 4 for each additional symptom.
+
+### 5. Save the symptoms
+
+- Select **Submit** to save the symptoms to the encounter.
+- Select **Save as Draft** to keep your entries and finish later.
+
+## Expected Outcome
+
+- The symptoms show in the **Symptoms** list on the **Overview** tab of the encounter.
+- The symptoms show under **Past Symptoms** in the clinical history of the patient.
+- Care records your name and the date against each symptom.
+
+## Related
+
+Concepts:
+
+- [Condition](../../concepts/clinical/condition.mdx)
+- [Encounter](../../concepts/clinical/encounter.mdx)
+- [Patient](../../concepts/clinical/patient)
+
+Flows:
+
+- [How to record a diagnosis](./record-a-diagnosis.mdx)

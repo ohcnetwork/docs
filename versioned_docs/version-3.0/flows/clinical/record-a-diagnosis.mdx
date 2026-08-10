@@ -1,0 +1,82 @@
+---
+sidebar_position: 3
+---
+
+# How to record a diagnosis
+
+## Overview
+
+This flow describes how to record a diagnosis for a patient during an encounter. A diagnosis is one kind of [condition](../../concepts/clinical/condition.mdx) in Care.
+
+## Pre-requisites
+
+- The patient is registered in Care.
+- The patient has an encounter that is open. You cannot record a diagnosis in an encounter that is completed, cancelled, discontinued, or marked as entered in error.
+- You are a member of the facility that owns the encounter.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Update Encounter related clinical data | Lets you add, change, and remove diagnoses in an encounter. |
+| Can view clinical data about patients | Lets you see the diagnoses that the care team already recorded. |
+
+## Steps
+
+### 1. Open the encounter
+
+1. Open the facility.
+2. Find the patient, and open the encounter.
+
+### 2. Open the diagnosis form
+
+1. Select **Encounter Actions**.
+2. Select **Add Diagnosis**.
+
+You can press `d` instead, while you view the encounter. The `d` shortcut opens the same diagnosis form.
+
+### 3. Select the diagnosis
+
+1. Select **Add Diagnosis** in the form.
+2. Enter the name of the diagnosis in the search box.
+3. Select the diagnosis from the list of results.
+
+Care shows a warning if you select a diagnosis that the list already contains. Change the existing entry instead of adding a second one.
+
+### 4. Complete the details
+
+Set the details of the diagnosis. Care fills the values in the Default column for you.
+
+| Components | What it captures | Default |
+| --- | --- | --- |
+| Onset Date | The date the diagnosis started. You cannot select a date in the future. | Today |
+| Status | The course of the diagnosis, from Active to Resolved. | Active |
+| Severity | How severe the diagnosis is: Mild, Moderate, or Severe. | Moderate |
+| Verification | How certain you are about the diagnosis. Select **Provisional** or **Differential** while you still examine the patient. | Confirmed |
+| Notes | Free text about the diagnosis. | Empty |
+
+Repeat step 3 and step 4 for each additional diagnosis.
+
+### 5. Save the diagnoses
+
+- Select **Submit** to save the diagnoses to the encounter.
+- Select **Save as Draft** to keep your entries and finish later.
+
+## Expected Outcome
+
+- The diagnoses show in the **Diagnoses** list on the **Overview** tab of the encounter.
+- The diagnoses show under **Past Diagnoses** in the clinical history of the patient.
+- Care records your name and the date against each diagnosis.
+
+## Related
+
+Concepts:
+
+- [Condition](../../concepts/clinical/condition.mdx)
+- [Encounter](../../concepts/clinical/encounter.mdx)
+- [Patient](../../concepts/clinical/patient)
+
+Flows:
+
+- [How to record a symptom](./record-a-symptom.mdx)
