@@ -139,13 +139,13 @@ const QuickLinks = [
   {
     title: translate({
       id: 'homepage.quicklinks.create.title',
-      message: 'Create a patient (flow)',
+      message: 'Register a patient (flow)',
     }),
     description: translate({
       id: 'homepage.quicklinks.create.description',
       message: 'Step-by-step registration in the product.',
     }),
-    to: '/flows/clinical/create-patient',
+    to: '/flows/clinical/patient/register-patient',
   },
 ];
 
