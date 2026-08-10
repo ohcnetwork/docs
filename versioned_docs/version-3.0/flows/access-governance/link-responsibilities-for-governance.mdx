@@ -1,0 +1,69 @@
+---
+sidebar_position: 3
+---
+
+# How to link responsibilities for governance
+
+## Overview
+
+This flow describes how to connect one [responsibility](../../concepts/access-governance/responsibility.mdx) to another, so that the members of the governing group can manage the members of the group below it.
+
+## Pre-requisites
+
+- Both responsibilities exist in Care.
+- You can manage both responsibilities. A superadmin, or an Admin of both groups, can make the link.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Manage Organizations | Add or remove a governance link. Care checks this permission on both responsibilities. |
+
+## Steps
+
+### 1. Open the responsibility
+
+Select **Organizations** in the administration menu. Then select **Responsibilities**. Select the responsibility that you want to change.
+
+### 2. Open the governance panel
+
+Find the **Governance** section of the details panel. Care shows two lists:
+
+| Components | What it captures |
+| --- | --- |
+| Managing Responsibilities | The responsibilities that govern this one. |
+| Managed Responsibilities | The responsibilities that this one can govern. |
+
+### 3. Add a managing responsibility
+
+Select a responsibility in **Add Managing Organization**. Then select **Add**. Care creates the link and shows the message "Managing organization added successfully".
+
+### 4. Add a managed responsibility
+
+Select a responsibility in **Add Managed Responsibility**. Then select **Add**. Care creates the link and shows the message "Managed responsibility added successfully".
+
+:::note
+A responsibility cannot manage itself. Care shows the message "A responsibility cannot manage itself".
+:::
+
+### 5. Remove a link
+
+Select the remove icon next to the responsibility in either list. Care removes the link.
+
+## Expected Outcome
+
+- The two responsibilities appear in each other's governance lists.
+- An Admin or a Manager of the governing responsibility can now list and manage the members of the governed responsibility.
+
+## Related
+
+Concepts:
+
+- [Responsibility](../../concepts/access-governance/responsibility.mdx)
+- [Organization](../../concepts/access-governance/organization.mdx)
+
+Flows:
+
+- [Create a responsibility](./create-a-responsibility.mdx)
+- [Assign a user to a responsibility](./assign-a-user-to-a-responsibility.mdx)

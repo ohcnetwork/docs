@@ -1,0 +1,103 @@
+---
+sidebar_position: 6
+---
+
+# Responsibility
+
+Technical reference for the **responsibility** — the `role` organization type of the `Organization` model in Care EMR. See the [Responsibility](../../concepts/access-governance/responsibility.mdx) concept for the plain-language layer, and the [Organization](../access-governance/organization.mdx) reference for the full model.
+
+**Source:**
+
+- [`care/emr/models/organization.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/organization.py)
+- [`care/emr/resources/organization/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/organization/spec.py)
+- [`care/emr/resources/organization/organization_user_spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/organization/organization_user_spec.py)
+- [`care/emr/api/viewsets/organization.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/organization.py)
+- [`care/security/authorization/organization.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/authorization/organization.py)
+- [`care/security/permissions/organization.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/permissions/organization.py)
+- [`care/security/roles/role.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/roles/role.py)
+
+A responsibility has no model of its own. It is an `Organization` row whose `org_type` is `role`, one of the four values of `OrganizationTypeChoices` (`team`, `govt`, `role`, `product_supplier`). The behaviour that makes it a responsibility comes from the viewset, the authorization handler, and the role contexts.
+
+## Distinguishing fields
+
+| Field | Type | Behaviour for `org_type = "role"` |
+| --- | --- | --- |
+| `org_type` | `CharField(255)` | Fixed to `role`. Writes bind to `OrganizationTypeChoices` |
+| `parent` | `FK(self), nullable` | Always null. `authorize_create` rejects any organization created under a `role` organization |
+| `has_children` | `BooleanField` | Always `False`. Responsibilities are flat |
+| `managing_organizations` | `ArrayField[int]` | Internal ids of the responsibilities that govern this one. Only `role` organizations may appear here |
+| `name` | `CharField(255)` | Unique among siblings, enforced by `Organization.validate_uniqueness` |
+| `description` | `TextField, nullable` | Free text. Defaults to `""` in the spec |
+
+`OrganizationRetrieveSpec` expands `managing_organizations` to nested `OrganizationReadSpec` JSON, and adds the caller's `permissions`.
+
+## Membership
+
+Membership is an `OrganizationUser` row: `organization` + `user` + `role`. For a responsibility, that `role` is the member's designation.
+
+```text
+OrganizationUser
+  organization -> Organization (org_type = "role")
+  user         -> users.User
+  role         -> security.RoleModel (contexts contains ROLE_ORG)
+```
+
+`OrganizationUser.save()` clears `User.cached_role_orgs` whenever the linked organization is of type `role`, so the user's cached responsibility list rebuilds on the next read. `User.get_cached_role_orgs()` repopulates it from `OrganizationUser.get_cached_role_orgs(user_id)`, which serializes each membership with `OrganizationUserExtendedReadSpec`. `UserSpec` and `UserRetrieveSpec` expose the result as `role_orgs`.
+
+`UserCreateSpec` accepts `role_orgs: list[UserRoleOrgCreateSpec]` (each `{ organization, role }`). `UserViewSet.perform_create` creates the memberships inside the same transaction, rejects any organization whose `org_type` is not `role`, and authorizes each pair through `can_manage_organization_users_obj`.
+
+## Designation roles
+
+`RoleModel.contexts` is an `ArrayField` of `RoleContext` values: `FACILITY`, `GOVT_ORG`, `ROLE_ORG`. Only roles carrying `ROLE_ORG` are selectable as designations. `RoleController.internal_roles` defines three:
+
+| Role constant | Name | Description |
+| --- | --- | --- |
+| `ROLE_ORGANIZATION_ADMIN_ROLE` | Admin | Administrator of a role organization |
+| `ROLE_ORGANIZATION_MANAGER_ROLE` | Manager | Manager of a role organization |
+| `ROLE_ORGANIZATION_MEMBER_ROLE` | Member | Member of a role organization |
+
+## Authorization
+
+The `OrganizationViewSet` treats responsibilities differently from other organization types:
+
+| Action | Behaviour |
+| --- | --- |
+| create | `authorize_create` raises `PermissionDenied` for `org_type` in `govt`, `role` unless the caller is a superuser |
+| update | `authorize_update` raises `PermissionDenied` for `org_type` in `govt`, `role` unless the caller is a superuser |
+| destroy | `authorize_destroy` raises `PermissionDenied` for `org_type` in `govt`, `role` unless the caller is a superuser, and for any organization that still has children |
+| retrieve | `get_queryset` returns the unfiltered queryset when the requested organization is of type `role` |
+| `managing_organization` | Both the target and the requested organization must be of type `role`. The caller needs `can_manage_organization_obj` on both |
+| `accessible_role_organizations` | See below |
+
+`OrganizationAccess.can_list_organization_users_obj` and `can_manage_organization_users_obj` widen the search set for a `role` organization from `[*parent_cache, id]` to `[id, *managing_organizations]`. `can_manage_organization_users_obj` therefore passes when the caller holds `can_manage_organization_users` on the responsibility itself, **or** `can_manage_connected_role_organizations` on one of its managing responsibilities. `check_role_subset` still applies: the requested designation must be a subset of the caller's own permissions.
+
+### Permission slugs
+
+| Permission | Roles |
+| --- | --- |
+| `can_view_organization` | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (responsibility), Manager (responsibility), Member (responsibility) |
+| `can_manage_organization` | Admin, Admin (responsibility) |
+| `can_list_organization_users` | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (responsibility), Manager (responsibility) |
+| `can_manage_organization_users` | Admin, Administrator, Facility Admin, Admin (responsibility) |
+| `can_manage_connected_role_organizations` | Admin (responsibility), Manager (responsibility) |
+
+### `accessible_role_organizations`
+
+`GET /api/v1/organization/accessible_role_organizations/` returns `{ count, results }`, where each result is `{ role, organization }`. The set is:
+
+- every `role` organization the caller is a member of, with `role` set to the caller's designation, and
+- every `role` organization governed by a responsibility where the caller holds `can_manage_connected_role_organizations`, with `role` set to `null` when the caller is not a member.
+
+Superusers receive every `role` organization.
+
+## API integration notes
+
+- Responsibilities use the standard organization endpoints under `/api/v1/organization/`, filtered with `org_type=role`.
+- Governance links are written through `POST /api/v1/organization/{id}/managing_organization/` with `{ organization, action }`, where `action` is `add` or `remove`. The body's `organization` is the managing responsibility, and `{id}` is the managed one.
+- Members are read and written through `/api/v1/organization/{id}/users/`.
+- `role_orgs` on the user read specs is a cached, denormalized list. Treat it as read-only.
+
+## Related
+
+- Concept: [Responsibility](../../concepts/access-governance/responsibility.mdx)
+- Reference: [Organization](../access-governance/organization.mdx) · [Role](../access-governance/role.mdx) · [User](../access-governance/user.mdx) · [Permission](../access-governance/permission.mdx)
