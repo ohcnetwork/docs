@@ -4,61 +4,42 @@ sidebar_position: 13
 
 # Clinical Notes
 
-A **clinical note** in Care is the care team's written commentary about a patient — the place where staff record narrative, hand-offs, and discussion in their own words rather than in structured fields. Notes are organized into threads, so a single topic stays together as a conversation instead of scattering across the record.
+A **[clinical note](https://build.fhir.org/communication.html)** in Care is written commentary about a patient. The care team uses notes for narrative, hand-offs, and discussion, in their own words. Care groups notes into discussion threads, so one topic stays together as a conversation. A note does not replace structured clinical data, such as a condition, an allergy, or an observation.
 
-## What it represents
+## Key Attributes
 
-In Care's FHIR-aligned model, clinical notes map to the **Communication** resource — running written exchanges about a patient. A note thread holds:
+| Components | What it captures |
+| --- | --- |
+| Discussion title | A short label for the topic of the discussion, for example "Treatment Plan" |
+| Patient | The patient that the discussion is about |
+| Encounter | The encounter that the discussion belongs to, when a user starts the discussion from the encounter |
+| Messages | The individual entries that care team members post in the discussion |
+| Participants | The people who posted a message in the discussion |
+| Edit history | The earlier text of each message, with the author and the time of the change |
 
-- **A subject** — every thread is anchored to one patient, and optionally narrowed to a single encounter
-- **A title** — a short label for what the thread is about
-- **Messages** — the entries posted into the thread over time by the care team
-- **A preserved history** — authorship, timestamps, and prior versions of every edited message
+### Discussions
 
-A note is not a substitute for structured clinical data. Diagnoses belong in [conditions](../clinical/condition.mdx), allergies in [allergy records](../clinical/allergy-intolerance.mdx), and measurements in [observations](../clinical/observation.mdx). Notes are the human layer that ties that data together — the reasoning, context, and discussion that coded fields can't hold.
+A discussion is one conversation about a topic. Care shows discussions in two places:
 
-## Threads and messages
+| Where you open notes | What you see |
+| --- | --- |
+| The **Notes** tab of a patient | Discussions that belong to the patient, and not to a single encounter |
+| The **Notes** tab of an encounter | Discussions that belong to that encounter |
 
-Notes live in a two-level structure: **threads** that hold **messages**.
+A patient discussion stays with the patient over time. An encounter discussion stays with one visit. Care suggests a set of discussion titles, such as "Treatment Plan", "Medication Notes", "Care Coordination", "General Notes", "Patient History", "Referral Notes", and "Lab Results Discussion". You can also enter your own title. Two discussions of the same patient cannot have the same title.
 
-- A **thread** is one conversation, anchored to a patient and optionally to one of that patient's encounters.
-- A **message** is a single entry inside a thread. Many people can add messages to the same thread over time.
+### Messages
 
-That anchoring gives a thread its scope:
+A message is one entry in a discussion. Many people can post messages in the same discussion. Care shows the author, the time, and the message text. Care formats the message text as rich text.
 
-| Scope | What it means | Typical use |
-| --- | --- | --- |
-| Patient-level | Attached to the patient, not to any one visit | Longitudinal commentary across encounters — care coordination, ongoing concerns |
-| Encounter-level | Attached to a specific [encounter](../clinical/encounter.mdx) | Discussion tied to one admission or visit — shift hand-offs, ward notes |
+### Edit history
 
-Because threads hang off the patient record, they follow the patient over time. Deleting a patient removes their threads; deleting a thread removes its messages.
-
-## Edit history
-
-A note is meant to be an auditable record, not just a scratchpad. When someone edits a message, the new text becomes the visible body — but the previous version is never thrown away:
-
-```text
-Posted → Edited → Edited again
-```
-
-Each edit appends the prior text, its author, and the time of the change to the message's history, oldest first. The platform maintains this trail server-side; clients cannot rewrite or erase what was already said. So a thread reliably shows not only what the team currently thinks, but what was written and when.
-
-## Permissions
-
-Notes have no permission file of their own. Access follows the [patient](../clinical/patient) and [encounter](../clinical/encounter.mdx) permissions, since every thread is anchored to a patient and may be scoped to an encounter.
-
-| Permission | Description | System Roles |
-| --- | --- | --- |
-| `can_write_patient` | Create or update a patient-scoped thread or message (used when the note is not tied to an encounter) | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
-| `can_write_encounter_clinical_data` | Create or update an encounter-scoped thread or message (the encounter must not be closed) | Admin, Doctor, Nurse, Facility Admin |
-| `can_view_clinical_data` | Read a patient's clinical record, including their note threads and messages | Staff, Doctor, Nurse, Admin, Facility Admin |
-| `can_read_encounter_clinical_data` | Read encounter-scoped threads and messages when patient-level clinical access is not granted | Admin, Doctor, Nurse, Facility Admin |
-
-Roles are granted through a person's organization, facility, or patient membership, then cascade down the organization tree — access granted at a parent organization flows to the facilities and patients beneath it.
+A note is an auditable record. If the author edits a message, Care keeps the earlier text. Care adds the earlier text, its author, and the time of the change to the history of the message. Only the author of a message can edit that message. Nobody can erase what the team wrote before.
 
 ## Related
 
-- Reference: [Notes (technical)](../../references/clinical/notes.mdx)
+- Flow: [Start a note discussion](../../flows/clinical/start-a-note-discussion.mdx)
+- Flow: [Add a note message](../../flows/clinical/add-a-note-message.mdx)
 - Concept: [Patient](../clinical/patient)
 - Concept: [Encounter](../clinical/encounter.mdx)
-- Concept: [Observation](../clinical/observation.mdx)
+- Reference: [Notes](../../references/clinical/notes.mdx)
