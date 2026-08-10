@@ -1,0 +1,82 @@
+---
+sidebar_position: 3
+---
+
+# How to close an encounter
+
+## Overview
+
+This flow describes how to close an [encounter](../../concepts/clinical/encounter.mdx) when the episode of care ends. A closed encounter accepts no new clinical records.
+
+## Pre-requisites
+
+- The encounter is open, and you record the completion for that encounter.
+- You recorded the clinical information of the episode, because a closed encounter accepts no new records.
+- If the encounter is an Inpatient encounter, you complete the discharge details first.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Update Encounter non clinical | Change the status of the encounter to Completed |
+
+Admin, Doctor, Nurse, and Facility Admin hold this permission. Your administrator grants a role to you through a department of the facility.
+
+## Steps
+
+### 1. Open the encounter
+
+Select **Patients** in the facility menu. Select the patient, then select the encounter.
+
+The overview page of the encounter opens.
+
+### 2. Select the close action
+
+Open the **Actions** panel on the overview page.
+
+For an Inpatient encounter that is not yet Discharged, the panel shows **Mark for discharge**. For every other encounter, the panel shows **Mark as Completed**.
+
+### 3. Record the discharge details
+
+Follow this step only for an Inpatient encounter that is not yet Discharged.
+
+Select **Mark for discharge**. Care opens the encounter questionnaire and sets the status to Discharged.
+
+| Components | What it captures |
+| --- | --- |
+| Discharge Disposition | Where the patient goes after the facility |
+| Discharge Summary Advice | The advice that the patient takes home |
+| Diet Preference | The diet of the patient during the admission |
+| Re-Admission | Whether this admission repeats an earlier one |
+
+Select **Submit**. Care records the end of the episode.
+
+Return to the **Actions** panel, then select **Mark as Completed**.
+
+### 4. Confirm the completion
+
+Care asks you to confirm. Select **Mark as Complete**.
+
+If the encounter comes from an appointment, Care warns that the action also closes the appointment and the token.
+
+## Expected Outcome
+
+- The status of the encounter changes to Completed, and Care records the end time.
+- Care confirms with the message "Encounter Completed".
+- The encounter accepts no new clinical records.
+- If the encounter comes from an appointment, Care closes the appointment and the token.
+- Staff with permission to update the encounter can reopen it with **Restart Encounter**, within the time limit that your deployment sets.
+
+## Related
+
+Concepts:
+
+- [Encounter](../../concepts/clinical/encounter.mdx)
+- [Patient](../../concepts/clinical/patient)
+
+Flows:
+
+- [Create an encounter](./create-an-encounter.mdx)
+- [Assign a location to an encounter](./assign-a-location-to-an-encounter.mdx)
+- [Manage the care team of an encounter](./manage-the-care-team-of-an-encounter.mdx)
