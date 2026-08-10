@@ -78,7 +78,12 @@ Where the command runs decides what you do. Work out which mode you are in befor
 anything else.
 
 **Authoring** — the command is on an issue. Parse the request below, write the docs,
-and open a pull request.
+and open a pull request. **Always use `create-pull-request` in this mode — never
+`push-to-pull-request-branch`.** If a PR for these docs already exists, use
+`create-pull-request` anyway; it will update the existing branch rather than opening a
+duplicate. Do not try to identify the existing PR's branch and push directly to it:
+`push-to-pull-request-branch` with `target: "triggering"` resolves to the issue, not
+to any PR, and will fail.
 
 **Revising** — the command is on a pull request. Someone wants a change to docs you
 already wrote. Do not parse the request grammar, and do not open a second pull
@@ -291,7 +296,10 @@ Every run must leave a visible trace, using the safe outputs:
 - **Wrote docs, build green** — open a pull request with `create-pull-request`, then
   comment with the link. The pull request body must state which files were added or
   changed and for which versions, the `code/care` / `code/care_fe` files the content was
-  traced to, and any detail you left out because you could not verify it.
+  traced to, and any detail you left out because you could not verify it. Use
+  `create-pull-request` even if a prior run already opened a PR; the system will update
+  the existing branch. Never use `push-to-pull-request-branch` when triggered from an
+  issue.
 - **Revised a pull request, build green** — push with `push-to-pull-request-branch`,
   then comment with what you changed, and with anything the feedback asked for that you
   did not change, and why.
