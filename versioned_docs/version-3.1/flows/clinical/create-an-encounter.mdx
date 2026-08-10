@@ -1,0 +1,78 @@
+---
+sidebar_position: 2
+---
+
+# Create an encounter
+
+This flow opens a new encounter for a registered patient — the step that starts a visit, admission, or consultation and gives clinical activity a place to be recorded.
+
+:::info Prerequisite
+Read [Encounter](../../concepts/clinical/encounter) to understand what an encounter represents and how its status works.
+:::
+
+## Before you start
+
+- You need a role with **encounter create** permission (typically Admin, Doctor, Nurse, or Facility Admin).
+- The patient must already be registered in Care. See [Create a patient](../../flows/clinical/create-patient).
+- Know which department the encounter belongs to. Care requires at least one department before you can save.
+
+## Steps
+
+### 1. Open the patient record
+
+Go to the patient's profile. From the patient's home page, select **Create Encounter**.
+
+You can also start an encounter from a scheduled appointment. Open the appointment and select **Create Encounter**.
+
+### 2. Set the date and time
+
+Choose the start date and time for the encounter. Care does not accept a future date unless the status is **Planned**.
+
+### 3. Choose the type of encounter
+
+Select one encounter type:
+
+| Type | Meaning |
+| --- | --- |
+| Inpatient | Admitted to a bed |
+| Ambulatory | Outpatient or clinic visit |
+| Emergency | Emergency department presentation |
+| Observation | Short-stay monitoring |
+| Virtual | Teleconsultation |
+| Home health | Care delivered at the patient's home |
+
+### 4. Set the status
+
+Choose **Planned**, **In Progress**, or **On Hold**. Select **In Progress** if the patient is already being seen.
+
+### 5. Set the priority
+
+Choose how urgent the encounter is, for example **Routine**, **Urgent**, or **Emergency**.
+
+### 6. Assign a department
+
+Select at least one department for the encounter. Care will not save the encounter without one.
+
+### 7. Add tags (optional)
+
+Apply any tags your facility uses to classify the encounter.
+
+### 8. Save the encounter
+
+Select **Create Encounter**.
+
+On success, Care opens the new encounter's **Updates** tab.
+
+## After creating an encounter
+
+| Next step | When |
+| --- | --- |
+| Record clinical data | The encounter is in progress and the patient is being seen |
+| Assign a location | The encounter is an inpatient admission and needs a bed |
+| [Close an encounter](../../flows/clinical/close-an-encounter) | Care for this episode has ended |
+
+## Related
+
+- Concept: [Encounter](../../concepts/clinical/encounter)
+- Reference: [Encounter (technical)](../../references/clinical/encounter.mdx)
+- Flow: [Create a patient](../../flows/clinical/create-patient)

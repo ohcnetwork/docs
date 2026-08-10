@@ -1,0 +1,55 @@
+---
+sidebar_position: 3
+---
+
+# Close an encounter
+
+This flow marks an active encounter as complete — the step that ends the episode of care and stops new clinical activity from being recorded against it.
+
+:::info Prerequisite
+Read [Encounter](../../concepts/clinical/encounter) to understand encounter status and which states are terminal.
+:::
+
+## Before you start
+
+- You need a role with **encounter update** permission (typically Admin, Doctor, Nurse, or Facility Admin) on the encounter.
+- An inpatient encounter must be discharged from its location before Care lets you mark it complete.
+- If the encounter came from a scheduled appointment, closing it can also close the linked appointment and token.
+
+## Steps
+
+### 1. Open the encounter
+
+Go to the patient's encounter. Select **Mark as Complete**.
+
+Use the keyboard shortcut `m` then `c` to open this dialog directly from the encounter.
+
+### 2. Confirm completion
+
+Care shows a confirmation dialog. If the encounter still needs a discharge summary, Care sends you to the discharge questionnaire instead of completing the encounter.
+
+If your facility links the encounter to an appointment or a token, select whether to close only the encounter or close the appointment and token together.
+
+### 3. Confirm the action
+
+Select **Mark as Complete**.
+
+On success, Care sets the encounter's status to **Completed** and records the change in the status history.
+
+## Reopening a completed encounter
+
+If you close an encounter by mistake, or care must resume, select **Restart Encounter** from the encounter's actions menu. Care only allows a restart within the time limit your deployment configures, and only for a completed encounter.
+
+## After closing an encounter
+
+| Next step | When |
+| --- | --- |
+| Start a new encounter | The patient returns for another episode of care |
+| Review the discharge summary | You need to confirm the final clinical record |
+| Restart the encounter | Care was closed in error and the time limit has not passed |
+
+## Related
+
+- Concept: [Encounter](../../concepts/clinical/encounter)
+- Reference: [Encounter (technical)](../../references/clinical/encounter.mdx)
+- Flow: [Create an encounter](../../flows/clinical/create-an-encounter.mdx)
