@@ -1,0 +1,79 @@
+---
+sidebar_position: 2
+---
+
+# Close an encounter
+
+This flow walks through closing an **encounter** in Care — marking the clinical episode complete and, for admissions, recording the discharge details first.
+
+:::info Prerequisite
+Read [Encounter](../../concepts/clinical/encounter) to understand encounter status and how it fits with the patient record.
+:::
+
+## Before you start
+
+- You need a role with **encounter write** permission (Admin, Doctor, Nurse, or Facility Admin).
+- An **inpatient, observation, or emergency** encounter must be discharged before it can be marked complete. Outpatient and virtual encounters can be marked complete directly.
+- If the encounter has a linked appointment or queue token, closing the encounter can close those too.
+
+## Steps
+
+### 1. Open the encounter and start closing it
+
+From the encounter's overview page, select **Mark as Completed** (the button reads **Mark for discharge** instead when discharge is required). You can also open the command menu and choose the same action, or use the `m c` shortcut.
+
+### 2. Complete discharge details, if required
+
+For an inpatient, observation, or emergency encounter that is not yet discharged, Care takes you to the encounter's discharge questionnaire instead of closing directly.
+
+| Field | Notes |
+| --- | --- |
+| Status | Set to Discharged |
+| Discharge disposition | Required for inpatient, observation, and emergency encounters |
+| Discharge date and time | Defaults to the current date and time |
+| Discharge summary advice | Optional free-text advice for the patient |
+
+Save the questionnaire. The encounter status changes to **Discharged**.
+
+### 3. Confirm marking the encounter complete
+
+Once the encounter is not in a required-discharge state, selecting **Mark as Completed** opens a confirmation dialog.
+
+If you started from an option that also closes the linked appointment and queue token, the dialog shows an additional warning that this action will close the appointment, token, and encounter together.
+
+### 4. Confirm
+
+Select **Mark as Complete**. On success:
+
+- The encounter status changes to **Completed** and its period end is set to the current date and time if it was not already set.
+- A linked appointment (if not already in a final state) is marked **Fulfilled**.
+- A linked queue token (if still active) is marked **Fulfilled**.
+
+## After closing
+
+| Next step | When |
+| --- | --- |
+| Review the discharge summary | Discharge details were recorded and need review or printing |
+| Start a new encounter | The patient returns for a new episode of care |
+
+## API equivalent
+
+```http
+PATCH /api/v1/encounter/{encounter_id}/
+Content-Type: application/json
+
+{
+  "status": "completed",
+  "period": {
+    "start": "2024-01-01T10:00:00Z",
+    "end": "2024-01-02T09:00:00Z"
+  }
+}
+```
+
+For an inpatient, observation, or emergency encounter, discharge it first with `"status": "discharged"` and a `hospitalization.discharge_disposition`, then send the completing update above.
+
+## Related
+
+- Concept: [Encounter](../../concepts/clinical/encounter)
+- Reference: [Encounter (technical)](../../references/clinical/encounter)

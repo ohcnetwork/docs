@@ -4,68 +4,48 @@ sidebar_position: 1
 
 # Patient
 
-## Definition
+A **patient** in Care is a person who receives care through your facility or program. It is the longitudinal anchor for clinical documentation — every encounter, observation, order, and care plan links back to a patient record.
 
-A **[patient](https://build.fhir.org/patient.html)** in Care is a person who receives care
-through your facility or program. The patient record holds the demographic and contact
-details of that person. Care ties every encounter, condition, note, appointment, and
-clinical record to a patient record.
+## What it represents
 
-## Key Attributes
+In Care's FHIR-aligned model, a patient maps to the **Patient** resource. It holds:
 
-| Components | What it captures |
+- **Identity** — name, date of birth, sex, photo, and government or facility identifiers
+- **Contact** — phone, address, and emergency contacts
+- **Administrative context** — registration status, facility association, and tags used by your deployment
+- **Clinical linkage** — references to encounters, conditions, allergies, and other resources in the record
+
+A patient is not the same as a single visit. One patient can have many encounters over time; the patient record is the container that makes that history coherent.
+
+## Identifiers
+
+Patients are located using one or more identifiers, depending on how your deployment is configured:
+
+| Identifier type | Typical use |
 | --- | --- |
-| Name | The full name of the person. Care stores the name as a single free-text entry. |
-| Gender | The gender of the person: Male, Female, Non-binary, or Transgender. |
-| Phone Number | The primary contact number of the person. |
-| Emergency Phone Number | The number to call in an emergency. |
-| Date of Birth | The date the person was born. |
-| Age | The age of the person in years. Care converts the age to a year of birth. |
-| Address | The current address of the person, as free text. |
-| Permanent Address | The permanent address of the person. You can mark it the same as the current address. |
-| PIN Code | The postal code of the address. |
-| Blood Group | The blood group of the person. Staff collect this value at registration. |
-| Geo Organization | The government administrative area that the person belongs to. |
-| Patient Identifiers | The identifiers that your deployment configures, for example a national ID or a facility ID. |
-| Patient Tags | The labels that administrators attach to the patient record. |
-| Deceased Status | Whether the person is deceased, with the date and time of death. |
+| Facility MRN | Primary key inside a hospital or clinic |
+| National health ID | ABDM, ABHA, or other national rails |
+| Program ID | Public health or campaign-specific registries |
 
+Identifiers must be unique within the scope your administrator defines. Duplicate detection during registration uses these fields.
 
-Note: You enter either a date of birth or an age, not both.
+## Lifecycle
 
-### Patient Identifiers
+```
+Register → Active → (optional) Inactive / Deceased
+```
 
-Your deployment configures the identifier types that Care shows. A facility can define
-its own identifier types, or the instance can define identifier types for all facilities.
-Each identifier type is required or optional. An identifier type can also check the
-format of the value that you enter.
-
-## Status
-
+- **Register** — a patient record is created with minimum demographics
 - **Active** — the record is used for encounters and orders
+- **Inactive** — retained for history but hidden from routine search (configurable)
 - **Deceased** — administrative closure; clinical history remains auditable
 
 ## Permissions
 
-| Permission | What it allows |
-| --- | --- |
-| Can Create Patient | Register a new patient. |
-| Can Update a Patient's data | Edit the details of an existing patient. |
-| Can list patients | See patients in search results and lists. |
-| Can view clinical data about patients | View the clinical information of a patient. |
-| Can view questionnaire responses on patient | View the questionnaire responses of a patient. |
-| Can submit questionnaire about patients | Submit a questionnaire about a patient. |
+Who can view or edit patient demographics is controlled by role-based access. Clinical staff typically can read full records; registration staff can create and update demographics; some fields may be restricted by facility or ward.
 
 ## Related
 
 - Reference: [Patient (technical)](../../references/clinical/patient)
-- Flow: [Search for a patient](./flows/1.%20Search%20for%20a%20patient.md)
-- Flow: [Register a patient](./flows/2.%20Register%20a%20patient.md)
-- Flow: [View a patient's profile](./flows/3.%20View%20a%20patient's%20profile.md)
-- Flow: [Update patient details](./flows/4.%20Update%20patient%20details.md)
-- Flow: [Manage patient identifiers](./flows/5.%20Manage%20patient%20identifiers.md)
-- Flow: [Manage patient tags](./flows/6.%20Manage%20patient%20tags.md)
-- Flow: [Mark a patient as deceased](./flows/7.%20Mark%20a%20patient%20as%20deceased.md)
-- Flow: [Manage patient users](./flows/8.%20Manage%20patient%20users.md)
-- Flow: [View a patient's appointments and tokens](./flows/9.%20View%20a%20patient's%20appointments%20and%20tokens.md)
+- Flow: [Create a patient](../../flows/clinical/create-patient)
 - Playbook: [Outpatient registration](/deployments/hmis/playbooks/outpatient-registration) (HMIS)
