@@ -145,7 +145,7 @@ const QuickLinks = [
       id: 'homepage.quicklinks.create.description',
       message: 'Step-by-step registration in the product.',
     }),
-    to: '/flows/clinical/register-patient',
+    to: '/flows/clinical/patient/register-patient',
   },
 ];
 
