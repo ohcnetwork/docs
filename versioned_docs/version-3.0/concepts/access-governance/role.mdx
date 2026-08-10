@@ -1,0 +1,82 @@
+---
+sidebar_position: 5
+---
+
+# Role
+
+A **role** is a named set of permissions. You grant a role to a user inside one boundary, such as a facility or an organization. The role decides what that user can do inside that boundary.
+
+## What it represents
+
+Care has no separate list of powers for each person. Every ability comes from a role that somebody grants at a place. A role holds three things:
+
+- **A name** — what the deployment calls this set of permissions, for example "Doctor" or "Pharmacist".
+- **A description** — free text that tells an administrator what the role is for.
+- **Contexts** — the kinds of boundary where the role applies.
+- **Permissions** — the actions that the role allows. A role needs a minimum of one permission.
+
+A role is not a job title. "Doctor", "Nurse" and "Pharmacist" are only permission sets with convenient names. Two roles with similar names have no relation to each other. Care also allows the same name in two different contexts: "Admin" exists as a facility role and as a separate responsibility role.
+
+:::note
+A role is different from a **responsibility** (a role organization). A role is a set of permissions. A responsibility is a group of users. See [Organization](../access-governance/organization.mdx).
+:::
+
+## Contexts
+
+The contexts of a role say where an administrator can grant it. A role with the Facility context only appears when somebody assigns a user inside a facility.
+
+| Context | Where the role applies |
+| --- | --- |
+| Facility | Inside a facility, and inside the departments of that facility |
+| Government Organization | Inside a government organization, such as a state or a district |
+| Responsibility | Inside a responsibility, which is a group of users |
+
+## System roles and custom roles
+
+Care marks the roles that it supplies with the **System** badge. A deployment can add custom roles beside them.
+
+| Type | Who creates it | What you can change |
+| --- | --- | --- |
+| System role | Care supplies it with the product | Nothing. You cannot edit or delete a system role. |
+| Custom role | A super administrator creates it | The name, the description, the contexts, and the permissions. |
+
+To start a custom role from a system role, clone the system role. Care copies the permissions into a new role and adds "(Copy)" to the name.
+
+These are the system roles:
+
+| Role | Purpose | Contexts |
+| --- | --- | --- |
+| Doctor | Doctor at some facility | Facility, Government Organization |
+| Nurse | Nurse at some facility | Facility, Government Organization |
+| Staff | Staff at some facility | Facility, Government Organization |
+| Volunteer | Volunteer at some facility | Facility, Government Organization |
+| Pharmacist | Pharmacist at some facility | Facility |
+| Administrator | Administrator at a given boundary | Facility, Government Organization |
+| Facility Admin | Administrator of a facility. Care gives this role to the person who creates the facility. | Facility |
+| Admin | Administrator of a facility or a government organization | Facility, Government Organization |
+| Admin | Administrator of a responsibility | Responsibility |
+| Manager | Manager of a responsibility | Responsibility |
+| Member | Member of a responsibility | Responsibility |
+
+## How a role reaches a user
+
+A role gives no access on its own. An administrator grants the role to a user inside one organization or one facility. The user then holds the permissions of that role in that boundary and in everything below it.
+
+```text
+User  →  Role  →  Boundary (facility, organization, or responsibility)
+```
+
+The same user can hold different roles in different boundaries. The access of a user on a record is the sum of every role that reaches that record. If you move a user to a new facility, the old access does not follow, because somebody granted it at the old boundary.
+
+## Permissions
+
+Every permission in a role is one action, such as "Can Create Patient". Care declares the permissions in the product, and an administrator selects them when the administrator builds a role. Care matches the permission to the kind of resource that the user acts on. For this reason, a permission for a patient does not also allow an action on a facility.
+
+## Related
+
+- Flow: [Create a role](../../flows/access-governance/create-a-role.mdx)
+- Flow: [Edit or clone a role](../../flows/access-governance/edit-a-role.mdx)
+- Concept: [Roles & permissions](../access-governance/access-control.mdx)
+- Concept: [Organization](../access-governance/organization.mdx)
+- Concept: [User](../access-governance/user.mdx)
+- Reference: [Role](../../references/access-governance/role.mdx)

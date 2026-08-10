@@ -1,0 +1,88 @@
+---
+sidebar_position: 1
+---
+
+# How to create a role
+
+## Overview
+
+This flow describes how to create a custom [role](../../concepts/access-governance/role.mdx) in Care. A role is a named set of permissions that an administrator grants to a user inside a facility or an organization.
+
+## Pre-requisites
+
+- You sign in to Care with a super administrator account.
+- You know the actions that the new role must allow.
+- You know the boundaries where somebody grants the role: a facility, a government organization, or a responsibility.
+
+## Permissions
+
+Care controls the roles page by account type, not by a named permission.
+
+| Permission | Access |
+| --- | --- |
+| Super administrator account | Create, edit, and delete custom roles. |
+| Any signed-in account | View the list of roles. |
+
+## Steps
+
+### 1. Open the roles page
+
+Select **Admin** in the sidebar. Select **RBAC**, then select **Roles**. Care shows the page **Roles** with the text "Manage Roles and Permissions".
+
+### 2. Start a new role
+
+Select **Add Role**. Care opens the panel **Add Role** with the text "Create a new custom role with specific permissions".
+
+### 3. Name the role
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the role. The name is mandatory, and it must be different from the name of every other role. |
+| Description | Free text that tells an administrator what the role is for. |
+
+### 4. Select the contexts
+
+Select a minimum of one context under **Contexts**. Care pre-selects **Facility** and **Government Organization**.
+
+| Context | Where somebody grants the role |
+| --- | --- |
+| Facility | Inside a facility |
+| Government Organization | Inside a government organization |
+| Responsibility | Inside a group of users |
+
+If you select no context, Care shows the message "Select at least one context".
+
+### 5. Select the permissions
+
+Care shows the permissions with a checkbox for each one. Select a minimum of one permission.
+
+- To find a permission, enter a part of its name in **Search permissions**.
+- To select every permission in the list, select **Select All**.
+- To remove your selection, select **Clear**.
+
+Care counts your selection above the list, for example "12 Selected".
+
+:::note
+If you select no permission, Care shows the message "At least one permission is required".
+:::
+
+### 6. Save the role
+
+Select **Create Role**. Care shows the message "Role created successfully" and closes the panel.
+
+## Expected Outcome
+
+- The new role is in the list on the **Roles** page.
+- The card of the role shows its contexts and the number of its permissions.
+- An administrator can now grant the role to a user inside a boundary that you selected.
+
+## Related
+
+Concepts:
+
+- [Role](../../concepts/access-governance/role.mdx)
+- [Roles & permissions](../../concepts/access-governance/access-control.mdx)
+
+Flows:
+
+- [Edit or clone a role](./edit-a-role.mdx)

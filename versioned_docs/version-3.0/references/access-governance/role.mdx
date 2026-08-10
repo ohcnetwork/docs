@@ -26,7 +26,7 @@ Both extend `BaseModel` (see [Base model](../foundation/base-model.mdx)), so the
 
 ## `RoleModel` fields
 
-User-created roles can be deleted by anyone holding the right permission. System roles (`is_system=True`) are exempt: the API blocks creating, updating, or deleting them.
+Only a superuser can create, update, or delete a role through the API. System roles (`is_system=True`) are exempt even then: the API blocks creating, updating, or deleting them.
 
 ### Identity & description
 
@@ -197,15 +197,38 @@ Both queries join through `RolePermission` and exclude `temp_deleted=True` grant
 
 `invalidate_role_permissions_cache`, a `@receiver([post_save, post_delete], sender=RolePermission)` handler, clears both cache keys for the affected `role_id` on every create, update, or delete of a `RolePermission`. ORM writes invalidate the cache automatically; raw SQL writes skip the signal and leave stale caches behind.
 
+## Viewset
+
+`RoleViewSet` (`care/security/api/viewsets/roles.py`) extends `EMRModelViewSet` with `database_model = RoleModel`, `pydantic_model = RoleCreateSpec`, and `pydantic_read_model = RoleReadSpec`.
+
+| Aspect | Behaviour |
+| --- | --- |
+| Authorization | `permissions_controller` returns `True` for `list` and `retrieve`; every write action requires `request.user.is_superuser`. No permission slug gates this viewset |
+| Filters | `RoleFilter` — `name` (`icontains`) and `context`, which matches with `contexts__overlap=[value]` |
+| Create | `perform_create` runs in a transaction, then materializes `instance.permissions` into `RolePermission` rows |
+| Update | `perform_update` deletes the existing `RolePermission` rows and recreates them from the payload, so `permissions` is a full replacement, never a patch |
+| Delete | `validate_destroy` raises `"Cannot delete system roles"` when `is_system=True`; `perform_destroy` also deletes the role's `RolePermission` rows |
+
+`_add_permissions` resolves the payload against `PermissionModel.slug`. `RoleCreateSpec.permissions` is typed against permission **names**, so a payload only takes effect where the permission `name` and `slug` agree.
+
+## Permission and role sync
+
+The `sync_permissions_roles` management command (`care/security/management/commands/sync_permissions_roles.py`) writes the code-declared permissions and system roles to the database. It runs under a Redis lock, marks existing rows `temp_deleted=True`, upserts every registered permission and role, deletes the rows that no handler still declares, then rebuilds the `RolePermission` rows for system roles from each permission's `roles` list. Run it after every deployment and plugin change.
+
 ## API integration notes
 
+- Only a superuser can create, update, or delete a role. Any authenticated caller can list and retrieve roles.
 - Both create and update go through `RoleCreateSpec`. `permissions` is required (≥ 1) and de-duplicated; you never set `is_system`, and `True` is rejected.
+- Update replaces the role's permission set. Send the full list on every update.
 - Reads use `RoleReadSpec` (full, with nested `PermissionSpec[]`) or `RoleReadMinimalSpec` (no permissions), depending on the endpoint.
 - To change a role's membership, write `RolePermission` rows rather than editing `RoleModel` directly. Use the ORM so the cache-invalidation signal fires; raw SQL leaves the Redis cache stale.
 - Other access-control models (organization memberships, patient/encounter associations) reference roles to resolve a user's effective permissions in a given context.
 
 ## Related
 
+- Concept: [Role](../../concepts/access-governance/role.mdx)
+- Flow: [Create a role](../../flows/access-governance/create-a-role.mdx)
+- Flow: [Edit or clone a role](../../flows/access-governance/edit-a-role.mdx)
 - Reference: [Permission](../access-governance/permission.mdx)
 - Reference: [Permission association](../access-governance/permission-association.mdx)
 - Reference: [User](../access-governance/user.mdx)

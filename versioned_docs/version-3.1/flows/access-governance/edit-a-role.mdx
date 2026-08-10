@@ -1,0 +1,78 @@
+---
+sidebar_position: 2
+---
+
+# How to edit or clone a role
+
+## Overview
+
+This flow describes how to change a custom [role](../../concepts/access-governance/role.mdx), and how to clone a role into a new one. Care supplies the system roles, and you cannot change them. Clone a system role to start a custom role from it.
+
+## Pre-requisites
+
+- You sign in to Care with a super administrator account.
+- The role is in the list on the **Roles** page.
+- If you want to change the role directly, the role is a custom role. Care shows a **System** badge and a lock icon on each system role.
+
+## Permissions
+
+Care controls the roles page by account type, not by a named permission.
+
+| Permission | Access |
+| --- | --- |
+| Super administrator account | Create, edit, and delete custom roles. |
+| Any signed-in account | View the list of roles. |
+
+## Steps
+
+### 1. Open the roles page
+
+Select **Admin** in the sidebar. Select **RBAC**, then select **Roles**.
+
+### 2. Find the role
+
+Enter a part of the name of the role in **Search Roles**. To show only the roles of one boundary, select **Facility**, **Government Organization**, or **Responsibility** above the list. To remove the filter, select **All**.
+
+If no role matches, Care shows "No roles found" with the text "Adjust role filters".
+
+### 3. Open the actions of the role
+
+Select the actions icon on the card of the role. Care shows **Edit** and **Clone**. Care shows **Edit** only for a custom role.
+
+### 4. Edit the role
+
+Select **Edit**. Care opens the panel **Edit Role** with the text "Update role name, contexts, and permissions".
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the role. The name must stay different from the name of every other role. |
+| Description | Free text that tells an administrator what the role is for. |
+| Contexts | The boundaries where somebody grants the role. Select a minimum of one context. |
+| Permissions | The actions that the role allows. Select a minimum of one permission. |
+
+Select **Update Role**. Care shows the message "Role updated successfully".
+
+:::note
+Care keeps **Update Role** inactive until you change a value in the panel.
+:::
+
+### 5. Clone the role
+
+Select **Clone**. Care opens the panel with the values of the source role and adds "(Copy)" to the name. Change the name, the contexts, and the permissions. Select **Create Role**. Care shows the message "Role created successfully".
+
+## Expected Outcome
+
+- The list on the **Roles** page shows your changes, or shows the new role from the clone.
+- Each user who holds the role gets the new set of permissions.
+- The system roles stay unchanged.
+
+## Related
+
+Concepts:
+
+- [Role](../../concepts/access-governance/role.mdx)
+- [Roles & permissions](../../concepts/access-governance/access-control.mdx)
+
+Flows:
+
+- [Create a role](./create-a-role.mdx)
