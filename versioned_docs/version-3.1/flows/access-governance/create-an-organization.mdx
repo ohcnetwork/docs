@@ -1,0 +1,81 @@
+---
+sidebar_position: 1
+---
+
+# How to create an organization
+
+## Overview
+
+This flow describes how to create an [organization](../../concepts/access-governance/organization.mdx) in Care. You create an organization to group people, and then you give those people access through that group.
+
+## Pre-requisites
+
+- You have an administrator account in Care.
+- The parent organization exists, because Care creates every new organization under a parent.
+- If you create a government organization, a responsibility, or a supplier organization, you are an instance administrator.
+- The tree below the parent is not at the maximum depth that your deployment sets.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can View Organizations | See the organization and the organizations below it. |
+| Can Create Organizations | Create an organization under a parent that you manage. |
+| Can Manage Organizations | Change or delete an organization after you create it. |
+
+## Steps
+
+### 1. Open the administration area
+
+Select **Admin** in the main navigation. Care opens the administration area.
+
+### 2. Select the organization type
+
+Open **Organizations** in the administration navigation, then select the type that you want:
+
+| Option | What it creates |
+| --- | --- |
+| Governance | A government organization, such as a state or a district. |
+| Responsibilities | A flat group of people who share a designation. |
+| Suppliers | A vendor organization. |
+
+### 3. Select the parent organization
+
+For **Governance**, select the organization that you want to create the new organization under. Care shows the organizations below it. Use the search box to find an organization by name.
+
+For **Responsibilities** and **Suppliers**, the list is flat, so there is no parent to select.
+
+### 4. Open the form
+
+Select **Add Organization**. Care opens the form panel.
+
+### 5. Complete the form
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the organization. This field is mandatory. Two organizations under the same parent cannot use the same name. |
+| Description | A short note about what the organization is used for. This field is optional. |
+
+Care sets the type from the page that you started on, so you do not select it.
+
+### 6. Save the organization
+
+Select **Create Organization**. Care creates the organization and shows it in the list.
+
+## Expected Outcome
+
+- The organization is in the list under the parent that you selected.
+- You can now add users to the organization, and give each user a role.
+- You can select **Edit** on the organization to change its name or its description.
+
+## Related
+
+Concepts:
+
+- [Organization](../../concepts/access-governance/organization.mdx)
+- [Roles and permissions](../../concepts/access-governance/access-control.mdx)
+
+Flows:
+
+- [Add a user to an organization](./add-a-user-to-an-organization.mdx)
