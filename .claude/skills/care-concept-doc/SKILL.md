@@ -76,3 +76,7 @@ A `_clinical_data` split, role lists, and slug names differ between Care version
 ## Conventions (shared with reference docs)
 
 Read `references/conventions.md` before writing for: domains & slugs, the link rule (`.mdx` everywhere except the translated `patient`/`create-patient`), MDX safety (no `{#…}` heading ids; wrap `{ }` in backticks), 3.0≡3.1 mirroring, and the `npm run build` (all locales) gate. Then return here.
+
+## Language
+
+Write every sentence in **ASD-STE100 Simplified Technical English** — read `references/ste.md`. In short: active voice, present tense, one instruction per sentence, ≤25 words in prose, one term for one thing (taken from `care_fe/public/locale/en.json`), and never a codebase literal where a user-facing label exists ("In Progress", never `in_progress`). A concept is read by clinicians and operators, so this applies to the whole page.

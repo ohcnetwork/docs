@@ -85,3 +85,9 @@ Read `references/conventions.md` for the full detail on:
 - **Build validation** — `npm run build` (all locales) is the authoritative gate.
 
 Always read that file before writing, then return here.
+
+## Language
+
+Write prose in **ASD-STE100 Simplified Technical English** — read `../care-concept-doc/references/ste.md`. Active voice, present tense, ≤25 words per sentence, one term for one thing, no marketing language and no hedging.
+
+This applies to the page intro, section intros, admonitions, and any explanatory paragraph. It does **not** apply to the field, enum, and spec tables: terse noun-phrase cells are correct there, and STE itself prefers a table to prose for structured data. Keep the type notation (`CharField(100), nullable`) exactly as the code has it.
