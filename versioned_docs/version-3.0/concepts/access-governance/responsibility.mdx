@@ -1,0 +1,51 @@
+---
+sidebar_position: 5
+---
+
+# Responsibility
+
+## Definition
+
+A **responsibility** in Care is a named group of staff, such as Doctors, Nurses, Technicians, or Volunteers. It records the designation that a user holds in that group, and it groups people for work that follows a designation instead of a place. A responsibility is one type of [organization](../access-governance/organization.mdx). It is flat: a responsibility has no child organizations.
+
+A responsibility answers "which group of staff is this person part of, and as what?". A governance organization answers "which place or administrative boundary does this person belong to?".
+
+## Key Attributes
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the responsibility, such as Doctors or Volunteers. |
+| Description | What the responsibility is used for. Optional. |
+| Managing Responsibilities | The responsibilities that govern this one. |
+| Managed Responsibilities | The responsibilities that this one can govern. |
+| Members | The users assigned to the responsibility, each with one designation. |
+
+### Designation
+
+Every member of a responsibility holds one **designation**. Care ships three designations for responsibilities:
+
+| Designation | What the member can do |
+| --- | --- |
+| Admin | Manage the responsibility, and manage its members. |
+| Manager | List members, and manage members of the responsibilities that this one governs. |
+| Member | View the responsibility. |
+
+A designation is a [role](../../references/access-governance/role.mdx) with the Responsibility context. Care keeps these designations separate from facility and government organization roles. A designation gives no clinical access on its own.
+
+### Governance links
+
+Responsibilities are flat, but they are not isolated. One responsibility can govern another. Care calls the two directions **Managing Responsibilities** and **Managed Responsibilities**.
+
+A governance link lets an Admin or a Manager of the governing responsibility manage the members of the responsibility below it. A responsibility cannot manage itself.
+
+:::note
+A responsibility is not a permission bundle. A designation names what a person is in the group. A role in a facility or a government organization decides what a person can do with patients and records. See [Roles and permissions](../access-governance/access-control.mdx).
+:::
+
+## Related
+
+- Flow: [Create a responsibility](../../flows/access-governance/create-a-responsibility.mdx)
+- Flow: [Assign a user to a responsibility](../../flows/access-governance/assign-a-user-to-a-responsibility.mdx)
+- Flow: [Link responsibilities for governance](../../flows/access-governance/link-responsibilities-for-governance.mdx)
+- Concept: [Organization](../access-governance/organization.mdx) · [Roles and permissions](../access-governance/access-control.mdx) · [User](../access-governance/user.mdx)
+- Reference: [Organization](../../references/access-governance/organization.mdx) · [Role](../../references/access-governance/role.mdx)

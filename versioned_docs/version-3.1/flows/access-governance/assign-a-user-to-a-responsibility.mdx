@@ -1,0 +1,75 @@
+---
+sidebar_position: 2
+---
+
+# How to assign a user to a responsibility
+
+## Overview
+
+This flow describes how to add a user to a [responsibility](../../concepts/access-governance/responsibility.mdx), and how to give that user a designation in the group.
+
+## Pre-requisites
+
+- The responsibility exists in Care.
+- The user has an account in Care. If the user has no account, create the account first.
+- You are an Admin of the responsibility, or an Admin or a Manager of a responsibility that governs it.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can List Users in an Organizations | See the members of the responsibility. |
+| Can Manage Users in an Organization | Add a member, change a designation, and remove a member. |
+| Can Manage Connected Role Organizations | Do the same for the responsibilities that your responsibility governs. |
+
+:::note
+You can grant only a designation that your own designation already covers. You cannot remove a member whose access is above your own.
+:::
+
+## Steps
+
+### 1. Open the responsibility
+
+Select the responsibility in the sidebar switcher. Care opens the responsibility and shows its members.
+
+You can also open the responsibility from the responsibility directory in the administration menu.
+
+### 2. Open the users list
+
+Select **Users**. Care lists the current members and the designation of each one.
+
+### 3. Link the user
+
+Select **Link User**. Care opens a panel titled **Link User to Organization**.
+
+| Components | What it captures |
+| --- | --- |
+| User | The account that you add. Search for the user by username. |
+| Role | The designation that the user holds in the group. Use **Select Role**. |
+
+Select **Link to Organization**. Care adds the member and shows the message "User added to organization successfully".
+
+### 4. Change a designation
+
+To change the designation of a member, select **Edit** on the member card. Select a different designation, then save the change. Care shows the message "User role updated successfully".
+
+Use the same panel to remove the member from the responsibility.
+
+## Expected Outcome
+
+- The user appears in the members list of the responsibility, with the designation that you selected.
+- The responsibility appears in the sidebar switcher of that user.
+
+## Related
+
+Concepts:
+
+- [Responsibility](../../concepts/access-governance/responsibility.mdx)
+- [User](../../concepts/access-governance/user.mdx)
+- [Roles and permissions](../../concepts/access-governance/access-control.mdx)
+
+Flows:
+
+- [Create a responsibility](./create-a-responsibility.mdx)
+- [Link responsibilities for governance](./link-responsibilities-for-governance.mdx)
