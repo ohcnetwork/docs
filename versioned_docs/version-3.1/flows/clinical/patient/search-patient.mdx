@@ -4,16 +4,20 @@ sidebar_position: 1
 
 # Search for a patient
 
-This flow walks through searching for an existing **patient** in Care. Search for the patient first, before you register a new patient — this prevents duplicate patient records.
+## Overview
 
-:::info Prerequisite
-Read [Patient](../../../concepts/clinical/patient) to understand what a patient record contains.
-:::
+This flow describes how to search for an existing [patient](../../../concepts/clinical/patient) in Care. Search for the patient first, before you register a new patient. This prevents duplicate patient records.
 
-## Before you start
+## Pre-requisites
 
 - You are a member of the facility where you search for the patient.
-- You have the **Can list patients** permission.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can list patients | Lets you search for patients and see the search results. |
 
 ## Steps
 
@@ -34,7 +38,7 @@ Search by one of these methods:
 | Identifier | The patient's phone number, or another identifier type that your deployment configures. |
 | Encounter details | The patient name, or another identifier that belongs to an encounter. |
 
-Which identifier types you can search on depends on your deployment's configuration.
+Note: Which identifier types you can search on depends on your deployment's configuration.
 
 ### 3. Read the results
 
@@ -49,29 +53,34 @@ The results show in a table with these columns:
 
 Care shows limited information for a partial match. This protects the patient's privacy.
 
-### 4. Verify a partial match
+### 4. Verify 
 
-If the result is a partial match, Care asks you to confirm the patient's identity with the message "Please enter the patient's year of birth to verify their identity."
+If date of birth validation is added to verify patient's identity. The page shows the message "Please enter the patient's year of birth to verify their identity."
 
 1. Enter the patient's year of birth.
-2. Confirm the match.
+2.Verify
 
-Care opens the full patient record.
+If no additiona verification is configured, the select the patient to access Patients Home page 
 
 ### 5. Continue when there is no result
 
 If Care finds no patient, the page shows a "no patient found" message. If you have the permission to register patients, the page offers an option to register a new patient. See [Register a patient](./register-patient.mdx).
 
-If you register a patient with a phone number that Care already holds, Care shows the message "Patient Records Found" — read this warning before you create a duplicate record.
+Note: If you register a patient with a phone number that Care already holds, Care shows the message "Patient Records Found" with the text "It appears that there are patient records that contain the same phone number as the one you just entered." Read this warning before you create a duplicate record.
 
-## Expected outcome
+## Expected Outcome
 
 - Care shows the patients that match your search.
 - You open the patient's record from the results. See [View a patient's profile](./view-patient-profile.mdx).
-- If Care finds no patient, you register a new patient.
+- If Care finds no patient, you can register a new patient.
 
 ## Related
 
-- Concept: [Patient](../../../concepts/clinical/patient)
-- Flow: [Register a patient](./register-patient.mdx)
-- Flow: [View a patient's profile](./view-patient-profile.mdx)
+Concepts:
+
+- [Patient](../../../concepts/clinical/patient)
+
+Flows:
+
+- [Register a patient](./register-patient.mdx)
+- [View a patient's profile](./view-patient-profile.mdx)

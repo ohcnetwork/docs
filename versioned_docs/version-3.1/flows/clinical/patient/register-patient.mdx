@@ -4,81 +4,74 @@ sidebar_position: 2
 
 # Register a patient
 
-This flow walks through registering a new **patient** in Care. Use it when a person comes to your facility and Care holds no record for that person.
+## Overview
 
-:::info Prerequisite
-Read [Patient](../../../concepts/clinical/patient) to understand what a patient record contains and how identifiers work.
-:::
+This flow describes how to register a new [patient](../../../concepts/clinical/patient) in Care. Use it when a person comes to your facility and Care holds no record for that person.
 
-## Before you start
+## Pre-requisites
 
 - You are signed in to Care.
 - You searched for the patient first, and Care found no existing record. See [Search for a patient](./search-patient.mdx).
 - You have the patient's personal details, contact number, and identity documents.
-- You have the **Can Create Patient** permission.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Patient | Lets you register a new patient in Care. |
 
 ## Steps
 
 ### 1. Open the registration form
 
-Open the Patient Registration page. You can also open the form from the search results — if the search finds no record, Care offers to register a new patient.
+Open the Patient Registration page.
+
+You can also open the form from the search results. If the search finds no record, Care offers to register a new patient.
 
 ### 2. Enter the personal details
 
-Complete these fields:
+Complete the fields in the table below.
 
 | Component | What it captures |
 | --- | --- |
-| Name | The full name of the patient. Required. |
-| Phone Number | The primary contact number of the patient. Required; Care validates the format. |
-| Emergency Phone Number | The contact number for emergencies. Optional. |
-| Same as phone number | Copies the phone number into the emergency number. On by default. |
-| Gender | The gender of the patient. Required. Select Male, Female, Non-binary, or Transgender. |
-| Date of birth or Age | The age details of the patient. Required. |
-| Select Blood Group | The blood group of the patient. Optional. |
-| Patient Tags | Labels that group the patient. Optional. |
-
-Use the toggle to choose between Date of birth and Age. If you enter the date of birth, do not enter a future date. If you enter the age, Care calculates the year of birth.
-
-For Select Blood Group, choose one of: A Positive, A Negative, B Positive, B Negative, AB Positive, AB Negative, O Positive, O Negative, or Unknown.
-
-Patient Tags are available only when you register a patient — you cannot set them when you edit a patient.
-
-### 3. Enter the address details
-
-Complete these fields:
-
-| Component | What it captures |
-| --- | --- |
+| Name | The full name of the patient. This field is required. |
+| Phone Number | The primary contact number of the patient. This field is required. Care validates the format. |
+| Emergency Phone Number | The contact number for emergencies. This field is optional. |
+| Same as phone number | Copies the phone number into the emergency number. Care turns this toggle on by default. |
+| Gender | The gender of the patient. This field is required. Select Male, Female, Non-binary, or Transgender. |
+| Date of birth or Age | The age details of the patient. This field is required. |
+| Select Blood Group | The blood group of the patient. This field is optional. |
+| Patient Tags | Labels that group the patient. This field is optional. |
 | Address | The current address of the patient. |
 | Permanent Address | The permanent address of the patient. |
-| Same as address | Copies the current address into the permanent address. On by default. |
-| PIN Code | The postal code of the address. Optional. |
-| Geo Organization | The government administrative area of the patient. Required. |
+| Same as address | Copies the current address into the permanent address. Care turns this toggle on by default. |
+| PIN Code | The postal code of the address. This field is optional. |
+| Geo Organization | The government administrative area of the patient. This field is required. |
 
-For Geo Organization, select each level in order — your deployment controls how many levels you must select.
+Use the toggle to choose between Date of birth and Age.
 
-Some deployments use a minimal registration form. In these deployments, Address and Permanent Address are optional.
+If you enter the date of birth, do not enter a future date.
+
+If you enter the age, Care calculates the year of birth.
+
+For Geo Organization, select each level in order.
+
+Note: Deployment can configure fields which are mandatory and non mandatory. Deceased status should be marked only for patients who are brought dead.
 
 ### 4. Enter the patient identifiers
 
-Enter the identifiers that your facility configures, for example a national identity number. Each identifier is required or optional, and some need a set format. Care generates some identifiers for you — you do not enter those values.
+Enter the identifiers that your facility configures, for example a national identity number.
+
+Identifiers that are configured as auto generated gets generated once patient registration is completed 
 
 For more details, see [Manage patient identifiers](./manage-patient-identifiers.mdx).
 
-### 5. Record a death
-
-Complete this step only when the patient is dead.
-
-Select the **Is Deceased** checkbox. Care then shows the date and time of death field. Enter the date and time of death — it must not be before the patient's date of birth, and not after today.
-
-### 6. Save the patient
+### 5. Save the patient
 
 Save the form.
 
-If another patient has the same phone number, Care shows the "Patient Records Found" warning. Check the listed records — if one of them is the same person, open that record instead. If the person is new, confirm the warning and continue.
-
-## Expected outcome
+## Expected Outcome
 
 - Care creates the patient record with the details you entered.
 - Care opens the profile of the new patient. See [View a patient's profile](./view-patient-profile.mdx).
@@ -86,7 +79,12 @@ If another patient has the same phone number, Care shows the "Patient Records Fo
 
 ## Related
 
-- Concept: [Patient](../../../concepts/clinical/patient)
-- Flow: [Search for a patient](./search-patient.mdx)
-- Flow: [View a patient's profile](./view-patient-profile.mdx)
-- Flow: [Manage patient identifiers](./manage-patient-identifiers.mdx)
+Concepts:
+
+- [Patient](../../../concepts/clinical/patient)
+
+Flows:
+
+- [Search for a patient](./search-patient.mdx)
+- [View a patient's profile](./view-patient-profile.mdx)
+- [Manage patient identifiers](./manage-patient-identifiers.mdx)

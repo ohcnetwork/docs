@@ -4,19 +4,21 @@ sidebar_position: 4
 
 # Update patient details
 
-This flow walks through updating the details of a **patient** in Care. You edit the details from the patient's profile.
+## Overview
 
-:::info Prerequisite
-Read [Patient](../../../concepts/clinical/patient) to understand what a patient record contains.
-:::
+This flow describes how to update the details of a [patient](../../../concepts/clinical/patient) in Care. You edit the details from the patient's profile.
 
-## Before you start
+## Pre-requisites
 
 - The patient is registered in Care.
 - You can open the patient's profile.
-- You have the **Can Update a Patient's data** permission.
+- You have the permissions listed below.
 
-To edit the "General Info" and "Additional Details" sections, you normally need this permission on that patient. Some deployments enable broader edit access, where a user with the permission updates any patient's record without a direct association with the patient. This depends on your deployment's configuration.
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Update a Patient's data | Lets you edit the details of a patient. |
 
 ## Steps
 
@@ -26,13 +28,13 @@ Open the profile of the patient that you want to update. See [View a patient's p
 
 ### 2. Select Edit
 
-Go to the "General Info" section or the "Additional Details" section. Select the Edit action on that section. Care opens the registration form with the current details of the patient.
+Go to the "General Info" section or the "Additional Details" section. Select the Edit action on that section. Care opens the registration form. The form shows the current details of the patient.
 
 ### 3. Update the details
 
 Change the details that you want to update. You can update these fields:
 
-| Component | What it captures |
+| Components | What it captures |
 | --- | --- |
 | Name | The name of the patient. |
 | Gender | The gender of the patient. |
@@ -46,17 +48,17 @@ Change the details that you want to update. You can update these fields:
 | Geo Organization | The administrative area of the patient. |
 | Is Deceased | The deceased status of the patient, with the date and time. |
 
-The form uses the same fields and validation rules as registration. For the details of each field, see [Register a patient](./register-patient.mdx).
+The form uses the same fields and the same validation rules as registration. For the details of each field, see [Register a patient](./register-patient.mdx).
 
 To record the death of a patient, see [Mark a patient as deceased](./mark-patient-deceased.mdx).
 
-If you leave the form with unsaved changes, Care shows a warning first.
+Note: If you leave the form with unsaved changes, Care shows a warning first.
 
 ### 4. Save the changes
 
-Save the form. Care shows a success message and returns you to the patient's profile.
+Save the form. Care shows a success message. Care returns you to the patient's profile.
 
-## Expected outcome
+## Expected Outcome
 
 - Care saves the new details of the patient.
 - Care shows a success message.
@@ -64,7 +66,12 @@ Save the form. Care shows a success message and returns you to the patient's pro
 
 ## Related
 
-- Concept: [Patient](../../../concepts/clinical/patient)
-- Flow: [Register a patient](./register-patient.mdx)
-- Flow: [View a patient's profile](./view-patient-profile.mdx)
-- Flow: [Mark a patient as deceased](./mark-patient-deceased.mdx)
+Concepts:
+
+- [Patient](../../../concepts/clinical/patient)
+
+Flows:
+
+- [Register a patient](./register-patient.mdx)
+- [View a patient's profile](./view-patient-profile.mdx)
+- [Mark a patient as deceased](./mark-patient-deceased.mdx)
