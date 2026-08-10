@@ -4,7 +4,9 @@ sidebar_position: 1
 
 # Organization
 
-Organizations are Care's FHIR-aligned grouping primitive: a nested tree that groups permissions and resources. A node might represent all doctors, a `Cardiology` sub-team, or a governance unit, and permissions attached to a parent flow implicitly to every descendant. You touch them whenever you model who can do what, and where.
+Technical reference for the `Organization` module in Care EMR. See the concept: [Organization](../../concepts/access-governance/organization.mdx).
+
+`Organization` is a nested tree that groups users and the permissions they hold. A node is a governance unit, a team, a responsibility group, or a supplier. A role granted on a node applies to every node below it.
 
 **Source:**
 [`care/emr/models/organization.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/organization.py) ·
@@ -206,9 +208,55 @@ After saving, if the linked organization's `org_type` is `role` (`OrganizationTy
 
 `OrganizationUser.get_cached_role_orgs(user_id)` is a classmethod that serializes all of a user's `role`-typed org memberships via `OrganizationUserExtendedReadSpec`.
 
+## Viewsets & authorization
+
+`care/emr/api/viewsets/organization.py` holds the API layer.
+
+| Viewset | Route scope | Notes |
+| --- | --- | --- |
+| `OrganizationPublicViewSet` | unauthenticated | `list` and `retrieve` only, through `OrganizationReadSpec` |
+| `OrganizationViewSet` | authenticated | Full CRUD, plus the `mine`, `accessible_role_organizations`, and `managing_organization` actions |
+| `OrganizationUsersViewSet` | nested under an organization | Membership CRUD through the `OrganizationUser` specs |
+
+`OrganizationViewSet` authorization, traced to `care/security/authorization/organization.py` and `care/security/permissions/organization.py`:
+
+| Action | Check | Permission |
+| --- | --- | --- |
+| `create` | `can_create_organization_obj` on the parent. Superusers bypass it. Root organizations, and the `govt` and `role` types, are superuser-only. A `role` organization cannot take children | Can Create Organizations |
+| `update` | `can_manage_organization_obj`. The `govt` and `role` types are superuser-only | Can Manage Organizations |
+| `destroy` | `can_manage_organization_obj`. Refused while `has_children` is `True`. The `govt` and `role` types are superuser-only | Can Manage Organizations |
+| `list` / `retrieve` | `get_accessible_organizations` filters the queryset. All `govt` and `product_supplier` organizations are visible to every user. OTP-authenticated users see only `govt`, and may call `list` only | Can View Organizations |
+| `managing_organization` | `can_manage_organization_obj` on both organizations. `role` organizations only | Can Manage Organizations |
+
+`OrganizationUsersViewSet`:
+
+| Action | Check | Permission |
+| --- | --- | --- |
+| `list` / `retrieve` | `can_list_organization_users_obj` | Can List Users in an Organizations |
+| `create` / `update` / `destroy` | `can_manage_organization_users_obj`, which also requires the assigned role's permission set to be a subset of the requesting user's own permissions in that organization | Can Manage Users in an Organization, or Can Manage Connected Role Organizations for a connected `role` organization |
+
+`validate_data` rejects a duplicate membership, and a membership in a parent or a child of the target organization.
+
+`OrganizationViewSet.validate_data` also enforces sibling-name uniqueness and the `ORGANIZATION_MAX_DEPTH` setting, which caps `level_cache`. `perform_destroy` soft-deletes the organization, deletes its `OrganizationUser` rows, and recomputes `has_children` on the parent.
+
+### Permissions
+
+| Permission | Slug | Default roles |
+| --- | --- | --- |
+| Can View Organizations | `can_view_organization` | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (role org), Manager (role org), Member (role org) |
+| Can Create Organizations | `can_create_organization` | Admin |
+| Can Delete Organizations | `can_delete_organization` | Admin |
+| Can Manage Organizations | `can_manage_organization` | Admin, Admin (role org) |
+| Can Manage Users in an Organization | `can_manage_organization_users` | Admin, Administrator, Facility Admin, Admin (role org) |
+| Can Manage Connected Role Organizations | `can_manage_connected_role_organizations` | Admin (role org), Manager (role org) |
+| Can List Users in an Organizations | `can_list_organization_users` | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (role org), Manager (role org) |
+| Is Geo Admin | `is_geo_admin` | none |
+
+`can_delete_organization` has an authorization handler, but `OrganizationViewSet.authorize_destroy` checks `can_manage_organization_obj` instead, so the delete permission gates nothing today.
+
 ## API integration notes
 
-- Organizations are exposed through Care's REST API and align with the FHIR `Organization` resource. Tree position (`level_cache`, `parent_cache`, `root_org`), `has_children`, and `cached_parent_json` are platform-maintained — don't set them from clients.
+- Organizations are exposed through Care's REST API. Tree position (`level_cache`, `parent_cache`, `root_org`), `has_children`, and `cached_parent_json` are platform-maintained — don't set them from clients.
 - **Write path:** `OrganizationWriteSpec` (create) / `OrganizationUpdateSpec` (update). `org_type` is constrained to `OrganizationTypeChoices`; `parent` is supplied as the parent's `external_id` (UUID) and validated to exist; `validate_uniqueness` enforces sibling-name uniqueness. `parent` is immutable after create (the update spec omits it).
 - **Read path:** `OrganizationReadSpec` (list) returns `parent` as nested JSON (`get_parent_json()`) plus `level_cache`/`system_generated`/`has_children`; `OrganizationRetrieveSpec` (detail) adds the caller's `permissions`, expanded `managing_organizations`, and audit users.
 - Membership is managed through `OrganizationUser` / `FacilityOrganizationUser` (specs above); `role` is required and bounded by the assigning user's own role in that org. Adding a member to a `role`-typed org invalidates that user's `cached_role_orgs`.
@@ -217,9 +265,12 @@ After saving, if the linked organization's `org_type` is `role` (`OrganizationTy
 
 ## Related
 
+- Concept: [Organization](../../concepts/access-governance/organization.mdx)
+- Flow: [Create an organization](../../flows/access-governance/create-an-organization.mdx)
 - Reference: [Facility](../facility/facility.mdx)
 - Reference: [Base models & conventions](../foundation/base-model.mdx)
 - Reference: [User](../access-governance/user.mdx) · [Role](../access-governance/role.mdx) · [Permission](../access-governance/permission.mdx)
 - Source — models: [organization.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/organization.py)
+- Source — API: [viewsets/organization.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/organization.py) · [security/authorization/organization.py](https://github.com/ohcnetwork/care/blob/develop/care/security/authorization/organization.py) · [security/permissions/organization.py](https://github.com/ohcnetwork/care/blob/develop/care/security/permissions/organization.py)
 - Source — specs: [organization/spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/organization/spec.py) · [organization/organization_user_spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/organization/organization_user_spec.py) · [resources/base.py (`EMRResource`)](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)
 - Source — related: [role/spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/role/spec.py) · [user/spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/user/spec.py) · [security/models/role.py](https://github.com/ohcnetwork/care/blob/develop/care/security/models/role.py) · [users/models.py](https://github.com/ohcnetwork/care/blob/develop/care/users/models.py)

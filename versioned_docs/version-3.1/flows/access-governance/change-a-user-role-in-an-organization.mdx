@@ -1,0 +1,66 @@
+---
+sidebar_position: 3
+---
+
+# How to change the role of a user in an organization
+
+## Overview
+
+This flow describes how to change the role of a member of an [organization](../../concepts/access-governance/organization.mdx), and how to remove that member. The role decides what the member can do in the organization and in every organization below it.
+
+## Pre-requisites
+
+- The user is already a member of the organization.
+- The new role is within your own role in that organization. You cannot give more access than you hold.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can View Organizations | Open the organization. |
+| Can List Users in an Organizations | See the members of the organization. |
+| Can Manage Users in an Organization | Change the role of a member, and remove a member. |
+
+## Steps
+
+### 1. Open the members list
+
+Open the organization, then select **Users**. Care shows the members of the organization.
+
+### 2. Open the member
+
+Find the member that you want to change. Select **Edit Role**. Care opens the **Edit User Role** panel and shows the **Current Role** of the member.
+
+### 3. Select the new role
+
+Select the role in **Select New Role**.
+
+| Components | What it captures |
+| --- | --- |
+| Current Role | The role that the member holds now. |
+| Select New Role | The role that the member holds after you save. |
+
+Select **Update Role**. Care saves the new role.
+
+### 4. Remove the member
+
+To take away the access of the member, select **Remove User** in the same panel. Care asks you to confirm the action in the **Remove User from Organization** dialog. Select **Remove**.
+
+## Expected Outcome
+
+- The member holds the new role, and the members list shows it.
+- The access of the member changes at once in this organization and in every organization below it.
+- If you removed the member, the user is no longer in the members list, and the account stays in Care.
+
+## Related
+
+Concepts:
+
+- [Organization](../../concepts/access-governance/organization.mdx)
+- [User](../../concepts/access-governance/user.mdx)
+- [Roles and permissions](../../concepts/access-governance/access-control.mdx)
+
+Flows:
+
+- [Add a user to an organization](./add-a-user-to-an-organization.mdx)

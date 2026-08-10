@@ -1,0 +1,76 @@
+---
+sidebar_position: 2
+---
+
+# How to add a user to an organization
+
+## Overview
+
+This flow describes how to add a [user](../../concepts/access-governance/user.mdx) to an [organization](../../concepts/access-governance/organization.mdx) and give that user a role. The role decides what the user can do in that organization and in every organization below it.
+
+## Pre-requisites
+
+- The organization exists in Care.
+- If you link an account that already exists, the user has an account in Care.
+- The user is not already a member of this organization, of a parent of it, or of an organization below it.
+- The role that you give is within your own role in that organization. You cannot give more access than you hold.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can View Organizations | Open the organization. |
+| Can List Users in an Organizations | See the members of the organization. |
+| Can Manage Users in an Organization | Add a member, change a role, and remove a member. |
+
+## Steps
+
+### 1. Open the organization
+
+Select the organization that you want to change. Care opens the organization.
+
+### 2. Open the users tab
+
+Select **Users**. Care shows the members of the organization. Use the search box to find a member by name, by username, or by phone number.
+
+### 3. Select how you add the user
+
+| Option | When to use it |
+| --- | --- |
+| Link User | The user already has an account in Care. |
+| Add User | The user has no account, so you create the account first. |
+
+### 4. Link a user that already has an account
+
+Select **Link User**. Search for the user by username. Select the user in the results.
+
+| Components | What it captures |
+| --- | --- |
+| User | The account that you add to the organization. |
+| Role | The role that the user holds in this organization. |
+
+Select **Link User to Organization**. Care adds the user to the organization.
+
+### 5. Add a user that has no account
+
+Select **Add User**. Complete the user form, then save it. Care creates the account and opens the **Link User** panel with the new user selected. Select the role, then select **Link User to Organization**.
+
+## Expected Outcome
+
+- The user is in the members list of the organization, with the role that you selected.
+- The user has the access of that role in this organization and in every organization below it.
+- You can select **Edit Role** on the member to change the role later.
+
+## Related
+
+Concepts:
+
+- [Organization](../../concepts/access-governance/organization.mdx)
+- [User](../../concepts/access-governance/user.mdx)
+- [Roles and permissions](../../concepts/access-governance/access-control.mdx)
+
+Flows:
+
+- [Create an organization](./create-an-organization.mdx)
+- [Change the role of a user in an organization](./change-a-user-role-in-an-organization.mdx)
