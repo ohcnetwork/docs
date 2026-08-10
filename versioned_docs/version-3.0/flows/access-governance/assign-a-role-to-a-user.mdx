@@ -1,0 +1,74 @@
+---
+sidebar_position: 2
+---
+
+# How to give a user a role in an organization
+
+## Overview
+
+This flow describes how to link a [user](../../concepts/access-governance/user.mdx) to an [organization](../../concepts/access-governance/organization.mdx) with a role, and how to change or remove that role later. The role decides what the user can do in that organization and in everything below it.
+
+## Pre-requisites
+
+- The user has an account in Care.
+- The user is not already linked to this organization, to a parent organization, or to a child organization. Care allows one link for each user in one branch of the tree.
+- You hold every permission that the role holds. Care refuses a role that is above your own access at that boundary.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can List Users in an Organizations | See the users of the organization and the role of each user. |
+| Can Manage Users in an Organization | Link a user, change the role of a user, and remove a user. |
+| Can Manage Connected Role Organizations | Manage the users of the responsibility organizations that this organization manages. |
+
+## Steps
+
+### 1. Open the organization
+
+Go to the organization, then select the **Users** tab. Care shows one card for each user, with the role of that user.
+
+### 2. Link the user
+
+Select **Link User**. Care opens the **Link User to Organization** panel.
+
+Search for the user by name. Select the user. Care shows the username, the user type, and the phone number of that user.
+
+### 3. Select the role
+
+| Components | What it captures |
+| --- | --- |
+| Role | The role that the user holds in this organization. Use **Select Role**. |
+
+Care shows only the roles that match the type of the organization. A responsibility organization offers the responsibility roles. A government organization offers the government roles.
+
+Select **Link to Organization**. Care shows the message "User added to organization successfully".
+
+### 4. Change the role of a user
+
+Select the user card, then select **Edit User Role**. Care shows the current role. Select a new role in **Select New Role**, then select **Update Role**. Care shows the message "User role updated successfully".
+
+You must select a role that is different from the current role.
+
+### 5. Remove the user
+
+Select **Remove User** in the same panel, then confirm the action. Care shows the message "User removed from organization successfully".
+
+## Expected Outcome
+
+- The user is in the users list of the organization, with the role that you selected.
+- The user can do the actions of that role in the organization and in every organization below it.
+- After you remove the user, the access from that role ends.
+
+## Related
+
+Concepts:
+
+- [Roles and permissions](../../concepts/access-governance/access-control.mdx)
+- [Organization](../../concepts/access-governance/organization.mdx)
+- [User](../../concepts/access-governance/user.mdx)
+
+Flows:
+
+- [Create a role](./create-a-role.mdx)
