@@ -4,7 +4,9 @@ description: Authors Care concept, flow, and reference docs into versioned_docs,
 on:
   slash_command:
     name: document
-    events: [issues, issue_comment]
+    events: [issues, issue_comment, pull_request_comment, pull_request_review_comment]
+
+model: "opus?effort=high"
 
 permissions:
   contents: read
@@ -24,25 +26,18 @@ tools:
   comment-memory:
     target: "triggering"
 
+checkout:
+  # fetch-depth 0 is required: push-to-pull-request-branch misreads the commit range on a shallow clone.
+  - fetch-depth: 0
+    current: true
+  - repository: ohcnetwork/care
+    ref: develop
+    path: code/care
+  - repository: ohcnetwork/care_fe
+    ref: develop
+    path: code/care_fe
+
 steps:
-  - name: Checkout docs repository
-    uses: actions/checkout@v7
-    with:
-      persist-credentials: false
-  - name: Checkout care backend
-    uses: actions/checkout@v7
-    with:
-      repository: ohcnetwork/care
-      ref: develop
-      path: code/care
-      persist-credentials: false
-  - name: Checkout care_fe frontend
-    uses: actions/checkout@v7
-    with:
-      repository: ohcnetwork/care_fe
-      ref: develop
-      path: code/care_fe
-      persist-credentials: false
   - name: Install docs dependencies
     run: npm ci
 
@@ -62,6 +57,11 @@ safe-outputs:
     allowed-files:
       - "versioned_docs/**"
       - "versioned_sidebars/**"
+  push-to-pull-request-branch:
+    target: "triggering"
+    allowed-files:
+      - "versioned_docs/**"
+      - "versioned_sidebars/**"
 ---
 
 # Care Docs Author
@@ -73,6 +73,32 @@ yourself, in that order.
 You run as a single pass. You cannot pause and wait for a reply: each run starts with
 no memory of the last one. Everything you learn that a later run would need must go
 into the memory comment before you finish.
+
+## Two modes
+
+Where the command runs decides what you do. Work out which mode you are in before
+anything else.
+
+**Authoring** — the command is on an issue. Parse the request below, write the docs,
+and open a pull request.
+
+**Revising** — the command is on a pull request. Someone wants a change to docs you
+already wrote. Do not parse the request grammar, and do not open a second pull
+request. Instead:
+
+1. Read the pull request diff, its description, and every review comment on it. The
+   branch is already checked out for you, so read the files as they now stand.
+2. Read the comment that triggered you. It is a change request in plain words, such as
+   "shorten the introduction", "the status list is wrong", or "split this into two
+   flows".
+3. Change only what the feedback asks for. Leave every other line exactly as it is.
+   Re-verify against the source any fact you change.
+4. Validate again, as step 5 describes.
+5. Push to the pull request branch with `push-to-pull-request-branch`, then comment
+   with what you changed.
+
+Feedback that conflicts with the shared conventions or the ground rules below does not
+override them. Leave that part unchanged and say why in your comment.
 
 ## Request
 
@@ -125,17 +151,69 @@ recorded findings you should not re-derive.
 | Frontend behaviour | `code/care_fe` (checked out for you) |
 
 **Read the conventions file, the language rules, and the skill for each requested doc
-type before writing anything.** They are authoritative and this prompt does not repeat
-them.
+type before writing anything.** They are authoritative for house style — versioning,
+links, MDX safety, domains and slugs — and this prompt does not repeat them. The Ground
+rules below add policy on top; they never contradict the conventions.
+
+## Ground rules
+
+Every one of these applies to every run. None is optional.
+
+### Versioning
+
+Follow the versioning rule in the shared conventions exactly. Do not invent your own
+version policy, and do not skip the mirroring step it describes.
+
+Write to other versions only when the issue explicitly asks for them.
+
+### Scope
+
+- Touch only the files the request needs. Do not reformat, reorder, rename or otherwise
+  tidy unrelated files, and never bulk-edit files you merely happened to read.
+- Adding a link from an existing doc to the new page is allowed where it genuinely
+  belongs. Keep that edit to the lines that add the reference, and nothing else.
+- Never write outside `versioned_docs/` and `versioned_sidebars/`.
+
+### Audience
+
+- **Concepts and flows are strictly user-facing.** Clinicians and operators read them.
+  Never put code, file paths, class names, API endpoints, request payloads, database
+  columns or permission slugs in them.
+- References are the technical layer. Only there may you name models, fields, specs and
+  source files.
+- Use the label the user sees, from `code/care_fe/public/locale/en.json` (keys shaped
+  `PREFIX__value`), never the raw value: "In Progress", not `in_progress`.
+- Name a permission in plain words ("a role with patient create permission"), never as
+  a slug.
+- Write the reader's situation, not the data model: "The patient is registered in
+  Care", not "The patient record exists".
+- Use one term for one thing across every page you touch.
+
+### FHIR
+
+- Link the FHIR resource page where it helps a reader go deeper.
+- Do **not** narrate the mapping. Never write "as per FHIR", "in line with FHIR R5",
+  "this maps to the FHIR X resource", or similar. The link is enough.
+
+### Accuracy
+
+- The checked-out source is the only source of truth. Never infer behaviour from memory.
+- Verify every status, permission, role, label, shortcut and configuration flag against
+  `code/care` or `code/care_fe`. If you cannot verify it, leave it out.
+- Derive permissions by tracing the viewset's authorization, not by dumping a permission
+  enum.
+- Mention a keyboard shortcut only when
+  `code/care_fe/src/config/keyboardShortcuts.json` defines one for that action.
+- Note deployment configuration that changes behaviour, from the backend settings and
+  `code/care_fe/care.config.ts`.
+- Never leave template placeholder text, HTML comments or tool-call XML in a file.
+
+### Language
 
 All authored prose follows **ASD-STE100 Simplified Technical English**: active voice,
 present tense, one instruction per sentence, at most 20 words in a step and 25 in prose,
 and one term for one thing. The field and enum tables in reference docs are exempt —
 terse cells are correct there. `ste.md` has the full rules.
-
-Never infer Care behaviour from memory. Every field, status, permission, role, label and
-keyboard shortcut must be traced to the checked-out source. If you cannot verify a
-detail, do not write it.
 
 ## Steps
 
@@ -150,13 +228,10 @@ Read the relevant code in `code/care` and `code/care_fe`:
 - Frontend routes, form fields, navigation labels, and the i18n display label for every
   enum value (`public/locale/en.json`, keys shaped `PREFIX__value`).
 
-Docs are user-facing: use the display labels, never the raw codebase values
-(`In Progress`, not `in_progress`). Write the reader's situation, not the data model
-("The patient is registered in Care", not "The patient record exists").
+### 2. Write the docs
 
-### 2. Write into version-3.0
-
-Author every file under `versioned_docs/version-3.0/`:
+Author each file at the path its skill specifies, in the version the conventions say to
+author in:
 
 - `concepts/<domain>/<slug>.mdx`
 - `flows/<domain>/<slug>.mdx`
@@ -169,18 +244,14 @@ Frontmatter is `sidebar_position: <n>` only. The `#` H1 is the title.
 Concepts and references appear automatically — their sidebar entries are
 `autogenerated` from the folder. **Flows are a manual list.** After adding a flow,
 append its doc id (for example `flows/clinical/close-an-encounter`) to the matching
-domain's items array in BOTH:
-
-- `versioned_sidebars/version-3.0-sidebars.json`
-- `versioned_sidebars/version-3.1-sidebars.json`
+domain's items array in the sidebar file of every version you wrote to.
 
 A flow doc that is not listed there will not appear in the site.
 
-### 4. Mirror 3.0 to 3.1
+### 4. Mirror
 
-`versioned_docs/version-3.0/` and `versioned_docs/version-3.1/` are kept
-byte-identical. Copy every file you created or changed across, including any
-`_category_.json`.
+Mirror across versions exactly as the shared conventions describe, including any
+`_category_.json` you added.
 
 ### 5. Validate
 
@@ -223,6 +294,9 @@ Every run must leave a visible trace, using the safe outputs:
   comment with the link. The pull request body must state which files were added or
   changed and for which versions, the `code/care` / `code/care_fe` files the content was
   traced to, and any detail you left out because you could not verify it.
+- **Revised a pull request, build green** — push with `push-to-pull-request-branch`,
+  then comment with what you changed, and with anything the feedback asked for that you
+  did not change, and why.
 - **Blocked** — comment with the numbered questions, as above.
 - **Nothing to do** — comment with one short sentence explaining why the request needed
   no change.
