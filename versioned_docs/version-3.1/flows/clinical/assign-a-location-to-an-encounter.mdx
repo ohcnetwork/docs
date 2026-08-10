@@ -1,0 +1,80 @@
+---
+sidebar_position: 3
+---
+
+# How to assign a location to an encounter
+
+## Overview
+
+This flow describes how to record the location that a patient occupies during an
+[encounter](../../concepts/clinical/encounter.mdx). Care keeps the current location and
+the full location history of the encounter.
+
+## Pre-requisites
+
+- The encounter is open. If there is no encounter,
+  [create an encounter](./create-an-encounter.mdx) first.
+- The encounter is not closed. Care blocks updates to a closed encounter.
+- An administrator has set up the locations and beds of your facility.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Read encounter | Open the encounter |
+| Update Encounter non clinical | Assign, move, or end the location of the patient |
+
+## Steps
+
+### 1. Open the encounter
+
+From the facility dashboard, select **Encounters**. Select the encounter.
+
+### 2. Open the location panel
+
+Select **Assign Location**. The **Update Location** panel opens.
+
+:::note
+The keyboard shortcut **l** opens **Assign Location**. The shortcut **shift+e** opens
+the command dialog, which lists every encounter action.
+:::
+
+### 3. Select a location
+
+Select the **Assign Location** tab. Select the location, then select the bed.
+
+To find a bed, enter the name of the bed in the search box. To hide the beds that are in
+use, turn on the available filter.
+
+### 4. Confirm the bed
+
+Select the bed to assign it now, or schedule the bed for a later time.
+
+If the current patient of the bed leaves soon, Care shows **Confirm Selection**. Select
+**Proceed** to take the bed.
+
+If the bed is in use and the free time is not known, Care shows **Bed Occupied**. Select
+**Close**, then select a different bed.
+
+### 5. Check the history
+
+Select the **Location History** tab. The tab lists every location of the encounter, with
+the newest first.
+
+## Expected Outcome
+
+- The encounter shows the new location of the patient.
+- Care adds the location to the location history of the encounter.
+- Staff who have access to that location can now see the encounter.
+
+## Related
+
+Concepts:
+
+- [Encounter](../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [Create an encounter](./create-an-encounter.mdx)
+- [Close an encounter](./close-an-encounter.mdx)

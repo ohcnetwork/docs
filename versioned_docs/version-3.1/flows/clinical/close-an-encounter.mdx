@@ -1,0 +1,107 @@
+---
+sidebar_position: 4
+---
+
+# How to close an encounter
+
+## Overview
+
+This flow describes how to end an
+[encounter](../../concepts/clinical/encounter.mdx) when care for the episode is
+finished. A closed encounter accepts no new clinical records.
+
+## Pre-requisites
+
+- The encounter is open, and the encounter is not closed already.
+- Staff record the clinical data of the episode. Care blocks new records after you close
+  the encounter.
+- If the patient occupies a bed, staff end the location stay.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Read encounter | Open the encounter |
+| Update Encounter non clinical | Change the status of the encounter and record the discharge details |
+
+## Steps
+
+### 1. Open the encounter
+
+From the facility dashboard, select **Encounters**. Select the encounter.
+
+### 2. Open the encounter details
+
+Select **Update Encounter Details**. The encounter form opens.
+
+:::note
+The keyboard shortcut **shift+u** opens **Update Encounter Details**.
+:::
+
+### 3. Discharge the patient
+
+In the **Discharge Patient** panel, select **Mark for discharge**. Care sets the status
+to Discharged.
+
+Note: After the status is Discharged, you cannot change the status in this form.
+
+### 4. Record the discharge details
+
+For an Inpatient, Observation, or Emergency encounter, complete the **Hospitalization
+Details** section:
+
+| Components | What it captures |
+| --- | --- |
+| Re-admission | Whether the patient returns for the same problem. |
+| Admit Source | Where the patient comes from, for example From outpatient department. |
+| Discharge Disposition | Where the patient goes, for example Home or Other health care facility. |
+| Discharge Date and Time | The time the episode ends. |
+| Diet Preference | The diet that the patient needs. |
+
+Enter the advice for the patient in **Discharge Summary Advice**.
+
+Note: Your deployment can set the discharge disposition that Care selects first.
+
+### 5. Complete the encounter
+
+Select **Mark as Completed** in the encounter actions. Care shows the **Mark as
+Complete** dialog.
+
+If the encounter still needs a discharge, the action shows as **Mark for discharge**.
+
+Read the message in the dialog. Care can also close the appointment and the token of the
+patient.
+
+Select **Mark as Complete** to confirm. To keep the encounter open, select **Cancel**.
+
+:::note
+The keyboard shortcut **m c** opens the **Mark as Completed** action.
+:::
+
+### 6. Open the discharge summary
+
+Open the **Reports** panel of the encounter. Select the discharge summary template of
+your facility. Care shows the report for the encounter.
+
+## Expected Outcome
+
+- The encounter status is Completed.
+- Care blocks new clinical records against the encounter.
+- The discharge summary advice shows in the summary of the encounter.
+
+:::note
+To reopen a Completed encounter, select **Restart Encounter** in the encounter actions.
+Care allows a restart only within the time limit that your deployment sets.
+:::
+
+## Related
+
+Concepts:
+
+- [Encounter](../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [Create an encounter](./create-an-encounter.mdx)
+- [Assign a location to an encounter](./assign-a-location-to-an-encounter.mdx)

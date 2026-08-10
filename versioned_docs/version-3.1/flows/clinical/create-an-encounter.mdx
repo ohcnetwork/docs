@@ -1,0 +1,95 @@
+---
+sidebar_position: 2
+---
+
+# How to create an encounter
+
+## Overview
+
+This flow describes how to start an
+[encounter](../../concepts/clinical/encounter.mdx) for a patient at your facility. The
+encounter is the episode of care that holds the clinical records of the visit.
+
+## Pre-requisites
+
+- The patient is registered in Care. If the patient is new, first
+  [register the patient](../../concepts/clinical/patient).
+- You belong to a department of the facility that treats the patient.
+- If you start the encounter from an appointment, the patient has a booked or checked-in
+  appointment at the facility.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create encounter | Start an encounter for a patient at the facility |
+| Can Read encounter | Open the encounter after Care creates it |
+
+## Steps
+
+### 1. Open the patient
+
+From the facility dashboard, select **Patients**. Select the patient.
+
+### 2. Start the encounter
+
+Select **Create Encounter**. The **Initiate Patient Encounter** panel opens.
+
+You can also start the encounter from the **Encounters** tab of the patient.
+
+To start an encounter from an appointment, open the appointment. Select **Start
+Consultation** to begin care now. Select **Create Planned Encounter** to record an
+episode that starts later.
+
+:::note
+On the patient page, the keyboard shortcut **e** opens **Create Encounter**. On the
+appointment page, **1** starts a consultation and **2** creates an encounter.
+:::
+
+### 3. Enter the encounter details
+
+Complete the panel:
+
+| Components | What it captures |
+| --- | --- |
+| Date and Time | The time the episode starts. Care fills in the current time. |
+| Type of Encounter | The kind of episode: Ambulatory, Emergency, Inpatient, Observation, Home Health, or Virtual. |
+| Status | Planned, In Progress, or On Hold. |
+| Priority | The urgency of the episode, for example Routine, Urgent, or Emergency. |
+| Tags | The labels that your facility uses for encounters. |
+| Departments | The facility departments that the encounter belongs to. |
+
+Note: Which types of encounter you can select depends on the configuration of your
+deployment.
+
+A future date is only allowed for a planned encounter.
+
+### 4. Select a department
+
+Select at least one department. Care keeps **Create Encounter** disabled until you
+select a department.
+
+Care uses the department to decide who can see and update the encounter.
+
+### 5. Save the encounter
+
+Select **Create Encounter**. To cancel the panel, select **Cancel**.
+
+## Expected Outcome
+
+- Care shows the message "Encounter created successfully".
+- Care opens the **Updates** tab of the new encounter.
+- The encounter shows in the **Encounters** tab of the patient.
+
+## Related
+
+Concepts:
+
+- [Encounter](../../concepts/clinical/encounter.mdx)
+- [Patient](../../concepts/clinical/patient)
+
+Flows:
+
+- [Assign a location to an encounter](./assign-a-location-to-an-encounter.mdx)
+- [Close an encounter](./close-an-encounter.mdx)
