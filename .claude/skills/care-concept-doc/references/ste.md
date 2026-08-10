@@ -2,7 +2,7 @@
 
 All authored prose in the Care docs follows ASD-STE100 Simplified Technical English.
 The goal is documentation that reads the same way every time, translates cleanly into
-Malayalam, and cannot be misread by a clinician in a hurry.
+any language, and cannot be misread by a clinician in a hurry.
 
 ## Where it applies
 
@@ -62,7 +62,7 @@ Malayalam, and cannot be misread by a clinician in a hurry.
 
 ## Why it matters here
 
-Only the patient docs are translated into Malayalam today, but the whole site is built
-for both locales. Long sentences, chained clauses, and synonym drift are what make a
-docs site expensive to translate and easy to misread. Writing to STE now keeps that
-cost down and keeps the English unambiguous in the meantime.
+The site is built for every configured locale, and the set of translated languages grows
+over time. Long sentences, chained clauses, and synonym drift are what make a docs site
+expensive to translate and easy to misread. Writing to STE now keeps that cost down as
+locales are added, and keeps the English unambiguous in the meantime.

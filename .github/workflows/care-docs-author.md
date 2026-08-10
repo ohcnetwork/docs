@@ -171,10 +171,11 @@ Then the build, which is the authoritative gate because it builds every locale:
 npm run build
 ```
 
-Require `[SUCCESS]` for both `build` and `build/ml`, and exit code 0. Never validate
-with `--locale en` alone — it hides the Malayalam link breakages that the `.mdx` link
-rule exists to prevent. Fix whatever the scan or the build reports, then rebuild until
-clean. **Do not open a pull request on a failing build.**
+Require `[SUCCESS]` and exit code 0 for the default build and for every translated
+locale the site is configured with. Never validate with a single `--locale` — that
+hides the translated-locale link breakages that the `.mdx` link rule exists to prevent.
+Fix whatever the scan or the build reports, then rebuild until clean. **Do not open a
+pull request on a failing build.**
 
 ## Handling ambiguity
 

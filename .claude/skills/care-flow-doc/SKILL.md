@@ -90,9 +90,11 @@ A flow that is not listed there builds cleanly and is invisible on the site.
 
 ## Linking
 
-Follow the shared link rule, with one trap specific to flows: `create-patient` is one
-of the two translated docs, so links **to** it must be extensionless
+Follow the shared link rule, with one trap specific to flows: `create-patient` is a
+translated doc, so links **to** it must be extensionless
 (`../../flows/clinical/create-patient`). Every other internal link keeps `.mdx`.
+The set of translated docs changes as locales are added — check the current list in the
+shared conventions rather than assuming.
 
 ## Workflow
 
