@@ -6,6 +6,11 @@ on:
     name: document
     events: [issues, issue_comment, pull_request_comment, pull_request_review_comment]
 
+model: claude-opus-5
+engine:
+  id: copilot
+  args: ["--reasoning-effort", "xhigh"]
+
 permissions:
   contents: read
   issues: read
