@@ -40,7 +40,8 @@ checkout:
   ref: ${{ github.event.pull_request.base.sha }}
 
 imports:
-  - .github/agents/care-docs-reviewer.agent.md
+  - .github/agents/docs-pr-reviewer.agent.md
+  - .github/references/review-checklist.md
 
 tools:
   github:

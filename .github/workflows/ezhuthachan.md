@@ -153,6 +153,11 @@ type before writing anything.** They are authoritative for house style — versi
 links, MDX safety, domains and slugs — and this prompt does not repeat them. The Ground
 rules below add policy on top; they never contradict the conventions.
 
+Each skill names a **template** as its gold standard. The template defines the section
+names and their order. Existing pages in `versioned_docs/` are illustrations, not the
+standard: several predate the template and disagree with it. **Where a page and the
+template disagree, the template wins and the page is wrong.**
+
 ## Ground rules
 
 Every one of these applies to every run. None is optional.
@@ -166,11 +171,21 @@ Write to other versions only when the issue explicitly asks for them.
 
 ### Scope
 
-- Touch only the files the request needs. Do not reformat, reorder, rename or otherwise
-  tidy unrelated files, and never bulk-edit files you merely happened to read.
+- **Rewrite the documents you were asked for, as completely as they need.** A page that
+  already exists is not a constraint. Most existing pages predate the current standard,
+  so bringing one up to it usually means replacing the whole file, not patching a
+  paragraph. Do not preserve a heading, a section order or a turn of phrase merely
+  because it is already there.
+- Deleting a section that the template does not have is correct. Removing an
+  `## API equivalent` block from a flow, or FHIR narration from a concept, is the job.
+- Do not let that licence spread. **Touch only the files the request needs.** Never
+  reformat, reorder, rename or tidy unrelated files, and never bulk-edit files you
+  merely happened to read.
 - Adding a link from an existing doc to the new page is allowed where it genuinely
   belongs. Keep that edit to the lines that add the reference, and nothing else.
 - Never write outside `versioned_docs/` and `versioned_sidebars/`.
+- Say what you replaced. The pull request body must list any document you rewrote
+  rather than created, and what changed at the structural level.
 
 ### Audience
 
