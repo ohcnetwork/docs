@@ -6,7 +6,7 @@ sidebar_position: 1
 
 ## Definition
 
-A **[patient](https://build.fhir.org/patient.html)** in Care is a person who receives care
+A **[Patient](https://build.fhir.org/patient.html)** in Care is a person who receives care
 through your facility or program. The patient record holds the demographic and contact
 details of that person. Care ties every encounter, condition, note, appointment, and
 clinical record to a patient record.
@@ -29,9 +29,15 @@ clinical record to a patient record.
 | Patient Identifiers | The identifiers that your deployment configures, for example a national ID or a facility ID. |
 | Patient Tags | The labels that administrators attach to the patient record. |
 | Deceased Status | Whether the person is deceased, with the date and time of death. |
-
+| Volunteer Contact | The users that a facility assigns to the patient for field support. |
 
 Note: You enter either a date of birth or an age, not both.
+
+{/*
+### Blood Group
+
+Care offers these blood group values: A Positive, A Negative, B Positive, B Negative,
+AB Positive, AB Negative, O Positive, O Negative, and Unknown.
 
 ### Patient Identifiers
 
@@ -40,10 +46,35 @@ its own identifier types, or the instance can define identifier types for all fa
 Each identifier type is required or optional. An identifier type can also check the
 format of the value that you enter.
 
-## Status
+### Patient Tags
 
-- **Active** — the record is used for encounters and orders
-- **Deceased** — administrative closure; clinical history remains auditable
+Administrators attach tags to a patient record. Tags are labels that help you group and
+find patient records.
+
+### Volunteer Contact
+
+A facility assigns specific users, for example volunteers, to a patient. These users
+give field support to the patient. Care shows these users in the Volunteer Contact
+section of the patient profile.
+
+### Profile Sections
+
+The patient profile holds these sections:
+
+- General Info
+- Additional Details
+- Identifiers
+- Patient Tags
+- Insurance Details
+- Social Profile
+- Volunteer Contact
+
+The profile also holds tabs for Encounters, Clinical History, Appointments, and
+Questionnaire Updates. Your permissions control which of these tabs you see.
+*/}
+
+## Patient Identifiers
+Your deployment configures the identifier types that Care shows. A facility can define its own identifier types, or the instance can define identifier types for all facilities. Each identifier type is required or optional. An identifier type can also check the format of the value that you enter.
 
 ## Permissions
 
@@ -56,8 +87,26 @@ format of the value that you enter.
 | Can view questionnaire responses on patient | View the questionnaire responses of a patient. |
 | Can submit questionnaire about patients | Submit a questionnaire about a patient. |
 
+Note: Only a system administrator can permanently delete a patient record. Regular staff
+roles cannot delete a patient record.
+
+{/*
+## Configuration
+
+Note: The fields that are mandatory at registration depend on your deployment's
+configuration. The number of geo-organization levels that you must select also depends
+on your deployment's configuration. Some deployments use a minimal registration form
+that asks only for the core fields.
+*/}
+
 ## Related
 
-- Reference: [Patient (technical)](../../references/clinical/patient)
-- Flow: [Create a patient](../../flows/clinical/create-patient)
-- Playbook: [Outpatient registration](/deployments/hmis/playbooks/outpatient-registration) (HMIS)
+- Flow: [Search for a patient](../../flows/clinical/patient/search-patient.mdx)
+- Flow: [Register a patient](../../flows/clinical/patient/register-patient.mdx)
+- Flow: [View a patient's profile](../../flows/clinical/patient/view-patient-profile.mdx)
+- Flow: [Update patient details](../../flows/clinical/patient/update-patient-details.mdx)
+- Flow: [Manage patient identifiers](../../flows/clinical/patient/manage-patient-identifiers.mdx)
+- Flow: [Manage patient tags](../../flows/clinical/patient/manage-patient-tags.mdx)
+- Flow: [Mark a patient as deceased](../../flows/clinical/patient/mark-patient-deceased.mdx)
+- Flow: [Manage patient users](../../flows/clinical/patient/manage-patient-users.mdx)
+- Flow: [View a patient's appointments and tokens](../../flows/clinical/patient/view-patient-appointments.mdx)
