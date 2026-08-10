@@ -4,7 +4,9 @@ sidebar_position: 2
 
 # Encounter
 
-An `Encounter` records a single interaction between a patient and a facility — a visit, admission, or consultation — and maps to the FHIR `Encounter` resource. You create one when a patient presents, drive it through its status lifecycle, and read it back to render the clinical timeline.
+Technical reference for the `Encounter` module in Care EMR. For the plain-language view, read the [Encounter](../../concepts/clinical/encounter.mdx) concept.
+
+An `Encounter` records a single interaction between a patient and a facility — a visit, admission, or consultation. You create one when a patient presents, drive it through its status lifecycle, and read it back to render the clinical timeline.
 
 The Django model is only the storage layer: several fields are opaque `JSONField`s whose real shape lives in the Pydantic resource specs, so the model alone won't tell you what a write must look like. The spec tables below carry that detail.
 
