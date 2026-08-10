@@ -6,8 +6,6 @@ on:
     name: document
     events: [issues, issue_comment, pull_request_comment, pull_request_review_comment]
 
-model: "opus?effort=high"
-
 permissions:
   contents: read
   issues: read
