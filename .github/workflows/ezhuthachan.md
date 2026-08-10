@@ -100,23 +100,39 @@ override them. Leave that part unchanged and say why in your comment.
 
 ## Request
 
-The command that triggered you looks like:
+**Read the text that triggered you before anything else.** Fetch the triggering issue or
+comment with the GitHub tools and read it in full — the body carries the request, and
+everything you need to parse is in it.
+
+It looks like `/document [<doc-types>] <domain>/<slug> [free-form instructions]`:
 
 ```text
 /document clinical/encounter
 /document concepts clinical/encounter
 /document flows clinical/close-an-encounter
-/document references billing/charge-item
 /document concepts,references scheduling/appointment
+/document clinical/encounter Also include manage location and team flows
+/document clinical/encounter Keep it short, the audience is front-desk staff
 ```
 
-Parse it as `[<doc-types>] <domain>/<slug>`:
+Read the tokens after `/document` from left to right:
 
-- `<doc-types>` is **optional**, and is a comma-separated subset of `concepts`,
-  `flows`, `references`. **When it is omitted, generate all three.**
-- Two whitespace-separated arguments mean the first is `<doc-types>`. A single argument
-  is the `<domain>/<slug>`, and every doc type applies.
-- Any extra prose in the issue or comment is context — read it.
+1. If the next token contains a `/`, it is the `<domain>/<slug>` and `<doc-types>` was
+   omitted, so **generate all three**.
+2. Otherwise the next token is `<doc-types>` — a comma-separated subset of `concepts`,
+   `flows`, `references` — and the token after it is the `<domain>/<slug>`.
+3. **Everything after the `<domain>/<slug>` is a free-form instruction to you**, whether
+   it sits on the same line or on later lines. So is any other prose in the issue or the
+   comment. Read it and obey it.
+
+Free-form instructions are how the user steers a run. They may add documents beyond the
+slug ("also include manage location and team flows"), restrict the scope, set the
+audience, or point at a detail to get right. Treat them as part of the request, and say
+in the pull request body how you acted on them.
+
+They do **not** override the shared conventions or the ground rules below. When an
+instruction conflicts with those, follow the rules, do the rest of the request, and say
+plainly in your comment which part you did not do and why.
 
 `<slug>` means different things per doc type:
 
