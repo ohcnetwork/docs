@@ -1,0 +1,65 @@
+---
+sidebar_position: 2
+---
+
+# How to apply a tag to a record
+
+## Overview
+
+This flow describes how to attach a [tag](../../concepts/platform/tagging.mdx) to a record, and how to remove it. A tag classifies the record, and it lets you filter records later.
+
+## Pre-requisites
+
+- The record is open in Care, for example an encounter of a patient.
+- An administrator created an Active tag for that record type. See [Create a tag](./create-a-tag.mdx).
+- If you tag an encounter, the encounter is open and you can edit it.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Read Tag Config | See the available tags of the facility. |
+| Can Apply Tag Config to Resources | Add a tag to a record, and remove a tag from a record. |
+
+Without the apply permission, Care shows the tags of the record as read-only.
+
+## Steps
+
+### 1. Open the record
+
+Go to the facility, then open the record that you want to classify. For an encounter, select the patient encounter. The encounter opens on the **Updates** tab.
+
+### 2. Open the tag panel
+
+Find the tag panel of the record. On an encounter, the panel is **Encounter Tags** in the summary panel. Select the edit icon. Care opens the tag selector.
+
+### 3. Select a tag
+
+Search for the tag by name in the search box. Care groups the results into **Tag groups** and **Other tags**. Select the tag. Care saves the change and shows the message "Tags updated successfully".
+
+:::note
+Care shows only the tags of the resource type of the record. You can apply one tag from each tag tree to the same record.
+:::
+
+### 4. Remove a tag
+
+Open the tag selector again. Select the tag that you want to remove. Care removes the tag from the record.
+
+## Expected Outcome
+
+- The record shows the tag, with its full tag path, for example "Allergy: Drug Allergy".
+- You can filter the record list by that tag.
+- An archived tag stays on the records that carry it, but staff cannot apply it to new records.
+
+## Related
+
+Concepts:
+
+- [Tag](../../concepts/platform/tagging.mdx)
+- [Encounter](../../concepts/clinical/encounter.mdx)
+- [Patient](../../concepts/clinical/patient)
+
+Flows:
+
+- [Create a tag](./create-a-tag.mdx)
