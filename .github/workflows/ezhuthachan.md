@@ -79,15 +79,34 @@ into the memory comment before you finish.
 The command that triggered you looks like:
 
 ```text
+/document clinical/encounter
 /document concepts clinical/encounter
 /document flows clinical/close-an-encounter
 /document references billing/charge-item
 /document concepts,references scheduling/appointment
 ```
 
-Parse it as `<doc-types> <domain>/<slug>`, where `<doc-types>` is any comma-separated
-subset of `concepts`, `flows`, `references`. Any extra prose in the issue or comment is
-context — read it.
+Parse it as `[<doc-types>] <domain>/<slug>`:
+
+- `<doc-types>` is **optional**, and is a comma-separated subset of `concepts`,
+  `flows`, `references`. **When it is omitted, generate all three.**
+- Two whitespace-separated arguments mean the first is `<doc-types>`. A single argument
+  is the `<domain>/<slug>`, and every doc type applies.
+- Any extra prose in the issue or comment is context — read it.
+
+`<slug>` means different things per doc type:
+
+- **concepts and references** — the slug names the resource, for example
+  `clinical/encounter`.
+- **flows** — the slug names a task, for example `clinical/close-an-encounter`. When
+  flows are requested explicitly, write that one flow. When flows come from an omitted
+  `<doc-types>`, the slug is a resource, so discover the user tasks for that resource in
+  `code/care_fe` and write one flow per task, each with its own verb-phrase slug. Order
+  them the way a user meets them: the create task first, then the tasks that depend on
+  it. List every flow you wrote in the pull request body.
+
+A missing `<doc-types>` is not ambiguity — it means all three. Ask a question only when
+the domain or the resource itself is genuinely unclear.
 
 **Start every run by reading the whole issue thread and the memory comment.** A previous
 run may have asked questions that are now answered in a later comment, and may have
