@@ -1,0 +1,54 @@
+---
+sidebar_position: 5
+---
+
+# Supplier
+
+## Definition
+
+A **[supplier](https://build.fhir.org/organization.html)** in Care is an [organization](../access-governance/organization.mdx) that supplies products to your facilities. Care models a supplier as an organization of the type **Product Supplier**. You record a supplier one time, then select it on a request order or a delivery order. The supplier keeps the vendor name out of free text, so every order points to the same record.
+
+A supplier is not a facility, and it is not a location. A facility is a place where you give care. A supplier is an external party that sends products to that place.
+
+## Key Attributes
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the supplier. Care shows this name in the supplier list and on each order. |
+| Description | Short free text about the supplier. Use it for the trade name or the product range. |
+| Organization type | The type of the organization. For a supplier, the type is **Product Supplier**. |
+
+### Flat list
+
+Suppliers do not form a tree. Care shows them as one flat list under **Admin**, sorted by name, with a search box above the list. Governance organizations form a hierarchy, but a supplier stands alone.
+
+### Visibility
+
+Every user of the deployment can see the supplier list. Care treats supplier records as shared reference data, in the same way as governance organizations. Only a user with organization create permission can add a supplier, and only a user with organization management permission can change one.
+
+### Use in the supply chain
+
+You select a supplier in two places:
+
+- On a [supply request](../supply/supply-request.mdx) order, to say which supplier you order the products from.
+- On a [supply delivery](../supply/supply-delivery.mdx) order, to say which supplier sent the products.
+
+The supplier is optional on both. Care accepts only an organization of the type **Product Supplier** in these fields, and rejects any other organization.
+
+## Permissions
+
+Care gates suppliers with the organization permissions, because a supplier is an organization.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| `can_view_organization` | See suppliers in the supplier list and in the supplier selector | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (role org), Manager (role org), Member (role org) |
+| `can_create_organization` | Add a supplier | Admin |
+| `can_manage_organization` | Change the name and the description of a supplier, and delete it | Admin, Admin (role org) |
+
+Care grants a role to a user inside an organization, and the role applies to every organization below it in the tree.
+
+## Related
+
+- Flow: [Add a supplier](../../flows/access-governance/add-a-supplier.mdx) · [Update a supplier](../../flows/access-governance/update-a-supplier.mdx)
+- Concept: [Organization](../access-governance/organization.mdx) · [Supply request](../supply/supply-request.mdx) · [Supply delivery](../supply/supply-delivery.mdx)
+- Reference: [Organization (technical)](../../references/access-governance/organization.mdx)

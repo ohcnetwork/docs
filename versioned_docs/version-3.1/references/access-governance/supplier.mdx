@@ -1,0 +1,115 @@
+---
+sidebar_position: 6
+---
+
+# Supplier
+
+Technical reference for the supplier organization in Care EMR. A supplier is not a separate Django model. Care stores it as an `Organization` row with `org_type = "product_supplier"`. See the concept [Supplier](../../concepts/access-governance/supplier.mdx).
+
+**Source:**
+[`care/emr/models/organization.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/organization.py) ·
+[`resources/organization/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/organization/spec.py) ·
+[`api/viewsets/organization.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/organization.py) ·
+[`resources/inventory/supply_request/request_order.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/supply_request/request_order.py) ·
+[`resources/inventory/supply_delivery/delivery_order.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/inventory/supply_delivery/delivery_order.py)
+
+The storage layer is the `Organization` table. The `product_supplier` value of `org_type` is what makes a row a supplier, and the resource specs of the supply chain enforce that value. Read [Organization](./organization.mdx) for the full field list, the tree caches, and the save behaviour.
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `Organization` | Instance-wide organization. A row with `org_type = "product_supplier"` is a supplier |
+| `OrganizationUser` | Membership row linking a `User` to an `Organization` with a `RoleModel` |
+
+`Organization` extends `OrganizationCommonBase`, which extends [`EMRBaseModel`](../foundation/base-model.mdx).
+
+## Discriminating field
+
+| Field | Type | Required | Value | Notes |
+| --- | --- | --- | --- | --- |
+| `org_type` | `CharField(255)` | yes | `product_supplier` | Free text in the database. Writes bind to `OrganizationTypeChoices` in `resources/organization/spec.py` |
+
+### `OrganizationTypeChoices` values
+
+| Value | Meaning |
+| --- | --- |
+| `team` | Working grouping of people |
+| `govt` | Governance or governmental unit |
+| `role` | User group, flat and managed by superadmins |
+| `product_supplier` | Supplier of products for the supply chain |
+
+The frontend enum `OrgType` in `src/types/organization/organization.ts` adds an `other` member that the backend enum does not define.
+
+## Fields used for a supplier
+
+A supplier uses the common organization columns. The columns below are the ones the supplier screens write.
+
+| Field | Type | Required | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `name` | `CharField(255)` | yes | — | Feeds `validate_uniqueness`. Names must be unique among siblings under the same root |
+| `description` | `TextField` | no | `null` | The specs default it to `""` |
+| `org_type` | `CharField(255)` | yes | — | `product_supplier` |
+| `parent` | `FK → self` | no | `null` | The supplier screens create suppliers without a parent, so a supplier is a root organization |
+| `active` | `BooleanField` | no | `True` | |
+| `metadata` | `JSONField` | no | `{}` | Open key-value bag. The supplier form does not write it |
+
+## Resource specs (API schema)
+
+| Spec | Role |
+| --- | --- |
+| `OrganizationWriteSpec` | write · create. Adds `parent: UUID4 \| None` and validates that the parent exists |
+| `OrganizationUpdateSpec` | write · update. Same base fields, no `parent` |
+| `OrganizationReadSpec` | read · list. Adds `level_cache`, `system_generated`, `has_children`, and the nested `parent` JSON |
+| `OrganizationRetrieveSpec` | read · detail |
+
+All four extend `OrganizationBaseSpec`, which carries `id`, `active`, `org_type`, `name`, `description`, and `metadata`.
+
+## Authorization
+
+`OrganizationViewSet` in `care/emr/api/viewsets/organization.py` gates every write.
+
+| Action | Check | Permission slug |
+| --- | --- | --- |
+| create | `authorize_create` → `can_create_organization_obj` | `can_create_organization` |
+| update | `authorize_update` → `can_manage_organization_obj` | `can_manage_organization` |
+| destroy | `authorize_destroy` → `can_manage_organization_obj` | `can_manage_organization` |
+| list, retrieve | `get_accessible_organizations` | `can_view_organization` |
+
+Two behaviours are specific to the `product_supplier` type:
+
+- `authorize_create` and `authorize_update` block the `govt` and `role` types for a non-superuser, but not `product_supplier`. A user with organization create permission on the parent can therefore create a supplier. A root supplier still needs a superuser, because `authorize_create` rejects a create with no parent for every other user.
+- `get_accessible_organizations` in `care/security/authorization/organization.py` adds `org_type__in=[govt, product_supplier]` to the accessible queryset. Every authenticated user can therefore list every supplier, without a membership.
+
+Permission definitions and their role lists are in [`care/security/permissions/organization.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/permissions/organization.py).
+
+## Supply chain integration
+
+Two order models hold a nullable foreign key to `Organization`.
+
+```text
+RequestOrder.supplier   → Organization (null=True, blank=True, CASCADE)
+DeliveryOrder.supplier  → Organization (null=True, blank=True, CASCADE)
+```
+
+The write specs enforce the type, in two different ways:
+
+| Spec | File | Enforcement |
+| --- | --- | --- |
+| `SupplyRequestOrderWriteSpec` | `resources/inventory/supply_request/request_order.py` | Fetches the organization by `external_id`, then raises `ValidationError` when `org_type != "product_supplier"` |
+| `SupplyDeliveryOrderWriteSpec` | `resources/inventory/supply_delivery/delivery_order.py` | Filters on `external_id` and `org_type="product_supplier"`, so a wrong type returns `404` |
+
+Both read specs serialize the supplier with `OrganizationReadSpec`.
+
+## API integration notes
+
+- Suppliers use the organization endpoints. Filter with `org_type=product_supplier` on `GET /api/v1/organization/`, and add `name` for a case-insensitive substring search.
+- The frontend lists suppliers with `parent=""` and `limit=100`, so it shows root suppliers only.
+- `level_cache`, `parent_cache`, `root_org`, `has_children`, and `cached_parent_json` are platform-maintained. Do not write them.
+- OTP-authenticated patient sessions cannot read suppliers. `get_queryset` limits that mode to the `govt` type.
+
+## Related
+
+- Concept: [Supplier](../../concepts/access-governance/supplier.mdx) · [Organization](../../concepts/access-governance/organization.mdx)
+- Reference: [Organization](./organization.mdx) · [Supply request](../supply/supply-request.mdx) · [Supply delivery](../supply/supply-delivery.mdx)
+- Source: [`care/emr/models/organization.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/organization.py)
