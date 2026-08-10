@@ -1,0 +1,67 @@
+---
+sidebar_position: 4
+---
+
+# Close an encounter
+
+This flow shows how to end an episode of care. The end state is an encounter with the status Completed, or an inpatient encounter that is ready for discharge.
+
+:::info Prerequisite
+Read [Encounter](../../concepts/clinical/encounter.mdx) to learn the statuses of an encounter and which statuses are terminal.
+:::
+
+## Before you start
+
+- You need a role with **update encounter** permission. Admin, Doctor, Nurse, and Facility Admin hold this permission.
+- The encounter is open.
+- The clinical work of the episode is complete.
+
+## Steps
+
+### 1. Open the encounter
+
+In the facility menu, select **Patients**. Open the list for the encounter type you want. Open the encounter from the list.
+
+### 2. Start the close action
+
+In the **Actions** panel, select **Mark as Completed**.
+
+If the encounter is an inpatient encounter that is not yet discharged, the button shows **Mark for discharge**.
+
+### 3. Complete the discharge details
+
+This step applies only to an inpatient encounter that is not yet discharged.
+
+Care opens the encounter questionnaire and sets the status to Discharged.
+
+| Field | Notes |
+| --- | --- |
+| Encounter Status | Discharged. Care sets the discharge date and time for you. |
+| Discharge Disposition | Where the patient goes after discharge. |
+| Discharge Summary Advice | Advice for the patient after discharge. |
+
+Submit the questionnaire. Then select **Mark as Completed** again to close the encounter.
+
+### 4. Confirm
+
+Care asks you to confirm the action.
+
+If the encounter comes from an appointment, Care can also close the appointment and the token. The confirmation shows this warning.
+
+Select **Mark as Complete**. Press `Enter` to confirm.
+
+Care confirms with the message "Encounter Completed".
+
+## After you close the encounter
+
+| Next step | When |
+| --- | --- |
+| Print the discharge summary | The patient needs a paper copy. |
+| Restart Encounter | You closed the encounter by mistake, and care must continue. |
+| Create an encounter | The patient returns for a new episode. See [Create an encounter](./create-an-encounter.mdx). |
+
+## Related
+
+- Concept: [Encounter](../../concepts/clinical/encounter.mdx)
+- Reference: [Encounter (technical)](../../references/clinical/encounter.mdx)
+- Flow: [Create an encounter](./create-an-encounter.mdx)

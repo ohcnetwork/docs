@@ -1,0 +1,64 @@
+---
+sidebar_position: 2
+---
+
+# Create an encounter
+
+This flow shows how to open an encounter for a patient. The end state is an open encounter that holds the clinical work of one episode of care.
+
+:::info Prerequisite
+Read [Encounter](../../concepts/clinical/encounter.mdx) to learn what an encounter is. Read [Patient](../../concepts/clinical/patient) to learn how a patient record works.
+:::
+
+## Before you start
+
+- You need a role with **create encounter** permission in the facility. Admin, Doctor, Nurse, and Facility Admin hold this permission.
+- The patient is registered in Care. If the patient is new, complete [Create a patient](./create-patient) first.
+- Know the department that is responsible for the encounter. Care requires at least one department.
+- Your deployment controls which encounter types you can select, and which type is selected first.
+
+## Steps
+
+### 1. Open the patient
+
+In the facility menu, select **Patients**. Search for the patient. Open the patient from the results.
+
+### 2. Start the encounter
+
+Select **Create Encounter**. Press `e` to open the same form from the patient page.
+
+The **Initiate Patient Encounter** panel opens.
+
+If the patient comes from an appointment, open the appointment instead. Select **Start Consultation** to create the encounter and start the consultation. Select **Create Planned Encounter** to record a future episode.
+
+### 3. Complete the encounter details
+
+| Field | Notes |
+| --- | --- |
+| Date and Time | The start of the encounter. Only a Planned encounter accepts a future date. |
+| Type of Encounter | Inpatient, Ambulatory, Emergency, Observation, Virtual, or Home Health. |
+| Status | Planned, In Progress, or On Hold. |
+| Priority | The urgency of the episode. Routine is selected first. |
+| Tags | Optional labels for the encounter. |
+| Departments | At least one department is required. |
+
+### 4. Save the encounter
+
+Select **Create Encounter**. Press `Shift`+`Enter` to submit the form.
+
+Care confirms with the message "Encounter created successfully". Care then opens the encounter.
+
+## After you create the encounter
+
+| Next step | When |
+| --- | --- |
+| Assign a bed | The patient occupies a bed. See [Update the location of an encounter](./update-encounter-location.mdx). |
+| Manage Care Team | You must record the people responsible for the patient. |
+| Record clinical data | You start the consultation. |
+| Mark as Completed | The episode ends. See [Close an encounter](./close-an-encounter.mdx). |
+
+## Related
+
+- Concept: [Encounter](../../concepts/clinical/encounter.mdx)
+- Reference: [Encounter (technical)](../../references/clinical/encounter.mdx)
+- Flow: [Close an encounter](./close-an-encounter.mdx)

@@ -1,0 +1,59 @@
+---
+sidebar_position: 3
+---
+
+# Update the location of an encounter
+
+This flow shows how to record where the patient is inside the facility. The end state is an encounter with a current location, and a location history that shows every move.
+
+:::info Prerequisite
+Read [Encounter](../../concepts/clinical/encounter.mdx) to learn how an encounter holds one episode of care.
+:::
+
+## Before you start
+
+- You need a role with **update encounter** permission. Admin, Doctor, Nurse, and Facility Admin hold this permission.
+- The encounter is open.
+- The facility has locations and beds set up.
+
+## Steps
+
+### 1. Open the encounter
+
+In the facility menu, select **Patients**. Open the list for the encounter type you want. Open the encounter from the list.
+
+### 2. Open the location panel
+
+In the **Actions** panel, select **Update Location**.
+
+The location panel opens on the **Assign Location** tab. Select **Location History** to see the earlier locations of the patient.
+
+### 3. Select a bed
+
+Move through the locations of the facility. Select the bed you want.
+
+If the bed holds another patient, Care shows a warning. If the patient in the bed is discharged, confirm to continue. If the encounter in the bed is still active, select another bed.
+
+### 4. Confirm the assignment
+
+| Action | When |
+| --- | --- |
+| Assign Bed Now | The patient occupies the bed now. |
+| Schedule for later | The patient occupies the bed at a later time. |
+| Add Reserved Bed | You hold the bed for the patient. |
+
+Care records the new location and adds the earlier location to the history.
+
+## After you update the location
+
+| Next step | When |
+| --- | --- |
+| Record clinical data | The patient is in the bed and care continues. |
+| Update Location again | The patient moves to another bed or ward. |
+| Mark as Completed | The episode ends. See [Close an encounter](./close-an-encounter.mdx). |
+
+## Related
+
+- Concept: [Encounter](../../concepts/clinical/encounter.mdx)
+- Reference: [Encounter (technical)](../../references/clinical/encounter.mdx)
+- Flow: [Create an encounter](./create-an-encounter.mdx)
