@@ -2,77 +2,98 @@
 sidebar_position: 4
 ---
 
-# Location
+# Locations
 
-A **location** is a physical place inside a facility where care happens or resources sit — a building, a wing, a ward, a room, or a single bed. Locations form a nested tree that mirrors the real geography of your facility, so the platform can answer questions like "which bed is this patient in?" and "who is allowed into this ward?".
+## Definition
 
-## What it represents
+A **[location](https://build.fhir.org/location.html)** in Care is a physical place inside a facility. A location can be a building, a ward, a room, or a bed. Locations sit inside one another and form a hierarchy. For example, a building contains wards, a ward contains rooms, and a room contains beds.
 
-In Care's FHIR-aligned model, a location maps to the **Location** resource. Each location records:
+## Key Attributes
 
-- **What kind of place it is** — a name, a description, and a physical form such as ward, room, or bed
-- **Where it sits in the tree** — its parent and children, since every place can nest inside a larger one and hold smaller ones, with no fixed limit on depth
-- **Whether it is usable** — and, for beds and rooms, a finer operational state (occupied, unoccupied, housekeeping, contaminated, isolated, closed)
-- **Who is in it** — the encounter, if any, currently occupying the place (most meaningful for a bed)
-- **Who may work there** — the organizations granted access to this part of the facility
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the location. You must enter a name. |
+| Description | A description of the location. This is optional. |
+| Location Form | The type of place that the location represents. You must choose a Location Form when you create the location. You cannot change it later. |
+| Status | The state of the location. You must choose a status. |
+| Operational Status | The current use of the location. You must choose an operational status. |
+| Parent location | The location that this location sits under in the hierarchy. You set the parent location when you create the location. |
+| Order among siblings | The position of the location among the locations under the same parent location. |
+| Organizations | The facility departments that you link to the location. |
+| Availability | Whether the location is Available or Reserved. |
+| Current Encounter | The encounter of the patient who uses this location now. |
 
-A location is a *place*, not a *department* or a *team*. A ward as a physical space is a location; the unit of staff and responsibility that runs it is an [organization](../access-governance/organization.mdx). The two are linked, but they are different primitives — you nest places inside places, and you grant an organization access to a place.
+### Location Form
 
-## Classification
+The Location Form tells Care what type of place the location is. Choose one of these forms:
 
-Two attributes describe what a location *is*, and they are fixed when it is created.
+- Site
+- Building
+- Wing
+- Ward
+- Level
+- Corridor
+- Room
+- Bed
+- Vehicle
+- House
+- Cabinet
+- Road
+- Area
+- Jurisdiction
+- Virtual
 
-- **Mode** separates a *kind* of place from a concrete *instance* of one. A `kind` is a class of location — "a ward", "a building" — and can contain children. An `instance` is one specific place — "Bed 12", "Room 4" — and is a leaf: instances cannot have children.
-- **Form** is the physical type, drawn from a standard FHIR list: site, building, wing, ward, level, corridor, room, bed, vehicle, house, and more. This is what lets a deployment model the difference between a wing and the beds inside it.
+### Parent location and hierarchy
 
-Beds are not a separate concept in Care — a bed is simply a location whose form is `bed` and whose mode is `instance`. The whole facility map, from building down to bed, is one uniform tree.
+A location with no parent location is a top-level location for the facility. Only some Location Forms can hold child locations. A Ward can hold child locations. A Bed cannot hold child locations.
 
-## Lifecycle
+Note: You must choose a parent location before you create a Bed.
 
-A location's own status is deliberately simple — it describes whether the place exists and is usable, not whether someone is in it.
+Note: Your deployment sets the limit for the depth of the hierarchy. Your deployment also sets the limit for the total number of locations in one facility.
 
-```text
-active → inactive
-        (unknown)
-```
+You can change the order of the locations under the same parent location. See [Reorder locations](../../flows/facility/location/reorder-locations.mdx).
 
-- **active** — the location is live and can be used for encounters and assignments
-- **inactive** — retired from routine use but kept for history; it does not disappear
-- **unknown** — status has not been determined
+### Organizations
 
-Separately, beds and rooms carry an **operational status** that changes far more often: occupied, unoccupied, housekeeping, contaminated, isolated, or closed. This is the day-to-day signal a bed-management board reads, and it is distinct from the location simply being `active`.
+Organizations are the facility departments that you link to the location. The linked departments control which members can access the location. See [Manage a location's organizations](../../flows/facility/location/manage-location-organizations.mdx).
 
-## How it connects
+### Availability
 
-Locations are the spatial backbone that other primitives attach to.
+Care sets the availability of the location. The location is Reserved when a patient is assigned to it. In all other cases the location is Available. You cannot set the availability yourself.
 
-- **Encounters** occupy locations over time. When a patient is admitted to a bed, a record captures *which* place, *when* occupancy began, and *whether* it is planned, active, reserved, or completed. From these records the platform derives a location's current encounter and whether it is free or reserved — which is how a bed knows it is taken.
-- **Organizations** are granted access to locations. Giving a [facility organization](../access-governance/facility-organization.mdx) access to a ward lets every user under that organization work in the ward and its descendants, through the role they hold. Access flows *downward*: grant it at the building and it reaches every room and bed inside.
-- **Facility** owns the whole tree. Every location belongs to exactly one [facility](../facility/facility.mdx), and the root of its tree sits at the facility level.
+## Status
 
-One important consequence of the tree: access and other inherited properties cascade to descendants asynchronously. When you change who can reach a ward, the rooms and beds beneath it settle a moment later rather than instantly — expect it to be eventually consistent, not immediate.
+| Status | Description |
+| --- | --- |
+| Active | The facility uses the location. |
+| Inactive | The facility does not use the location. |
+| Unknown | The state of the location is not known. |
+
+## Operational Status
+
+| Operational Status | Description |
+| --- | --- |
+| Closed | The location is closed for use. |
+| Housekeeping | Housekeeping staff prepare the location. |
+| Occupied | A patient uses the location. |
+| Unoccupied | No patient uses the location. |
+| Isolated | The location is under isolation. |
+| Contaminated | The location is contaminated. |
 
 ## Permissions
 
-Access to locations is governed by facility-level permissions. Viewing the location tree is open to most clinical roles; changing the tree or its access grants is reserved for administrators and senior staff.
+| Permission | What it allows |
+| --- | --- |
+| Can List Facility Locations | View locations. |
+| Can Create/Update Facility Locations | Create, edit, reorder, and delete locations. |
 
-| Permission | Description | System Roles |
-| --- | --- | --- |
-| `can_write_facility_locations` | Create, edit, or delete a location, and add or remove an organization's access to one (add a ward, room, or bed; change status; grant org access) | Facility Admin, Admin, Staff |
-| `can_create_facility_organization` | Create a root location (one with no parent) at the top of the facility tree | Facility Admin |
-| `can_list_facility_locations` | View a facility's locations, the location tree, and which organizations have access to a location | Admin, Doctor, Facility Admin, Administrator, Nurse, Staff, Pharmacist |
-| `can_manage_facility_organization` | Grant or change an organization's access to a location | Facility Admin, Administrator |
-| `can_write_encounter` | Assign or move an encounter (a patient) to a location, such as placing them in a bed | Admin, Doctor, Nurse, Facility Admin |
-
-Roles are granted through facility and organization memberships, and because location access follows the tree, a permission held at a parent location cascades down to everything nested beneath it.
+Note: To manage the organizations of a location, you also need permission to manage the facility department that you link or unlink.
 
 ## Related
 
-- Reference: [Location (technical)](../../references/facility/location.mdx)
-- Concept: [Facility](../facility/facility.mdx)
-- Concept: [Facility organization](../access-governance/facility-organization.mdx)
-- Concept: [Encounter](../clinical/encounter.mdx)
-
-## FHIR reference
-
-Care's location aligns with the FHIR [Location](https://build.fhir.org/location.html) resource, including its mode (`kind` / `instance`), physical-form codes, and operational-status codes for beds and rooms.
+- Flow: [Create a location](../../flows/facility/location/create-location.mdx)
+- Flow: [View locations](../../flows/facility/location/view-locations.mdx)
+- Flow: [Edit a location](../../flows/facility/location/edit-location.mdx)
+- Flow: [Reorder locations](../../flows/facility/location/reorder-locations.mdx)
+- Flow: [Delete a location](../../flows/facility/location/delete-location.mdx)
+- Flow: [Manage a location's organizations](../../flows/facility/location/manage-location-organizations.mdx)
