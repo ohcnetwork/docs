@@ -1,0 +1,82 @@
+---
+sidebar_position: 5
+---
+
+# Update a prescription
+
+## Overview
+
+This flow describes how to update a saved [prescription](../../../concepts/medications/medication-request.mdx) in Care. You can add new medicines, edit notes, and remove a medicine you no longer need.
+
+## Pre-requisites
+
+- The encounter is open. You cannot update a prescription when the encounter status is Completed, Cancelled, Discontinued, or Entered in Error.
+- The prescription has at least one saved medicine.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Update Encounter related clinical data | Lets you change the medicines and notes on a prescription for the encounter. |
+
+## Steps
+
+### 1. Open the prescription for editing
+
+1. Open the prescription view for the encounter. See [View prescriptions and medications for an encounter](./view-encounter-medications.mdx).
+2. Select **Edit** on the prescription that you want to update.
+
+Care opens the same screen that you use to prescribe a medication. The screen shows the medicines that are already on the prescription.
+
+### 2. Edit the note on a saved medicine
+
+For each saved medicine, you can change only the free-text **Note**.
+
+1. Find the medicine on the prescription.
+2. Enter or change the text in the **Note** field.
+
+Note: After you save a medicine, Care locks its clinical fields. These fields are the dosage, frequency, duration, instructions, route, site, method, intent, authored date, and requester.
+
+### 3. Add a new medicine to the prescription
+
+1. Add the medicine with the same steps as in [Prescribe a medication](./prescribe-medication.mdx).
+2. Complete the fields for the new medicine.
+
+A new medicine stays fully editable until you save it.
+
+### 4. Remove a medicine from the prescription
+
+1. Select the remove icon on the row of the medicine.
+2. Confirm the removal.
+
+Care handles the removal in one of two ways:
+
+- If you already saved the medicine, Care does not delete it. Care sets its status to **Entered in Error** and keeps it on the prescription. To take it out of your view, hide the inactive medicines. See [View prescriptions and medications for an encounter](./view-encounter-medications.mdx).
+- If you did not save the medicine yet, Care removes the row from the list. Care keeps no record of it.
+
+Note: The status **Entered in Error** records that the entry was a mistake. It is different from a clinical decision to stop a medicine that the patient takes correctly. Care has no separate action for that decision on this screen.
+
+### 5. Save the prescription
+
+1. Save the prescription.
+2. Check the prescription view for your changes.
+
+## Expected Outcome
+
+- The prescription shows the new medicines that you added.
+- The notes that you changed show on the saved medicines.
+- Each medicine that you removed after a save shows the status **Entered in Error**.
+- Each unsaved medicine that you removed is no longer on the prescription.
+
+## Related
+
+Concepts:
+
+- [Medication Request](../../../concepts/medications/medication-request.mdx)
+
+Flows:
+
+- [Prescribe a medication](./prescribe-medication.mdx)
+- [Manage a prescription](./manage-prescription.mdx)
+- [View prescriptions and medications for an encounter](./view-encounter-medications.mdx)
