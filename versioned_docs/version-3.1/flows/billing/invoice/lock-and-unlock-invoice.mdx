@@ -1,0 +1,97 @@
+---
+sidebar_position: 9
+---
+
+# Lock and unlock an invoice
+
+## Overview
+
+This flow describes how to lock an [invoice](../../../concepts/billing/invoice.mdx) in Care, and how to unlock it again. A lock hides the amounts on the invoice, and restricts the invoice to privileged users.
+
+## Pre-requisites
+
+- The invoice exists at the facility, and you open it from the invoice list of the facility.
+- If you lock an invoice, the invoice is not locked already.
+- If you unlock an invoice, the invoice is locked.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Manage Locked Invoice | Lets you lock an invoice, unlock it, and open a locked invoice. Care grants this permission to the Facility Admin and Admin roles. |
+| Can Read Invoice | Lets you open the invoice list and unlocked invoices. |
+
+:::warning
+The invoice screens do not hide **Lock Invoice** and **Unlock Invoice**. A user without the Can Manage Locked Invoice permission sees both menu items. Care refuses the action on the server.
+:::
+
+## Steps
+
+### 1. Open the invoice
+
+1. Select **Billing** in the facility sidebar.
+2. Select **Invoices**.
+3. Select **See Invoice** for the invoice to lock or unlock.
+
+### 2. Open the more-options menu
+
+Select the more-options menu next to **Print**. The more-options menu is the vertical ellipsis.
+
+The menu shows **Lock Invoice** when the invoice is not locked. The menu shows **Unlock Invoice** when the invoice is locked.
+
+### 3. Lock the invoice
+
+Select **Lock Invoice**.
+
+Care shows the message "Invoice locked successfully". If the lock fails, Care shows the message "Failed to lock invoice".
+
+### 4. Unlock the invoice
+
+To release the invoice, open the more-options menu again. Select **Unlock Invoice**.
+
+Care shows the message "Invoice unlocked successfully". If the unlock fails, Care shows the message "Failed to unlock invoice".
+
+## Expected Outcome
+
+- Care shows a **Locked** badge next to the status badge on the invoice.
+- The invoice list shows the **Locked** badge in the Total column, in place of the amount.
+- Care reports the net total and the gross total of the invoice as zero to every reader.
+- Only a user with the Can Manage Locked Invoice permission can open the invoice. Care refuses every other user with the message "Locked invoice permission denied."
+- Care records each lock and each unlock in the lock history of the invoice. Each record holds the user and the time.
+- After an unlock, Care shows the amounts again. Every user with the Can Read Invoice permission can open the invoice.
+
+## Lock rules
+
+Care applies these rules when you lock or unlock an invoice.
+
+- Care refuses a lock on a locked invoice. The message is "Invoice is already locked".
+- Care refuses an unlock on an invoice that is not locked. The message is "Invoice is not locked".
+- A lock and an unlock both need the Can Manage Locked Invoice permission. A read of a locked invoice needs the same permission.
+- A lock does not change the invoice status. You can lock an invoice at any status.
+
+Care uses these invoice statuses.
+
+| Status | Display label |
+| --- | --- |
+| draft | Draft |
+| issued | Issued |
+| balanced | Balanced |
+| cancelled | Cancelled |
+| entered_in_error | Entered in Error |
+
+## Related
+
+Concepts:
+
+- [Invoice](../../../concepts/billing/invoice.mdx)
+
+Flows:
+
+- [View invoices](./view-invoices.mdx)
+- [Issue an invoice](./issue-invoice.mdx)
+- [Cancel an invoice](./cancel-invoice.mdx)
+
+References:
+
+- [Invoice](../../../references/billing/invoice.mdx)

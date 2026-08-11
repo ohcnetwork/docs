@@ -1,0 +1,92 @@
+---
+sidebar_position: 6
+---
+
+# Print an invoice
+
+## Overview
+
+This flow describes how to print an [invoice](../../../concepts/billing/invoice.mdx) in Care. The printable page gives the patient or the payer a copy of the bill.
+
+## Pre-requisites
+
+- The invoice exists in the facility, and you open the invoice list of that facility.
+- If the invoice is locked, you have the permission to manage a locked invoice.
+- You have the permissions listed below.
+
+:::note
+You can print an invoice at any status. Care does not require you to issue the invoice first. For a draft invoice, the printable page marks the document as a draft.
+:::
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Read Invoice | Lets you open and print the invoice. |
+| Can Manage Locked Invoice | Needed in addition if the invoice is locked. |
+
+:::note
+The invoice screens do not hide these actions. If you do not have the permission for an action, Care refuses the request.
+:::
+
+## Steps
+
+### 1. Open the invoice list
+
+1. In the facility sidebar, select **Billing**.
+2. Select **Invoices**.
+
+### 2. Open the printable page
+
+Care gives two entry points. Both use the button **Print**.
+
+| Entry point | What to do |
+| --- | --- |
+| The invoice list | In the Actions column of the row, select **Print**. |
+| The invoice | Open the invoice, then select **Print**. Press `p` for the same action. |
+
+If the invoice has related invoices, the **Print** button on the invoice opens a combined document. The combined document prints those invoices together. For an invoice with no related invoice, Care prints the one invoice.
+
+### 3. Check the printable page
+
+The printable page has the title **Invoice** and the invoice number. Check the content before you print.
+
+| Part | What it shows |
+| --- | --- |
+| Heading | The heading **Invoice** and the **Issue Date**. |
+| Bill To | The patient details and the **Address**. For an invoice with no address, this block shows "No address provided". |
+| QR code | A code for this invoice. Scan the code on the invoice list to open this invoice. |
+| Item table | The columns **Item**, **Unit Price**, **Qty**, **Discount**, and **Total**. **Unit Price** and **Total** show the configured currency symbol. For an invoice with no items, the table shows "No charge items found". |
+| Totals | The base amount, **Surcharge**, **Discount**, **Net Amount**, **Tax**, and **Total**. |
+| Payments | For an invoice with payments, a table with the columns **Date and Time**, **Payment Method**, **Reference**, and **Amount**. The table also has a **Total Received** line. |
+| Credit notes | For an invoice with credit notes, a table with the heading "Credit notes issued against this invoice". The table has the same columns and a **Total Credit Notes** line. |
+| Footer | The **Payment Terms**, the **Created By** user, and the **Location**. |
+
+For an invoice with the status Draft, Cancelled, or Entered in Error, the page marks that status on the document.
+
+### 4. Print the page
+
+Use the print command of your browser. Send the page to a printer, or save the page as a PDF file.
+
+## Expected Outcome
+
+- Care opens the printable page for the invoice.
+- The page shows the invoice details, the items, the totals, the payments, and the credit notes.
+- The browser sends the page to the printer, or saves the page as a PDF file.
+- The print action does not change the invoice. The status of the invoice stays the same.
+
+## Related
+
+Concepts:
+
+- [Invoice](../../../concepts/billing/invoice.mdx)
+
+References:
+
+- [Invoice](../../../references/billing/invoice.mdx)
+
+Flows:
+
+- [View invoices](./view-invoices.mdx)
+- [Issue an invoice](./issue-invoice.mdx)
+- [Record a payment against an invoice](./record-invoice-payment.mdx)

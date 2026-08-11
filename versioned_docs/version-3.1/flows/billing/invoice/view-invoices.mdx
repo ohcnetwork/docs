@@ -1,0 +1,115 @@
+---
+sidebar_position: 1
+---
+
+# View invoices
+
+## Overview
+
+This flow describes how to find and open an [invoice](../../../concepts/billing/invoice.mdx) for a facility in Care.
+
+## Pre-requisites
+
+- The facility has invoices, and you open the invoice list of that facility.
+- If the invoice is locked, you have the permission to manage a locked invoice.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Read Invoice | Lets you list and open the invoices of the facility. |
+| Can Manage Locked Invoice | Needed in addition to open a locked invoice. Care refuses to open a locked invoice without it. |
+
+:::note
+The invoice screens do not hide these actions. If you do not have the permission for an action, Care refuses the request.
+:::
+
+## Steps
+
+### 1. Open the invoice list
+
+1. In the facility sidebar, select **Billing**.
+2. Select **Invoices**.
+
+Care opens the page **Invoice Management**. The page shows the description "View and manage invoices".
+
+### 2. Filter the list by patient
+
+Select the control **Filter by Patient**. Care shows the invoices of that patient.
+
+### 3. Search for an invoice number
+
+Enter a part of the invoice number in the box **Search Invoices**. The search ignores the letter case.
+
+### 4. Filter the list by status or by creator
+
+Care gives two more filters in one filter control.
+
+| Filter | What it does |
+| --- | --- |
+| Status | Shows the invoices with the status that you select. |
+| Created by | Shows the invoices that the user you select created. |
+
+The status filter has these options: **Draft**, **Issued**, **Balanced**, **Cancelled**, and **Entered in Error**.
+
+### 5. Read the table
+
+The table has these columns.
+
+| Column | What it shows |
+| --- | --- |
+| Invoice Number | The number of the invoice. |
+| Invoice Date | The created date, in the format DD/MM/YY, hh:mm A. |
+| Account | A link to the billing account. The link opens the account in a new browser tab. |
+| Status | The status of the invoice, as a coloured badge. |
+| Total | The gross total of the invoice. For a locked invoice, this column shows a **Locked** badge in place of the amount. |
+| Actions | The buttons **Print** and **See Invoice**. |
+
+The list shows the newest invoice first. The list has more than one page when the facility has many invoices.
+
+For a list with no result, the page shows the title "No invoices" and the description "Try adjusting your filters or search".
+
+### 6. Open an invoice
+
+In the Actions column of the row, select **See Invoice**.
+
+### 7. Scan a printed invoice
+
+Select **Scan Invoice QR**. Care opens the dialog "Scan QR". Scan the code on the printed invoice.
+
+A hardware barcode scanner also works on the invoice list. For a hardware scanner, you do not open the dialog.
+
+For a code that Care does not recognise, Care shows the error "Invalid QR code".
+
+:::note
+The button **Scan Invoice QR** does not appear on a small screen.
+:::
+
+## Expected Outcome
+
+- Care shows the invoices of the facility, and shows the newest invoice first.
+- The filters and the search limit the list.
+- **See Invoice** opens the invoice.
+- A scan of a valid code opens the invoice of that code.
+- This flow does not change an invoice. The status of each invoice stays the same.
+
+:::info
+The same table is the **Invoices** tab of a billing account. In that tab, the Account column does not appear.
+:::
+
+## Related
+
+Concepts:
+
+- [Invoice](../../../concepts/billing/invoice.mdx)
+
+References:
+
+- [Invoice](../../../references/billing/invoice.mdx)
+
+Flows:
+
+- [Create an invoice](./create-invoice.mdx)
+- [Issue an invoice](./issue-invoice.mdx)
+- [Print an invoice](./print-invoice.mdx)

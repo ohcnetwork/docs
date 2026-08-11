@@ -1,0 +1,109 @@
+---
+sidebar_position: 10
+---
+
+# Cancel an invoice
+
+## Overview
+
+This flow describes how to void an [invoice](../../../concepts/billing/invoice.mdx) in Care. Void an invoice when the invoice is no longer collectible, or when someone raised the invoice by mistake.
+
+## Pre-requisites
+
+- The invoice is raised at the facility, and you can open the invoice.
+- You know why you void the invoice. The invoice is no longer collectible, or someone recorded the invoice by mistake.
+- If the invoice is locked, you have the extra permission listed below.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Read Invoice | Lets you open the invoice. |
+| Can Write Invoice | Lets you cancel an invoice inside the free-cancel period. |
+| Can Destroy Invoice | Lets you cancel an invoice after the free-cancel period. Granted to the Facility Admin role and the Admin role. |
+| Can Manage Locked Invoice | Needed in addition if the invoice is locked. |
+
+:::info The free-cancel period
+The permission that Care needs depends on the age of the invoice. Inside the free-cancel period after the invoice was created, Can Write Invoice is enough. After that period, Care needs Can Destroy Invoice. The length of the free-cancel period is a deployment setting. The period is zero minutes unless your deployment changes the setting. With the default setting, a cancellation always needs Can Destroy Invoice.
+:::
+
+:::warning
+The invoice screens do not hide these menu items. A user without the permission sees the menu items. Care refuses the action and shows the message "Cannot cancel invoice".
+:::
+
+## Steps
+
+### 1. Open the invoice
+
+1. Select **Billing** in the facility sidebar.
+2. Select **Invoices**.
+3. Select **See Invoice** for the invoice that you want to void.
+
+### 2. Open the more-options menu
+
+Select the more-options menu next to **Print**. The more-options menu shows a vertical ellipsis.
+
+### 3. Select the menu item for your reason
+
+The menu has two choices.
+
+| Menu item | When to use the menu item |
+| --- | --- |
+| **Mark as Cancelled** | The invoice is no longer collectible. |
+| **Mark as entered in error** | Someone recorded the invoice by mistake. Care retracts the invoice. |
+
+### 4. Confirm the action
+
+Care shows a dialog with the title **Confirm**.
+
+- For **Mark as Cancelled**, the dialog reads "Are you sure you want to mark this invoice as cancelled?".
+- For **Mark as entered in error**, the dialog reads "Are you sure you want to mark this invoice as entered in error?".
+
+Select **Confirm** to continue. Select **Cancel** to keep the invoice.
+
+### 5. Review the active payments and credit notes
+
+If the invoice has active payments or credit notes, Care shows a second step. The heading is "Cancel Invoice with Active Payments". For the other menu item, the heading is "Mark as Entered in Error with Active Payments".
+
+The step reads: "This invoice has active payments or credit notes. Cancelling this invoice will not automatically cancel those transactions. You may need to cancel the payments or issue refunds as needed."
+
+Care lists the **Active Payments** and the **Active Credit Notes** with their totals. Read the lists before you continue.
+
+Select **Proceed** to void the invoice. Select **Cancel** to keep the invoice.
+
+:::warning Care does not reverse the money
+Care does not reverse the payments and the credit notes that you recorded against the invoice. Cancel those payments separately, or issue the refunds separately. See [Record a payment against an invoice](./record-invoice-payment.mdx).
+:::
+
+## Expected Outcome
+
+- Care shows the message "Invoice cancelled successfully".
+- The status badge changes to **Cancelled** or to **Entered in Error**.
+- Every charge item on the invoice returns to the status Billable. Care clears the link to the invoice and the paid date. You can put those charge items on a new invoice.
+- Care keeps the payments and the credit notes that you already recorded.
+- If the action fails, Care shows the message "Failed to cancel invoice".
+
+:::note Both statuses are end states
+You cannot void the invoice a second time. Care answers "Invoice is already cancelled". You cannot move the invoice back to **Draft**, **Issued**, or **Balanced**. Care answers "Invoice is already cancelled" again.
+
+An ordinary status change cannot reach **Cancelled** or **Entered in Error**. Care answers "Call the cancel invoice API to cancel the invoice". Use the menu items in this flow.
+:::
+
+## Related
+
+Concepts:
+
+- [Invoice](../../../concepts/billing/invoice.mdx)
+
+Flows:
+
+- [Issue an invoice](./issue-invoice.mdx)
+- [Mark an invoice as balanced](./mark-invoice-as-balanced.mdx)
+- [Record a payment against an invoice](./record-invoice-payment.mdx)
+
+References:
+
+- [Invoice](../../../references/billing/invoice.mdx)
+- [Charge Item](../../../references/billing/charge-item.mdx)
+- [Payment Reconciliation](../../../references/billing/payment-reconciliation.mdx)

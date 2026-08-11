@@ -42,7 +42,7 @@ On issue, the server computes net and gross totals and snapshots each charge ite
 | `cancelled_reason` | `TextField` | `str \| None` | Set when the invoice moves to `cancelled` |
 | `payment_terms` | `TextField` | `str \| None` | Markdown |
 | `note` | `TextField` | `str \| None` | Free-text comments; markdown |
-| `number` | `CharField(1000)` | `str \| None`, default `None` | Auto-generated for return invoices via the facility's `invoice_number_expression` (see [Methods](#methods--save-behaviour)) |
+| `number` | `CharField(1000)` | `str \| None`, default `None` | Invoice number. The server generates it on every create when the client does not send one, from the facility's `invoice_number_expression` (see [Methods](#methods--save-behaviour)) |
 | `issue_date` | `DateTimeField` | `datetime \| None` (tz-aware), default `None` | Set when the invoice is issued |
 | `is_refund` | `BooleanField` | `bool`, default `False` | Flags a refund/return invoice; required for negative totals (see validation) |
 
@@ -153,9 +153,99 @@ Per-component validation: `base` must carry an `amount` and no `conditions`; `ta
 
 - **`sync_invoice_items(invoice)`** (`sync_items.py`) — recomputes `total_net`, `total_gross`, `total_price_components`, and `charge_items_copy` from the linked charge items, then rounds totals using `INVOICE_FINAL_AMOUNT_PRECISION` / `INVOICE_FINAL_AMOUNT_ROUNDING_METHOD`. **Validation:** if `is_refund` is false and either total is negative, raises `ValidationError("A Refund Ivoice is required for negative values")`.
 - **`calculate_charge_items_summary(charge_items)`** — net = Σ base + Σ surcharge − Σ discount; gross = net + Σ tax; components aggregated per `type + code` (key = `system + code`, else `No-Code`).
-- **`evaluate_invoice_identifier_default_expression(facility)`** (`default_expression_evaluator.py`) — generates `number` from the facility's `invoice_number_expression` with context `{ invoice_count, current_year_yyyy, current_year_yy }`; returns `""` if unset. `evaluate_invoice_dummy_expression` previews an expression with sample context.
+- **`evaluate_invoice_identifier_default_expression(facility)`** (`default_expression_evaluator.py`) — generates `number` from the facility's `invoice_number_expression` with context `{ invoice_count, current_year_yyyy, current_year_yy }`; returns `""` if unset. `evaluate_invoice_dummy_expression` previews an expression with sample context. `perform_create` calls this function for every new invoice when the client does not send a `number`.
 - **`generate_return_invoice(delivery_order)`** (`return_items_invoice.py`) — creates a `draft` refund invoice (`is_refund=True`), reverses each completed `SupplyDelivery`'s charge item via `apply_charge_item_definition(reverse=True)`, marks items `billed`, runs `sync_invoice_items`, sets status `issued`, then triggers `rebalance_account_task`. Raises if any delivery is still `in_progress`.
 - **`cancel_return_invoice(delivery_order)`** — sets the invoice `cancelled`, marks its charge items `entered_in_error` (clears `paid_invoice`/`paid_on`), voids the supply deliveries, rebalances the account, and resyncs inventory.
+
+## API endpoints
+
+`InvoiceViewSet` (`care/emr/api/viewsets/invoice.py`) is registered on the facility nested router with the prefix `invoice`. Every route is nested under a facility.
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| GET | `/api/v1/facility/{facility_external_id}/invoice/` | List the invoices in the facility |
+| POST | `/api/v1/facility/{facility_external_id}/invoice/` | Create an invoice |
+| GET | `/api/v1/facility/{facility_external_id}/invoice/{external_id}/` | Retrieve one invoice |
+| PUT | `/api/v1/facility/{facility_external_id}/invoice/{external_id}/` | Update an invoice |
+| POST | `.../invoice/{external_id}/attach_items_to_invoice/` | Add charge items to a draft invoice. Body: `charge_items`, a list of UUIDs |
+| POST | `.../invoice/{external_id}/remove_item_from_invoice/` | Remove one charge item from a draft invoice. Body: `charge_item`, a UUID |
+| POST | `.../invoice/{external_id}/attach_account_to_invoice/` | Attach every billable charge item on the account to the draft invoice. No body |
+| POST | `.../invoice/{external_id}/cancel_invoice/` | Cancel the invoice. Body: `reason`, either `cancelled` or `entered_in_error` |
+| POST | `.../invoice/{external_id}/lock/` | Lock the invoice |
+| POST | `.../invoice/{external_id}/unlock/` | Unlock the invoice |
+
+There is no destroy endpoint.
+
+### Custom action behaviour
+
+- `attach_items_to_invoice`, `remove_item_from_invoice`, `attach_account_to_invoice`, and `cancel_invoice` each take an account-level lock.
+- The three charge-item actions require the status `draft`. For any other status they raise `ValidationError("Invoice is not in draft")`.
+- `attach_items_to_invoice` accepts only the charge items on the same account with the status `billable`. Matched items move to `billed` and link to the invoice. The action ignores unmatched ids without a message.
+- `remove_item_from_invoice` returns the item to `billable` and clears `paid_invoice` and `paid_on`. An item that is not on the invoice raises `ValidationError("Charge item not found in invoice")`.
+- `cancel_invoice` rejects a `reason` outside the two allowed values with `ValidationError("Invalid reason")`. It rejects an invoice that is already void with `ValidationError("Invoice is already cancelled")`. It returns every charge item on the invoice to `billable`.
+- `lock` and `unlock` append an entry to `lock_history` with the user, a timestamp, and the action. They raise `ValidationError` with "Invoice is already locked" and "Invoice is not locked".
+- The three charge-item actions and `cancel_invoice` return the full `InvoiceRetrieveSpec` payload.
+- Every action that changes the items or the status triggers `rebalance_account_task` for the account. `lock` and `unlock` do not.
+
+### Filtering and ordering
+
+The list is scoped to the facility in the path. The filterset is `InvoiceFilters`.
+
+| Query parameter | Match |
+| --- | --- |
+| `status` | Case-insensitive exact |
+| `title` | Case-insensitive contains |
+| `account` | Account external id (UUID) |
+| `patient` | Patient external id (UUID) |
+| `number` | Case-insensitive contains |
+| `locked` | Boolean |
+| `is_refund` | Boolean |
+| `created_by` | User external id (UUID) |
+| `created_date` | Datetime from/to range |
+| `payment_reconciliation_present` | Boolean. Keeps or excludes the invoices that have a reconciliation on the given account |
+
+`payment_reconciliation_present` also needs `account`. Without `account`, the filterset raises `ValidationError("Account is required when payment reconciliation filter is present")`.
+
+Ordering fields: `created_date` and `modified_date`.
+
+## Permissions
+
+The four invoice permissions are facility-scoped. The authorization controller checks each permission against the facility organization memberships of the user.
+
+| Permission | Human-readable name | Checked by | System roles |
+| --- | --- | --- | --- |
+| `can_read_invoice` | Can Read Invoice | `can_read_invoice_in_facility` — list and retrieve | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| `can_write_invoice` | Can Write Invoice | `can_write_invoice_in_facility` — create, update, the three charge-item actions, and cancel inside the free-cancel period | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| `can_destroy_invoice` | Can Destroy Invoice | `can_destroy_invoice_in_facility` — cancel after the free-cancel period | Facility Admin, Admin |
+| `can_manage_locked_invoice` | Can Manage Locked Invoice | `can_manage_locked_invoice_in_facility` — lock, unlock, and retrieve a locked invoice | Facility Admin, Admin |
+
+The failure messages are "Cannot read invoice", "Cannot write invoice", "Cannot cancel invoice", and "Locked invoice permission denied."
+
+Create also validates that the account belongs to the facility in the path. For an account of another facility, the viewset raises `ValidationError("Account is not associated with the facility")`.
+
+### Free-cancel period
+
+The setting `INVOICE_FREE_CANCEL_PERIOD_MINUTES` comes from the environment, and its default value is `0`. Inside that many minutes of `created_date`, a cancel needs only `can_write_invoice`. After that period, a cancel needs `can_destroy_invoice`. With the default value of `0`, every cancel needs `can_destroy_invoice`.
+
+## Status transitions
+
+### Create
+
+`perform_create` always forces `status` to `draft`. It sets the facility from the path, and resolves only the `billable` charge items on the account. It generates `number` when the client did not send one. It moves the resolved items to `billed` with `paid_invoice` set, runs `sync_invoice_items`, then rebalances the account. `perform_create` takes an account lock and a create lock. A lock conflict raises `ValidationError("Invoice creation failed")`.
+
+### Update
+
+`perform_update` holds an invoice lock and enforces the transitions below. It calls `rebalance_account_task` afterwards.
+
+| From | To | Result |
+| --- | --- | --- |
+| `draft` | `issued` | Allowed when the invoice has at least one charge item. For an empty invoice, `ValidationError("Invoice must have at least one charge item")` |
+| `draft` | `balanced` | `ValidationError("Invoice needs to be issued before balancing")` |
+| `issued` | `balanced` | Allowed. Every charge item on the invoice with the status `billed` moves to `paid`, with `paid_invoice` set and `paid_on` stamped |
+| `issued` | `draft` | `ValidationError("Invoice is already issued")` |
+| `balanced` | any | `ValidationError("Invoice is already balanced")` |
+| any | `cancelled` or `entered_in_error` | `ValidationError("Call the cancel invoice API to cancel the invoice")`. Use the `cancel_invoice` action |
+| `cancelled` or `entered_in_error` | any | `ValidationError("Invoice is already cancelled")` |
 
 ## API integration notes
 
@@ -167,6 +257,16 @@ Per-component validation: `base` must carry an `amount` and no `conditions`; `ta
 
 ## Related
 
+- Flow: [View invoices](../../flows/billing/invoice/view-invoices.mdx)
+- Flow: [Create an invoice](../../flows/billing/invoice/create-invoice.mdx)
+- Flow: [Edit invoice details](../../flows/billing/invoice/edit-invoice-details.mdx)
+- Flow: [Edit the items on an invoice](../../flows/billing/invoice/edit-invoice-items.mdx)
+- Flow: [Issue an invoice](../../flows/billing/invoice/issue-invoice.mdx)
+- Flow: [Print an invoice](../../flows/billing/invoice/print-invoice.mdx)
+- Flow: [Record a payment against an invoice](../../flows/billing/invoice/record-invoice-payment.mdx)
+- Flow: [Mark an invoice as balanced](../../flows/billing/invoice/mark-invoice-as-balanced.mdx)
+- Flow: [Lock and unlock an invoice](../../flows/billing/invoice/lock-and-unlock-invoice.mdx)
+- Flow: [Cancel an invoice](../../flows/billing/invoice/cancel-invoice.mdx)
 - Reference: [Account](../billing/account.mdx)
 - Reference: [Charge Item](../billing/charge-item.mdx)
 - Reference: [Charge Item Definition](../definitions/charge-item-definition.mdx)

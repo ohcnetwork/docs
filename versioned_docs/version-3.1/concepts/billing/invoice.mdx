@@ -36,7 +36,19 @@ draft → issued → balanced
 - **cancelled** — voided after issue; no longer collectible
 - **entered_in_error** — recorded by mistake and retracted
 
-`cancelled` and `entered_in_error` are the two terminal void states. Drive these transitions through the billing workflow rather than editing records directly, since each one also adjusts the linked charge items and the account.
+Care permits only one path through the ordinary statuses: `draft` to `issued`, then `issued` to `balanced`.
+
+| Status change | Permitted |
+| --- | --- |
+| `draft` to `issued` | Yes, if the invoice has at least one charge item |
+| `issued` to `balanced` | Yes |
+| `draft` to `balanced` | No |
+| `issued` to `draft` | No |
+| `balanced` to any other status | No |
+
+`cancelled` and `entered_in_error` are the two terminal void states. Care never sets them with an ordinary status change. Care sets them only with the dedicated cancel action, which also adjusts the linked charge items and the account.
+
+The permission Care requires for a cancel action depends on the age of the invoice. Inside a configurable free-cancel period, `can_write_invoice` is enough. After that period, `can_destroy_invoice` is necessary. The free-cancel period is a deployment setting, and its default value is zero minutes. With the default configuration, a cancel action always needs `can_destroy_invoice`.
 
 ## Refunds
 
@@ -44,7 +56,9 @@ A normal invoice has positive totals. When goods are returned or a charge is rev
 
 ## Locking
 
-An issued invoice can be **locked** to freeze it against any further edits — useful once a bill has been formally closed out or handed to an external system. Locking is a privileged action, separate from everyday read and write access.
+Care can **lock** an invoice at any status. A lock does not change the status of the invoice. A lock freezes the invoice and hides its money. While an invoice is locked, Care reports the net total and the gross total as zero to every user who reads the invoice. The invoice list shows a **Locked** badge in place of the amount.
+
+Only a user with the `can_manage_locked_invoice` permission can open a locked invoice. Care refuses the request from every other user. The same permission is necessary to lock an invoice and to unlock it. Care also keeps a lock history, and records the user and the time for each lock and each unlock.
 
 ## Permissions
 
@@ -52,15 +66,25 @@ Access to invoices is governed by facility-scoped permissions:
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| `can_write_invoice` | Create and update invoices, including attaching or removing charge items and issuing or balancing them. Also gates cancelling an invoice within the free-cancel window. | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| `can_write_invoice` | Create and update invoices, including attaching or removing charge items and issuing or balancing them. Also gates a cancel action inside the free-cancel period. | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
 | `can_read_invoice` | List and retrieve invoices, their line items, totals, and reconciliation history. | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| `can_destroy_invoice` | Cancel an invoice after the free-cancel window has elapsed. | Facility Admin, Admin |
-| `can_manage_locked_invoice` | Lock and unlock invoices, and retrieve a locked invoice. | Facility Admin, Admin |
+| `can_destroy_invoice` | Cancel an invoice after the free-cancel period ends. The free-cancel period is a deployment setting, and its default value is zero minutes, so a cancel action needs this permission in a default deployment. | Facility Admin, Admin |
+| `can_manage_locked_invoice` | Lock an invoice, unlock an invoice, and read a locked invoice. Care refuses a read of a locked invoice for every other user. | Facility Admin, Admin |
 
 Roles are granted through a user's facility and organization memberships, and permissions cascade down the organization tree, so access at a parent organization carries to the facilities beneath it.
 
 ## Related
 
+- Flow: [View invoices](../../flows/billing/invoice/view-invoices.mdx)
+- Flow: [Create an invoice](../../flows/billing/invoice/create-invoice.mdx)
+- Flow: [Edit invoice details](../../flows/billing/invoice/edit-invoice-details.mdx)
+- Flow: [Edit the items on an invoice](../../flows/billing/invoice/edit-invoice-items.mdx)
+- Flow: [Issue an invoice](../../flows/billing/invoice/issue-invoice.mdx)
+- Flow: [Print an invoice](../../flows/billing/invoice/print-invoice.mdx)
+- Flow: [Record a payment against an invoice](../../flows/billing/invoice/record-invoice-payment.mdx)
+- Flow: [Mark an invoice as balanced](../../flows/billing/invoice/mark-invoice-as-balanced.mdx)
+- Flow: [Lock and unlock an invoice](../../flows/billing/invoice/lock-and-unlock-invoice.mdx)
+- Flow: [Cancel an invoice](../../flows/billing/invoice/cancel-invoice.mdx)
 - Reference: [Invoice (technical)](../../references/billing/invoice.mdx)
 - Reference: [Account](../../references/billing/account.mdx)
 - Reference: [Charge Item](../../references/billing/charge-item.mdx)
