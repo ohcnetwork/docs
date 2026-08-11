@@ -12,15 +12,6 @@ In Care's FHIR-aligned model, an invoice maps to the **Invoice** resource. It pu
 
 The key distinction is that an invoice is not a payment. It states what is owed; the act of paying it down — and any credit notes against it — lives in [payment reconciliation](../../references/billing/payment-reconciliation.mdx). One account can produce several invoices over time as new charges accumulate, and the invoice's detail view reports what has been paid against each so you can always see the remaining balance.
 
-## How it connects
-
-An invoice sits at the meeting point of several billing primitives:
-
-- **[Account](../../references/billing/account.mdx)** — every invoice settles exactly one account, and takes its patient from there.
-- **[Charge items](../../references/billing/charge-item.mdx)** — the line items. A charge item is each individual billable thing; the invoice is the envelope that totals them up.
-- **[Charge item definitions](../../references/definitions/charge-item-definition.mdx)** — the priced catalogue entries charge items are built from, used when Care generates a refund invoice automatically.
-- **[Payment reconciliation](../../references/billing/payment-reconciliation.mdx)** — the payments and credit notes recorded against the invoice once it is issued.
-
 ## Lifecycle
 
 An invoice moves through a small set of statuses, and a crucial thing happens partway through. While an invoice is still a `draft` it shows the live charges — edit a charge item and the invoice follows. The instant it is **issued**, Care takes a frozen snapshot of those line items and computes the totals once. From then on the invoice shows that snapshot, not the live charges. This is deliberate: a bill the patient was handed must not silently change if someone later edits an underlying charge.
@@ -36,19 +27,7 @@ draft → issued → balanced
 - **cancelled** — voided after issue; no longer collectible
 - **entered_in_error** — recorded by mistake and retracted
 
-Care permits only one path through the ordinary statuses: `draft` to `issued`, then `issued` to `balanced`.
-
-| Status change | Permitted |
-| --- | --- |
-| `draft` to `issued` | Yes, if the invoice has at least one charge item |
-| `issued` to `balanced` | Yes |
-| `draft` to `balanced` | No |
-| `issued` to `draft` | No |
-| `balanced` to any other status | No |
-
-`cancelled` and `entered_in_error` are the two terminal void states. Care never sets them with an ordinary status change. Care sets them only with the dedicated cancel action, which also adjusts the linked charge items and the account.
-
-The permission Care requires for a cancel action depends on the age of the invoice. Inside a configurable free-cancel period, `can_write_invoice` is enough. After that period, `can_destroy_invoice` is necessary. The free-cancel period is a deployment setting, and its default value is zero minutes. With the default configuration, a cancel action always needs `can_destroy_invoice`.
+Care allows only one path through the ordinary statuses: `draft` to `issued` (once the invoice holds at least one charge item), then `issued` to `balanced`. Any other change is refused, such as jumping straight from `draft` to `balanced` or reopening a `balanced` invoice. `cancelled` and `entered_in_error` are the two terminal void states, reached only through a dedicated cancel action rather than an ordinary status change, since cancelling also returns the linked charge items to billable and adjusts the account.
 
 ## Refunds
 
@@ -59,6 +38,15 @@ A normal invoice has positive totals. When goods are returned or a charge is rev
 Care can **lock** an invoice at any status. A lock does not change the status of the invoice. A lock freezes the invoice and hides its money. While an invoice is locked, Care reports the net total and the gross total as zero to every user who reads the invoice. The invoice list shows a **Locked** badge in place of the amount.
 
 Only a user with the `can_manage_locked_invoice` permission can open a locked invoice. Care refuses the request from every other user. The same permission is necessary to lock an invoice and to unlock it. Care also keeps a lock history, and records the user and the time for each lock and each unlock.
+
+## How it connects
+
+An invoice sits at the meeting point of several billing primitives:
+
+- **[Account](../../references/billing/account.mdx)** — every invoice settles exactly one account, and takes its patient from there.
+- **[Charge items](../../references/billing/charge-item.mdx)** — the line items. A charge item is each individual billable thing; the invoice is the envelope that totals them up.
+- **[Charge item definitions](../../references/definitions/charge-item-definition.mdx)** — the priced catalogue entries charge items are built from, used when Care generates a refund invoice automatically.
+- **[Payment reconciliation](../../references/billing/payment-reconciliation.mdx)** — the payments and credit notes recorded against the invoice once it is issued.
 
 ## Permissions
 
