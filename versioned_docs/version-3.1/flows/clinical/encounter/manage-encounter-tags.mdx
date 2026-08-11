@@ -1,0 +1,76 @@
+---
+sidebar_position: 6
+---
+
+# Manage encounter tags
+
+## Overview
+
+This flow describes how to apply and remove tags on an [encounter](../../../concepts/clinical/encounter.mdx) in Care. A tag is a label your facility configures to mark an encounter. Staff use tags to find and filter encounters later.
+
+An administrator groups tags into these categories:
+
+- Diet
+- Drug
+- Lab
+- Admin
+- Contact
+- Clinical
+- Behavioral
+- Research
+- Advance Directive
+- Safety
+
+## Pre-requisites
+
+- The patient has an open encounter at your facility, and you opened that encounter.
+- An administrator has set up tags for encounters at your facility.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Update Encounter non clinical | Apply and remove tags on an encounter. Administrator, Doctor, Nurse and Facility Administrator have this permission. |
+
+Note: You also need permission for each tag you apply. An administrator can restrict a tag.
+
+## Steps
+
+### 1. Open the Encounter Tags panel
+
+Go to the encounter page. Select the **Overview** tab. Find the **Encounter Tags** panel.
+
+Note: Care shows the edit icon only when you can change the encounter.
+
+Note: Care does not list this action in the Encounter Actions palette. You can also set tags when you create the encounter.
+
+### 2. Apply the tags
+
+Select the edit icon on the **Encounter Tags** panel. In the sheet, select the tags to apply. Care shows only the tags that your facility configured for encounters.
+
+Care applies these rules:
+
+- A tag must be set up for encounters. If it is not, Care shows "Tag resource does not match resource type".
+- You cannot apply the same tag twice. Care shows "Tag already set".
+- Some tags belong to a group in which only one tag can apply at a time. If one of these tags is already on the encounter, Care shows "Tag Parent is already set". Remove the other tag first.
+
+### 3. Remove a tag
+
+To take a tag off the encounter, remove it from the same sheet.
+
+## Expected Outcome
+
+- Care shows the applied tags in the **Encounter Tags** panel.
+- You can filter the patient's encounters by tag in the encounter selector on the encounter page.
+
+## Related
+
+Concepts:
+
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [Create an Encounter](./create-encounter.mdx)
+- [Update Encounter details](./update-encounter-details.mdx)

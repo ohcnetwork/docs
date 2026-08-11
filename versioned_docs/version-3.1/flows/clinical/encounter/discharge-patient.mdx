@@ -1,0 +1,131 @@
+---
+sidebar_position: 7
+---
+
+# Discharge a patient
+
+## Overview
+
+This flow describes how to discharge a patient from an [encounter](../../../concepts/clinical/encounter.mdx) in Care. The discharge records where the patient goes, and when the patient leaves the facility.
+
+Note: The discharge does not close the encounter. The encounter stays open until someone marks it as complete.
+
+## Pre-requisites
+
+- The patient has an open encounter of the type Inpatient, Observation or Emergency.
+- The patient is ready to leave the facility.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Update Encounter non clinical | Lets you record the discharge on an encounter. Administrator, Doctor, Nurse and Facility Administrator hold this permission. |
+
+## Steps
+
+### 1. Start the discharge
+
+Open the encounter. Start the discharge from one of these entry points:
+
+- On the **Overview** tab side panel, select the bottom button **Mark for discharge**.
+- Open **Encounter Actions**, then select **Mark for discharge**. The shortcut for **Encounter Actions** is `Shift+E`. The shortcut for the discharge is `m` then `c`.
+- Open the encounter form, then select **Discharge Patient**. The shortcut for the encounter form is `Shift+U`.
+
+Care sets the **Encounter Status** to **Discharged**. Care disables this field.
+
+Note: For an Inpatient encounter that is not discharged yet, Care does not show the completion dialog. Care opens the encounter form with the discharge already selected. You then fill in the discharge details.
+
+### 2. Select the Discharge Disposition
+
+Select where the patient goes. This field is required.
+
+| Component | What it captures |
+| --- | --- |
+| Discharge Disposition | The place the patient goes to after the facility. |
+
+The choices are:
+
+- Home
+- Alternate home
+- Other health care facility
+- Hospice
+- Long term care
+- Left against advice
+- Expired
+- Psychiatric hospital
+- Rehabilitation
+- Skilled nursing facility
+- Other
+
+Care marks this field with an asterisk. Care refuses the form until you fill it in, for Inpatient, Observation and Emergency encounters.
+
+Note: Your deployment can pre-fill a default discharge disposition.
+
+### 3. Set the Discharge Date and Time
+
+Set when the patient leaves the facility. Care shows this field after the status becomes **Discharged**. The time cannot be earlier than the start of the encounter.
+
+### 4. Write the Discharge Summary Advice
+
+Write the advice the patient takes home. This field is optional.
+
+### 5. Check the Hospitalization Details
+
+Check the rest of the **Hospitalization Details**:
+
+| Component | What it captures |
+| --- | --- |
+| Admit Source | Where the patient came from. |
+| Re-Admission | A switch. Turn it on when the patient comes back for the same problem. |
+| Diet Preference | The dietary requirement of the patient. |
+
+**Admit Source** offers these choices:
+
+- Transferred from other hospital
+- From accident/emergency department
+- From outpatient department
+- Born in hospital
+- General Practitioner referral
+- Medical Practitioner/physician referral
+- From nursing home
+- From psychiatric hospital
+- From rehabilitation facility
+- Other
+
+**Diet Preference** offers these choices:
+
+- Vegetarian
+- Dairy free
+- Nut free
+- Gluten free
+- Vegan
+- Halal
+- Kosher
+- None
+
+### 6. Submit the form
+
+Submit the form to save the discharge.
+
+## Expected Outcome
+
+- Care marks the encounter as **Discharged**.
+- The encounter stays open. The care team can still change the encounter, the location, the care team, the departments and the tags.
+- The patient keeps the bed until someone closes the location stay. Care frees the bed when the stay closes, or when someone marks the encounter as complete. See [Assign an Encounter location](./assign-encounter-location.mdx).
+- To close the encounter, someone must mark it as complete. See [Complete an Encounter](./complete-encounter.mdx).
+- Care can move a discharged encounter to another status. Care applies no rules about which status follows which.
+
+Note: Your deployment decides which encounter types your facility uses.
+
+## Related
+
+Concepts:
+
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [Update Encounter details](./update-encounter-details.mdx)
+- [Assign an Encounter location](./assign-encounter-location.mdx)
+- [Complete an Encounter](./complete-encounter.mdx)

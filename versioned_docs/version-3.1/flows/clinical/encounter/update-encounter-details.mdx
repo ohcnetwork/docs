@@ -1,0 +1,103 @@
+---
+sidebar_position: 2
+---
+
+# Update encounter details
+
+## Overview
+
+This flow describes how to change the details of an open [encounter](../../../concepts/clinical/encounter.mdx) in Care. You can change the status, the class, the priority and the hospitalization details.
+
+## Pre-requisites
+
+- The patient has an open encounter at your facility, and you opened that encounter.
+- If the encounter is Completed, Cancelled, Discontinued or Entered in error, Care refuses every change. You cannot use this flow.
+- If the patient is discharged, the encounter is still open. You can still update it.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Update Encounter non clinical | Lets you change the non-clinical details of an encounter. Administrators, Doctors, Nurses and Facility Administrators hold this permission. |
+
+## Steps
+
+### 1. Open the encounter form
+
+Go to the encounter page.
+
+Open **Encounter Actions**. The keyboard shortcut is `Shift+E`.
+
+Select **Update Encounter Details**.
+
+Note: You can also press `Shift+U` on the encounter page. This shortcut opens the same form directly.
+
+### 2. Set the encounter status, class and priority
+
+Care shows the encounter form. Complete these required fields.
+
+| Component | What it captures |
+| --- | --- |
+| Encounter Status | The current state of the encounter. Choose Planned, In Progress, On Hold, Completed, Cancelled, Discontinued or Entered in error. |
+| Encounter Class | The type of care. Choose Inpatient, Ambulatory, Observation, Emergency, Virtual or Home Health. |
+| Priority | The urgency of the encounter. For the full list, see [Encounter](../../../concepts/clinical/encounter.mdx). |
+
+Note: The create form calls the **Encounter Class** field **Type of Encounter**. Both fields hold the same value.
+
+Note: The status list does not hold Discharged. You set that status with the discharge button. See [Discharge a patient](./discharge-patient.mdx).
+
+Note: After the patient is discharged, Care disables the **Encounter Status** field.
+
+Note: Which encounter classes you can choose depends on your deployment's configuration.
+
+Note: Care applies no rules about the order of statuses. While the encounter is open, you can set any status in the list.
+
+### 3. Enter the hospital identifier
+
+Enter the facility's reference number for this encounter in **Hospital Identifier**. The field shows the hint "IP/OP/OBS/EMR Number".
+
+This field is optional.
+
+### 4. Enter the discharge summary advice
+
+Care shows **Discharge Summary Advice** after the patient is discharged. Care also shows it when the encounter already holds advice.
+
+Enter the advice for the patient in the text box. This field is optional.
+
+If you clear the text and save the form, Care removes the earlier advice.
+
+### 5. Complete the hospitalization details
+
+Care shows the **Hospitalization Details** section only for Inpatient, Observation and Emergency encounters.
+
+| Component | What it captures |
+| --- | --- |
+| Re-Admission | A switch. Turn it on when the patient comes back for the same problem. |
+| Admit Source | Where the patient came from. |
+| Discharge Disposition | Where the patient goes after discharge. |
+| Diet Preference | The dietary requirement of the patient. |
+
+For the full list of choices in each field, see [Encounter](../../../concepts/clinical/encounter.mdx).
+
+### 6. Submit the form
+
+Submit the form. Care saves the encounter.
+
+## Expected Outcome
+
+- Care saves the new encounter details.
+- Care keeps a history of every status change and every encounter class change on the encounter.
+- If you set the status to Completed, Cancelled, Discontinued or Entered in error, Care closes any open location stay for the encounter. Care also releases any device linked to the encounter. After that, nobody can edit the encounter.
+
+## Related
+
+Concepts:
+
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [Create an Encounter](./create-encounter.mdx)
+- [Discharge a patient](./discharge-patient.mdx)
+- [Complete an Encounter](./complete-encounter.mdx)
