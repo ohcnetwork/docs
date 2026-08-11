@@ -1,0 +1,104 @@
+---
+sidebar_position: 1
+---
+
+# Create an encounter
+
+## Overview
+
+This flow describes how to create an [encounter](../../../concepts/clinical/encounter.mdx) for a patient at a facility. You can start the encounter from the patient page or from an appointment.
+
+## Pre-requisites
+
+- The patient is registered in Care, and you have opened the patient at the facility.
+- If you start the encounter from an appointment, the patient has a booked or checked-in appointment at that facility.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create encounter | Lets you create an encounter for a patient at the facility. Administrator, Doctor, Nurse and Facility Administrator have this permission. |
+
+Note: If you do not have this permission, Care does not show the action.
+
+## Steps
+
+### 1. Open the encounter form
+
+You can open the form from four places.
+
+**From the patient page.** Open the patient at the facility. Select the **Create Encounter** quick action. Keyboard shortcut: `e`.
+
+**From the patient's Encounters tab.** Open the patient. Go to the **Encounters** tab. Select **Create Encounter**. This action appears when the patient has no encounter yet.
+
+**From an appointment, with Start Consultation.** Open the appointment page. In **Quick Actions**, select **Start Consultation**. Keyboard shortcut: `1`. Care opens the form with the status set to **In Progress**. Care also links the encounter to the appointment. When you confirm, Care moves the appointment to In Consultation.
+
+Note: If the appointment already has an encounter, **Start Consultation** does not open the form. Care moves the appointment to In Consultation. Care then opens the existing encounter on its Overview tab.
+
+**From an appointment, with Create Planned Encounter.** In the same **Quick Actions** panel, select **Create Planned Encounter**. Keyboard shortcut: `2`. Care opens the form with the status set to **Planned**.
+
+The form is titled **Initiate Patient Encounter**. Below the title, Care shows "Begin a new clinical encounter for" and the name of the patient.
+
+### 2. Complete the form
+
+Complete the fields in the order they appear.
+
+| Component | What it captures |
+| --- | --- |
+| Date and Time (required) | The date and the time the encounter starts. You can pick a future date only when the status is Planned. |
+| Type of Encounter (required) | The kind of care the patient receives. Select one tile. See the tile list below. |
+| Status (required) | The state of the encounter. Choose In Progress, Planned or On Hold. These are the only statuses you can set at creation. |
+| Priority (required) | How urgent the encounter is. Care preselects Routine. For the full list, see [Encounter](../../../concepts/clinical/encounter.mdx). |
+| Tags (optional) | One or more tags that your facility configured for encounters. |
+| Departments (required) | The departments that look after the patient. Select at least one department. Departments control who can see the encounter. |
+
+Each **Type of Encounter** tile carries a short description.
+
+| Type of Encounter | Description |
+| --- | --- |
+| Inpatient | Patient is admitted to the hospital. |
+| Ambulatory | Patient visits for outpatient care. |
+| Observation | Patient is under observation. |
+| Emergency | Mark as emergency if immediate attention is required. |
+| Virtual | Virtual/telehealth consultation. |
+| Home Health | Care provided at patient's home. |
+
+Note: Which encounter types you can choose, and which type Care preselects, depend on your deployment's configuration.
+
+### 3. Save the encounter
+
+Select **Create Encounter**. The button shows "Creating…" while Care saves the encounter. To close the form without saving, select **Cancel**.
+
+If Care shows an error, correct the entry and save again.
+
+| Message | What to do |
+| --- | --- |
+| Future date is only allowed for planned encounters | The start date is in the future, but the status is not Planned. Move the date back, or set the status to Planned. |
+| At least one department is required | Select a department. The **Create Encounter** button stays disabled until you select one. |
+| Patient already has maximum number of active encounters (5) in the facility | The patient already has the maximum number of open encounters at this facility. Close one of them, or continue in the existing encounter. |
+| Encounter already has an associated booking | The appointment you started from already has an encounter. Open that encounter instead. |
+
+Note: The maximum number of open encounters per patient at a facility depends on your deployment's configuration. The default maximum is 5.
+
+## Expected Outcome
+
+- Care shows the message "Encounter created successfully".
+- Care opens the new encounter on its Overview tab.
+
+## Related
+
+Concepts:
+
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [Update Encounter details](./update-encounter-details.mdx)
+- [Assign an Encounter location](./assign-encounter-location.mdx)
+- [Manage the Encounter care team](./manage-encounter-care-team.mdx)
+- [Manage Encounter departments](./manage-encounter-departments.mdx)
+- [Manage Encounter tags](./manage-encounter-tags.mdx)
+- [Discharge a patient](./discharge-patient.mdx)
+- [Complete an Encounter](./complete-encounter.mdx)
+- [Restart an Encounter](./restart-encounter.mdx)

@@ -4,74 +4,213 @@ sidebar_position: 2
 
 # Encounter
 
-An **encounter** is a single episode of care between a patient and a facility — an outpatient visit, an admission, an emergency presentation, or a virtual consultation. It is the working context for clinical activity: while an encounter is open, the orders, observations, medications, and notes recorded for the patient are gathered under it.
+## Definition
 
-## What it represents
+An **[encounter](https://build.fhir.org/encounter.html)** in Care records one interaction between a patient and your facility. The interaction is an outpatient visit, an admission, an observation stay, an emergency visit, a virtual consultation, or a home visit. The encounter groups everything the care team records for that interaction. A patient can have more than one open encounter at the same facility at the same time.
 
-In Care's FHIR-aligned model, an encounter maps to the **Encounter** resource. It answers four questions about one episode: what kind of interaction it is, where and when it happens, who is on the care team, and — for admissions — how the patient arrived and left.
+Note: Your deployment sets the maximum number of open encounters for one patient at a facility. The default maximum is 5.
 
-An encounter is not the patient and not the whole medical record. One patient accumulates many encounters over time; each encounter is the bounded slice of activity for a single episode, and the [patient](../clinical/patient) record is the thread that ties them together. Think of the patient as the chart and each encounter as a dated chapter within it.
+Care follows the FHIR R5 Encounter resource. An encounter links to these records:
 
-## Lifecycle
+- The patient who receives the care.
+- The facility and the departments that answer for the care.
+- The location that the patient occupies.
+- The appointment that starts the encounter.
 
-An encounter carries a status that reflects where the episode stands. It opens as `planned` or `in_progress`, runs through active care, and ends in exactly one terminal state. Care records every transition in a status history, so the journey stays auditable.
+## Key Attributes
 
-```text
-planned ──▶ in_progress ──▶ discharged ──▶ completed
-                 ▲   │
-                 └───┘  on_hold (pause, then resume)
-```
-
-- **planned** — the episode is scheduled or expected but has not started
-- **in_progress** — the patient is actively being seen or treated
-- **on_hold** — care is temporarily paused (for example, awaiting results or a bed), then resumes
-- **discharged** — the patient has left the facility; closing paperwork may still be in flight
-- **completed** — the episode is finished and finalized
-
-An episode can also end early without reaching `completed`: **cancelled** (called off before meaningful care), **discontinued** (stopped and will not resume), or **entered_in_error** (created by mistake and voided). These, along with `completed`, are the terminal states — once an encounter reaches one, it stops accumulating new clinical activity.
-
-## Classification
-
-Two independent axes describe an encounter. **Class** answers "what kind of visit is this?" and **priority** answers "how urgent is it?". The two are set separately, so an inpatient admission can be routine and an outpatient visit can be an emergency.
-
-| Class | Meaning |
+| Components | What it captures |
 | --- | --- |
-| `imp` | Inpatient — admitted to a bed |
-| `amb` | Ambulatory — outpatient or clinic visit |
-| `emer` | Emergency — emergency department presentation |
-| `obsenc` | Observation — short-stay monitoring |
-| `vr` | Virtual — teleconsultation |
-| `hh` | Home health — care delivered at the patient's home |
+| Status | The current state of the encounter, for example In Progress. |
+| Type of Encounter | The type of care, for example Inpatient or Ambulatory. The update form calls this field Encounter Class. |
+| Priority | The urgency of the care, for example Emergency or Routine. |
+| Date and Time | The date and time when the encounter starts. |
+| Discharge Date and Time | The date and time when the facility discharges the patient. |
+| Hospital Identifier | A free-text reference number that your facility uses, such as an IP, OP, OBS or EMR number. |
+| Departments | The facility departments that answer for the encounter. |
+| Care team | The staff who look after the patient, each with a clinical role. |
+| Current location | The bed, room or ward that the patient occupies. |
+| Tags | Labels that your facility configures. |
+| Hospitalization details | The admission and discharge information for a patient who stays at the facility. |
+| Discharge Summary Advice | Free text that the team writes for the patient at discharge. |
 
-Priority runs from `routine` through `urgent`, `emergency`, `ASAP`, and `stat`, with workflow values such as `elective` and `preop` for scheduled care. As with status, a change in class is recorded in its own history.
+### Departments
 
-## How it connects
+Each encounter needs at least one department. The departments control who can see the encounter. To change them, see [Manage Encounter departments](../../flows/clinical/encounter/manage-encounter-departments.mdx).
 
-The encounter is the hub that most clinical work hangs off:
+### Care team
 
-- **Patient** — every encounter belongs to exactly one [patient](../clinical/patient), set when it is created and never changed.
-- **Facility and location** — it is anchored to a [facility](../../references/facility/facility.mdx) and tracks the [location](../../references/facility/location.mdx) the patient currently occupies within it, with a full location history behind that.
-- **Booking** — an encounter can originate from a scheduling [booking](../../references/scheduling/booking.mdx), linking the appointment that brought the patient in to the episode that followed.
-- **Organizations** — each encounter is associated with one or more facility [organizations](../../references/access-governance/organization.mdx), and that association is what drives who can see and act on it.
-- **Clinical records** — [conditions](../clinical/condition.mdx), [observations](../clinical/observation.mdx), [service requests](../clinical/service-request.mdx), medication orders, and [notes](../clinical/notes.mdx) are all recorded in the context of an encounter.
+The care team lists the staff who look after the patient. Each member holds a clinical role. One member carries the primary marker. To change the team, see [Manage the Encounter care team](../../flows/clinical/encounter/manage-encounter-care-team.mdx).
+
+### Tags
+
+Your facility configures the tags. Care groups them in these categories:
+
+- Diet
+- Drug
+- Lab
+- Admin
+- Contact
+- Clinical
+- Behavioral
+- Research
+- Advance Directive
+- Safety
+
+### Type of Encounter
+
+| Type of Encounter | Description |
+| --- | --- |
+| Inpatient | Patient is admitted to the hospital. |
+| Ambulatory | Patient visits for outpatient care. |
+| Observation | Patient is under observation. |
+| Emergency | Mark as emergency if immediate attention is required. |
+| Virtual | Virtual/telehealth consultation. |
+| Home Health | Care provided at patient's home. |
+
+Note: Your deployment decides which types staff can choose. Your deployment also decides which type Care preselects.
+
+### Priority
+
+The priority states how urgent the care is. Care offers these priorities:
+
+- Stat
+- ASAP
+- Emergency
+- Urgent
+- Routine
+- Elective
+- Rush reporting
+- Timing critical
+- Callback results
+- Callback for scheduling
+- Pre-op
+- As needed
+- Use as directed
+
+Note: Routine is the default priority on the create form.
+
+### Hospitalization details
+
+Hospitalization details appear only for the Inpatient, Observation and Emergency types.
+
+| Components | What it captures |
+| --- | --- |
+| Re-Admission | Whether the patient comes back for the same problem. |
+| Admit Source | Where the patient came from. |
+| Discharge Disposition | Where the patient goes after discharge. |
+| Diet Preference | The dietary requirement of the patient. |
+
+Admit Source offers these values:
+
+- Transferred from other hospital
+- From accident/emergency department
+- From outpatient department
+- Born in hospital
+- General Practitioner referral
+- Medical Practitioner/physician referral
+- From nursing home
+- From psychiatric hospital
+- From rehabilitation facility
+- Other
+
+Discharge Disposition offers these values:
+
+- Home
+- Alternate home
+- Other health care facility
+- Hospice
+- Long term care
+- Left against advice
+- Expired
+- Psychiatric hospital
+- Rehabilitation
+- Skilled nursing facility
+- Other
+
+Diet Preference offers these values:
+
+- Vegetarian
+- Dairy free
+- Nut free
+- Gluten free
+- Vegan
+- Halal
+- Kosher
+- None
+
+Note: Your deployment can set a default discharge disposition. Care pre-fills that value.
+
+### Status
+
+The status shows where the encounter is in its life cycle.
+
+| Status | Description |
+| --- | --- |
+| Planned | The team plans the encounter for a future date. |
+| In Progress | The team gives care to the patient now. |
+| On Hold | The team pauses the encounter. |
+| Discharged | The facility discharges the patient. |
+| Completed | The care in this encounter ends. |
+| Cancelled | The team cancels the encounter before the care starts. |
+| Discontinued | The team stops the encounter before the care ends. |
+| Entered in error | A user creates the encounter by mistake. |
+| Unknown | The status of the encounter is not known. |
+
+Care applies no rules about the order of the statuses. While the encounter stays open, you can move it from any status to any other status.
+
+Four statuses lock the encounter: Completed, Cancelled, Discontinued and Entered in error. After the encounter reaches one of these statuses, nobody can edit it. Nobody can record new clinical data on it.
+
+Discharged does not lock the encounter. A discharged encounter stays open for edits. The care team can still change the location, the care team, the departments and the tags. To close a discharged encounter, someone must mark it as complete. See [Complete an Encounter](../../flows/clinical/encounter/complete-encounter.mdx).
+
+Note: Your deployment sets how long after its last change someone can restart a completed encounter. The default is zero hours, which stops all restarts.
+
+## Where to find Encounters
+
+The facility sidebar holds a Patients group. The group contains Search Patients, one list for each allowed encounter type, and Locations. The group also contains All Encounters when your deployment allows more than one encounter type.
+
+Note: Your deployment sets the default date filter on the encounter lists.
+
+The encounter page holds these tabs: Overview, Plots, Observations, Medicines, Responses, Service Requests, Diagnostic Reports, Files, Notes, Devices and Consents. Every tab except Overview, Devices and Consents needs permission to read clinical data.
+
+The encounter page also holds an **Encounter Actions** command palette. Press `Shift+E` to open it.
+
+The Overview tab carries a side panel with these actions:
+
+- Manage Consents
+- Manage Care Team
+- Update Location
+- Update Department
+- Dispense
+
+The Overview tab also carries a button. The button reads **Mark for discharge** or **Mark as Completed**.
+
+A left rail lets you move between the encounters of the patient. The rail filters the encounters by status, department, care team, date and tags.
 
 ## Permissions
 
-Access to encounters is permission-controlled, and every action on the encounter endpoint is reserved for clinical roles. Listing and retrieving an encounter is also granted when the user can view the underlying patient.
+Your role controls what you can do with an encounter. Administrators, Doctors, Nurses and Facility Administrators hold these permissions.
 
-| Permission | Description | System Roles |
-| --- | --- | --- |
-| `can_create_encounter` | Open a new encounter for a patient under a facility | Admin, Doctor, Nurse, Facility Admin |
-| `can_list_encounter` | List encounters within a facility (clinical data is not exposed through this permission) | Admin, Doctor, Nurse, Facility Admin |
-| `can_read_encounter` | Retrieve an encounter's non-clinical details | Admin, Doctor, Nurse, Facility Admin |
-| `can_write_encounter` | Update an encounter, manage its organizations, set facility identifiers, assign care-team members, and restart a completed encounter | Admin, Doctor, Nurse, Facility Admin |
+| Permission | What it allows |
+| --- | --- |
+| Can Create encounter | Create an encounter. |
+| Can Read encounter | Open an encounter. |
+| Can list encounters | See the encounter lists. |
+| Update Encounter non clinical | Change the details of the encounter. Manage its departments, care team, location, tags, completion and restart. |
+| Can Read encounter related clinical data | Open the clinical tabs. |
+| Update Encounter related clinical data | Record clinical data. |
+| Can submit questionnaire about patient encounters | Answer questionnaires about the encounter. Staff also hold this permission. |
 
-Roles are granted to users through their organization, facility, and patient memberships, and permissions cascade down the organization tree — a role held at a parent organization applies to the facilities and encounters beneath it.
+You can also reach an encounter through the department that owns the current bed of the patient. The departments of the encounter are not the only route.
 
 ## Related
 
-- Reference: [Encounter (technical)](../../references/clinical/encounter.mdx)
-- Concept: [Patient](../clinical/patient)
-- Concept: [Condition](../clinical/condition.mdx)
-- Concept: [Service request](../clinical/service-request.mdx)
-- Concept: [Notes](../clinical/notes.mdx)
+- Flow: [Create an Encounter](../../flows/clinical/encounter/create-encounter.mdx)
+- Flow: [Update Encounter details](../../flows/clinical/encounter/update-encounter-details.mdx)
+- Flow: [Assign an Encounter location](../../flows/clinical/encounter/assign-encounter-location.mdx)
+- Flow: [Manage the Encounter care team](../../flows/clinical/encounter/manage-encounter-care-team.mdx)
+- Flow: [Manage Encounter departments](../../flows/clinical/encounter/manage-encounter-departments.mdx)
+- Flow: [Manage Encounter tags](../../flows/clinical/encounter/manage-encounter-tags.mdx)
+- Flow: [Discharge a patient](../../flows/clinical/encounter/discharge-patient.mdx)
+- Flow: [Complete an Encounter](../../flows/clinical/encounter/complete-encounter.mdx)
+- Flow: [Restart an Encounter](../../flows/clinical/encounter/restart-encounter.mdx)

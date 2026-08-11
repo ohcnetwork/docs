@@ -1,0 +1,77 @@
+---
+sidebar_position: 4
+---
+
+# Manage the encounter care team
+
+## Overview
+
+This flow describes how to manage the care team of an [encounter](../../../concepts/clinical/encounter.mdx) in Care. The care team lists the staff who look after the patient, and the role of each person.
+
+## Pre-requisites
+
+- The patient has an open encounter at your facility, and you opened that encounter.
+- The staff you want to add are members of a department at the facility.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Update Encounter non clinical | Lets you add, remove, and reorder the members of the care team. Administrator, Doctor, Nurse and Facility Administrator have this permission. |
+
+Note: If you can open the encounter but you cannot change it, Care shows the same list in read-only form.
+
+## Steps
+
+### 1. Open the care team sheet
+
+Open the encounter page. Then use one of these entry points:
+
+- Select **Encounter Actions** (shortcut `Shift+E`). Then select **Manage Care Team**.
+- Or, on the **Overview** tab side panel, select **Manage Care Team**.
+
+Care opens a sheet titled **Manage Care Team**. If you can only read the team, the sheet is titled **View Care Team**.
+
+Note: Care defines no keyboard shortcut for **Manage Care Team**.
+
+### 2. Add a member
+
+1. Select the department the person belongs to.
+2. Open **Select Member** and choose the person. Care lists only the users of the department you chose.
+3. Open **Select Role** and choose the clinical role of the person. Care shows the roles that match your search.
+4. Select **Add**. Care shows "Member added successfully".
+
+Note: The list of roles comes from a clinical terminology set. Your deployment can offer a different set of roles from another deployment.
+
+If you select a person who is already on the team, Care shows "Member already added".
+
+### 3. Set the primary member
+
+Select **Mark as Primary** on a member. Care moves that person to the top of the list. Care shows "Primary member updated". Care asks for no confirmation.
+
+Note: Care keeps the first person in the list as the primary member. Care marks that person **Primary**.
+
+### 4. Remove a member
+
+Select **Remove** on the member. Care opens the **Confirm Removing Member** dialog. Select **Remove** again. Care shows "Member removed successfully".
+
+## Expected Outcome
+
+- The care team of the encounter shows the staff you added, with the role of each person.
+- The primary member is at the top of the list.
+- Care saves the whole team together each time you change it.
+
+Note: Membership of the care team can give a user access to the encounter. Add only the staff who look after the patient.
+
+## Related
+
+Concepts:
+
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [Create an Encounter](./create-encounter.mdx)
+- [Assign an Encounter location](./assign-encounter-location.mdx)
+- [Manage Encounter departments](./manage-encounter-departments.mdx)

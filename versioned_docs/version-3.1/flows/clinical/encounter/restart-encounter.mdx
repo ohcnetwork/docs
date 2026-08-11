@@ -1,0 +1,60 @@
+---
+sidebar_position: 9
+---
+
+# Restart an encounter
+
+## Overview
+
+This flow describes how to reopen a completed [encounter](../../../concepts/clinical/encounter.mdx) in Care. Care sets the status back to In Progress, and the care team can record clinical data again.
+
+## Pre-requisites
+
+- The encounter status is Completed.
+- You work within the facility that owns the encounter.
+- Someone marked the encounter as complete by mistake, or the care team must record more for the same interaction.
+- You open the encounter itself. Care hides the action when you look at another encounter of the same patient in the side selector.
+- Your deployment allows restarts. Read the note in the Steps section before you start.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Update Encounter non clinical | Restart a completed encounter. Administrator, Doctor, Nurse and Facility Administrator hold this permission. |
+
+## Steps
+
+### 1. Open the encounter actions
+
+On the encounter page, open **Encounter Actions**. You can also press `Shift+E`.
+
+Note: Care shows **Restart Encounter** only when the encounter status is Completed. Care also needs you to work within the facility that owns the encounter.
+
+### 2. Select Restart Encounter
+
+Select **Restart Encounter**. Care defines no keyboard shortcut for this action.
+
+Care acts at once. It asks for no confirmation.
+
+Note: Your deployment sets how many hours after the last change you can restart a completed encounter. The default is zero hours. With that setting, Care refuses every restart. When the limit stops you, Care shows "Encounter cannot be restarted after 0 hours" with the number that your deployment set. Ask your administrator to raise the limit if your facility needs restarts.
+
+## Expected Outcome
+
+- Care shows "Encounter restarted successfully".
+- Care opens the encounter on its **Overview** tab.
+- Care sets the encounter status to **In Progress**.
+- The care team can record clinical data again.
+- If the restart fails, Care shows "Failed to restart encounter".
+
+## Related
+
+Concepts:
+
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [Create an Encounter](./create-encounter.mdx)
+- [Update Encounter details](./update-encounter-details.mdx)
+- [Complete an Encounter](./complete-encounter.mdx)

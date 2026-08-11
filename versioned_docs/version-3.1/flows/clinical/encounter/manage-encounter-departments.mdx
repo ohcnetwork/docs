@@ -1,0 +1,75 @@
+---
+sidebar_position: 5
+---
+
+# Manage encounter departments
+
+## Overview
+
+This flow describes how to link departments to an [encounter](../../../concepts/clinical/encounter.mdx), and how to remove them.
+
+Departments decide who can see the encounter. Staff of a linked department can open the encounter. Every encounter has at least one department. You choose the first department when you create the encounter.
+
+## Pre-requisites
+
+- The patient has an open encounter at your facility, and you opened that encounter.
+- The departments you want belong to the same facility as the encounter.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Update Encounter non clinical | Link a department to the encounter, and remove a linked department. Administrator, Doctor, Nurse and Facility Administrator have this permission. |
+
+## Steps
+
+### 1. Open the department sheet
+
+Go to the encounter page.
+
+Use one of these entry points:
+
+- Open **Encounter Actions** with the `Shift+E` shortcut, then select **Update Department**.
+- On the **Overview** tab side panel, select **Update Department**.
+
+Note: Care defines no keyboard shortcut for the **Update Department** action.
+
+### 2. Add a department
+
+1. Open the department selector.
+2. Select one or more departments.
+
+Care links each department to the encounter as you select it.
+
+The department must belong to the facility of the encounter. If it does not, Care shows "Organization Incompatible with Encounter".
+
+You cannot link the same department twice. If you try, Care shows "Organization already exists".
+
+### 3. Remove a department
+
+1. Find the department in the list of linked departments.
+2. Select the delete icon beside the department.
+
+Care shows "Organization removed successfully".
+
+You cannot remove a department that is not linked. If you try, Care shows "Organization does not exist".
+
+## Expected Outcome
+
+- The encounter shows the linked departments in the list of departments.
+- Staff of each linked department can open the encounter.
+
+Note: A user of the department that owns the current bed of the patient can also open the encounter. This applies even when Care does not link that department to the encounter.
+
+## Related
+
+Concepts:
+
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [Create an Encounter](./create-encounter.mdx)
+- [Assign an Encounter location](./assign-encounter-location.mdx)
+- [Manage the Encounter care team](./manage-encounter-care-team.mdx)

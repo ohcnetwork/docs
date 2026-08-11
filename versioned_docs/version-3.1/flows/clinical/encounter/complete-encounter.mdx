@@ -1,0 +1,62 @@
+---
+sidebar_position: 8
+---
+
+# Complete an encounter
+
+## Overview
+
+This flow describes how to mark an [encounter](../../../concepts/clinical/encounter.mdx) as complete in Care. A completed encounter is closed for all further changes.
+
+## Pre-requisites
+
+- The care team recorded everything for this interaction.
+- If the facility admits the patient, discharge the patient first. See [Discharge a patient](./discharge-patient.mdx).
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Update Encounter non clinical | Lets you mark the encounter as complete. Administrator, Doctor, Nurse and Facility Administrator have this permission. |
+
+## Steps
+
+### 1. Open the action
+
+Open the encounter. Use one of these entry points:
+
+- On the **Overview** tab side panel, select the bottom button **Mark as Completed**.
+- Open **Encounter Actions** with the shortcut `Shift+E`. Then select **Mark as Completed**. The keyboard shortcut for this action is `m` then `c`.
+
+Note: If the encounter is Inpatient and you did not discharge the patient yet, Care does not show the confirmation dialog. Care opens the encounter form with the discharge already selected. Complete the discharge first.
+
+### 2. Confirm the action
+
+Care shows the dialog **Mark as Complete**. The dialog asks "Are you sure you would like to mark this encounter as complete?".
+
+Select **Mark as Complete** to confirm. Press `Enter` to confirm. Select **Cancel** or press `Escape` to close the dialog.
+
+## Expected Outcome
+
+- Care shows "Encounter Completed".
+- Care sets the status to **Completed** and records the end of the encounter.
+- If the encounter came from an appointment, Care closes the appointment and its token as fulfilled. Care shows "Appointment closed successfully".
+- Care closes any open location stay and frees the bed.
+- Care releases any device linked to the encounter.
+
+After the encounter closes, nobody can change it. Nobody can record new clinical data on it. The encounter stays available to read. To open the encounter again, see [Restart an Encounter](./restart-encounter.mdx).
+
+Note: The same lock applies to the statuses Cancelled, Discontinued and Entered in error.
+
+## Related
+
+Concepts:
+
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [Discharge a patient](./discharge-patient.mdx)
+- [Restart an Encounter](./restart-encounter.mdx)
+- [Update Encounter details](./update-encounter-details.mdx)

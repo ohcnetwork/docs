@@ -1,0 +1,104 @@
+---
+sidebar_position: 3
+---
+
+# Assign an encounter location
+
+## Overview
+
+This flow describes how to record the bed or room that a patient occupies during an [encounter](../../../concepts/clinical/encounter.mdx). It also describes how to move the patient to another location and how to correct earlier stays.
+
+## Pre-requisites
+
+- The patient has an open encounter at your facility, and you opened that encounter.
+- The facility has locations set up in Care.
+- The bed or room that you want belongs to the same facility as the encounter.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Update Encounter non clinical | Lets you assign, move, correct, close and cancel the locations of an encounter. Administrator, Doctor, Nurse and Facility Administrator hold this permission. |
+
+You also need permission to see the locations of the facility.
+
+## Steps
+
+### 1. Open the location sheet
+
+Go to the encounter page. Then use one of these entry points:
+
+- Open **Encounter Actions** with the shortcut `Shift+E`. Select **Assign Location**.
+- Press `l` on the encounter page.
+- On the **Overview** tab side panel, select **Update Location**.
+
+The location sheet opens. The sheet has two tabs: **Assign** and **History**.
+
+### 2. Assign a location
+
+1. Open the **Assign** tab.
+2. Browse the locations of the facility.
+3. Select the bed or room that the patient occupies. You can select only a real place, such as a bed or a room. You cannot select a location category.
+4. Set the state of the stay. A stay is planned, reserved or active. Only one stay stays active at a time.
+5. Set the start time.
+6. If the stay has an end time, set the end time.
+7. Confirm.
+
+Note: Care groups locations in these forms:
+
+- Site, Building, Wing, Ward, Level and Corridor
+- Room, Bed, Cabinet and House
+- Vehicle, Road, Area and Jurisdiction
+- Virtual
+
+### 3. Move the patient to another location
+
+1. Select the new bed or room.
+2. Choose the move action.
+3. Care asks whether to keep the previous bed reserved for the patient, or to free it. Choose one option.
+4. Confirm.
+
+### 4. Handle an occupied bed
+
+- If another patient occupies the bed in an open encounter, Care blocks the assignment. Care tells you that the bed is occupied. You cannot override this. Free that bed first.
+- If the patient who occupies the bed is discharged, Care asks you to confirm. Confirm to move the new patient in.
+
+### 5. Correct an earlier stay
+
+1. Open the **History** tab. The tab lists the earlier stays of the patient for this encounter.
+2. Select the stay that you want to change.
+3. Correct the times of the stay, close the stay, or cancel the stay.
+4. Care asks you to confirm before it removes a stay. Confirm.
+
+### 6. Rules that Care applies
+
+- The end time must be the same as or later than the start time. If it is earlier, Care shows "End Datetime should be greater than Start Datetime".
+- A closed stay needs an end time. If the end time is missing, Care shows "End Datetime is required for completed status".
+- After you close a stay, you cannot change the state of that stay again.
+- Two stays cannot overlap at the same location. If they overlap, Care shows "Conflict in schedule".
+- The location and the encounter must belong to the same facility.
+
+## Expected Outcome
+
+- The encounter shows the current bed or room of the patient.
+- While the patient occupies a bed, Care shows the bed as reserved. When the stay closes, Care shows the bed as available again.
+- The **History** tab lists each stay of the patient for this encounter.
+- When you set the encounter status to Completed, Cancelled, Discontinued or Entered in error, Care closes any open stay for you.
+- A discharged encounter still holds its location. Care frees the bed only when the stay closes, or when someone marks the encounter as complete.
+
+Note: A user who belongs to the department that owns the current bed of the patient can open the encounter. This applies even when that user does not belong to the departments of the encounter.
+
+## Related
+
+Concepts:
+
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [Create an Encounter](./create-encounter.mdx)
+- [Update Encounter details](./update-encounter-details.mdx)
+- [Manage Encounter departments](./manage-encounter-departments.mdx)
+- [Discharge a patient](./discharge-patient.mdx)
+- [Complete an Encounter](./complete-encounter.mdx)
