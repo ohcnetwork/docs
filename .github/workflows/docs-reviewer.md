@@ -11,6 +11,7 @@ on:
       - opened
       - reopened
       - synchronize
+      - ready_for_review
     paths:
       - "versioned_docs/**"
       - "versioned_sidebars/**"
@@ -32,6 +33,11 @@ if: ${{ github.repository == 'ohcnetwork/docs' }}
 # separate safe-output jobs that post the review.
 permissions: read-all
 
+model: claude-opus-5
+engine:
+  id: copilot
+  args: ["--reasoning-effort", "high"]
+
 # Never check out the PR head under pull_request_target — that is the "pwn request"
 # attack. This pins the working tree to the trusted base commit, which also means a
 # pull request cannot rewrite the conventions it is being judged against.
@@ -40,7 +46,8 @@ checkout:
   ref: ${{ github.event.pull_request.base.sha }}
 
 imports:
-  - .github/agents/care-docs-reviewer.agent.md
+  - .github/agents/docs-pr-reviewer.agent.md
+  - .github/references/review-checklist.md
 
 tools:
   github:

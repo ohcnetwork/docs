@@ -21,7 +21,14 @@ Concepts live at `versioned_docs/version-3.0/concepts/<domain>/<slug>.mdx` (mirr
 
 ## The quality bar
 
-The gold standard is `versioned_docs/version-3.0/concepts/clinical/patient.mdx`. **Read it every time.** Also read `concepts/facility/organization.mdx` for a richer example (types, hierarchy, an access model). Study how a great concept:
+The gold standard is the template at `assets/concept-template.md`. **Read it every
+time.** It defines the section names and their order, and they are not negotiable.
+
+For a worked example of the shape, read
+`versioned_docs/version-3.0/concepts/clinical/patient.mdx` and
+`concepts/facility/organization.mdx` (types, hierarchy, an access model). Treat these
+as illustrations only — where an existing page disagrees with the template, **the
+template wins and the page is wrong**. Study how a great concept:
 
 - Opens with one sharp sentence defining the thing and the role it plays.
 - Has a `## What it represents` that names the FHIR resource, gives categorized bullets, and then lands **one clarifying insight** that prevents a common misconception (patient: _"A patient is not the same as a single visit."_). This insight is what separates a real concept from a generic summary — always find it.

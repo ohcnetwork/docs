@@ -26,7 +26,13 @@ in a flow.
 
 ## The quality bar
 
-The gold standard is `flows/clinical/create-patient.mdx`. **Read it every time.** Study
+The gold standard is the template at `assets/flow-template.md`. **Read it every time.**
+It defines the section names and their order, and they are not negotiable.
+
+`flows/clinical/create-patient.mdx` is a worked example of the shape, but it predates
+the template: it uses different headings and still carries an `## API equivalent`
+section. Where it disagrees with the template, **the template wins and that page is
+wrong**. Study
 how a good flow:
 
 - Opens with one sentence naming the task and its end state ("the minimum path from
@@ -49,17 +55,20 @@ Use the same `<domain>` folders as concepts and references.
 
 ## Page structure
 
-- Frontmatter: `sidebar_position: <n>`.
-- `# <Verb phrase>` then one or two sentences stating the task and its end state.
-- `:::info Prerequisite` — link the concept(s) a reader should understand first.
-- `## Before you start` — required permission in plain words, prior records the task
-  depends on (an encounter needs a patient), and any deployment configuration that
-  changes the task.
+Take the structure from `assets/flow-template.md`. In order:
+
+- Frontmatter: `sidebar_position: <n>`, then a plain `# How to <action>` H1.
+- `## Overview` — one or two sentences saying what the flow does, linking the concept.
+- `## Pre-requisites` — what must be true before the user starts, in the user's terms.
+  Conditional items start with "If".
+- `## Permissions` — a `| Permission | Access |` table, using the human-readable
+  permission name ("Can Create Patient"), never the slug.
 - `## Steps` — `### 1. <imperative>`, one decision per step. Give the real navigation
-  path and the real button labels. Use a `| Field | Notes |` table for form fields.
-  Mention a keyboard shortcut only if `care_fe/src/config/keyboardShortcuts.json`
-  actually defines one for that action.
-- `## After <the task>` — what the user can do next, as a `| Next step | When |` table.
+  path and the real button labels. Use a table for form fields. Mention a keyboard
+  shortcut only if `care_fe/src/config/keyboardShortcuts.json` actually defines one for
+  that action.
+- `## Expected Outcome` — what the user sees, or what the system creates.
+- `## Related` — concepts and sibling flows.
 
 Do **not** add an API or payload section. Flows are user-facing; the technical surface
 belongs in the matching reference doc, which the flow can link to.
@@ -105,7 +114,7 @@ shared conventions rather than assuming.
 
 ### Creating a new flow
 
-1. Read the `create-patient` gold standard.
+1. Read the `assets/flow-template.md` gold standard.
 2. Trace the task through `care_fe`, and the permission through `care`.
 3. Write to `flows/<domain>/<slug>.mdx`.
 4. Add the doc id to the sidebar file of every version you wrote to.
