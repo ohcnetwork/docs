@@ -1,0 +1,52 @@
+---
+sidebar_position: 2
+---
+
+# Department
+
+## Definition
+
+A **[department](https://build.fhir.org/organization.html)** in Care is a group inside a facility, such as a ward, a clinical team, or an administrative unit. A department can hold sub-departments, so the departments of a facility form a hierarchy. Care models a department on the FHIR Organization resource.
+
+Note: Care creates one root department named Administration for every new facility. You cannot create, edit, or delete this root department from the settings screens. You also cannot create a department under it. The person who creates the facility becomes the Facility Admin of the root department.
+
+Note: Your deployment sets the maximum nesting depth and the maximum number of departments for each facility.
+
+## Key Attributes
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the department. This is required. |
+| Description | A description of the department. This is optional. |
+| Type | The kind of department. Select Department or Team. |
+| Parent department | The department that this department sits under. A department with no parent is a top-level department in the facility. |
+| Active | Whether the department is active. |
+
+### Type
+
+Type records the kind of department. You select the type when you create the department, and you can change it later. Care offers these two values:
+
+- Department
+- Team
+
+Note: Care keeps other department types for its own use, such as the root Administration department. Care does not offer these types on the department settings screens.
+
+## Permissions
+
+| Permission | What it allows |
+| --- | --- |
+| Can Create Facility Organizations | Create a new department. The Facility Admin role holds this permission. |
+| Can Manage Facility Organizations | Edit the name, description, and type of a department. The Facility Admin and Administrator roles hold this permission. |
+| Can Delete Facility Organizations | Delete a department. The Facility Admin role holds this permission. |
+| Can List Users in a Facility Organizations | See the members of a department. The Facility Admin, Admin, Staff, Doctor, Administrator, and Nurse roles hold this permission. |
+| Can Manage Users in a Facility Organization | Add a member to a department, remove a member from it, or change the role of a member in it. The Facility Admin and Administrator roles hold this permission. |
+
+Note: A role that you grant on a department also applies to the sub-departments of that department.
+
+## Related
+
+- Flow: [Create a department](../../flows/facility/department/create-department.mdx)
+- Flow: [Update a department](../../flows/facility/department/update-department.mdx)
+- Flow: [Add users to a department](../../flows/facility/department/add-users-to-department.mdx)
+- Flow: [Delete a department](../../flows/facility/department/delete-department.mdx)
+- Concept: [Facility](../../concepts/facility/facility.mdx)

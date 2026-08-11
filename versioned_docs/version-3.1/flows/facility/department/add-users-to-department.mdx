@@ -1,0 +1,69 @@
+---
+sidebar_position: 3
+---
+
+# Add users to a department
+
+## Overview
+
+This flow describes how to manage the members of a [department](../../../concepts/facility/department.mdx) in Care. You can add a user, change a member's role, and remove a member.
+
+## Pre-requisites
+
+- The department is set up in the facility.
+- The user has an account in Care. If the user has no account, you can create the account during this flow.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can List Users in a Facility Organizations | Lets you view the members of a department. Facility Admin, Admin, Staff, Doctor, Administrator, and Nurse hold this permission. |
+| Can Manage Users in a Facility Organization | Lets you add a member, change a member's role, or remove a member. Facility Admin and Administrator hold this permission. |
+
+Note: You cannot give a member a role that carries more permissions than your own effective permissions on that department and its parent departments. Care blocks the attempt.
+
+## Steps
+
+### 1. Open the Users tab of the department
+
+Open the facility. Select Settings. Select Departments. Open the department. Select the Users tab.
+
+### 2. Add a user to the department
+
+Select Link User. Search for the user. Select the user. Under Select Role, select a role. Select Add to Organization.
+
+Note: To link a service account, select the Service accounts tab. Then select Link Service Account.
+
+Note: If the user has no account in Care, select Add User. Complete the user form. Care then opens the Link User form with the new user selected.
+
+### 3. Change a member's role
+
+Find the member in the list. Select Edit next to the member's name. Care opens the Edit User Role sheet. Under Select New Role, select the new role. Select Update Role.
+
+Note: You must select a role different from the member's current role.
+
+Note: Care blocks a role change that removes the last Facility Admin from the facility's root department.
+
+### 4. Remove a member
+
+Find the member in the list. Select Edit next to the member's name. In the sheet that opens, select Remove User. Select Remove to confirm.
+
+Note: Care blocks the removal of the last member of the facility's root department.
+
+## Expected Outcome
+
+- Care shows the new member in the Users tab of the department, with the role of the member.
+- Care shows a success message when you add a member, change a member's role, or remove a member.
+- Care removes the member from the list when you remove the member.
+
+## Related
+
+Concepts:
+
+- [Department](../../../concepts/facility/department.mdx)
+
+Flows:
+
+- [Create a department](./create-department.mdx)
+- [Update a department](./update-department.mdx)
