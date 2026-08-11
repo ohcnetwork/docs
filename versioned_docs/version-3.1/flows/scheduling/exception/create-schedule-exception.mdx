@@ -1,0 +1,69 @@
+---
+sidebar_position: 1
+---
+
+# Create a schedule exception
+
+## Overview
+
+This flow describes how to record a period when a resource is not available in Care. The exception overrides the regular schedule, and Care does not offer slots during that period. See [Schedule Exception](../../../concepts/scheduling/exception.mdx).
+
+## Pre-requisites
+
+- The resource is available in the facility.
+- You can open the schedule of the resource.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create on Schedule | Lets you create a schedule exception. |
+| Can list schedule on Object | Lets you see the schedules of the resource. |
+
+## Steps
+
+### 1. Open the schedule of the resource
+
+Open the facility. Go to the scheduling section and select the resource.
+
+### 2. Open the exceptions panel
+
+Select **Add Exception**. Care opens the **Add Schedule Exceptions** panel. The panel shows the text "Configure absences by adding unavailability beyond the regular schedule."
+
+### 3. Enter the reason
+
+Enter the **Reason** for the unavailability, for example leave or a holiday.
+
+### 4. Set the period
+
+Enter **Valid From** and **Valid Till**.
+
+The Valid From date must not be in the past. The Valid Till date must be the same as, or later than, the Valid From date.
+
+### 5. Set the times
+
+To make the resource unavailable for the whole day, select **Full day unavailable**.
+
+For a part of the day, leave that option clear and enter the start time and the end time. The start time must be earlier than the end time.
+
+### 6. Confirm the unavailability
+
+Select **Confirm Unavailability**. Care shows a message that the exception is created.
+
+## Expected Outcome
+
+- The exception appears in the list of schedule exceptions for the resource.
+- Care does not offer slots for booking during the period of the exception.
+
+## Related
+
+Concepts:
+
+- [Schedule Exception](../../../concepts/scheduling/exception.mdx)
+- [Schedule & Availability](../../../concepts/scheduling/schedule.mdx)
+
+Flows:
+
+- [View schedule exceptions](./view-schedule-exceptions.mdx)
+- [Remove a schedule exception](./remove-schedule-exception.mdx)

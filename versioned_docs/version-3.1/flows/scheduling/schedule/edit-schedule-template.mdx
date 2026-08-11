@@ -1,0 +1,62 @@
+---
+sidebar_position: 3
+---
+
+# Edit a schedule template
+
+## Overview
+
+This flow describes how to change a schedule template in Care. Use it when the availability of a resource changes. See [Schedule & Availability](../../../concepts/scheduling/schedule.mdx).
+
+## Pre-requisites
+
+- The schedule template is created in Care.
+- You can open the schedule of the resource.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create on Schedule | Lets you change a schedule template. |
+| Can list schedule on Object | Lets you see the schedules of the resource. |
+
+## Steps
+
+### 1. Open the schedule of the resource
+
+Open the facility. Go to the scheduling section and select the resource. See [View schedule templates](./view-schedule-templates.mdx).
+
+### 2. Open the template
+
+Find the template that you want to change. Select the edit action on that template. Care opens the **Edit Schedule Template** panel with the current values.
+
+### 3. Change the details
+
+Change the values that you want. The same rules apply as at creation:
+
+- The Valid From date must not be later than the Valid Till date.
+- The start time of a session must be earlier than its end time.
+- Sessions must not overlap.
+- For an appointment slot, the length of the session must be a multiple of the slot size in minutes.
+
+### 4. Save the changes
+
+Save the template. Care shows the message "Schedule template updated successfully".
+
+## Expected Outcome
+
+- The template shows the new values.
+- Care creates bookable slots from the changed sessions.
+
+## Related
+
+Concepts:
+
+- [Schedule & Availability](../../../concepts/scheduling/schedule.mdx)
+
+Flows:
+
+- [Create a schedule template](./create-schedule-template.mdx)
+- [View schedule templates](./view-schedule-templates.mdx)
+- [Delete a schedule template](./delete-schedule-template.mdx)

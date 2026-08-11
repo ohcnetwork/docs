@@ -1,0 +1,45 @@
+---
+sidebar_position: 4
+---
+
+# Schedule Exception
+
+## Definition
+
+A **schedule exception** in Care records a period when a resource is not available, even though a schedule makes it available. The resource is a practitioner, a location, or a healthcare service.
+
+An exception overrides the regular schedule. Care does not offer slots for booking during the period of the exception.
+
+## Key Attributes
+
+| Components | What it captures |
+| --- | --- |
+| Reason | The reason for the unavailability, for example leave or a holiday. This is required. |
+| Valid From | The first date of the unavailability. This is required. |
+| Valid Till | The last date of the unavailability. This is required. |
+| Full day unavailable | Whether the resource is unavailable for the whole day. |
+| Start time | The time that the unavailability starts on each day. This is required when the resource is not unavailable for the full day. |
+| End time | The time that the unavailability ends on each day. This is required when the resource is not unavailable for the full day. |
+| Resource | The practitioner, location, or healthcare service that the exception belongs to. |
+
+An exception applies on every day in the period from Valid From to Valid Till. For a part-day exception, the same start time and end time apply on each of those days.
+
+### Validation rules
+
+- The Valid From date must not be in the past. Care shows the message "Schedule exception cannot be created for the past".
+- The Valid Till date must be the same as, or later than, the Valid From date.
+- The start time must be earlier than the end time.
+
+## Permissions
+
+| Permission | What it allows |
+| --- | --- |
+| Can Create on Schedule | Create and remove schedule exceptions. |
+| Can list schedule on Object | See the exceptions of a resource. |
+
+## Related
+
+- Concept: [Schedule & Availability](../../concepts/scheduling/schedule.mdx)
+- Flow: [Create a schedule exception](../../flows/scheduling/exception/create-schedule-exception.mdx)
+- Flow: [View schedule exceptions](../../flows/scheduling/exception/view-schedule-exceptions.mdx)
+- Flow: [Remove a schedule exception](../../flows/scheduling/exception/remove-schedule-exception.mdx)
