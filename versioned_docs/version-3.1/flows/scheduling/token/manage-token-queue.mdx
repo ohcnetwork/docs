@@ -1,0 +1,68 @@
+---
+sidebar_position: 3
+---
+
+# Manage a token queue
+
+## Overview
+
+This flow describes how to work through a token queue in Care. Staff serve patients in order and record when each patient is finished. See [Token](../../../concepts/scheduling/token.mdx).
+
+## Pre-requisites
+
+- A token queue holds at least one token.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can list token on Object | Lets you see the queue and its tokens. |
+| Can Create on Token | Lets you change the status of a token. |
+
+## Steps
+
+### 1. Open the queues
+
+Open the facility and select **Queues**. The page lists the token queues of the facility. The primary queue of a resource shows the **Primary** marker.
+
+### 2. Open a queue
+
+Select the queue that you want to work through.
+
+### 3. Read the tabs
+
+The queue holds two tabs:
+
+| Tab | What it shows |
+| --- | --- |
+| Ongoing | The tokens that wait, and the tokens that staff serve now. |
+| Finished | The tokens that staff finished. The table shows Token Number, Patient Name, Encounter, Service Points and Status. |
+
+Turn on **Auto Refresh** to update the queue without a reload.
+
+### 4. Serve the next patient
+
+Select **Serve Next Patient**. Care moves the next token to In Progress and shows it as the current token.
+
+If the queue has no waiting token, the tab shows that no patient waits.
+
+### 5. Manage the service points
+
+To split the queue between more than one place, select **Manage Service Points**. Each service point serves the queue and records the token that it serves now.
+
+## Expected Outcome
+
+- Staff serve the patients in the order of their token numbers.
+- Finished tokens move to the Finished tab.
+
+## Related
+
+Concepts:
+
+- [Token](../../../concepts/scheduling/token.mdx)
+
+Flows:
+
+- [Create a token](./create-token.mdx)
+- [Cancel a token](./cancel-token.mdx)

@@ -1,0 +1,94 @@
+---
+sidebar_position: 1
+---
+
+# Create a schedule template
+
+## Overview
+
+This flow describes how to create a schedule template for a resource in Care. The template states when the resource is available, and Care creates bookable slots from it. See [Schedule & Availability](../../../concepts/scheduling/schedule.mdx).
+
+## Pre-requisites
+
+- The facility is created in Care.
+- The resource is available in the facility. The resource is a practitioner, a location, or a healthcare service.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create on Schedule | Lets you create a schedule template. |
+| Can list schedule on Object | Lets you see the schedules of the resource. |
+
+## Steps
+
+### 1. Open the schedule of the resource
+
+Open the facility. Go to the scheduling section and select the resource that you want to schedule.
+
+### 2. Start a new template
+
+Select the option to add a schedule template. Care opens the **Schedule Template** panel.
+
+### 3. Name the template
+
+Enter the **Template Name**. The placeholder shows an example, "Regular OP Day".
+
+### 4. Set the validity period
+
+Enter **Valid From** and **Valid Till**.
+
+The Valid From date must not be in the past. The Valid From date must not be later than the Valid Till date.
+
+### 5. Select the days of the week
+
+Select the days that the template applies to. You select at least one day.
+
+### 6. Add a session
+
+Complete these fields for the session:
+
+| Field | What to enter |
+| --- | --- |
+| Session Title | The name of the session, for example "IP Rounds". |
+| Slot type | Appointment Slot, Open, or Closed. |
+| Start time | The time that the session starts. |
+| End time | The time that the session ends. |
+| Reason | Free text that explains the session. This is optional. |
+
+For an appointment slot, also complete these fields:
+
+| Field | What to enter |
+| --- | --- |
+| Slot size in minutes | The length of one slot. |
+| Tokens per slot | The number of patients that Care books into one slot. |
+
+The start time must be earlier than the end time. For an appointment slot, the length of the session must be a multiple of the slot size in minutes.
+
+To add more sessions, select **Add another session**. Sessions must not overlap.
+
+### 7. Set the visibility
+
+Set whether the schedule is public. Patients can see a public schedule and book against it. A private schedule shows the message "This schedule is private".
+
+### 8. Save the template
+
+Save the template. Care shows the message "Schedule template created successfully".
+
+## Expected Outcome
+
+- The template appears in the list of schedule templates for the resource.
+- Care creates bookable slots from the sessions in the template.
+
+## Related
+
+Concepts:
+
+- [Schedule & Availability](../../../concepts/scheduling/schedule.mdx)
+
+Flows:
+
+- [View schedule templates](./view-schedule-templates.mdx)
+- [Edit a schedule template](./edit-schedule-template.mdx)
+- [Delete a schedule template](./delete-schedule-template.mdx)

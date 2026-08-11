@@ -4,59 +4,60 @@ sidebar_position: 3
 
 # Token
 
-A **token** is a numbered place in a queue — the digital version of pulling a ticket and waiting for your number to be called. It is how Care orders walk-in and queue-based flow: the patient sees where they stand, and staff see who to serve next.
+## Definition
 
-## What it represents
+A **token** in Care is a numbered place in a queue. Care gives a token to a patient so that staff call the patient in order.
 
-A token is not an appointment. A [booking](../scheduling/booking.mdx) reserves a specific slot ahead of time; a token simply orders the people who show up. The two can connect — a booking can issue a token when the patient arrives — but a token can also stand alone for pure walk-in flow.
+A token belongs to one token queue. The queue holds the tokens for one resource on one date. The resource is a practitioner, a location, or a healthcare service.
 
-Unlike most things in Care, a token doesn't map to a single FHIR resource. It's a queue-management primitive layered on top of scheduling: a number, the queue it belongs to, the category it counts within, its current state, and the patient holding it. Everything else about how tokens behave follows from how those pieces nest together.
+## Key Attributes
 
-## How it connects
+| Components | What it captures |
+| --- | --- |
+| Token Number | The number of the token in its queue. |
+| Patient | The patient that holds the token. |
+| Token Queue | The queue that the token belongs to. |
+| Token Category | The category of the token. This is required. |
+| Sub Queue | The service point that serves the token. This is optional. |
+| Status | The state of the token. |
+| Note | Free text about the token. This is optional. |
+| Booking | The appointment that the token belongs to, when staff generate the token from an appointment. |
 
-Tokens are assembled from a few cooperating pieces, and understanding how they nest is most of the concept:
+### Status values
 
-- **Queue** — a list of tokens for one schedulable resource (a doctor, a location, or a healthcare service) on one date. The first queue created for a resource on a date becomes the *primary* queue; new tokens flow into it by default.
-- **Sub-queue** — an optional split of one queue across several physical points. A vaccination clinic with three rooms runs one queue but routes patients to three sub-queues, each calling its own current token.
-- **Category** — a reusable label, with a short code, that separates streams within a queue, so a priority line and a general line each keep their own running count.
-- **Token** — the numbered ticket itself, issued to a patient inside a queue.
+| Status | What it means |
+| --- | --- |
+| Created | Care created the token, and the patient waits. |
+| In Progress | Staff are serving the patient. |
+| Fulfilled | Staff finished serving the patient. |
+| Unfulfilled | Staff did not serve the patient. |
+| Cancelled | Staff cancelled the token. |
+| Entered in Error | Staff recorded the token by mistake. |
 
-Because numbers are counted *per category within a queue*, two patients can both hold number 1 if they sit in different categories. The number orders a stream, not the whole queue.
+### Token queues
 
-## Lifecycle
+A token queue holds the tokens for one resource on one date. A queue has a name, and one queue for a resource is the primary queue. Care creates some queues automatically.
 
-A token moves through a small set of states as the patient is served:
+### Sub queues
 
-```text
-CREATED → IN_PROGRESS → FULFILLED
-            ↘ CANCELLED / ENTERED_IN_ERROR
-```
+A sub queue is a service point inside a queue. Use sub queues when more than one place serves the same queue, for example more than one room for vaccination. A sub queue is active or inactive, and it records the token that it serves now.
 
-- **CREATED** — issued and waiting in the queue (the default state)
-- **IN_PROGRESS** — now being served; set when the token becomes a sub-queue's current token
-- **FULFILLED** — service complete
-- **UNFULFILLED** — closed out without being served
-- **CANCELLED** — withdrawn before service
-- **ENTERED_IN_ERROR** — set automatically when a token is deleted, so the record closes without erasing history
+### Token categories
 
-Staff never pick the next token by hand. Care advances the queue for them — taking the oldest waiting token, marking it in progress, and pointing the sub-queue at it.
+A token category groups tokens, for example by the kind of visit. Each category has a name and a shorthand. An administrator sets one category as the default for the facility.
 
 ## Permissions
 
-Access to tokens is granted at the facility level — the same facility the queue belongs to.
-
-| Permission | Description | System Roles |
-| --- | --- | --- |
-| `can_write_token` | Issue, update, and delete tokens, and manage their queues and sub-queues for a schedulable resource | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
-| `can_list_token` | View tokens, queues, and sub-queues for a schedulable resource | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
-| `can_write_token_category` | Create, update, and set the default token category for a facility | Admin, Staff, Facility Admin |
-| `can_list_token_category` | View the token categories available in a facility | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
-
-Roles come from a user's facility and organization memberships, and permissions cascade down the organization tree — so access granted higher up applies to the facilities beneath it.
+| Permission | What it allows |
+| --- | --- |
+| Can Create on Token | Create tokens and change them. |
+| Can list token on Object | See tokens and queues. |
+| Can Create on Token Category | Create and change token categories. |
+| Can list token category on Facility | See the token categories of the facility. |
 
 ## Related
 
-- Reference: [Token (technical)](../../references/scheduling/token.mdx)
-- Concept: [Schedule](../scheduling/schedule.mdx)
-- Concept: [Booking](../scheduling/booking.mdx)
-- Concept: [Patient](../clinical/patient)
+- Flow: [Create a token category](../../flows/scheduling/token/create-token-category.mdx)
+- Flow: [Create a token](../../flows/scheduling/token/create-token.mdx)
+- Flow: [Manage a token queue](../../flows/scheduling/token/manage-token-queue.mdx)
+- Flow: [Cancel a token](../../flows/scheduling/token/cancel-token.mdx)
