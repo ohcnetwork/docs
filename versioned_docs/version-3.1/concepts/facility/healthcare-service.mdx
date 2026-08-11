@@ -4,53 +4,39 @@ sidebar_position: 5
 
 # Healthcare Service
 
-A **healthcare service** is a named offering that a facility provides — cardiology, a laboratory, radiology, a pharmacy, an outpatient clinic. It is the "what we offer" catalog entry: the thing patients book into, the thing schedules attach to, and the link between a clinical activity and the part of the facility accountable for it.
+## Definition
 
-## What it represents
+A **healthcare service** in Care is a service that a facility offers. A pharmacy counter, a lab, and a scheduling desk are healthcare services. Care's healthcare service is similar in structure to the FHIR [HealthcareService](https://build.fhir.org/healthcareservice.html) resource.
 
-In Care's FHIR-aligned model, a healthcare service maps to the **HealthcareService** resource. It captures:
+## Key Attributes
 
-- **Identity** — a display name and free-text details describing the offering
-- **Classification** — a coded service type and an internal type that tells the platform how the service behaves
-- **Placement** — the locations within the facility where the service is delivered
-- **Ownership** — the managing organization (a department or team) accountable for running it
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the healthcare service. This is required. |
+| Internal Type | The kind of service: Pharmacy, Lab, Scheduling, or Store. This is optional. |
+| Extra Details | More information about the service, in free text. You can leave this empty. |
+| Locations | The locations in the facility where the service is available. You must select at least one location. |
+| Managing Organization | The department of the facility that manages the service. This is optional. |
+| Icon | An icon that Care shows for the service in the services list and on the service details page. This is optional. |
 
-A healthcare service is a *description of an offering*, not an appointment and not a place. It says "this facility offers cardiology, run by the cardiology department, in these rooms" — but the act of seeing a patient is an [encounter](../clinical/encounter.mdx), and the room itself is a [location](../facility/location.mdx). The service is the stable bridge that ties offering, owner, and place together; patients flow through it, but it outlives any single visit.
+### Managing Organization
 
-## Classification
+The form shows this field in a section named Managing Organization. The picker lists the departments of the facility. Select one department, or leave the field empty. See [Department](../../concepts/facility/department.mdx).
 
-A service carries two labels, and they answer different questions.
-
-- **Service type** — a coded value drawn from a standard service-type terminology (such as the HL7 `service-type` code system). This is the label a person recognizes: "Cardiology", "General Practice", "Diagnostic Imaging". It answers *what kind of service is this?*
-- **Internal type** — one of `pharmacy`, `lab`, `scheduling`, or `store`. This answers *how should the platform treat this service?* It wires the service into the matching workflow: `pharmacy` into medication dispensing, `lab` into diagnostics, `scheduling` into appointment booking, `store` into supply handling.
-
-Read service type as the public-facing name and internal type as the behavioral switch that connects the service to the rest of Care.
-
-## How it connects
-
-A healthcare service is owned and placed, never free-floating:
-
-- It belongs to exactly one [facility](../facility/facility.mdx) — the place that offers it — set automatically from context, never chosen by hand.
-- It is owned by one [facility organization](../access-governance/facility-organization.mdx), the department or team accountable for it.
-- It is delivered across one or more [locations](../facility/location.mdx), so a single service can span several rooms or wards.
-
-Schedulable services are also what patients reserve time against, through [schedules](../scheduling/schedule.mdx) and [bookings](../scheduling/booking.mdx). The service stays put; the encounters and bookings move through it.
+Note: Care can also use a healthcare service as a resource for appointment scheduling. This document does not cover scheduling setup.
 
 ## Permissions
 
-Access to healthcare services is governed by two facility-scoped permissions.
-
-| Permission | Description | System Roles |
-| --- | --- | --- |
-| `can_write_healthcare_service` | Create, update, or delete a healthcare service on a facility | Facility Admin, Admin |
-| `can_read_healthcare_service` | View healthcare services offered at a facility | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-
-Roles are granted through a user's membership in an organization or facility, and permissions cascade down the organization tree — a role held at a parent organization applies to the facilities and services beneath it.
+| Permission | What it allows |
+| --- | --- |
+| Can Create Healthcare Service on Facility | Create, edit, or delete a healthcare service. Facility Admin and Admin hold this permission. Care checks this permission on the root department of the facility, not on a sub-department. |
+| Can Read Healthcare Service | View healthcare services. Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, and Pharmacist hold this permission. |
 
 ## Related
 
-- Reference: [Healthcare Service (technical)](../../references/facility/healthcare-service.mdx)
-- Concept: [Facility](../facility/facility.mdx)
-- Concept: [Facility Organization](../access-governance/facility-organization.mdx)
-- Concept: [Location](../facility/location.mdx)
-- Concept: [Schedule](../scheduling/schedule.mdx)
+- Flow: [Create a healthcare service](../../flows/facility/healthcare-service/create-healthcare-service.mdx)
+- Flow: [View healthcare services and a service's details](../../flows/facility/healthcare-service/view-healthcare-services.mdx)
+- Flow: [Edit a healthcare service](../../flows/facility/healthcare-service/edit-healthcare-service.mdx)
+- Flow: [Delete a healthcare service](../../flows/facility/healthcare-service/delete-healthcare-service.mdx)
+- Concept: [Locations](../../concepts/facility/location.mdx)
+- Concept: [Department](../../concepts/facility/department.mdx)

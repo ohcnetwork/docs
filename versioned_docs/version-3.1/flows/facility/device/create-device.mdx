@@ -1,0 +1,67 @@
+---
+sidebar_position: 1
+---
+
+# Create a device
+
+## Overview
+
+This flow describes how to register a new [device](../../../concepts/facility/device.mdx) in a facility in Care.
+
+## Pre-requisites
+
+- You are a member of the facility.
+- You have the permission listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Manage Devices on Facility | Lets you create a device. Staff, Admin, Facility Admin, and Pharmacist hold this permission. |
+
+## Steps
+
+### 1. Open the devices list
+
+Open the facility. Select **Settings**. Select **Devices**.
+
+### 2. Start a new device
+
+Select **Add Device**.
+
+Note: If your deployment adds device types, **Add Device** opens a list of types. Select a type, or select **Other** for a device with no type.
+
+### 3. Complete the form
+
+| Components | What it captures |
+| --- | --- |
+| Registered Name | The name Care uses to identify the device. This is required. |
+| User Friendly Name | A more familiar name for the device. This is optional. |
+| Identifier | An identifier for the device, for example an inventory tag. This is optional. |
+| Status | Whether the device is Active, Inactive, or Entered in Error. This is required, and it defaults to Active. |
+| Availability Status | Whether the device is Available, Lost, Damaged, or Destroyed. This is required, and it defaults to Available. |
+| Manufacturer | The maker of the device. This is optional. |
+| Manufacture Date | When the device was made. This is optional, and it cannot be a future date. |
+| Expiration Date | When the device expires. This is optional, and it must be after the manufacture date. |
+| Lot Number, Serial Number, Model Number, Part Number | The numbers that the maker prints on the device or its package. These are optional. |
+| Contact Points | Contact details for the device, for example a vendor support line. This is optional. Each contact detail has a type and a value. The type is Phone, Fax, SMS, Email, URL, Pager, or Other. Care rejects the same contact value more than once, even under a different type. |
+
+### 4. Save the device
+
+Select **Save**.
+
+## Expected Outcome
+
+- Care creates the device.
+- Care shows the message "Device registered successfully".
+
+## Related
+
+Concepts:
+
+- [Device](../../../concepts/facility/device.mdx)
+
+Flows:
+
+- [View devices and a device's details](./view-devices.mdx)
+- [Link a device to a location and a department](./link-device-location-department.mdx)

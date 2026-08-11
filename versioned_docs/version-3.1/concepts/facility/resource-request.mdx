@@ -1,0 +1,61 @@
+---
+sidebar_position: 7
+---
+
+# Resource Request
+
+## Definition
+
+A **resource request** in Care is a request that one facility sends to another facility. The request asks for a resource that a patient or a facility needs. A request can ask for clinical care and social support, comfort devices, medicines, or financial support.
+
+## Key Attributes
+
+| Components | What it captures |
+| --- | --- |
+| Request Title | The short title of the request. This is required. |
+| Is this an Emergency? | Whether the request is urgent. Select Yes or No. |
+| Category | The kind of resource that you need. This is required. |
+| Reason of Request | Why you need the resource. This is required. |
+| Name of Contact Person at Facility | The name of the person to contact about this request. This is required. |
+| Contact Person Number | The phone number to contact about this request. This is required. |
+| Facility for Care Support | The facility that you ask for help. This is required. |
+| Status | The current state of the request. See Status below. |
+| Assigned to | The user at the Facility for Care Support who handles the request. This is optional. Care shows this field only when you update a request, not when you create one. |
+| Linked Patient | The patient that this request is for. |
+
+### Category
+
+Category records the kind of resource that you need. Select one of these values:
+
+- Clinical Care and Social Support
+- Comfort Devices
+- Medicines
+- Financial
+- Other
+
+### Status
+
+| Status | Description |
+| --- | --- |
+| Pending | The request waits for a response. |
+| Approved | The Facility for Care Support approved the request. |
+| Transportation to be arranged | Someone must arrange transport for this request. |
+| Transfer in progress | The transfer has started. |
+| Completed | The request is complete. |
+| Rejected | The Facility for Care Support rejected the request. |
+| Cancelled | The request is cancelled. |
+
+Note: Care does not enforce an order for these statuses. Any user who can update the request can set any status at any time. Care has no separate Approve, Reject, or Cancel actions. There is only one status choice.
+
+## Permissions
+
+Care does not have a dedicated set of permissions for resource requests. Anyone who belongs to a facility organization connected to the request can view, create, update, or delete that request. A connected user can also change the status of the request. Care connects a request to the facility that sent it and to the Facility for Care Support. Care does not separate who can create a request from who can approve one.
+
+## Related
+
+- Flow: [Create a resource request](../../flows/facility/resource-request/create-resource-request.mdx)
+- Flow: [View resource requests](../../flows/facility/resource-request/view-resource-requests.mdx)
+- Flow: [Update a resource request's status](../../flows/facility/resource-request/update-resource-request-status.mdx)
+- Flow: [Comment on a resource request](../../flows/facility/resource-request/comment-resource-request.mdx)
+- Flow: [Print a resource request letter](../../flows/facility/resource-request/print-resource-request-letter.mdx)
+- Concept: [Patient](../../concepts/clinical/patient)
