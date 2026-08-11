@@ -1,0 +1,95 @@
+---
+sidebar_position: 1
+---
+
+# Dispense a medication
+
+## Overview
+
+This flow describes how to [dispense](../../../concepts/medications/medication-dispense.mdx) a medicine or a supply item to a patient from the facility's stock in Care.
+
+## Pre-requisites
+
+- The patient has an encounter at the facility.
+- You belong to the location that holds the stock.
+- The item you want to dispense is in stock at that location.
+- You have the permission listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Write Medication Dispense | Lets you dispense a medicine or supply item. Held by Facility Admin, Admin, Staff, Doctor, Nurse, and Pharmacist. |
+
+## Steps
+
+### 1. Open the Dispense History sub-tab
+
+1. Open the encounter.
+2. Select the **Medicines** tab.
+3. Select the **Dispense History** sub-tab.
+
+Note: Press `g` then `m` to go to the **Medicines** tab.
+
+### 2. Select Dispense
+
+Select **Dispense**. Care opens the location selector.
+
+### 3. Select the location to dispense from
+
+The location selector lists the locations you belong to. Search for a location by name. Select a location to open the locations under it.
+
+Select the location that holds the stock. Care opens the dispense screen.
+
+The dispense screen shows the location under **Selected Location**. To change the location, select **Selected Location**.
+
+Note: If you already added items, Care asks **Change Location?**. Select **Discard & Switch** to change the location and remove the items. Select **Stay here** to keep the items.
+
+### 4. Add the items
+
+1. Select **Add Item**.
+2. Search for the product and select it. Care adds a row for the item.
+3. Care selects the first lot that is not expired. To change the lot, select **Select Lot**. You can select more than one lot for the same item.
+4. Enter the **Quantity** for each lot you selected.
+
+Select **Add Item** again for each other item you want to dispense.
+
+Care shows these columns for each item:
+
+| Column | What it shows |
+| --- | --- |
+| Items | The name of the product. |
+| Select Lot | The lots of that product at the location. |
+| Quantity | The quantity you dispense from each lot. |
+| Base Amount | The base price of the lot. |
+| Expiry | The expiry month and year of the lot. |
+| Actions | The action to remove the item from the list. |
+
+Note: If the location holds no stock of the item, Care shows **No Stock Available**. Remove that item to dispense the other items.
+
+Note: You cannot dispense more than the stock available in a lot.
+
+### 5. Confirm the dispense
+
+Select **Confirm Dispense**. Care shows the message **Items dispensed successfully**.
+
+Note: Press `Shift+Enter` to confirm the dispense.
+
+## Expected Outcome
+
+- Care records a dispense for each lot, and reduces the stock at the location.
+- Care groups the items into one Dispense Order, and sets the order to Completed.
+- Care shows each item in the **Dispense History** sub-tab with the status Completed.
+- Care creates a charge for each item. Care does not create an invoice.
+
+Note: If your deployment turns on automatic invoicing after a dispense, Care opens the invoice screen for the patient's open account.
+
+## Related
+
+Concepts:
+
+- [Medicine Dispense](../../../concepts/medications/medication-dispense.mdx)
+
+Flows:
+
+- [View dispense history](./view-dispense-history.mdx)

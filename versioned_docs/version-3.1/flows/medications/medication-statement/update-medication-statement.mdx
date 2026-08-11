@@ -1,0 +1,70 @@
+---
+sidebar_position: 3
+---
+
+# Update a medication statement
+
+## Overview
+
+This flow describes how to change a [medication statement](../../../concepts/medications/medication-statement.mdx) that you saved in Care.
+
+## Pre-requisites
+
+- The patient has a medication statement in Care.
+- The encounter of the medication statement is open. Care blocks the change when the encounter status is Completed, Cancelled, Discontinued, or Entered in Error.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can view questionnaire responses on patient | Lets you open the **Updates** tab of the patient. |
+| Can submit questionnaire about patients | Lets you open a form for the patient and submit it. |
+| Update Encounter related clinical data | Lets you change a medication statement of the encounter. |
+
+## Steps
+
+### 1. Open the Medication Statement form
+
+Open the patient.
+
+Select the **Updates** tab. Select **Add Patient Updates**.
+
+Enter `Medication Statement` in the **Search Forms** box. Select **Medication Statement** in the results.
+
+Care shows the medication statements that staff recorded before as entries in the form.
+
+### 2. Open the entry
+
+Select the entry of the medicine that you want to change.
+
+### 3. Change the values
+
+Change the **Status** of the entry.
+
+Change the **Note** of the entry.
+
+Note: You cannot change the medicine, the source, the dosage instructions, the period, or the reason of a saved entry. Care disables these fields.
+
+Note: Care disables the full entry when its status is **Entered in Error**.
+
+### 4. Submit the form
+
+Select **Submit**.
+
+## Expected Outcome
+
+- Care shows the message "Questionnaire submitted successfully".
+- Care shows the new status and the new note in the **Medication Statements** sub-tab of the **Medicines** tab.
+
+## Related
+
+Concepts:
+
+- [Medication Statement](../../../concepts/medications/medication-statement.mdx)
+
+Flows:
+
+- [Record a medication statement](./record-medication-statement.mdx)
+- [View medication statements for an encounter](./view-medication-statements.mdx)
+- [Mark a medication statement as entered in error](./medication-statement-entered-in-error.mdx)

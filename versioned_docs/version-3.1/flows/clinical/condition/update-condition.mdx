@@ -1,0 +1,83 @@
+---
+sidebar_position: 4
+---
+
+# Update a symptom or diagnosis
+
+## Overview
+
+This flow describes how to change a symptom or a diagnosis that you already recorded. Care stores each of them as a [condition](../../../concepts/clinical/condition.mdx). Use this flow when the patient improves, or when a provisional finding becomes confirmed.
+
+## Pre-requisites
+
+- You or a colleague recorded the symptom or the diagnosis on the encounter.
+- The encounter is the patient's active encounter.
+- The encounter status is not Completed, Cancelled, Discontinued, or Entered in Error. In these states you can only read the record.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can view clinical data about patients | View the symptoms and the diagnoses of the patient |
+| Can Read encounter related clinical data | View the symptoms and the diagnoses of the encounter |
+| Update Encounter related clinical data | Change a recorded symptom or diagnosis |
+
+## Steps
+
+### 1. Open the symptom screen or the diagnosis screen
+
+Go to the **Overview** tab of the encounter.
+
+For a symptom, select the edit (pencil) icon in the **Symptoms** section. You can also press the keyboard shortcut **s**.
+
+For a diagnosis, select the edit (pencil) icon in the **Diagnoses** section. You can also press the keyboard shortcut **d**.
+
+The records of the encounter show in a list. Each record shows in its own row.
+
+### 2. Change the values
+
+Change the values that you need. You can change these fields on a saved record:
+
+| Component | What it captures |
+| --- | --- |
+| Status | Active, Recurrence, Relapse, Inactive, Remission, or Resolved. |
+| Verification | Unconfirmed, Provisional, Differential, Confirmed, or Refuted. |
+| Severity | Mild, Moderate, or Severe. |
+| Note | Free text about the record. |
+
+Note: The Verification value Entered in Error shows only if the record already has that value. To retract a record, see [Mark a symptom or diagnosis as entered in error](./condition-entered-in-error.mdx).
+
+Note: For a diagnosis you can leave the Severity field empty. The field then shows "Choose severity".
+
+To add a note, open the more-options (**⋮**) menu of the row. Select **Add notes**. Select **Show notes** to open the note text. Select **Hide notes** to close the note text.
+
+### 3. Know the fields that you cannot change
+
+You cannot change the **Onset Date** of a saved record. The field is unavailable after the first submission.
+
+You cannot change the clinical term of a saved record. To correct a wrong term, mark the record as entered in error. Then record the correct term.
+
+### 4. Submit the changes
+
+Select **Submit**.
+
+## Expected Outcome
+
+- Care shows the confirmation "Questionnaire submitted successfully".
+- The updated values show in the **Symptoms** section or the **Diagnoses** section of the encounter **Overview** tab.
+- The updated values show in the clinical history of the patient.
+
+## Related
+
+Concepts:
+
+- [Condition](../../../concepts/clinical/condition.mdx)
+
+Flows:
+
+- [Record a symptom](./record-symptom.mdx)
+- [Record a diagnosis](./record-diagnosis.mdx)
+- [Add a symptom or diagnosis from past records](./add-condition-from-past-records.mdx)
+- [Mark a symptom or diagnosis as entered in error](./condition-entered-in-error.mdx)
+- [View the clinical history](./view-clinical-history.mdx)

@@ -1,0 +1,79 @@
+---
+sidebar_position: 5
+---
+
+# Mark a symptom or diagnosis as entered in error
+
+## Overview
+
+This flow describes how to retract a symptom or a diagnosis that you recorded by mistake. Care stores each of them as a [condition](../../../concepts/clinical/condition.mdx). Care never deletes a saved clinical record. Care keeps the record and sets its Verification to Entered in Error, so the clinical history stays complete.
+
+## Pre-requisites
+
+- You or a colleague recorded the symptom or the diagnosis on the encounter.
+- The encounter is the patient's active encounter.
+- The encounter status is not Completed, Cancelled, Discontinued, or Entered in Error.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can view clinical data about patients | View the symptoms and the diagnoses of the patient. |
+| Can Read encounter related clinical data | View the symptoms and the diagnoses of the encounter. |
+| Update Encounter related clinical data | Set the Verification of a symptom or a diagnosis to Entered in Error. |
+
+## Steps
+
+### 1. Open the symptom screen or the diagnosis screen
+
+Start from the **Overview** tab of the encounter.
+
+- For a symptom, select the edit (pencil) icon in the **Symptoms** section. You can also press the keyboard shortcut **s**.
+- For a diagnosis, select the edit (pencil) icon in the **Diagnoses** section. You can also press the keyboard shortcut **d**.
+
+### 2. Find the row to retract
+
+Find the row of the symptom or the diagnosis that you want to retract.
+
+### 3. Open the more-options menu
+
+Select the more-options (**⋮**) menu of the row.
+
+### 4. Select the remove action
+
+Select the remove action. For a symptom, the action reads **Remove Symptom**.
+
+What happens next depends on the record:
+
+- If you did not submit the record yet, Care removes the row from the list. Care keeps no record of it.
+- If the record is already saved, Care sets its Verification to Entered in Error. The row stays in the list with that label.
+
+Note: After Care sets the Verification of a saved record to Entered in Error, the remove action is unavailable. The tooltip of the action reads "Already marked as error".
+
+### 5. Submit the change
+
+Select **Submit**.
+
+## Expected Outcome
+
+- Care shows the confirmation "Questionnaire submitted successfully".
+- The record keeps the Verification value Entered in Error.
+- Care leaves the records with the Verification value Entered in Error out of the **Past Symptoms** list and the **Past Diagnoses** list. You do not carry them into a later encounter.
+- To record the correct information, add a new symptom or a new diagnosis.
+
+Note: The Entered in Error value does not show in the Verification list of a normal record. You set this value only with the remove action.
+
+## Related
+
+Concepts:
+
+- [Condition](../../../concepts/clinical/condition.mdx)
+
+Flows:
+
+- [Record a symptom](./record-symptom.mdx)
+- [Record a diagnosis](./record-diagnosis.mdx)
+- [Add a symptom or diagnosis from past records](./add-condition-from-past-records.mdx)
+- [Update a symptom or diagnosis](./update-condition.mdx)
+- [View the clinical history](./view-clinical-history.mdx)

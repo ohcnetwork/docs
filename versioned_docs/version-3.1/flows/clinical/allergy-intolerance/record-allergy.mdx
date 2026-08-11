@@ -1,0 +1,106 @@
+---
+sidebar_position: 1
+---
+
+# Record an allergy
+
+## Overview
+
+This flow describes how to record an [allergy or intolerance](../../../concepts/clinical/allergy-intolerance.mdx) for a patient during an encounter in Care.
+
+## Pre-requisites
+
+- The patient has an open encounter at the facility, and you record the allergy from that encounter.
+- The encounter is not Completed, Cancelled, Discontinued, or Entered in Error. In these states, all add and edit controls are read-only.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can submit questionnaire about patient encounters | Lets you submit the allergy screen of the encounter. |
+| Can Update a Patient's data | Lets you record a new allergy for the patient. |
+| Can view clinical data about patients | Lets you see the allergies of the patient. |
+
+## Steps
+
+### 1. Open the allergy screen
+
+Open the encounter. Go to the **Overview** tab. Select the **Allergy** quick action.
+
+You can also press the keyboard shortcut **a** on any encounter screen.
+
+You can also find the **Allergies** section and select the edit (pencil) icon.
+
+The allergy screen shows the allergies that the patient already has.
+
+### 2. Search for the substance
+
+Select **Add Allergy**. For each further allergy, the control reads **Add another Allergy**.
+
+Type the name of the substance that the patient reacts to.
+
+The results come from a standard SNOMED CT allergy terminology.
+
+Note: Your administrator sets the clinical terminology for your deployment. Your administrator can also change it.
+
+### 3. Select the term
+
+Select a term. A new row appears with these default values:
+
+| Component | Default |
+| --- | --- |
+| Category | Medication |
+| Criticality | Low |
+| Status | Confirmed |
+| Clinical Status | Active |
+
+### 4. Change the values
+
+Change the values of the row if you need to.
+
+| Component | Options |
+| --- | --- |
+| Category | Food, Medication, Environment, Biologic |
+| Criticality | Low, High, Unable to Assess |
+| Status | Unconfirmed, Presumed, Confirmed, Refuted |
+| Occurrence | Any date up to today |
+
+To change the clinical state, open the more-options (**⋮**) menu of the row. Select **Mark Inactive** or **Mark Resolved**.
+
+Note: Care does not offer Entered in Error for a new allergy.
+
+### 5. Add a note
+
+To add a note, open the more-options (**⋮**) menu of the row. Select **Add notes**. Type the note.
+
+Select **Show notes** to open the note text. Select **Hide notes** to close the note text.
+
+### 6. Add more allergies
+
+Repeat from step 2 for each further allergy.
+
+### 7. Submit
+
+Select **Submit**.
+
+## Expected Outcome
+
+- Care shows the confirmation "Questionnaire submitted successfully".
+- Care returns you to the **Overview** tab of the encounter.
+- The allergy appears in the **Allergies** section of the encounter **Overview** tab.
+- The allergy appears in the allergy history of the patient.
+
+When the patient has no allergy, the encounter shows no **Allergies** section.
+
+## Related
+
+Concepts:
+
+- [Allergy](../../../concepts/clinical/allergy-intolerance.mdx)
+
+Flows:
+
+- [Update an allergy](./update-allergy.mdx)
+- [Mark an allergy as entered in error](./allergy-entered-in-error.mdx)
+- [View allergy history](./view-allergy-history.mdx)

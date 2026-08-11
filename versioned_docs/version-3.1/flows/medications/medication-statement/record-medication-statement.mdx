@@ -1,0 +1,91 @@
+---
+sidebar_position: 1
+---
+
+# Record a medication statement
+
+## Overview
+
+This flow describes how to record a [medication statement](../../../concepts/medications/medication-statement.mdx) for a patient in Care.
+
+## Pre-requisites
+
+- The patient is registered in Care, and you record the statement for that patient.
+- The patient has an encounter at your facility. Care records every medication statement against an encounter.
+- The encounter is open. Care blocks the record when the encounter status is Completed, Cancelled, Discontinued, or Entered in Error.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can view questionnaire responses on patient | Lets you open the **Updates** tab of the patient. |
+| Can submit questionnaire about patients | Lets you open a form for the patient and submit it. |
+| Update Encounter related clinical data | Lets you record a medication statement against the encounter. |
+
+## Steps
+
+### 1. Open the Updates tab
+
+Open the patient.
+
+Select the **Updates** tab.
+
+### 2. Start a new form
+
+Select **Add Patient Updates**. Care opens the form page for the patient.
+
+### 3. Select the Medication Statement form
+
+Enter `Medication Statement` in the **Search Forms** box.
+
+Select **Medication Statement** in the results.
+
+Note: **Medication Statement** is a patient form. It is not in the **Forms** list of the encounter.
+
+### 4. Select the medicine
+
+Select **Add Medication**.
+
+Search the clinical drug list for the medicine that the patient reports taking.
+
+Select the medicine in the results. Care adds an entry for it.
+
+### 5. Complete the entry
+
+Complete the fields of the entry.
+
+| Components | What it captures |
+| --- | --- |
+| Source | Who reported the medicine: the **Patient**, a **Practitioner**, or a **Related Person**. Care selects **Patient** by default. |
+| Status | The state of the medication statement. Care selects **Active** by default. |
+| Dosage Instructions | How the patient takes the medicine. This field is mandatory. |
+| Medication Taken Between | The start date and the end date of the period. The start date is mandatory. Leave the end date empty when the patient still takes the medicine. |
+| Reason | Why the patient takes the medicine. You can enter up to 100 characters. |
+| Note | More information about the medicine. |
+
+To record another medicine, repeat step 4 and step 5.
+
+### 6. Submit the form
+
+Select **Submit**.
+
+Note: To finish the form later, select **Save as Draft**.
+
+## Expected Outcome
+
+- Care shows the message "Questionnaire submitted successfully".
+- Care opens the **Updates** tab of the patient.
+- Care shows the medication statement in the **Medication Statements** sub-tab of the **Medicines** tab of the encounter.
+
+## Related
+
+Concepts:
+
+- [Medication Statement](../../../concepts/medications/medication-statement.mdx)
+
+Flows:
+
+- [View medication statements for an encounter](./view-medication-statements.mdx)
+- [Update a medication statement](./update-medication-statement.mdx)
+- [Mark a medication statement as entered in error](./medication-statement-entered-in-error.mdx)

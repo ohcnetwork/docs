@@ -1,0 +1,77 @@
+---
+sidebar_position: 2
+---
+
+# Update an allergy
+
+## Overview
+
+This flow describes how to change the values of a saved [allergy](../../../concepts/clinical/allergy-intolerance.mdx) in Care.
+
+## Pre-requisites
+
+- The patient has a saved allergy.
+- The patient has an open encounter at the facility, and you change the allergy from that encounter.
+- The encounter is not Completed, Cancelled, Discontinued, or Entered in Error. In these states, all add and edit controls are read-only.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can submit questionnaire about patient encounters | Lets you submit the allergy screen of the encounter. |
+| Update Encounter related clinical data | Lets you change an allergy of the encounter. |
+| Can view clinical data about patients | Lets you see the allergies of the patient. |
+
+## Steps
+
+### 1. Open the allergy screen
+
+Open the encounter. Go to the **Overview** tab. Find the **Allergies** section. Select the edit (pencil) icon.
+
+You can also press the keyboard shortcut **a** on any encounter screen.
+
+The allergy screen shows the allergies that the patient already has.
+
+### 2. Find the allergy
+
+Find the row of the allergy in the table.
+
+### 3. Change the values
+
+Change the values of the row. You can change these values of a saved allergy:
+
+| Component | Options |
+| --- | --- |
+| Criticality | Low, High, Unable to Assess |
+| Status | Unconfirmed, Presumed, Confirmed, Refuted, Entered in Error |
+| Occurrence | Any date up to today |
+| Note | Free text |
+
+To change the clinical state, open the more-options (**⋮**) menu of the row. Select **Mark Active**, **Mark Inactive**, or **Mark Resolved**.
+
+To change the note, open the more-options (**⋮**) menu of the row. Select **Add notes** or **Show notes**.
+
+Note: You cannot change the Substance or the Category of a saved allergy. To correct one of these, record a new allergy. Then mark the incorrect allergy as entered in error.
+
+### 4. Submit
+
+Select **Submit**.
+
+## Expected Outcome
+
+- Care shows the confirmation "Questionnaire submitted successfully".
+- Care returns you to the **Overview** tab of the encounter.
+- The **Allergies** section shows the new values.
+
+## Related
+
+Concepts:
+
+- [Allergy](../../../concepts/clinical/allergy-intolerance.mdx)
+
+Flows:
+
+- [Record an allergy](./record-allergy.mdx)
+- [Mark an allergy as entered in error](./allergy-entered-in-error.mdx)
+- [View allergy history](./view-allergy-history.mdx)

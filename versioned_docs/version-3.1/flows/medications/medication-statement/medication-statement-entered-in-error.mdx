@@ -1,0 +1,67 @@
+---
+sidebar_position: 4
+---
+
+# Mark a medication statement as entered in error
+
+## Overview
+
+This flow describes how to retract a [medication statement](../../../concepts/medications/medication-statement.mdx) that staff recorded by mistake.
+
+## Pre-requisites
+
+- The patient has a medication statement in Care.
+- The encounter of the medication statement is open. Care blocks the change when the encounter status is Completed, Cancelled, Discontinued, or Entered in Error.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can view questionnaire responses on patient | Lets you open the **Updates** tab of the patient. |
+| Can submit questionnaire about patients | Lets you open a form for the patient and submit it. |
+| Update Encounter related clinical data | Lets you retract a medication statement of the encounter. |
+
+## Steps
+
+### 1. Open the Medication Statement form
+
+Open the patient.
+
+Select the **Updates** tab. Select **Add Patient Updates**.
+
+Enter `Medication Statement` in the **Search Forms** box. Select **Medication Statement** in the results.
+
+### 2. Open the entry
+
+Select the entry of the medicine that staff recorded by mistake.
+
+### 3. Set the status to Entered in Error
+
+Set the **Status** of the entry to **Entered in Error**.
+
+Note: Care offers this status only for an entry that staff saved before.
+
+Note: You can also select the remove icon of the entry. Care asks you to confirm in the **Remove Medication** dialog. Select **Remove**. Care sets the status of the entry to **Entered in Error**.
+
+### 4. Submit the form
+
+Select **Submit**.
+
+## Expected Outcome
+
+- Care shows the message "Questionnaire submitted successfully".
+- Care keeps the medication statement with the status **Entered in Error**.
+- Care no longer shows the statement in the **Medication Statements** sub-tab of the **Medicines** tab.
+
+## Related
+
+Concepts:
+
+- [Medication Statement](../../../concepts/medications/medication-statement.mdx)
+
+Flows:
+
+- [Record a medication statement](./record-medication-statement.mdx)
+- [View medication statements for an encounter](./view-medication-statements.mdx)
+- [Update a medication statement](./update-medication-statement.mdx)

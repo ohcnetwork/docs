@@ -4,76 +4,63 @@ sidebar_position: 2
 
 # Medication Administration
 
-A **medication administration** is the record that a dose was actually given to a patient — or that giving it was attempted and did not happen. It is the moment an order becomes a real event at the bedside, closing the loop on what a clinician prescribed.
+## Definition
 
-## What it represents
+A **[medicine administration](https://build.fhir.org/medicationadministration.html)** in Care
+records a dose of medicine that staff gave to a patient. It is separate from the
+[medication request](../../concepts/medications/medication-request.mdx), which is the order. You record an
+administration against a medicine that is already prescribed on the encounter.
 
-In Care's FHIR-aligned model, this maps to the **MedicationAdministration** resource. A single record answers four questions about one dose: what was given, how and when it was given, who gave it, and — if it was not given — why.
+Care shows the administrations of an encounter in the **Medicine Administration** sub-tab of
+the **Medicines** tab. The sub-tab shows a grid of medicines against six-hour time slots.
 
-The distinction that matters most is between the administration and the order behind it. The order ([Medication Request](../medications/medication-request.mdx)) is the plan: *what should be given*. The administration is the event: *was this dose actually given?* One order produces many administrations over time, one for each scheduled dose, so the two together tell you whether the plan was followed.
+## Key Attributes
 
-This is also why recording a "not given" event matters as much as recording a completed one. It makes a gap in the patient's medication history explicit and auditable, rather than leaving it silent.
+| Components | What it captures |
+| --- | --- |
+| Medicine | The prescribed medicine that this dose belongs to. This field is mandatory. |
+| Status | The state of the dose. See Status below. This field is mandatory. |
+| Start Time | When the dose started. This field is mandatory. Care sets the current date and time by default. |
+| End Time | When the dose ended. This field is optional. |
+| Dosage | The dose, the route, the site, and the method. Care copies these from the prescription. |
+| Administration Notes | Free text about the dose. This field is optional. |
+| Performer | The staff member who gave the dose, and their role in giving it. The administration form does not collect this field. Care records the user who saves the record. |
 
-## Lifecycle
+### Changes after you save
 
-The `status` field tracks what happened to a single dose. A normal administration moves through the active path:
+After you save an administration, the form lets you change only the Status and the
+Administration Notes. You cannot change the medicine, the dosage, the start time, or the end
+time. Care keeps the record when you mark it as Entered in Error.
 
-```text
-in_progress → completed
-            → on_hold → in_progress
-            → stopped
-            → not_done
-```
+## Status
 
-- **in_progress** — the dose has started but is not finished (typical for an infusion still running)
-- **on_hold** — administration was paused and may resume
-- **completed** — the dose was fully given
-- **stopped** — administration was halted before completion
-- **not_done** — the dose was deliberately not given, recorded with a reason
+| Status | Description |
+| --- | --- |
+| In Progress | Staff are giving the dose now. |
+| Completed | Staff gave the dose. |
+| Not Done | Staff did not give the dose. |
+| On Hold | Staff paused the dose. |
+| Stopped | Staff stopped the dose before it finished. |
+| Cancelled | Staff cancelled the dose before they gave it. |
+| Entered in Error | Staff created the record by mistake. |
+| Unknown | The state of the dose is not known. |
 
-Three further statuses are administrative rather than clinical: **cancelled** (the planned dose was called off), **entered_in_error** (the record was a mistake and should be disregarded), and **unknown** (the outcome cannot be determined).
-
-## Classification
-
-The `category` marks the setting in which the dose was given, which drives reporting and reconciliation:
-
-- **inpatient** — given to an admitted patient on a ward
-- **outpatient** — given during a clinic or day visit
-- **community** — given outside the facility, such as a home or field setting
-- **discharge** — supplied or given as the patient leaves
-
-## How it connects
-
-A medication administration sits at the centre of the medication workflow and ties together several other records:
-
-- **Patient** — every administration belongs to a [patient](../clinical/patient). The patient is derived automatically from the encounter, never entered directly, so the record can never drift from the visit it happened in.
-- **Encounter** — the [encounter](../clinical/encounter.mdx) during which the dose was given anchors it in time and place.
-- **Medication Request** — the [order](../medications/medication-request.mdx) this administration fulfils, which is what turns a list of given doses back into "did we follow the plan?".
-- **Product** — when a specific catalogued item was used, the administration points to that [product knowledge](../definitions/product-knowledge.mdx) entry so the dose can be reconciled against supply.
-
-A record names either a coded medication or a specific product, never both. The coded form describes the substance; the product form ties the dose to a real item that left your stores.
+Note: The administration form offers all of these states except Unknown.
 
 ## Permissions
 
-Access to recording and viewing administrations is governed by facility-scoped permissions.
+| Permission | What it allows |
+| --- | --- |
+| Update Encounter related clinical data | Record or update a medicine administration. Held by Doctor, Nurse, Admin, and Facility Admin. |
+| Can view clinical data about patients | View the medicine administrations of a patient. Held by Staff, Doctor, Nurse, Admin, and Facility Admin. |
+| Can Read encounter related clinical data | View the medicine administrations of one encounter. Held by Doctor, Nurse, Admin, and Facility Admin. |
 
-| Permission | Description | System Roles |
-| --- | --- | --- |
-| `can_write_encounter_clinical_data` | Create, update, and delete a medication administration on the encounter (write encounter clinical data). Blocked once the encounter is closed | Admin, Doctor, Nurse, Facility Admin |
-| `can_view_clinical_data` | View a patient's clinical data, including listing and retrieving their medication administrations | Staff, Doctor, Nurse, Admin, Facility Admin |
-| `can_read_encounter_clinical_data` | Read an encounter's clinical data; used as the fallback read check when a specific encounter is supplied | Admin, Doctor, Nurse, Facility Admin |
-
-Roles are granted through a user's facility and organization memberships, and permissions cascade down the organization tree — a role held high in the hierarchy carries to the facilities beneath it.
+To record or change an administration, you also need an open encounter. Care blocks changes when
+the encounter status is Completed, Cancelled, Discontinued, or Entered in Error.
 
 ## Related
 
-- Reference: [Medication Administration (technical)](../../references/medications/medication-administration.mdx)
-- Concept: [Medication Request](../medications/medication-request.mdx)
-- Concept: [Medication Dispense](../medications/medication-dispense.mdx)
-- Concept: [Medication Statement](../medications/medication-statement.mdx)
-- Concept: [Encounter](../clinical/encounter.mdx)
-- Concept: [Product Knowledge](../definitions/product-knowledge.mdx)
-
-## FHIR reference
-
-This concept aligns with the FHIR [MedicationAdministration](https://hl7.org/fhir/medicationadministration.html) resource, which records the consumption or administration of a medication to a patient.
+- Flow: [Administer a dose](../../flows/medications/medication-administration/administer-dose.mdx)
+- Flow: [View the medicine administration record](../../flows/medications/medication-administration/view-medicine-administration.mdx)
+- Flow: [Update an administration record](../../flows/medications/medication-administration/update-administration-record.mdx)
+- Concept: [Medication Request](../../concepts/medications/medication-request.mdx)
