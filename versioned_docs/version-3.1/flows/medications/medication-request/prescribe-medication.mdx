@@ -1,0 +1,105 @@
+---
+sidebar_position: 1
+---
+
+# Prescribe a medication
+
+## Overview
+
+This flow describes how to prescribe a [medication](../../../concepts/medications/medication-request.mdx) for a patient during an open encounter in Care.
+
+## Pre-requisites
+
+- The patient is registered in Care, and you record the medication for that patient.
+- The encounter is open. You cannot prescribe a medication when the encounter status is Completed, Cancelled, Discontinued, or Entered in Error.
+- You have write access to the encounter.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Update Encounter related clinical data | Lets you add and change medications for the encounter. |
+
+## Steps
+
+### 1. Open the Prescriptions sub-tab
+
+1. Open the encounter.
+2. Select the **Medicines** tab.
+3. Select the **Prescriptions** sub-tab.
+
+Note: Press `g` then `m` to go to the **Medicines** tab.
+
+### 2. Start a new medication entry
+
+Select the action to add a medicine. Care shows this action only if you have write access to the encounter.
+
+Note: Press `k` anywhere in the encounter to go straight to adding a medication.
+
+### 3. Select the medicine
+
+Select the medicine in the picker. The picker lets you search a clinical drug list. The picker also lets you search the facility's inventory.
+
+Note: Which list the picker opens on by default depends on your deployment's configuration.
+
+### 4. Complete the required fields
+
+Care shows the medicine as a row. Complete the fields in the row.
+
+| Components | What it captures |
+| --- | --- |
+| Dosage | The amount of the medicine to give. Required. |
+| Frequency | How often to give the medicine. Required. |
+| Duration | How long the patient takes the medicine. Optional. |
+
+### 5. Complete the advanced fields
+
+Expand **Advanced fields** to record more detail.
+
+| Components | What it captures |
+| --- | --- |
+| Instructions | Directions for the patient or the staff. If the patient takes the medicine as needed, record the reason here. |
+| Route | The route to give the medicine. |
+| Site | The body site for the medicine. |
+| Method | The method to give the medicine. |
+| Intent | The intent of the medication request. |
+| Authored On | The date of the request. You cannot enter a future date. |
+| Requester | The user recorded as the person who requested the medicine. |
+
+Note: If you add more than one medicine, you can copy the same requester to all of the medicines at one time.
+
+### 6. Add a note
+
+To record more detail for one medicine, enter a free-text note for that medicine.
+
+### 7. Select the prescription
+
+Add the medicine to a new prescription, or add the medicine to an existing prescription for this encounter.
+
+For a new prescription, enter a name. You can also enter a note for the prescription.
+
+For more about prescription batches, see [Manage a prescription](./manage-prescription.mdx).
+
+### 8. Save the medication
+
+Submit the form to save the medication.
+
+Note: Press `Shift+Enter` to submit the form.
+
+## Expected Outcome
+
+- Care saves the medication for the encounter.
+- Care shows the medication under the prescription that you selected in the **Prescriptions** sub-tab.
+
+## Related
+
+Concepts:
+
+- [Medication Request](../../../concepts/medications/medication-request.mdx)
+
+Flows:
+
+- [Manage a prescription](./manage-prescription.mdx)
+- [Add medications from past records](./add-medications-from-past-records.mdx)
+- [View prescriptions and medications for an encounter](./view-encounter-medications.mdx)
