@@ -1,0 +1,66 @@
+---
+sidebar_position: 1
+---
+
+# Create a purchase delivery
+
+## Overview
+
+This flow describes how to create a [purchase delivery](../../../concepts/supply/purchase-delivery.mdx) for a location in a facility. The delivery starts as a Draft.
+
+## Pre-requisites
+
+- You are a member of the facility that receives the delivery.
+- Your facility has the location that receives the delivery.
+- If you start from a purchase order, someone created that [purchase order](../../../concepts/supply/purchase-order.mdx) at your facility.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create External Supply Delivery on Facility | Lets you create a purchase delivery for a location in the facility. Facility Admin and Admin have this permission. |
+
+## Steps
+
+### 1. Open the inventory of the location
+
+Open the facility. Select the location that receives the delivery. Select **Inventory**. Go to the external deliveries area.
+
+### 2. Start the delivery
+
+Click **Create Delivery**.
+
+Note: You can also start the delivery from an existing purchase order. Care fills the name, the vendor, the destination, and the tags for you. Care locks the destination.
+
+### 3. Enter the delivery details
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the delivery. |
+| Note | More information about the delivery. This field is optional. |
+| Vendor/Distributor | The vendor or distributor that supplies the items. |
+| Destination | The location that receives the items. Care sets the current location by default. |
+
+If you start from a purchase order, check the filled values.
+
+### 4. Create the delivery
+
+Create the delivery. Care saves the delivery with the status Draft.
+
+## Expected Outcome
+
+- Care creates the purchase delivery with the status Draft.
+- The delivery contains no items. You add the items in a separate step.
+
+## Related
+
+Concepts:
+
+- [Purchase Delivery](../../../concepts/supply/purchase-delivery.mdx)
+- [Purchase Order](../../../concepts/supply/purchase-order.mdx)
+
+Flows:
+
+- [Add delivered items to a purchase delivery](./add-items-purchase-delivery.mdx)
+- [View a purchase delivery](./view-purchase-delivery.mdx)

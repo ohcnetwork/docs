@@ -1,0 +1,104 @@
+---
+sidebar_position: 3
+---
+
+# Purchase Order
+
+## Definition
+
+A **purchase order** in Care records a request to buy stock from an outside vendor for your facility. It bundles one or more [requested items](https://build.fhir.org/supplyrequest.html) under a single order. Each requested item names a product and a quantity.
+
+Care uses one order mechanism for two purposes. A purchase order names an external vendor and asks that vendor for stock. A supply order names an internal source location and asks another location in the same facility for stock. Both types use the same fields, the same statuses, and the same screens. A purchase order always names an external supplier.
+
+## Key Attributes
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the order. This field is required. |
+| Note | Extra information about the order. This field is optional. |
+| Intent | How firm the order is. This field is required. |
+| Category | The kind of stock that you order. This field is required. |
+| Priority | How urgent the order is. This field is required. |
+| Reason | Why you place the order. This field is required. |
+| Vendor/Distributor | The external supplier organization that you order from. This field is required. |
+| Destination | The facility location that the goods are for. This field is required, and it defaults to your current location. |
+
+### Intent
+
+Intent records how firm the order is. Select one of these values:
+
+- Proposal
+- Plan
+- Directive
+- Order
+- Original Order
+- Reflex Order
+- Filler Order
+- Instance Order
+
+### Category
+
+Category records the kind of stock that you order. Select one of these values:
+
+- Central
+- Nonstock
+
+### Priority
+
+Priority records how urgent the order is. Select one of these values:
+
+- Routine
+- Urgent
+- ASAP
+- STAT
+
+### Reason
+
+Reason records why you place the order. Select one of these values:
+
+- Patient Care
+- Ward Stock
+
+### Requested items
+
+You add requested items after you create the order. Each requested item records these details:
+
+- The product that you request
+- The quantity
+
+### Status
+
+| Status | Description |
+| --- | --- |
+| Draft | You started the order, but it is not ready to send. |
+| Pending | The order waits for the vendor to supply the goods. |
+| Completed | The order is finished. |
+| Abandoned | The order stopped before the vendor supplied the goods. |
+| Entered in Error | Someone recorded the order by mistake. |
+
+## Relationships
+
+- A purchase order does not create a delivery. To record the stock that arrives, create a purchase delivery as a separate step.
+- A purchase delivery can reference the purchase order that it fulfills. Care then fills in the details of the delivery from that order.
+- A requested item names a catalog entry, not a specific stocked batch. For more information, see the [Product](../../concepts/supply/product.mdx) concept.
+
+## Permissions
+
+Care controls purchase orders with facility-scoped permissions.
+
+| Permission | Roles | What it allows |
+| --- | --- | --- |
+| Can Create Supply Request on Facility | Facility Admin, Admin, Staff, Doctor, Nurse | Create or edit a purchase order and its requested items. |
+| Can Read Supply Request | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist | View a purchase order. |
+
+Note: Care has no separate approve action or complete action for a purchase order. To change the status, edit the order.
+
+## Related
+
+- Flow: [Create a purchase order](../../flows/supply/purchase-order/create-purchase-order.mdx)
+- Flow: [Add items to a purchase order](../../flows/supply/purchase-order/add-items-purchase-order.mdx)
+- Flow: [View a purchase order](../../flows/supply/purchase-order/view-purchase-order.mdx)
+- Flow: [Update the status of a purchase order](../../flows/supply/purchase-order/update-purchase-order-status.mdx)
+- Concept: [Supply Order](../../concepts/supply/supply-request.mdx)
+- Concept: [Purchase Delivery](../../concepts/supply/purchase-delivery.mdx)
+- Concept: [Product](../../concepts/supply/product.mdx)

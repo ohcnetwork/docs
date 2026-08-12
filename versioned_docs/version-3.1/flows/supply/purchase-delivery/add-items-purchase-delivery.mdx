@@ -1,0 +1,77 @@
+---
+sidebar_position: 2
+---
+
+# Add delivered items to a purchase delivery
+
+## Overview
+
+This flow describes how to add the delivered items to a [purchase delivery](../../../concepts/supply/purchase-delivery.mdx) in Care. Each item records the product, the quantity, and the condition of the goods.
+
+## Pre-requisites
+
+- You created the purchase delivery at your facility. See [Create a purchase delivery](./create-purchase-delivery.mdx).
+- The purchase delivery is not Completed, Abandoned, or Entered in Error.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create External Supply Delivery on Facility | Lets you add delivered items to a purchase delivery at the facility. Facility Admin and Admin have this permission. |
+
+## Steps
+
+### 1. Open the purchase delivery
+
+Open the purchase delivery that you want to update.
+
+Note: If you start the delivery from a purchase order, Care can load the requested items of that order automatically.
+
+### 2. Start a new item
+
+Click **Add Item**.
+
+### 3. Select the product
+
+Select the [product](../../../concepts/supply/product.mdx) that the supplier delivers. Select an existing product instance, or create a new product instance for a new batch.
+
+For a new product instance, enter the values below.
+
+| Components | What it captures |
+| --- | --- |
+| Lot Number | The batch number of the delivered goods. |
+| Expiration Date | The date on which the batch expires. |
+| Purchase Price | The price that you pay for the product. |
+| Pack Size | The number of units in one pack. |
+
+### 4. Enter the delivered quantity
+
+Enter the quantity that the supplier delivers. You can enter the pack quantity and the pack size instead.
+
+### 5. Enter the charges and the condition
+
+Enter the tax amount and the discount amount for the item. Select the condition of the delivered goods: **Normal** or **Damaged**.
+
+Note: Which fields are mandatory depends on your deployment's configuration.
+
+### 6. Save the item
+
+Save the item. Repeat the steps above for each delivered product.
+
+## Expected Outcome
+
+- Care adds the item to the purchase delivery.
+- The purchase delivery shows each delivered product, its quantity, and its condition.
+
+## Related
+
+Concepts:
+
+- [Purchase Delivery](../../../concepts/supply/purchase-delivery.mdx)
+- [Product](../../../concepts/supply/product.mdx)
+
+Flows:
+
+- [Create a purchase delivery](./create-purchase-delivery.mdx)
+- [Receive and complete a purchase delivery](./receive-purchase-delivery.mdx)

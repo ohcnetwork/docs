@@ -1,0 +1,79 @@
+---
+sidebar_position: 3
+---
+
+# Add a product instance
+
+## Overview
+
+This flow describes how to add a [product](../../../concepts/supply/product.mdx) instance in Care. A product instance is one facility's stocked batch of a catalog entry, with its own lot number, expiration date, and purchase price.
+
+## Pre-requisites
+
+- You are a member of the facility that stocks the product.
+- Someone added the catalog entry for the product to the product catalog.
+- If you add the product instance while you receive goods, you record a [purchase delivery](../../../concepts/supply/purchase-delivery.mdx) that contains the delivered item.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Product on Facility | Lets you add a product instance to the facility. Facility Admin and Admin have this permission. |
+
+## Steps
+
+You can add a product instance from two places. Use the settings screen to manage the facility catalog directly. Use the purchase delivery screen when you receive an item that Care does not know yet. Most new product instances start from a purchase delivery.
+
+### 1. Open the form from facility settings
+
+1. Open the facility.
+2. Select **Settings**.
+3. Select **Products**.
+4. Click **Add Product**.
+
+### 2. Open the form from a purchase delivery
+
+Use this entry point when you add a delivered item that is not a known product instance.
+
+1. Open the purchase delivery.
+2. Add the delivered item.
+3. Create the product instance from the same screen.
+
+### 3. Complete the product details
+
+Enter the details of the batch that the facility stocks.
+
+| Components | What it captures |
+| --- | --- |
+| Product Knowledge | The catalog entry for this product. This field is required. |
+| Status | The availability of the product instance. This field is required, and defaults to Active. |
+| Lot Number | The batch number of the stock. This field is optional. |
+| Expiration Date | The date when the batch expires. This field is required. |
+| Standard Pack Size | The quantity in one standard pack. This field is optional. |
+| Purchase Price | The price that the facility pays for the product. This field is optional. |
+| Charge Item Definition | The charge that bills this product to a patient. This field is optional. |
+
+Note: You select the Product Knowledge entry one time. You cannot change it after you save the product instance.
+
+### 4. Save the product instance
+
+1. Check the details that you entered.
+2. Save the form.
+
+## Expected Outcome
+
+- Care adds the product instance to the facility.
+- The product instance is available when you record a delivered item.
+- If you started from a purchase delivery, the new product instance applies to the delivered item.
+
+## Related
+
+Concepts:
+
+- [Product](../../../concepts/supply/product.mdx)
+- [Purchase Delivery](../../../concepts/supply/purchase-delivery.mdx)
+
+Flows:
+
+- [Edit a product instance](./edit-product-instance.mdx)

@@ -2,70 +2,82 @@
 sidebar_position: 4
 ---
 
-# Supply Request
+# Supply Order
 
-A **supply request** is a line item asking for a specific quantity of a catalogue product to be moved into a facility location. It is how a ward, pharmacy, or store says "we need this much of this item here" — the demand signal that drives stock movement across your facility.
+## Definition
 
-## What it represents
+A **[supply order](https://build.fhir.org/supplyrequest.html)** in Care records a request to move stock from one location to another location in the same facility. For example, a ward asks the central store to send more supplies. One supply order bundles one or more requested items, and each requested item names a product and a quantity.
 
-In Care's FHIR-aligned model, a supply request maps to the **SupplyRequest** resource. A single request captures just three things: the catalogue item wanted (a [product knowledge](../definitions/product-knowledge.mdx) entry), the quantity, and where it sits in its workflow.
+Care uses the same order mechanism for two purposes. A supply order requests stock from another location in the same facility. A purchase order requests stock from an outside vendor. The source that you name on the order decides which one you create. A supply order always names an internal source location in the same facility.
 
-The key distinction to hold is that a supply request is not the handover of goods. It expresses demand only; the matching movement of physical stock is recorded separately as a [supply delivery](../supply/supply-delivery.mdx). A request can be raised, fulfilled, or cancelled without anything having physically moved — which is why the request and the delivery are kept as separate records.
+Both types share the same fields, the same statuses, and the same screens.
 
-## How it connects
+## Key Attributes
 
-Supply requests rarely travel alone. Care groups them under a **request order**, which is the unit people actually act on:
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the order. This field is required. |
+| Note | More information about the order. This field is optional. |
+| Intent | How firm the request is. This field is required. |
+| Category | The type of supply. This field is required. |
+| Priority | How urgent the request is. This field is required. |
+| Reason | Why you request the stock. This field is required. |
+| Deliver From | The facility location that you request the stock from. This location must be in the same facility as the destination. This field is required. |
+| Destination | The facility location that needs the stock. Care sets your current location as the default. This field is required. |
 
-- A **request order** describes a movement of items into a **destination** facility location — for example, "restock the ICU pharmacy."
-- One order fans out to **many supply requests**, one per catalogue item being asked for ("50 of these gloves, 20 of that saline").
-- An order can name a **supplier** organization it is sourcing from and an **origin** location it is drawing from, but only the destination is required.
+### Intent
 
-This is the mental model to hold: the **order** answers "where is this going and roughly why," while each **supply request** inside it answers "which item, how much." Because origin and destination are tracked separately, the same physical location can appear as the origin on orders it sends out and the destination on orders it receives.
+Select one of these values: Proposal, Plan, Directive, Order, Original Order, Reflex Order, Filler Order, or Instance Order.
 
-## Order classification
+### Category
 
-A request order carries a few coded attributes that help staff triage and route it — guidance values that shape how an order is read and prioritised, not actions that move stock by themselves:
+Select Central or Nonstock.
 
-| Attribute | Plain meaning | Example values |
-| --- | --- | --- |
-| Priority | How urgently it is needed | `routine`, `urgent`, `asap`, `stat` |
-| Intent | How firm the request is | `proposal`, `plan`, `order` |
-| Reason | Why the stock is needed | `patient_care`, `ward_stock` |
-| Category | Where it is sourced from | `central` (central store), `nonstock` (special order) |
+### Priority
 
-## Lifecycle
+Select Routine, Urgent, ASAP, or STAT.
 
-A supply request moves through its own status as it is worked, from preparation to fulfilment:
+### Reason
 
-```text
-draft → active → processed → completed
-```
+Select Patient Care or Ward Stock.
 
-- **draft** — being prepared, not yet acted on
-- **active** — submitted and open for fulfilment
-- **suspended** — temporarily paused
-- **processed** — picked up and being acted on
-- **completed** — fully fulfilled
-- **cancelled** — withdrawn before fulfilment
-- **entered_in_error** — recorded by mistake and voided
+### Requested items
 
-The parent request order tracks a parallel status of its own — `draft`, `pending`, `in_progress`, `completed`, `abandoned`, or `entered_in_error` — so you can read the state of the whole order independently of any single line item, with the last three treated as closed. Note that status is a workflow label, not an enforced state machine: Care does not block a transition, so the lifecycle reflects how teams agree to work rather than a hard rule.
+You add requested items after you create the order. Each requested item has a product and a quantity. The product is a catalog entry, not a specific stocked batch.
+
+### Status
+
+Care has no separate approve action or complete action. To change the status, edit the order.
+
+| Status | Description |
+| --- | --- |
+| Draft | You started the order, but you did not submit it. |
+| Pending | You submitted the order, and the source location did not fulfill it. |
+| Completed | The source location fulfilled the order. |
+| Abandoned | You stopped the order before fulfillment. |
+| Entered in Error | You recorded the order by mistake. |
+
+## Relationships
+
+- A supply order does not create a delivery. To fulfill the order, create a supply delivery as a separate step.
+- A supply delivery can refer to the supply order that it fulfills. Care then fills in the details of the delivery from that order.
+- A requested item names a catalog entry, not a specific stocked batch. For more information, see the [Product](../../concepts/supply/product.mdx) concept.
 
 ## Permissions
 
-Access to supply requests is controlled by two role-based permissions scoped to a facility.
+Care controls supply orders with facility-scoped permissions.
 
-| Permission | Description | System Roles |
+| Permission | Roles | What it allows |
 | --- | --- | --- |
-| `can_write_supply_request` | Create and update supply requests within a facility | Facility Admin, Admin, Staff, Doctor, Nurse |
-| `can_read_supply_request` | View and list supply requests within a facility | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-
-Roles are granted through a user's membership in a facility or organization, and permissions cascade down the organization tree — so a role held higher up applies to the facilities beneath it.
+| Can Create Supply Request on Facility | Facility Admin, Admin, Staff, Doctor, Nurse | Create or edit a supply order and its requested items. |
+| Can Read Supply Request | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist | View a supply order. |
 
 ## Related
 
-- Reference: [Supply Request (technical)](../../references/supply/supply-request.mdx)
-- Concept: [Product Knowledge](../definitions/product-knowledge.mdx)
-- Concept: [Supply Delivery](../supply/supply-delivery.mdx)
-- Concept: [Inventory Item](../supply/inventory-item.mdx)
-- Concept: [Location](../facility/location.mdx)
+- Flow: [Raise a supply request](../../flows/supply/supply-request/raise-supply-request.mdx)
+- Flow: [Add items to a supply request](../../flows/supply/supply-request/add-items-supply-request.mdx)
+- Flow: [View a supply request](../../flows/supply/supply-request/view-supply-request.mdx)
+- Flow: [Update the status of a supply request](../../flows/supply/supply-request/update-supply-request-status.mdx)
+- Concept: [Purchase Order](../../concepts/supply/purchase-order.mdx)
+- Concept: [Supply Delivery](../../concepts/supply/supply-delivery.mdx)
+- Concept: [Product](../../concepts/supply/product.mdx)
