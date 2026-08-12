@@ -1,0 +1,85 @@
+---
+sidebar_position: 5
+---
+
+# Generate and view a report
+
+## Overview
+
+This flow describes how to generate a report for an encounter from a [report template](../../../concepts/platform/report-template.mdx). You can then view the report, download it, print it, or generate it again.
+
+## Pre-requisites
+
+- The patient is registered in Care, and the patient has an encounter at the facility.
+- The facility has at least one Discharge Summary template with the status Active.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Read Template | See the report templates in the Reports section. Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, and Pharmacist have this permission. |
+| Can generate report from template | Generate a report from a template. Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, and Pharmacist have this permission. |
+| Can generate report for completed encounter | Generate a report when the encounter is complete. Facility Admin and Admin have this permission. |
+
+Note: If the encounter is complete, you need both Can generate report from template and Can generate report for completed encounter.
+
+## Steps
+
+### 1. Open the encounter
+
+Open the encounter of the patient.
+
+Go to the **Overview** tab.
+
+### 2. Open the Reports section
+
+Go to the **Reports** section of the Overview tab.
+
+Care shows a button for each Discharge Summary template with the status Active at the facility. Each button carries the name of the template.
+
+### 3. Select a template
+
+Select the button of the template that you want.
+
+Care opens the report viewer for that template and that encounter.
+
+If no report exists for this template and encounter, Care generates one.
+
+Note: Care generates the report in the background. Care checks the progress until the file is ready, or until the time limit ends.
+
+### 4. View the report
+
+Care shows the rendered PDF or HTML file in the viewer.
+
+From the viewer, you can do these actions:
+
+- Download the report.
+- Print the report.
+- Generate the report again. Generate the report again after the encounter data changes.
+
+### 5. Open an earlier report
+
+The viewer lists the reports that Care generated before for this template and this encounter.
+
+Select an earlier report to open that version instead of the latest one.
+
+## Expected Outcome
+
+- Care generates a report for the encounter from the selected template.
+- Care shows the report in the viewer, and you can download it or print it.
+- Care keeps the earlier reports for the template and the encounter, and you can open them again.
+
+## Related
+
+Concepts:
+
+- [Report Template](../../../concepts/platform/report-template.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [Create a report template](./create-a-report-template.mdx)
+- [Preview a template](./preview-a-template.mdx)
+- [Edit a report template](./edit-a-report-template.mdx)
+- [View report templates](./view-report-templates.mdx)

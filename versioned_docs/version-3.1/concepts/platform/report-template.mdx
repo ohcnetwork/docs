@@ -1,0 +1,77 @@
+---
+sidebar_position: 2
+---
+
+# Report Template
+
+## Definition
+
+A **report template** in Care is a facility-level definition of a reusable, printable document, such as a discharge summary. A facility admin builds the template one time. Care team members then generate reports from the template for a patient's encounter, for a patient, or for a billing account. The type of the template decides which of these the report covers.
+
+Note: A report template is native to Care. It has no matching FHIR R5 resource.
+
+## Key Attributes
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the template. Care team members see this name when they choose a template. |
+| Status | Whether the template is Draft, Active, or Retired. |
+| Default Format | The file format that Care produces for a report, either PDF or HTML. |
+| Template Type | The kind of record that the template is for: Discharge Summary, Patient Summary, or Account Report. |
+| Context | The set of data fields that the template can use. Care matches the context to the template type. |
+| Description | A short explanation of the purpose of the template. |
+| Template Body | The content and layout of the document. You write the body in the Jinja2 templating language, with placeholders that pull in real data when Care generates a report. |
+
+### Template Type and Context
+
+The template type states which kind of record the template describes. Select one of these values:
+
+- Discharge Summary
+- Patient Summary
+- Account Report
+
+The context is the set of data fields that the template can use. Care matches the context to the template type. The placeholders in the template body read their values from this context.
+
+### Generated Reports
+
+A report template is only the definition of a document. When a care team member generates a report from the template, Care creates a separate generated report with its own file in PDF or HTML format. Care stores the generated report, so that you can view it, download it, print it, or generate it again later.
+
+You can archive a generated report, and you must give a reason for the archive. The generated report stays available after you retire the template that produced it.
+
+## Status
+
+| Status | Description |
+| --- | --- |
+| Draft | The template is still in preparation. You cannot generate a report from it. |
+| Active | The template is ready for use. Only an Active template can produce a report. |
+| Retired | Care no longer offers the template for new reports. |
+
+Note: Care has no delete action for a report template. To take a template out of use, edit it and set the status to Retired.
+
+## Permissions
+
+| Permission | Roles |
+| --- | --- |
+| Can Create Template on Facility | Facility Admin, Admin, Doctor, Nurse |
+| Can Read Template | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Preview Template | Facility Admin, Admin |
+| Can generate report from template | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can generate report for completed encounter | Facility Admin, Admin |
+
+Note: If the encounter is complete, you need Can generate report for completed encounter as well as Can generate report from template.
+
+## Where to find it
+
+Care shows report templates on the **Templates** page of a facility. This page holds the list of templates and the template builder.
+
+Care shows generated reports in the **Reports** section of the **Overview** tab of an encounter. This section lists the Active Discharge Summary templates that you can generate a report from.
+
+## Related
+
+- Flow: [Create a report template](../../flows/platform/report-template/create-a-report-template.mdx)
+- Flow: [Preview a template](../../flows/platform/report-template/preview-a-template.mdx)
+- Flow: [Edit a report template](../../flows/platform/report-template/edit-a-report-template.mdx)
+- Flow: [View report templates](../../flows/platform/report-template/view-report-templates.mdx)
+- Flow: [Generate and view a report](../../flows/platform/report-template/generate-and-view-a-report.mdx)
+- Concept: [Encounter](../../concepts/clinical/encounter.mdx)
+- Concept: [Diagnostic Report](../../concepts/clinical/diagnostic-report.mdx)

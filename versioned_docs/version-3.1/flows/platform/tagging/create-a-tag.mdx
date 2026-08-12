@@ -1,0 +1,79 @@
+---
+sidebar_position: 1
+---
+
+# Create a tag
+
+## Overview
+
+This flow describes how to create a root [tag](../../../concepts/platform/tagging.mdx) in Care. A root tag has no parent tag.
+
+## Pre-requisites
+
+- You are a member of the facility where you create the tag.
+- If you create a tag for the whole instance without a facility, you are a superuser.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Tag Config on Facility | Lets you create a tag for the facility. Facility Admin and Admin have this permission. |
+
+## Steps
+
+### 1. Open the tag configuration list
+
+Open the Settings area of the facility.
+
+Select **Tag config**.
+
+### 2. Start a new tag
+
+Select **Add tag config**.
+
+Care opens a sheet on desktop. On mobile, Care opens a drawer.
+
+### 3. Complete the tag form
+
+Enter the details of the tag.
+
+| Components | What it captures |
+| --- | --- |
+| Display name | The name of the tag that users see. This field is required. |
+| Category | The type of the tag. Select Diet, Drug, Lab, Admin, Contact, Clinical, Behavioral, Research, Advance Directive, or Safety. The default value is Clinical. This field is required. |
+| Resource | The record type that accepts the tag, for example Encounter, Service Request, Patient, or Account. This field is required. |
+| Priority | The sort order of the tag. The default value is 100. This field is required. |
+| Status | The state of the tag. Select Active or Archived. The default value is Active. This field is required. |
+| Description | More information about the use of the tag. This field is optional. |
+| Managing Organization | The organization that owns the tag. This field is optional. |
+
+Note: You cannot change the Resource value after you create the tag.
+
+Note: The Priority value must not be negative.
+
+Note: The Managing Organization field shows facility organizations when you create the tag from the settings of a facility. The field shows instance-level organizations when you create the tag from the Admin area.
+
+### 4. Save the tag
+
+Select the submit button.
+
+Note: The submit button stays disabled until you change a field in the form.
+
+## Expected Outcome
+
+- Care shows the message "Tag Config created successfully".
+- The new tag appears in the tag list.
+
+## Related
+
+Concepts:
+
+- [Tag](../../../concepts/platform/tagging.mdx)
+
+Flows:
+
+- [Create a child tag](./create-a-child-tag.mdx)
+- [View tags](./view-tags.mdx)
+- [Edit a tag](./edit-a-tag.mdx)
+- [Archive a child tag](./archive-a-child-tag.mdx)
