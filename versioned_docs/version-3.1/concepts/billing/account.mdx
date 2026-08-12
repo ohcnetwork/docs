@@ -4,66 +4,91 @@ sidebar_position: 1
 
 # Account
 
-An **account** is the financial ledger that gathers everything billable done for one patient at one facility into a single running balance. Charges flow into it, invoices are raised from it, and payments are settled against it — it is where the platform answers "what does this patient owe here, and what has been paid?"
+## Definition
 
-## What it represents
+An **[account](https://build.fhir.org/account.html)** in Care groups the charge items, invoices, and payments of one patient at one facility. Every charge item, invoice, and payment belongs to exactly one account. The account shows what the patient owes and what the patient paid. Care allows one active, open account for each patient at each facility at a time.
 
-In Care's FHIR-aligned model, an account maps to the **Account** resource. Think of it as a folder, not a bill: it holds the totals and the context, while the actual line items, invoices, and receipts live elsewhere and point back to it.
+## Key Attributes
 
-- **Whose money** — the patient who incurred the costs and the facility where the account lives
-- **What it covers** — a name, an optional description, and a service period (the time window of transactions it spans)
-- **Where it stands** — a lifecycle status (is the account open and usable?) and a separate billing status (where it sits in the billing process)
-- **The running totals** — gross charges, amounts paid, outstanding balance, and charges still waiting to be billed, all maintained by the platform rather than entered by hand
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the account. This field is required. |
+| Description | More detail about the account. This field is optional. |
+| Status | The current state of the account. This field is required. |
+| Billing Status | The current step of the account in the billing lifecycle. This field is required and starts as Open. |
+| Service Period | The start date and end date of the period that the account covers. Care sets the start to the time of creation. |
+| Primary Encounter | One recent encounter of the patient that the account covers. This field is optional. |
+| Tags | Labels that help you group and find accounts. This field is optional. |
+| Financial Summary | The Amount Due, Total Paid, Billed (Gross), and Total Billable values of the account. |
 
-An account is not an invoice and not a single visit. It is a long-lived container: one patient at one facility normally has a single open account that accumulates charges across many encounters, with invoices drawn from it later. The same patient at a different facility gets a separate account, so two facilities' money never mixes.
+### Service Period
 
-## How it connects
+Care sets the service period start to the time when you create the account. You cannot type the start date or the end date. Care shows both dates as read-only.
 
-The account sits between a patient's clinical activity and the money owed for it:
+### Primary Encounter
 
-- **Patient and facility** — every account belongs to exactly one [patient](../clinical/patient) at one [facility](../facility/facility.mdx).
-- **Charge items** — each billable line item ([charge item](../billing/charge-item.mdx)) is placed on the patient's account, and those items are what actually drive the totals.
-- **Encounters** — charges accumulate across many [encounters](../clinical/encounter.mdx), but an account can optionally be tied to one primary encounter for reporting and insurance paperwork.
-- **Invoices and payments** — [invoices](../billing/invoice.mdx) are raised against an account (or against specific items in it), and [payment reconciliations](../billing/payment-reconciliation.mdx) record what has been settled.
+You can set the primary encounter only when you edit the account. Care shows the recent encounters of the patient. An encounter is the primary encounter of one account only.
 
-In practice, clients rarely create an account by hand. The platform materializes a patient's default account automatically the first time a charge item is added for that patient at a facility.
+### Financial Summary
 
-## Lifecycle
+Care calculates the financial summary from the charge items, invoices, and payments of the account. The values are read-only.
 
-An account moves along two parallel tracks. The **activity status** is the coarse one — it answers "can this account still be used?"
+| Value | What it captures |
+| --- | --- |
+| Amount Due | The amount that the patient still owes on the account. |
+| Total Paid | The amount that the patient paid on the account. |
+| Billed (Gross) | The gross amount that the invoices of the account bill. |
+| Total Billable | The total amount that the account can bill. |
 
-```text
-active → on_hold → inactive
-        (active → entered_in_error if created by mistake)
-```
+### Status
 
-- **active** — open and in use; the default state for a patient's working account
-- **on_hold** — temporarily paused, not accepting new activity for now
-- **inactive** — retired from active use but kept for history
-- **entered_in_error** — created by mistake and should be disregarded
+| Status | Description |
+| --- | --- |
+| Active | The account is in use. You can add charge items, invoices, and payments to it. |
+| Inactive | The account is no longer in use. |
+| On Hold | Work on the account stops for now. |
+| Entered in Error | Someone created the account by mistake. |
 
-The **billing status** is the finer track, following the account from open to settled. It begins at `open` (accruing charges), passes through `carecomplete_notbilled` and `billing` as work wraps up and invoicing starts, and ends in one of several closed states: `closed_completed` (billing finished), `closed_voided`, `closed_baddebt`, or `closed_combined` (merged into another account). A default account starts at `active` / `open`; after discharge it is typically balanced and moved toward a closed billing status while the activity status stays usable until the books are settled.
+#### Billing Status
+
+The account page shows the billing lifecycle as a stepper: Open, then Care Completed, then Billing, then Closed.
+
+| Billing Status | Description |
+| --- | --- |
+| Open | The account accepts new charges. |
+| Care Completed | The care for the patient ended. The facility did not bill the account yet. |
+| Billing | The facility prepares and sends the bills for the account. |
+| Closed Bad Debt | The facility closed the account because the patient did not pay. |
+| Closed Voided | The facility closed the account and cancelled it. |
+| Closed Completed | The facility closed the account after full payment. |
+| Closed Combined | The facility closed the account and combined it with another account. |
+
+Note: Care has no delete action for an account. To close an account, change the status and the billing status. Care keeps the account.
+
+## Relationships
+
+- The account belongs to one facility and one patient. You cannot change the patient after you create the account.
+- The account links to one encounter as the primary encounter.
+- Charge items, invoices, and payments each belong to one account.
+- If you add a charge item for a patient and select no account, Care uses the active, open account of that patient at that facility. If the patient has no such account, Care creates one.
 
 ## Permissions
 
-Accounts hold financial information, so access is gated by facility-scoped permissions that keep it visible only to authorized staff.
+Care checks these permissions at the facility level.
 
-| Permission | Description | System Roles |
+| Permission | What it allows | Roles |
 | --- | --- | --- |
-| `can_create_account` | Create a new account for a patient at the facility | Facility Admin, Admin |
-| `can_read_account` | View an account, its balances and totals (also gates retrieve, list, and the default-account lookup) | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| `can_update_account` | Edit an account (name, status, billing status, service period, primary encounter); also gates rebalancing totals and setting or removing tags | Facility Admin, Admin |
-
-Roles are granted to users through their organization and facility memberships, and permissions cascade down the organization tree — a role held higher up applies to the facilities and patients beneath it.
+| Can Create Account | Create an account. | Facility Admin, Admin |
+| Can Update Account | Edit an account, advance the billing status, settle and close the account, rebalance the account, and manage tags. | Facility Admin, Admin |
+| Can Read Account | View and list accounts. | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
 
 ## Related
 
-- Reference: [Account (technical)](../../references/billing/account.mdx)
-- Concept: [Charge item](../billing/charge-item.mdx)
-- Concept: [Invoice](../billing/invoice.mdx)
-- Concept: [Payment reconciliation](../billing/payment-reconciliation.mdx)
-- Concept: [Patient](../clinical/patient)
-
-## FHIR reference
-
-The account aligns with the FHIR [Account](https://www.hl7.org/fhir/account.html) resource, which represents a financial tool for tracking value accrued for a particular purpose. Care follows this shape closely, though some values differ in spelling — for example, status values use underscores rather than the hyphenated FHIR forms.
+- Flow: [Create an account](../../flows/billing/account/create-account.mdx)
+- Flow: [View an account](../../flows/billing/account/view-account.mdx)
+- Flow: [Edit an account](../../flows/billing/account/edit-account.mdx)
+- Flow: [Advance the billing status of an account](../../flows/billing/account/advance-account-billing-status.mdx)
+- Flow: [Settle and close an account](../../flows/billing/account/settle-and-close-account.mdx)
+- Concept: [Charge Item](../../concepts/billing/charge-item.mdx) - the items that the account bills.
+- Concept: [Invoice](../../concepts/billing/invoice.mdx) - the bill for one or more charge items of the account.
+- Concept: [Payment Reconciliation](../../concepts/billing/payment-reconciliation.mdx) - the payments and credit notes against the account or an invoice.

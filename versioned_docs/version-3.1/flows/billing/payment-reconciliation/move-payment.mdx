@@ -1,0 +1,62 @@
+---
+sidebar_position: 4
+---
+
+# Move a payment to another account
+
+## Overview
+
+This flow describes how to move one or more [payments](../../../concepts/billing/payment-reconciliation.mdx) from one account to a different account of the same patient. Use this flow when you record a payment against the wrong account.
+
+## Pre-requisites
+
+- You recorded the payments for the patient at your facility.
+- The payments are not tied to a specific invoice.
+- The status of each payment is Active or Draft.
+- The patient has another active account that receives the payments.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Write Payment Reconciliation | Move payments from one account to another account of the same patient. Facility Admin, Admin, Staff, Doctor, Nurse, and Pharmacist have this permission. |
+
+## Steps
+
+### 1. Start the transfer
+
+Open the account that holds the payments. Open the menu on the account page. Select **Transfer Payment**.
+
+### 2. Select the payments to move
+
+Select one or more payments that you want to move.
+
+Note: You can select only payments that are not tied to a specific invoice. The status of each payment must be Active or Draft.
+
+### 3. Select the destination account
+
+Select the account that receives the payments. The destination account must be an active account of the same patient.
+
+### 4. Confirm the move
+
+Click **Change Account**.
+
+## Expected Outcome
+
+- Care moves the selected payments to the destination account.
+- Care updates the balance of the source account.
+- Care updates the balance of the destination account.
+
+## Related
+
+Concepts:
+
+- [Payment Reconciliation](../../../concepts/billing/payment-reconciliation.mdx)
+- [Account](../../../concepts/billing/account.mdx)
+
+Flows:
+
+- [Record a payment](./record-payment.mdx)
+- [View a payment](./view-payment.mdx)
+- [Cancel a payment or mark it entered in error](./cancel-payment.mdx)

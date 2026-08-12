@@ -1,0 +1,63 @@
+---
+sidebar_position: 4
+---
+
+# Move charge items to another account
+
+## Overview
+
+This flow describes how to move one or more [charge items](../../../concepts/billing/charge-item.mdx) from one account to a different account of the same patient. Use this flow when staff add charge items to the wrong account.
+
+## Pre-requisites
+
+- The patient has the account that holds the charge items you want to move.
+- The patient has a second active [account](../../../concepts/billing/account.mdx) that receives the charge items.
+- The charge items you want to move are still Billable.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Update Charge Item | Lets you move charge items to another account of the same patient. Facility Admin and Admin have this permission. |
+
+## Steps
+
+### 1. Open the Charge Items tab of the account
+
+Open the account that holds the charge items. Select the **Charge Items** tab.
+
+### 2. Select the charge items to move
+
+Select one or more charge items in the list. Each selected charge item must have the status Billable.
+
+### 3. Start the account change
+
+Click **Change Account**.
+
+### 4. Select the destination account
+
+Select the account that receives the charge items. The destination account must be another active account of the same patient.
+
+### 5. Confirm the move
+
+Confirm the change. Care moves the selected charge items to the destination account.
+
+## Expected Outcome
+
+- The selected charge items appear in the destination account.
+- The selected charge items no longer appear in the source account.
+- Care updates the totals of the source account and the destination account.
+
+## Related
+
+Concepts:
+
+- [Charge Item](../../../concepts/billing/charge-item.mdx)
+- [Account](../../../concepts/billing/account.mdx)
+
+Flows:
+
+- [Add charge items](./add-charge-items.mdx)
+- [Edit a charge item](./edit-charge-item.mdx)
+- [Cancel a charge item](./cancel-charge-item.mdx)

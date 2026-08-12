@@ -1,0 +1,70 @@
+---
+sidebar_position: 5
+---
+
+# Settle and close an account
+
+## Overview
+
+This flow describes how to settle an [account](../../../concepts/billing/account.mdx) in Care and close it with a reason.
+
+## Pre-requisites
+
+- Someone created the account, and you open its account page.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Update Account | Lets you settle and close an account. Facility Admin and Admin have this permission. |
+
+## Steps
+
+### 1. Start the action
+
+Open the account page.
+
+Click **Settle & Close**.
+
+Note: Press `s` on the account page to start the same action.
+
+### 2. Choose a closing reason
+
+Select one of these reasons:
+
+| Reason | What it means |
+| --- | --- |
+| Closed Bad Debt | You close the account because the balance is not collectable. |
+| Closed Voided | You close the account because it is void. |
+| Closed Completed | You close the account because all billing is complete. |
+| Closed Combined | You close the account because it is combined with another account. |
+
+### 3. Review the warnings
+
+If the account has a negative balance, Care shows a warning before you continue.
+
+If the account still has charge items that wait for billing, Care shows a warning before you continue.
+
+Read each warning.
+
+### 4. Confirm the closure
+
+Confirm the action.
+
+## Expected Outcome
+
+- Care sets the account status to Inactive.
+- Care sets the billing status to the closing reason that you choose.
+
+## Related
+
+Concepts:
+
+- [Account](../../../concepts/billing/account.mdx)
+
+Flows:
+
+- [View an account](./view-account.mdx)
+- [Edit an account](./edit-account.mdx)
+- [Advance the billing status of an account](./advance-account-billing-status.mdx)
