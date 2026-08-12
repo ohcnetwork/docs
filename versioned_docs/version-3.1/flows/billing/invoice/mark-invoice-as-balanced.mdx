@@ -1,0 +1,105 @@
+---
+sidebar_position: 8
+---
+
+# Mark an invoice as balanced
+
+## Overview
+
+This flow describes how to close out an issued [invoice](../../../concepts/billing/invoice.mdx) in Care when the invoice is settled.
+
+## Pre-requisites
+
+- The invoice status is Issued. Care shows the **Mark as balanced** action only for an issued invoice.
+- If the invoice still has an outstanding balance, you accept that Care moves the unpaid amount to the account balance.
+- If the invoice is locked, you have the permission to manage a locked invoice.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Read Invoice | Lets you open the invoice. |
+| Can Write Invoice | Lets you mark the invoice as balanced. |
+| Can Manage Locked Invoice | Needed in addition if the invoice is locked. |
+
+## Steps
+
+### 1. Open the invoice
+
+1. Select **Billing** in the facility sidebar.
+2. Select **Invoices**.
+3. Select **See Invoice** for the invoice to close out.
+
+### 2. Start the action
+
+Select **Mark as balanced**.
+
+Note: Press `b` to start this action.
+
+### 3. Check the amounts in the confirmation dialog
+
+Care shows the **Confirm** dialog. The dialog asks "Are you sure you want to mark this invoice as balanced?".
+
+| Components | What it shows |
+| --- | --- |
+| Invoice Total | The total amount of the invoice. |
+| Total Payments Received | The amount paid against the invoice. |
+| Total Credit Notes | The credit notes for the invoice. Care shows this amount only when the invoice has credit notes. |
+| Outstanding Balance | The amount that is still owed. |
+
+:::warning
+When the invoice has an outstanding balance, the dialog adds this warning: "This invoice has an outstanding balance. The unpaid amount will be moved to the account balance."
+:::
+
+### 4. Confirm the action
+
+Select **Confirm** to mark the invoice as balanced. Select **Cancel** to keep the invoice as it is.
+
+:::warning
+Balanced is an end state. A balanced invoice cannot change status again. Check the amounts before you select **Confirm**.
+:::
+
+## Expected Outcome
+
+- Care shows the message "Invoice updated successfully".
+- The status badge changes to **Balanced**.
+- Every charge item on the invoice with the status Billed moves to Paid. Care links each charge item to the invoice, and records a paid date.
+- Care recalculates the account balance.
+- Care moves any unpaid amount to the account. The invoice records that the amount "was unpaid and has been added to the account due".
+
+## Status rules
+
+Care uses these invoice statuses.
+
+| Status | Display label |
+| --- | --- |
+| draft | Draft |
+| issued | Issued |
+| balanced | Balanced |
+| cancelled | Cancelled |
+| entered_in_error | Entered in Error |
+
+Care applies these rules when you mark an invoice as balanced.
+
+- Only an issued invoice can move to Balanced. A draft invoice cannot move straight to Balanced. Care shows the message "Invoice needs to be issued before balancing". Issue the invoice first.
+- A balanced invoice cannot change status again. Care shows the message "Invoice is already balanced".
+- A cancelled invoice cannot move to Balanced. Care shows the message "Invoice is already cancelled".
+
+## Related
+
+Concepts:
+
+- [Invoice](../../../concepts/billing/invoice.mdx)
+
+Flows:
+
+- [Issue an invoice](./issue-invoice.mdx)
+- [Record a payment against an invoice](./record-invoice-payment.mdx)
+- [Cancel an invoice](./cancel-invoice.mdx)
+
+References:
+
+- [Invoice](../../../references/billing/invoice.mdx)
+- [Account](../../../references/billing/account.mdx)
+- [Charge Item](../../../references/billing/charge-item.mdx)

@@ -1,0 +1,83 @@
+---
+sidebar_position: 3
+---
+
+# Edit invoice details
+
+## Overview
+
+This flow describes how to change the issue date, the payment terms, or the note on a draft [invoice](../../../concepts/billing/invoice.mdx) in Care.
+
+## Pre-requisites
+
+- The invoice exists in the facility, and you open that invoice.
+- The invoice status is Draft. You can edit these details only for a draft invoice.
+- If the invoice is locked, you have the permission to manage a locked invoice.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Read Invoice | Lets you open the invoice. |
+| Can Write Invoice | Lets you change the invoice in the facility. |
+| Can Manage Locked Invoice | Needed in addition if the invoice is locked. |
+
+## Steps
+
+### 1. Open the invoice
+
+1. In the facility sidebar, select **Billing**.
+2. Select **Invoices**.
+3. For the invoice that you want to change, select **See Invoice**.
+
+### 2. Start the edit
+
+Select **Edit Details**. Care shows this button only when the invoice status is Draft.
+
+Care opens the dialog **Edit Invoice Details**. The fields show the current values of the invoice.
+
+Note: Selecting outside the dialog does not close the dialog.
+
+### 3. Change the details
+
+Change one or more of the fields. All three fields are optional.
+
+| Components | What it captures |
+| --- | --- |
+| Issue Date | The date and the time of the invoice. Select the date and the time in the picker. |
+| Payment Terms | The payment terms for the invoice. Free text. |
+| Note | A free-text note for the invoice. |
+
+:::note
+You cannot enter a future issue date. For a future date, Care shows the message "Issue date cannot be in the future".
+:::
+
+### 4. Save the changes
+
+Submit the form to save the changes.
+
+## Expected Outcome
+
+- Care saves the new issue date, payment terms, and note on the invoice.
+- Care shows the message "Invoice updated successfully".
+- Care closes the dialog.
+- The invoice status stays Draft. This dialog does not change the status.
+- If the save fails, Care shows the message "Failed to update invoice". The invoice keeps the earlier values.
+
+## Related
+
+Concepts:
+
+- [Invoice](../../../concepts/billing/invoice.mdx)
+
+References:
+
+- [Invoice](../../../references/billing/invoice.mdx)
+
+Flows:
+
+- [Create an invoice](./create-invoice.mdx)
+- [Edit the items on an invoice](./edit-invoice-items.mdx)
+- [Issue an invoice](./issue-invoice.mdx)
+- [Lock and unlock an invoice](./lock-and-unlock-invoice.mdx)

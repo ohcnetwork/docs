@@ -1,0 +1,105 @@
+---
+sidebar_position: 5
+---
+
+# Issue an invoice
+
+## Overview
+
+This flow describes how to finalise a draft [invoice](../../../concepts/billing/invoice.mdx) in Care. After you issue the invoice, you can give it to the patient or to the payer. You can also collect payment against it.
+
+## Pre-requisites
+
+- The invoice status is Draft. Care shows the **Issue Invoice** action only for a draft invoice.
+- The invoice has at least one charge item.
+- If the invoice is locked, you have the permission to manage a locked invoice.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Read Invoice | Lets you open the invoice. |
+| Can Write Invoice | Lets you issue the invoice. |
+| Can Manage Locked Invoice | Needed in addition if the invoice is locked. |
+
+## Steps
+
+### 1. Open the invoice
+
+1. Select **Billing** in the facility sidebar.
+2. Select **Invoices**.
+3. Select **See Invoice** for the invoice to issue.
+
+### 2. Check the items before you issue
+
+Check the charge items and the amounts on the invoice.
+
+A draft invoice shows the live charge items. A change to a charge item changes the draft invoice.
+
+To correct the items, see [Edit the items on an invoice](./edit-invoice-items.mdx).
+
+:::warning
+After you issue the invoice, you cannot change the items on the invoice. Check the items first.
+:::
+
+### 3. Issue the invoice
+
+Select **Issue Invoice**. Care disables the button while the change is in progress.
+
+Note: Press `i` to start this action.
+
+:::warning
+Care does not issue an invoice that has no charge items. Care shows the message "Invoice must have at least one charge item". Add at least one charge item, then issue the invoice again.
+:::
+
+## Expected Outcome
+
+- Care shows the message "Invoice updated successfully".
+- The status badge changes from **Draft** to **Issued**.
+- Care stores the line items on the invoice. A later change to a charge item does not change the invoice. This protects a bill that you already gave to the patient.
+- Care computes and stores the totals. The net total is the base amounts plus the surcharges, minus the discounts. The gross total adds the tax.
+- The invoice can now take payments. You can also mark the invoice as balanced.
+- Care no longer shows **Edit Details** and **Edit Items**. Care refuses an item change with the message "Invoice is not in draft".
+
+## Status rules
+
+Care uses these invoice statuses.
+
+| Stored value | Display label |
+| --- | --- |
+| draft | Draft |
+| issued | Issued |
+| balanced | Balanced |
+| cancelled | Cancelled |
+| entered_in_error | Entered in Error |
+
+The permitted path is Draft, then Issued, then Balanced. Cancelled and Entered in Error are the two end states. To reach an end state, use the cancel action.
+
+Care applies these rules to a status change.
+
+- Care does not issue an invoice that has no charge items. The message is "Invoice must have at least one charge item".
+- An issued invoice cannot go back to Draft. The message is "Invoice is already issued".
+- A draft invoice cannot move straight to Balanced. The message is "Invoice needs to be issued before balancing".
+- A balanced invoice cannot change status. The message is "Invoice is already balanced".
+- A cancelled invoice cannot open again. The message is "Invoice is already cancelled".
+- A status change does not cancel an invoice. Use the cancel action. The message is "Call the cancel invoice API to cancel the invoice".
+
+## Related
+
+Concepts:
+
+- [Invoice](../../../concepts/billing/invoice.mdx)
+
+Flows:
+
+- [Create an invoice](./create-invoice.mdx)
+- [Edit the items on an invoice](./edit-invoice-items.mdx)
+- [Print an invoice](./print-invoice.mdx)
+- [Record a payment against an invoice](./record-invoice-payment.mdx)
+- [Mark an invoice as balanced](./mark-invoice-as-balanced.mdx)
+- [Cancel an invoice](./cancel-invoice.mdx)
+
+References:
+
+- [Invoice](../../../references/billing/invoice.mdx)

@@ -1,0 +1,114 @@
+---
+sidebar_position: 7
+---
+
+# Record a payment against an invoice
+
+## Overview
+
+This flow describes how to record the money that the patient or the payer paid against an issued [invoice](../../../concepts/billing/invoice.mdx) in Care.
+
+## Pre-requisites
+
+- The invoice status is Issued. Care shows the **Record Payment** action only for an issued invoice.
+- If the invoice is locked, you have the permission to manage a locked invoice.
+- You know the amount, the payment method and the payment date.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Read Invoice | Lets you open the invoice. |
+| Can Manage Locked Invoice | Needed in addition if the invoice is locked. |
+
+:::note
+Care checks the payment reconciliation permissions when you record the payment. For those permissions, see the [Payment Reconciliation](../../../references/billing/payment-reconciliation.mdx) reference.
+:::
+
+## Steps
+
+### 1. Open the invoice
+
+1. Select **Billing** in the facility sidebar.
+2. Select **Invoices**.
+3. Select **See Invoice** for the invoice to pay.
+
+### 2. Start the action
+
+Select **Record Payment**.
+
+Note: Press `r` to start this action.
+
+Care opens the **Record Payment** sheet. The sheet shows the subtitle "Recording payment for invoice" and the invoice number.
+
+### 3. Check the amounts at the top of the sheet
+
+| Component | What it shows |
+| --- | --- |
+| Invoice Total | The total amount of the invoice. |
+| Amount Due | The amount that is still owed on the invoice. |
+| Balance Due | The balance on the account. |
+
+### 4. Complete the payment fields
+
+| Field | Required | What to enter |
+| --- | --- | --- |
+| Payment Method | Yes | Select one of these options: **Cash**, **Direct Deposit**, **Credit Card**, **Debit Card**, **Check**, **Credit Account**. |
+| Payment Type | Yes | Select **Payment** or **Advance**. |
+| Issuer Type | Yes | Identifies who paid. |
+| Location | No | A picker. The placeholder is "Select Location". |
+| Amount Paid | Yes | The amount you record. Enter zero or more. The helper text reads "This is the amount you are recording." |
+| Amount Received | Yes, for Cash | The money the customer handed over. The helper text reads "Amount given by the customer". |
+| Reference Number | No | Marked optional. The helper text reads "Transaction ID, check number, or other reference". |
+| Payment Date | Yes | The date of the payment. Care refuses a future date. |
+| Notes | No | Marked optional. The placeholder is "Add any notes about this payment...". |
+
+### 5. Check the change to return
+
+For the Cash method, Care computes the **Change to return**. The change to return is the amount received minus the amount paid. Care never shows a negative value.
+
+For every other payment method, Care sets the amount received equal to the amount paid. Care sets the change to return to zero.
+
+### 6. Record the payment
+
+Select **Record Payment** to save the payment. Select **Cancel** to close the sheet without a payment.
+
+While Care saves the payment, the button reads **Processing...**.
+
+## Validation messages
+
+Care refuses the payment and shows a message when an entry is not valid.
+
+| Situation | Message |
+| --- | --- |
+| A required field is empty. | "This field is required" |
+| The payment date is in the future. | "Payment date cannot be in the future" |
+| The amount received is less than the amount paid. | "Tender amount cannot be less than payment amount" |
+
+## Expected Outcome
+
+- Care shows the message "Payment recorded successfully". If the payment fails, Care shows the message "Error recording payment".
+- The invoice shows the payment under the heading "Payments received against this invoice".
+- The payments table lists the columns **Date and Time**, **Payment Method**, **Reference** and **Amount**. Each row has a **View** action and a **Print** action.
+- The payments table ends with a **Total Received** line.
+- The invoice summary shows the **Total Amount**, the **Total Payments Received** and the **Balance Due**.
+- Care creates a payment reconciliation record. Only a record that is active and complete counts towards the totals on the invoice.
+
+## Related
+
+Concepts:
+
+- [Invoice](../../../concepts/billing/invoice.mdx)
+
+Flows:
+
+- [Issue an invoice](./issue-invoice.mdx)
+- [Mark an invoice as balanced](./mark-invoice-as-balanced.mdx)
+- [Print an invoice](./print-invoice.mdx)
+
+References:
+
+- [Invoice](../../../references/billing/invoice.mdx)
+- [Payment Reconciliation](../../../references/billing/payment-reconciliation.mdx)
+- [Account](../../../references/billing/account.mdx)

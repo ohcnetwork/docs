@@ -1,0 +1,137 @@
+---
+sidebar_position: 2
+---
+
+# Create an invoice
+
+## Overview
+
+This flow describes how to build a draft [invoice](../../../concepts/billing/invoice.mdx) from the billable charge items on a billing account of a patient.
+
+## Pre-requisites
+
+- The patient has a billing account at the facility.
+- The account is active and billable. Care shows the **Create Invoice** button only for an active and billable account.
+- The account has charge items with the status Billable, or you add charge items in this flow.
+- The account belongs to the facility that you work in.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Write Invoice | Lets you create an invoice in the facility. |
+| Can Read Invoice | Lets you open the invoice after Care creates it. |
+
+## Steps
+
+### 1. Open the billing account
+
+1. In the facility sidebar, select **Billing**.
+2. Select **Accounts**.
+3. Select the account.
+
+### 2. Start the invoice
+
+Select **Create Invoice**. On a small screen the same button reads **Invoice**.
+
+Note: Press `i` on the account screen to start the invoice.
+
+Care opens the **Create Invoice** screen. The top of the screen shows the patient name, the account, and the account status. A **Draft** badge is next to the page title.
+
+### 3. Select the items to bill
+
+The screen lists the charge items on the account that have the status Billable. The oldest charge item is first. Select the checkbox for each charge item to include.
+
+The table shows these columns.
+
+| Components | What it captures |
+| --- | --- |
+| Items | The charge item to bill. |
+| Quantity | The number of units. |
+| Unit Price | The price for one unit. |
+| Performer | The user who did the work. |
+| Amount | The total for the line. |
+
+**Unit Price** and **Amount** show the configured currency symbol.
+
+If the account has no billable charge item, Care shows "No Billable Items Found". If more charge items exist, select **Load more**.
+
+### 4. Add more charge items
+
+To add a charge item that is not in the list, use one of these actions.
+
+- Select **Quick Add** to open the quick add sheet.
+- Select **Add Charge Items** to open the full add sheet.
+
+You can also add a charge item in the inline row on the screen.
+
+| Components | What it captures |
+| --- | --- |
+| Charge item definition | The charge item to add. The placeholder is **Select charge item definition**. |
+| Quantity | The number of units. The quantity must be more than zero. |
+| Performer | The user who did the work. The placeholder is **Select performer**. Optional. |
+
+Confirm the row to add the charge item.
+
+Note: Press `Enter` to confirm the row. Press `Esc` to cancel the row.
+
+Care shows "Charge items added successfully" when Care adds the charge items. Care shows "Failed to add charge items" when Care cannot add the charge items. Care shows "Quantity must be positive" when the quantity is zero or less.
+
+### 5. Check the total
+
+Below the table Care shows the number of selected charge items. If you select no charge item, Care shows "No items selected".
+
+Care also shows the **Invoice Total**, with the note "Includes all applicable taxes".
+
+### 6. Enter the optional details
+
+Expand **Issue Date, Payment Terms & Note** to record more detail. All three fields are optional.
+
+| Components | What it captures |
+| --- | --- |
+| Issue Date | The date and the time of issue. Select the values in the picker. You cannot enter a future date. |
+| Payment Terms | The payment terms, as free text. The placeholder is **Enter Payment Terms**. Your deployment can set a default value. |
+| Note | A free-text note for the invoice. The placeholder is **Enter Invoice Note**. |
+
+Note: If you enter a future issue date, Care shows "Issue date cannot be in the future".
+
+### 7. Create the invoice
+
+Select **Create Invoice**. The button reads **Creating** while Care creates the invoice.
+
+To leave the screen without an invoice, select **Cancel**.
+
+:::warning
+If the account belongs to another facility, Care refuses the request with "Account is not associated with the facility".
+:::
+
+## Expected Outcome
+
+- Care shows "Invoice Created Successfully" and opens the new invoice.
+- The status of the new invoice is Draft.
+- Care accepts only the charge items on the account that have the status Billable. Care drops every other selected charge item without a message.
+- Each included charge item changes from Billable to Billed, and links to the invoice.
+- Care generates the invoice number from the invoice number expression of the facility, unless the invoice has a supplied number. The expression can use the invoice count of the facility and the current year.
+- Care computes the net total as the base amounts, plus the surcharges, minus the discounts. The gross total adds the tax.
+- Care recalculates the balance of the account.
+- Care takes the patient from the account. You never select the patient.
+
+## Related
+
+Concepts:
+
+- [Invoice](../../../concepts/billing/invoice.mdx)
+
+Flows:
+
+- [View invoices](./view-invoices.mdx)
+- [Edit the items on an invoice](./edit-invoice-items.mdx)
+- [Edit invoice details](./edit-invoice-details.mdx)
+- [Issue an invoice](./issue-invoice.mdx)
+
+References:
+
+- [Invoice](../../../references/billing/invoice.mdx)
+- [Charge Item](../../../references/billing/charge-item.mdx)
+- [Account](../../../references/billing/account.mdx)

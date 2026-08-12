@@ -1,0 +1,131 @@
+---
+sidebar_position: 4
+---
+
+# Edit the items on an invoice
+
+## Overview
+
+This flow describes how to add, change, discount, or remove the charge items on a draft [invoice](../../../concepts/billing/invoice.mdx) in Care.
+
+## Pre-requisites
+
+- The invoice exists in the facility, and you open that invoice.
+- The invoice status is Draft. For any other status, Care refuses the change with the message "Invoice is not in draft".
+- The charge items that you want to add belong to the same account as the invoice.
+- The status of each charge item that you want to add is Billable.
+- If the invoice is locked, you have the permission to manage a locked invoice.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Read Invoice | Lets you open the invoice. |
+| Can Write Invoice | Lets you add, change, and remove the items on an invoice. |
+| Can Manage Locked Invoice | Needed in addition if the invoice is locked. |
+
+:::note
+The invoice screen does not hide these actions. If you do not have the permission for an action, Care refuses the change.
+:::
+
+## Steps
+
+### 1. Open the invoice
+
+1. In the facility sidebar, select **Billing**.
+2. Select **Invoices**.
+3. For the invoice that you want to change, select **See Invoice**.
+
+### 2. Add charge items
+
+Select **Add Charge Item**. Care opens the sheet **Add Charge Items to Invoice**.
+
+1. In the search box, enter the name of the charge item. The placeholder is "Search charge items".
+2. To see more charge items, select **Other Charge Items**. The keyboard shortcut is `o`.
+3. Select the charge items that you want to add.
+4. Select **Add Selected Items**.
+
+The table in the sheet has these columns.
+
+| Column | What it shows |
+| --- | --- |
+| Item | The name of the charge item. |
+| Quantity | The number of units. |
+| Unit Price | The price for one unit. |
+| Performer | The user who did the work. |
+| Total | The total amount for the charge item. |
+
+To close the sheet without a change, select **Cancel**.
+
+:::note
+Care lists only the charge items on the same account with the status Billable. When there is no such charge item, the table reads "No charge items found".
+:::
+
+### 3. Open the item table
+
+Select **Edit Items** on the invoice. The keyboard shortcut is `e`.
+
+Care opens the dialog **Edit Invoice Items** with an editable table. The table has these columns.
+
+| Column | What it captures |
+| --- | --- |
+| Item | The charge item on the invoice. |
+| Performer | The user who did the work. The placeholder is "Select performer". |
+| Unit Price | The price for one unit. The cell shows the configured currency symbol. |
+| Quantity | The number of units. |
+| Discounts | The discounts for the charge item. |
+| Note | Free text for the charge item. The placeholder is "Add notes". |
+
+To copy one value to every row, select **Apply to all**. The Performer column and the Discounts column each have this control.
+
+Note: When the invoice has no items, the dialog reads "No charge items found".
+
+### 4. Change the discounts
+
+To add a discount, select **Add Discount** in the Discounts cell. To remove every discount for the charge item, select **Clear all**. When the charge item has no discount, the cell reads "No discounts".
+
+### 5. Save the item table
+
+Select **Save**. While Care saves the changes, the button reads **Saving**.
+
+To close the dialog without a change, select **Cancel**.
+
+### 6. Remove a charge item
+
+1. On the invoice, find the row of the charge item.
+2. Select **Remove**. Care opens the dialog **Remove Charge Item**.
+3. Read the question "Are you sure you want to remove this charge item from the invoice?".
+4. Select **Remove**. While Care removes the charge item, the button reads **Removing...**.
+
+To keep the charge item on the invoice, select **Cancel**.
+
+## Expected Outcome
+
+- Care shows the message "Invoice updated successfully" after a save in the item table. If the save fails, Care shows the message "Failed to update invoice".
+- Care shows the message "Charge item removed successfully" after a remove. If the remove fails, Care shows the message "Failed to remove charge item".
+- Each added charge item changes to the status Billed, and links to the invoice.
+- Each removed charge item returns to the status Billable. Care clears the link to the invoice and the paid date of that charge item.
+- Care calculates the invoice totals and the account balance again after each add and after each remove.
+- The invoice status stays Draft. No step in this flow changes the status.
+
+:::info
+A draft invoice shows the live charge items. When you issue the invoice, Care makes a snapshot of the line items. After that, a change to a charge item does not change the invoice.
+:::
+
+## Related
+
+Concepts:
+
+- [Invoice](../../../concepts/billing/invoice.mdx)
+
+References:
+
+- [Invoice](../../../references/billing/invoice.mdx)
+- [Charge Item](../../../references/billing/charge-item.mdx)
+
+Flows:
+
+- [Create an invoice](./create-invoice.mdx)
+- [Edit invoice details](./edit-invoice-details.mdx)
+- [Issue an invoice](./issue-invoice.mdx)
