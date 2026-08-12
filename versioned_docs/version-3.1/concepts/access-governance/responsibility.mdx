@@ -1,0 +1,50 @@
+---
+sidebar_position: 6
+---
+
+# Responsibility
+
+## Definition
+
+A **[responsibility](https://build.fhir.org/organization.html)** in Care is a group that gives a person a designation or a duty across Care. A responsibility applies across Care. It does not belong to one facility. For example, you create a responsibility for the people who buy supplies for a region. Each person opens the responsibilities that they belong to from their dashboard.
+
+## Key Attributes
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the responsibility. This attribute is required. |
+| Description | A short explanation of the duty that the group holds. This attribute is optional. |
+| Governance links | The responsibilities that oversee this responsibility, and the responsibilities that this responsibility oversees. |
+
+Note: Only a super administrator creates a responsibility, or changes its name and description.
+
+### Structure
+
+Responsibilities are a flat list. A responsibility has no parent responsibility and no child responsibility. To connect two responsibilities, use the **Governance** section in the detail panel of a responsibility on the **Responsibilities** admin page. The section shows two lists: **Managing Organizations** and **Managed Responsibilities**. Both lists hold responsibilities.
+
+Note: Care uses the word "Governance" in two places. The **Governance** section inside a responsibility links one responsibility to another responsibility. The **Governance** item under **Organizations** in the Admin sidebar holds government organizations. Read [Organisation](../../concepts/access-governance/organization.mdx) for government organizations.
+
+### Roles inside a responsibility
+
+The designation of a person inside a responsibility comes from the roles and permission system. Each role gives the person a set of permissions. Care shows only the roles that apply to a responsibility, such as Admin, Manager, and Member. To learn how roles work, read [Roles and Permission](../../concepts/access-governance/access-control.mdx).
+
+### Access through a governance link
+
+A governance link also gives access. If your role in a responsibility holds the permission Can Manage Connected Role Organizations, Care also shows you the responsibilities that it manages. The Admin role and the Manager role hold this permission.
+
+## Where to find responsibilities
+
+- As a super administrator, open the Admin sidebar. Select **Organizations**. Select **Responsibilities**.
+- To open a responsibility that you belong to, open your dashboard. Select the **Responsibilities** tab.
+- Inside a responsibility, the top of the sidebar shows the responsibilities switcher. The switcher shows the name of the open responsibility and your designation in it. Use the switcher to open another responsibility.
+
+## Related
+
+- Flow: [Create a responsibility](../../flows/access-governance/responsibility/create-responsibility.mdx)
+- Flow: [Add or manage users in a responsibility](../../flows/access-governance/responsibility/manage-responsibility-users.mdx)
+- Flow: [Link responsibilities to each other](../../flows/access-governance/responsibility/link-responsibilities.mdx)
+- Flow: [View your responsibilities](../../flows/access-governance/responsibility/view-your-responsibilities.mdx)
+- Concept: [Roles and Permission](../../concepts/access-governance/access-control.mdx)
+- Concept: [Organisation](../../concepts/access-governance/organization.mdx)
+- Concept: [Supplier](../../concepts/access-governance/supplier.mdx)
+- Concept: [User](../../concepts/access-governance/user.mdx)

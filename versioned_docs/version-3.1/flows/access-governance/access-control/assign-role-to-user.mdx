@@ -1,0 +1,89 @@
+---
+sidebar_position: 4
+---
+
+# Assign a role to a user
+
+## Overview
+
+This flow describes how to link a user to an Organization, a Supplier, a Responsibility, or a Department, and give that user a [role](../../../concepts/access-governance/access-control.mdx). The link and the role together grant the user access.
+
+Note: To create a user account, see [Create a user](../../../flows/access-governance/user/create-user.mdx). This flow covers only the link of a user who already has an account.
+
+## Pre-requisites
+
+- The user that you want to add has a Care account.
+- You have the permissions listed below for the Organization, the Supplier, the Responsibility, or the Department.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Manage Users in an Organization | Lets you add a user, remove a user, or change a user's role in an Organization, a Supplier, or a Responsibility. |
+| Can Manage Users in a Facility Organization | Lets you add a user, remove a user, or change a user's role in a Department. |
+
+## Steps
+
+### 1. Open the Users tab
+
+The screen that you start from depends on the type of the group.
+
+- For an Organization, go to Admin. Select **Organizations**. Select **Governance**. Open the Organization.
+- For a Supplier, go to Admin. Select **Organizations**. Select **Suppliers**. Open the Supplier.
+- For a Responsibility, go to Admin. Select **Organizations**. Select **Responsibilities**. Open the Responsibility.
+- For a Department, open the facility. Select **Settings**. Select **Departments**. Open the Department.
+
+Select the **Users** tab.
+
+### 2. Start the link
+
+Click **Link User**. A sheet opens.
+
+Note: The **Link User** button shows only if you have permission to manage users in that group.
+
+### 3. Find the user
+
+Search for the person in the user picker. Search by name, by username, or by phone number. Select the person from the results.
+
+Care shows the username, the user type, and the phone number of the person that you selected.
+
+### 4. Select the role
+
+Select a role from the **Select Role** list.
+
+The list shows only the roles that match the screen that you are in.
+
+| Screen | Roles in the list |
+| --- | --- |
+| Organization | Government Organization roles |
+| Supplier | Government Organization roles |
+| Responsibility | Responsibility roles |
+| Department | Facility roles |
+
+Note: Care lets you grant only a role with permissions that you also hold. You cannot give a person more access than you have.
+
+### 5. Link the user
+
+For an Organization, a Supplier, or a Responsibility, click **Link to Organization**.
+
+For a Department, click **Add to Organization**.
+
+## Expected Outcome
+
+- Care links the user to the Organization, the Supplier, the Responsibility, or the Department.
+- The Users tab shows the user with the role that you selected.
+- The user gets the permissions of that role for that Organization, Supplier, Responsibility, or Department.
+
+## Related
+
+Concepts:
+
+- [Roles and Permission](../../../concepts/access-governance/access-control.mdx)
+- [Organisation](../../../concepts/access-governance/organization.mdx)
+- [Supplier](../../../concepts/access-governance/supplier.mdx)
+- [Responsibility](../../../concepts/access-governance/responsibility.mdx)
+- [User](../../../concepts/access-governance/user.mdx)
+
+Flows:
+
+- [Change or remove a user's role](./change-or-remove-user-role.mdx)

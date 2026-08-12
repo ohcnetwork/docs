@@ -2,71 +2,74 @@
 sidebar_position: 2
 ---
 
-# Organization
+# Organisation
 
-An **organization** is how Care groups people and permissions so that access is defined once and reused, instead of configured per person. Organizations form a tree, and a role granted on a parent flows down to everything beneath it — they are the backbone of who-can-do-what across a deployment. (FHIR calls this grouping primitive *Organization*; Care uses that term rather than "group," which is ambiguous in a clinical setting.)
+## Definition
 
-## What it represents
+An **[organization](https://build.fhir.org/organization.html)** in Care is a government
+or administrative area, for example a state or a district. Care arranges these areas in
+a hierarchy, from the country down to the ward. To open the hierarchy, select
+**Organizations** in the Admin sidebar. Then select **Governance**.
 
-The job of an organization is to **group the permissions assigned to resources**. Rather than granting each new doctor a long list of permissions, you create a "Doctors" organization once, give it the access it should carry — hospital-wide questionnaires, say — and add doctors to it. A child "Cardiology" organization can layer on cardiology-specific forms while still inheriting everything from "Doctors." The next doctor who arrives is simply added to the group; no permissions are defined by hand.
+Care attaches an organization to each facility and to each patient as the geo
+organization. The geo organization is the government area that the facility or the
+patient belongs to, for example a district.
 
-An organization is not a facility. A facility is a physical place where care happens; an organization is an administrative grouping that lives instance-wide. The departments and teams *inside* a single hospital are modelled separately as [facility organizations](../access-governance/facility-organization.mdx) — this concept is the platform-wide tree above them.
+Note: Care uses the word "Governance" for two different things. The **Governance** item
+under **Organizations** holds the government organizations that this document describes.
+The **Governance** section inside a responsibility links one responsibility to another.
+See [Responsibility](../../concepts/access-governance/responsibility.mdx).
 
-## Organization types
+## Key Attributes
 
-The `org_type` says what kind of grouping a node is, and Care treats each differently — most visibly in who is allowed to manage it.
-
-| Type | What it is |
+| Components | What it captures |
 | --- | --- |
-| `team` | A working grouping of people — the everyday default |
-| `govt` | A governance / governmental unit that mirrors a real administrative hierarchy |
-| `role` | A **user group**: a flat set of users grouped for a shared purpose (assigning questionnaires, and later prescribing and approvals) |
-| `product_supplier` | A supplier organization that links into the [supply chain](../supply/product.mdx) |
+| Name | The name of the government or administrative area. Care requires a name. |
+| Description | More detail about the organization. This attribute is optional. |
 
-### Government hierarchies
+The name must be different from the names of the other organizations at the same level
+of the same hierarchy.
 
-`govt` organizations model real-world governance — a public-health administration laid out as `State → District → Block → Panchayat`, for example. They are the geographic backbone a deployment hangs facilities and patients off: a facility's governing organization and a patient's administrative area both point into this tree. That is how a district health officer reaches every facility and patient beneath their district without being added to each one.
+### The hierarchy
 
-Because governance structures have to be visible to coordinate across them, **anyone in Care may view `govt` organizations**, but only a superadmin may create or edit them. Their names and shape are treated as fixed reference data, not something an individual facility can change.
+Care shows the organizations as an expandable tree at the left of the page. Every
+organization, except a top-level organization, has one parent. An organization can have
+any number of children.
 
-### Role organizations (user groups)
+The government hierarchy levels include:
 
-A `role` organization is a **user group** — a flat list of users grouped for a shared purpose rather than a place in a hierarchy. Care uses them to decide things like which users a questionnaire is assigned to, and they are built to extend to prescribing, approving requests, and similar group-driven workflows. A deployment defines the groups it needs — in palliative care these might be *Volunteer*, *ASHA Worker*, or *MLSP* — and a user can be placed into them when their account is created. Unlike the governance and team trees, role organizations are flat and are managed by superadmins.
+- Country
+- State
+- District
+- Block Panchayat
+- Corporation
+- District Panchayat
+- Grama Panchayat
+- Local Body
+- Municipality
+- Ward
 
-:::note Role vs. role organization
-A **role** is an arbitrary set of permissions — `Doctor`, `Doctor (Read Only)`, `Doctor (Scheduler)` — nothing more than a named bundle, never a job title. A **role organization** is a group of users. They are independent: you grant a role to a user *within* an organization. See [Roles & permissions](../access-governance/access-control.mdx).
-:::
+Note: The set of levels that your deployment uses can be different.
 
-## How the tree works
+Note: Your deployment sets the maximum depth of the organization hierarchy.
 
-Organizations nest. A root sits at the top with no parent; every other node points to a single parent, forming chains like `Government → State Health Dept → District → Cardiology`.
+### Level and parent
 
-The defining behaviour is **inheritance**: a role granted on a parent applies implicitly to every descendant. Make someone an admin of a district and they can act across every team beneath it without being added to each. This is what makes the tree an access structure and not just a folder hierarchy.
+You do not enter the hierarchy level and the parent. Care sets them from the position in
+the tree where you create the organization.
 
-A few rules keep it consistent: siblings under the same root must have unique names; a parent cannot be deleted while it still has children; system-generated and `govt` organizations cannot be edited; and a node's parent is fixed once created — you move people, not the node.
+### Who can change the hierarchy
 
-## Membership, roles & responsibility
-
-People gain access by being added to an organization **with a role** — that triple of user + organization + role is what grants permission. Membership grants access *through* the organization, not *to* everything it touches: a user can act on the resources assigned to their organization (and, by inheritance, its descendants), always bounded by what their role allows. An organization "for nurses with access to patients in wards Y and Z" reaches exactly those patients — not every patient in the deployment.
-
-Care guards against privilege escalation right at the membership boundary: the role you assign to someone can be **at most the role you yourself hold** in that organization, and you can only remove members whose access sits below your own. No one can grant — or revoke — more than they have.
-
-Administering a *user* (resetting a password, editing details, changing group memberships) follows the same principle through a separate **management hierarchy**: a user can be administered only by someone in a managing organization above them, never by an arbitrary peer. That is how a governance admin can legitimately reset a password for someone beneath them, while no one can seize control of a user they don't already oversee.
-
-## Permissions
-
-Access to organizations is governed by the permissions below. Each lists the system roles that carry it by default.
-
-| Permission | Description | System Roles |
-| --- | --- | --- |
-| `can_create_organization` | Create a new organization under a parent the user can already manage (root, governance, and role organizations remain superadmin-only) | Admin |
-| `can_view_organization` | View organizations and list/retrieve them through the accessible-organizations filter | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (role org), Manager (role org), Member (role org) |
-| `can_manage_organization` | Update an organization's name, description, and metadata, manage its connected role organizations, and delete it once it has no children | Admin, Admin (role org) |
-| `can_list_organization_users` | List the members of an organization | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (role org), Manager (role org) |
-| `can_manage_organization_users` | Add, remove, and assign roles to members of an organization (bounded by the actor's own role privileges) | Admin, Administrator, Facility Admin, Admin (role org) |
-| `can_manage_connected_role_organizations` | Add, remove, and assign roles to members of connected role organizations | Admin (role org), Manager (role org) |
+Only a Care superuser can create, change, or delete a government organization. Other
+users see the government organizations that they have access to. Care blocks their
+changes to these organizations.
 
 ## Related
 
-- Reference: [Organization (technical)](../../references/access-governance/organization.mdx)
-- Concept: [Roles & permissions](../access-governance/access-control.mdx) · [Facility Organization](../access-governance/facility-organization.mdx) · [Facility](../facility/facility.mdx)
+- Flow: [Create an organization](../../flows/access-governance/organization/create-organization.mdx)
+- Flow: [Update an organization](../../flows/access-governance/organization/update-organization.mdx)
+- Flow: [View the organization hierarchy](../../flows/access-governance/organization/view-organization-hierarchy.mdx)
+- Flow: [Delete an organization](../../flows/access-governance/organization/delete-organization.mdx)
+- Concept: [Roles and Permission](../../concepts/access-governance/access-control.mdx)
+- Concept: [Supplier](../../concepts/access-governance/supplier.mdx)
+- Concept: [Responsibility](../../concepts/access-governance/responsibility.mdx)

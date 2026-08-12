@@ -2,89 +2,71 @@
 sidebar_position: 1
 ---
 
-# Roles & Permissions
+# Roles and Permission
 
-Roles and permissions are how Care decides **who can do what, and where**. A permission is a single action ("Can Create Patient"), a role bundles permissions into a job-shaped set ("Doctor"), and a grant gives a person that role inside one boundary — a facility, an organization, or a single patient.
+## Definition
 
-## What it represents
+A **role** in Care is a named set of permissions. A permission allows one action, for example to register a patient. Care builds every permission into the product, so you cannot create or change a permission. You group permissions into a role, and then you give the role to a user.
 
-There is no single FHIR resource for access control. Care builds it from three primitives that only mean something together:
+Note: Roles and permissions belong to Care's access control. FHIR R5 has no resource for them, so this concept has no FHIR reference.
 
-- **Permission** — the smallest unit of access: one action, declared in code (for example `can_create_patient`). Permissions are reference data; users never edit them.
-- **Role** — a flat, named bundle of permissions (Doctor, Nurse, Admin). A role is just a permission set — not a job title, not a person.
-- **Grant** — a role handed to a user *within a context*. The same person can be a Doctor at one facility, an Admin of a district, and have no access anywhere else.
+You reach roles from the Admin sidebar. Select **RBAC**, then select **Roles**. To see the permissions of every role, select **RBAC**, then select **Permissions**.
 
-The key insight: a user has **no standing powers of their own**. Every ability comes from a role granted at a specific place. Move them to a new facility and their old access does not follow — it was scoped to the boundary where it was granted.
+Note: Only a super administrator can create, change, or clone a role.
 
-## How a grant works
+## Key Attributes
 
-A grant always answers three questions — *who*, *what role*, *where*:
-
-```text
-User  ──granted──▶  Role  ──scoped to──▶  Context (facility / organization / patient)
-```
-
-The same role at a different context is a separate grant. A grant can also carry an **expiry**, after which it is meant to lapse — handy for locum cover or temporary staff. One user can hold many grants at once; their effective access on any record is the union of every role that reaches it.
-
-## How access cascades
-
-Two things make this manageable at scale rather than a grant-per-record chore.
-
-First, **permissions are context-aware**. Each permission is scoped to a kind of resource, and Care only considers permissions whose context matches what is being acted on. This is why a permission to view a patient does not also let someone administer a facility — they live in different contexts.
-
-| Context | Applies to |
+| Components | What it captures |
 | --- | --- |
-| `GENERIC` | Actions not tied to a specific resource |
-| `FACILITY` | A facility |
-| `PATIENT` | A patient record |
-| `ENCOUNTER` | A single encounter |
-| `ORGANIZATION` | A government or role (user-group) organization |
-| `FACILITY_ORGANIZATION` | A department or unit inside a facility |
-| `QUESTIONNAIRE` | A questionnaire |
+| Name | The name of the role. The name is required and must be unique. |
+| Description | A short text that explains the purpose of the role. The description is optional. |
+| Contexts | The places where you can assign the role. Select one or more contexts. |
+| Permissions | The actions that the role allows. Select one or more permissions. |
 
-Second, **grants flow down the organization tree**. Care's [organizations](../access-governance/organization.mdx) nest — State → District → Local body → Facility — and a role granted at a node reaches everything beneath it. Grant an Administrator at the district level and they act across every facility in that district with no per-facility grant; grant a role on one facility and it reaches only that facility and its units. The same logic covers patients: a clinician's role at a facility lets them work with the patients seen there, instead of a grant per patient.
+### Contexts
 
-So you grant broadly at the top of the tree for oversight, and narrowly at a facility or department for day-to-day staff.
+A context tells Care where a role applies. A role has one or more of these contexts:
 
-## Standard roles
+- **Facility** — you can give the role to a user who works in a facility.
+- **Government Organization** — you can give the role to a user in a government organization.
+- **Responsibility** — you can give the role to a user in a responsibility organization.
 
-Every Care deployment ships with these roles. They are platform-maintained — the API will not let anyone edit or delete them — and deployments can add custom roles alongside. A role's *boundaries* are the kinds of context it can be granted in; note that a role name alone is not unique, since "Admin" exists both as a facility role and as a separate role-organization role, distinguished only by boundary.
+### System roles
 
-| Role | Description | Boundaries it applies in |
-| --- | --- | --- |
-| Doctor | Clinician at a facility | Facility, Government org |
-| Nurse | Nurse at a facility | Facility, Government org |
-| Staff | General staff at a facility | Facility, Government org |
-| Volunteer | Volunteer at a facility | Facility, Government org |
-| Pharmacist | Pharmacist at a facility | Facility |
-| Administrator | Administrator at a given boundary | Facility, Government org |
-| Facility Admin | Facility administrator, assigned to whoever creates the facility | Facility |
-| Admin | Top-level administrator | Facility, Government org |
-| Admin (role org) | Administrator of a role (user-group) organization | Role org |
-| Manager (role org) | Manager of a role organization | Role org |
-| Member (role org) | Member of a role organization | Role org |
+Care includes system roles. A system role shows a **System** badge and a lock icon in the roles list. You cannot edit or delete a system role. To start from a system role, clone it into a new custom role, and then change the clone.
 
-## Permissions
+The system roles are Volunteer, Doctor, Nurse, Staff, Pharmacist, Administrator, Facility Admin, and Admin.
 
-Permissions are declared in code per resource area and assigned to standard roles by default. The slice below — the organization and user permissions — shows which roles hold each out of the box; custom roles can take any subset.
+Care also includes three system roles for the Responsibility context: Admin, Manager, and Member.
 
-| Permission | Description | System Roles |
-| --- | --- | --- |
-| `can_create_organization` | Create a new organization under an accessible parent (checked by the organization create flow) | Admin |
-| `can_view_organization` | View organizations; gates which organizations appear in list and retrieve | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (role org), Manager (role org), Member (role org) |
-| `can_list_organization_users` | List the users attached to an organization | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer, Pharmacist, Admin (role org), Manager (role org) |
-| `can_manage_organization` | Update an organization (name, description, metadata) and delete it — the update, delete, and managing-organization actions all check this | Admin, Admin (role org) |
-| `can_manage_organization_users` | Add, remove, and assign roles to users in an organization | Admin, Administrator, Facility Admin, Admin (role org) |
-| `can_manage_connected_role_organizations` | Manage users in connected role organizations | Admin (role org), Manager (role org) |
-| `can_create_user` | Create a user in Care | Admin, Facility Admin, Administrator |
-| `can_create_service_account` | Create a service-account user | Admin, Facility Admin, Administrator |
-| `can_list_user` | List users in Care | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist |
+### The permissions matrix
+
+The Permissions page shows a read-only matrix. Each row is a permission. Each column is a role. A green check mark shows that the role holds the permission. A red cross shows that the role does not hold the permission. To change what a role allows, edit the role.
+
+### How a user gets a role
+
+A user gets a role when you add the user as a member of one of these:
+
+- An organization
+- A facility, through its root department
+- A responsibility
+- A department
+
+Each membership carries exactly one role. That role decides what the user can do in that scope.
+
+Care protects access in two ways:
+
+- You can assign only a role with permissions that you also hold. You cannot give a user more access than you have.
+- Care keeps the last Facility Admin in the root department of a facility. You cannot change the role of that user. You also cannot remove the last user from the root department.
 
 ## Related
 
-- Reference: [Role](../../references/access-governance/role.mdx)
-- Reference: [Permission](../../references/access-governance/permission.mdx)
-- Reference: [Permission association](../../references/access-governance/permission-association.mdx)
-- Concept: [Organization](../access-governance/organization.mdx)
-- Concept: [Facility](../facility/facility.mdx)
-- Concept: [Patient](../clinical/patient)
+- Flow: [Create a role](../../flows/access-governance/access-control/create-role.mdx)
+- Flow: [Edit or clone a role](../../flows/access-governance/access-control/edit-or-clone-role.mdx)
+- Flow: [View the permissions matrix](../../flows/access-governance/access-control/view-permissions-matrix.mdx)
+- Flow: [Assign a role to a user](../../flows/access-governance/access-control/assign-role-to-user.mdx)
+- Flow: [Change or remove a user's role](../../flows/access-governance/access-control/change-or-remove-user-role.mdx)
+- Concept: [Organisation](../../concepts/access-governance/organization.mdx)
+- Concept: [Supplier](../../concepts/access-governance/supplier.mdx)
+- Concept: [Responsibility](../../concepts/access-governance/responsibility.mdx)
+- Concept: [User](../../concepts/access-governance/user.mdx)
