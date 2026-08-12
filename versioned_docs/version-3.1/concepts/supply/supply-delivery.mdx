@@ -1,76 +1,58 @@
 ---
-sidebar_position: 5
+sidebar_position: 6
 ---
 
 # Supply Delivery
 
-A **supply delivery** records stock actually moving — a product arriving at a location, whether shipped in from an outside supplier or transferred between rooms inside a facility. It is the "stock in" side of inventory: everything delivered, minus everything dispensed, equals what is on the shelf right now.
+## Definition
 
-## What it represents
+A **[supply delivery](https://build.fhir.org/supplydelivery.html)** in Care records stock that moves from one location to another location in the same facility. For example, the central store dispatches supplies to a ward. One supply delivery groups one or more delivered items under a single delivery. When you complete the delivery, Care moves the stock from the source location count to the destination location count.
 
-In Care's FHIR-aligned model, a supply delivery maps to the **SupplyDelivery** resource. Each delivery is a single line of received goods, capturing:
+Care uses the same delivery mechanism for two purposes. A supply delivery names an internal source location in the same facility. A purchase delivery receives stock from an outside vendor. Both types share the same fields, the same statuses, and the same screens. The source you name decides which type the delivery is.
 
-- **What moved** — the product, or a specific batch already in stock, and how much, counted as whole units or as packs times pack-size
-- **Condition** — whether the items arrived `normal` or `damaged`
-- **Where it came from and went** — carried by the delivery order it belongs to, which names a source and a destination
-- **Why** — an optional link to the supply request this delivery fulfils, and to a billing invoice when stock is handed to a patient
-- **Cost** — the total purchase price of the line
+## Key Attributes
 
-The key distinction is between a request and a delivery. A request is someone *asking* for stock; a delivery is stock *changing hands*. They are not one-to-one: a single request can be met by several deliveries, and a delivery can also happen with no prior request at all — so Care treats the delivery, not the request, as the event that moves inventory.
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the delivery. This is required. |
+| Note | Extra information about the delivery. This is optional. |
+| Deliver From | The facility location that the stock comes from. This is required. |
+| Destination | The facility location that receives the goods. This is required, and defaults to your current location. |
+| Supply Order | The supply order that this delivery fulfills. This is optional. |
 
-## How it connects
+### Supply Order link
 
-A delivery never stands alone — each one belongs to a **delivery order**, the shipment that gives it context. The order answers a single question, *where is this stock coming from and going to*, and its answer shapes everything underneath it:
+You can link a supply delivery to the supply order that it fulfills. Care then pre-fills the name, the source location, the destination, and the tags of the delivery from that order.
 
-- **Origin and destination** — an order always names a destination. If it also names an origin location, it is an internal transfer between two places in the facility. If it has no origin, the stock is entering from outside, and the order names an external **supplier** organization instead.
-- **Internal vs. external** — this one distinction decides what each delivery line must carry. An internal move draws down a specific inventory item, a known batch already on hand; an external delivery names a product being received for the first time. A line is one or the other, never both.
-- **Patient dispense** — an order can instead be aimed at a patient, optionally tied to a billing invoice. An order is either a location-to-location move or a patient dispense, never both — so an order with a patient has no origin.
+### Delivered items
 
-## Lifecycle
+You add delivered items after you create the delivery. Each delivered item names an inventory item and a quantity. The inventory item is a specific batch that is already in stock at the source location. Care checks that the source location holds enough stock before it accepts the item.
 
-A delivery moves through a short lifecycle as goods are received and reconciled:
+### Status
 
-```text
-in_progress → completed
-in_progress → abandoned
-in_progress → entered_in_error
-```
-
-- **in_progress** — the delivery is being recorded but not yet finalized
-- **completed** — goods are received and counted into stock; only completed lines contribute to inventory totals
-- **abandoned** — started but will not be finished
-- **entered_in_error** — created by mistake and should be disregarded
-
-The delivery order that groups these lines has its own status track. Every order begins as `draft` or `pending`, moves to `in_progress`, and settles into one terminal state: `completed`, `abandoned`, or `entered_in_error`.
-
-## Condition
-
-Each line records the state the goods arrived in, so damaged stock is flagged rather than silently counted:
-
-- **normal** — items arrived intact and usable
-- **damaged** — items arrived compromised; the flag supports returns, write-offs, and supplier follow-up
+| Status | Description |
+| --- | --- |
+| Draft | You started the delivery, and you can still change it. |
+| Pending | The delivery waits for the destination location to receive it. |
+| Completed | The destination location received the delivery. Care updated the stock counts. |
+| Abandoned | Nobody continues with the delivery. |
+| Entered in Error | Somebody recorded the delivery by mistake. |
 
 ## Permissions
 
-Access to supply deliveries is governed by facility-scoped permissions.
+Permissions apply for each facility.
 
-| Permission | Description | System Roles |
+| Permission | Roles | What it allows |
 | --- | --- | --- |
-| `can_write_supply_delivery` | Create or update deliveries on internal transfer orders (an order with an origin location); gates both the create and update actions for in-facility moves | Facility Admin, Admin |
-| `can_write_external_supply_delivery` | Create or update deliveries on external orders (no origin, stock arriving from an outside supplier); gates both create and update for inbound deliveries | Facility Admin, Admin |
-| `can_read_supply_delivery` | List and retrieve deliveries and their delivery orders | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-
-Roles are granted to users through their facility and organization memberships, and permissions cascade down the organization tree — so a role held at a parent organization carries to the facilities beneath it.
+| Can Create Supply Delivery on Facility | Facility Admin, Admin | Create or edit a supply delivery and its delivered items. |
+| Can Read Supply Delivery | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist | View a supply delivery. |
 
 ## Related
 
-- Reference: [Supply Delivery (technical)](../../references/supply/supply-delivery.mdx)
-- Concept: [Supply Request](../supply/supply-request.mdx)
-- Concept: [Inventory Item](../supply/inventory-item.mdx)
-- Concept: [Product](../supply/product.mdx)
-- Concept: [Location](../facility/location.mdx)
-- Concept: [Invoice](../billing/invoice.mdx)
-
-## FHIR reference
-
-This concept aligns with the FHIR **SupplyDelivery** resource, which records the dispatch and receipt of supplies. Care stores coded values (status, condition) as plain snake_case enums rather than FHIR URIs.
+- Flow: [Create a supply delivery](../../flows/supply/supply-delivery/create-supply-delivery.mdx)
+- Flow: [Add delivered items to a supply delivery](../../flows/supply/supply-delivery/add-items-supply-delivery.mdx)
+- Flow: [Receive and complete a supply delivery](../../flows/supply/supply-delivery/receive-supply-delivery.mdx)
+- Flow: [View a supply delivery](../../flows/supply/supply-delivery/view-supply-delivery.mdx)
+- Concept: [Purchase Delivery](../../concepts/supply/purchase-delivery.mdx)
+- Concept: [Supply Order](../../concepts/supply/supply-request.mdx)
+- Concept: [Inventory Item](../../concepts/supply/inventory-item.mdx)

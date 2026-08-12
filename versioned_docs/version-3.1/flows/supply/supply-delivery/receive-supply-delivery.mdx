@@ -1,0 +1,64 @@
+---
+sidebar_position: 3
+---
+
+# Receive and complete a supply delivery
+
+## Overview
+
+This flow describes how to approve a [supply delivery](../../../concepts/supply/supply-delivery.mdx), confirm the delivered items at the receiving location, and complete the delivery in Care.
+
+## Pre-requisites
+
+- You created the supply delivery, and it lists the items that you send. See [Add delivered items to a supply delivery](./add-items-supply-delivery.mdx).
+- You are a member of the facility that dispatches or receives the delivery.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Supply Delivery on Facility | Lets you approve, confirm, and complete a supply delivery. Facility Admin and Admin have this permission. |
+
+## Steps
+
+### 1. Open the supply delivery
+
+1. Go to the Inventory screen of the dispatching location or the receiving location.
+2. Select **To Dispatch** to see **Outgoing Deliveries**.
+3. Select **To Receive** to see **Incoming Deliveries**.
+4. Select the supply delivery that you want to receive.
+
+### 2. Approve the supply delivery
+
+1. Select **Mark as Approved**.
+2. Care moves the supply delivery from Draft to Pending.
+
+### 3. Confirm the delivered items
+
+1. Confirm each item in the supply delivery at the receiving location.
+2. Record the condition of each item as Normal or Damaged.
+
+### 4. Complete the supply delivery
+
+1. Select **Mark as Completed**.
+2. Care deducts the stock from the [inventory item](../../../concepts/supply/inventory-item.mdx) of the source location.
+3. Care adds the stock to the inventory item of the destination location.
+
+## Expected Outcome
+
+- The supply delivery status is Completed.
+- The stock of the source location decreases by the delivered quantity.
+- The stock of the destination location increases by the delivered quantity.
+
+## Related
+
+Concepts:
+
+- [Supply Delivery](../../../concepts/supply/supply-delivery.mdx)
+- [Inventory Item](../../../concepts/supply/inventory-item.mdx)
+
+Flows:
+
+- [Add delivered items to a supply delivery](./add-items-supply-delivery.mdx)
+- [View a supply delivery](./view-supply-delivery.mdx)

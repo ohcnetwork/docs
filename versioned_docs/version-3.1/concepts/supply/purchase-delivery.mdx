@@ -1,0 +1,75 @@
+---
+sidebar_position: 5
+---
+
+# Purchase Delivery
+
+## Definition
+
+A **purchase delivery** in Care records stock that arrives at your facility from an outside vendor. It bundles one or more [delivered items](https://build.fhir.org/supplydelivery.html) under a single delivery. When you complete the delivery, Care updates the stock levels at the destination location.
+
+Care uses one delivery mechanism for two purposes. A purchase delivery names an external vendor and brings stock into the facility. A supply delivery names an internal source location and moves stock between two locations in the same facility. Both types use the same fields, the same statuses, and the same screens. The vendor or the source location tells you which type you work with.
+
+## Key Attributes
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the delivery. This field is required. |
+| Note | Extra information about the delivery. This field is optional. |
+| Vendor/Distributor | The external supplier organization that sends the goods. This field is required. |
+| Destination | The facility location that receives the goods. This field is required, and it defaults to your current location. |
+| Purchase Order | The purchase order that this delivery fulfills. This link is optional. |
+
+### Purchase Order link
+
+You can link a purchase delivery to the purchase order that it fulfills. Care then fills in the name, the vendor, the destination, and the tags from that purchase order.
+
+### Delivered items
+
+You add delivered items after you create the delivery. Each delivered item records these details:
+
+- The product that arrives
+- The quantity
+- The pack quantity and the pack size
+- The purchase price
+- The tax amount and the discount amount
+- The condition, either Normal or Damaged
+
+If the item is not a known product instance, you can create the product instance while you add the item to the delivery. For more information, see the [Product](../../concepts/supply/product.mdx) concept.
+
+### Status
+
+| Status | Description |
+| --- | --- |
+| Draft | You started the delivery, but it is not ready for receipt. |
+| Pending | The delivery waits for receipt at the destination location. |
+| Completed | The facility received the delivery. Care updates the stock at the destination location. |
+| Abandoned | The delivery stopped before receipt. |
+| Entered in Error | Someone recorded the delivery by mistake. |
+
+## Relationships
+
+- When you complete a purchase delivery, Care creates or updates the inventory item stock count at the destination location.
+- A purchase delivery can reference the purchase order that it fulfills.
+- If a delivery is linked to a patient, the delivery records a medication return. When you complete it, Care creates a refund invoice and reversed charge items on that patient's billing account. If you mark the delivery as Entered in Error, Care reverses the refund invoice and the reversed charge items.
+
+## Permissions
+
+Care controls purchase deliveries with facility-scoped permissions.
+
+| Permission | Roles | What it allows |
+| --- | --- | --- |
+| Can Create External Supply Delivery on Facility | Facility Admin, Admin | Create or edit a purchase delivery and its delivered items. |
+| Can Read Supply Delivery | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist | View a purchase delivery. |
+
+## Related
+
+- Flow: [Create a purchase delivery](../../flows/supply/purchase-delivery/create-purchase-delivery.mdx)
+- Flow: [Add delivered items to a purchase delivery](../../flows/supply/purchase-delivery/add-items-purchase-delivery.mdx)
+- Flow: [Receive and complete a purchase delivery](../../flows/supply/purchase-delivery/receive-purchase-delivery.mdx)
+- Flow: [View a purchase delivery](../../flows/supply/purchase-delivery/view-purchase-delivery.mdx)
+- Concept: [Supply Delivery](../../concepts/supply/supply-delivery.mdx)
+- Concept: [Purchase Order](../../concepts/supply/purchase-order.mdx)
+- Concept: [Product](../../concepts/supply/product.mdx)
+- Concept: [Inventory Item](../../concepts/supply/inventory-item.mdx)
+- Concept: [Invoice](../../concepts/billing/invoice.mdx)

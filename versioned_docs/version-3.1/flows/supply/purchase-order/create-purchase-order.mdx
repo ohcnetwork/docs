@@ -1,0 +1,73 @@
+---
+sidebar_position: 1
+---
+
+# Create a purchase order
+
+## Overview
+
+This flow describes how to create a [purchase order](../../../concepts/supply/purchase-order.mdx) for a location in a facility. The new order starts as a Draft.
+
+## Pre-requisites
+
+- You are a member of the facility that requests the supplies.
+- Your facility has the location that receives the supplies.
+- Care holds a record of the vendor or distributor that supplies the items.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Supply Request on Facility | Lets you create a purchase order for a location in the facility. Facility Admin, Admin, Staff, Doctor, and Nurse have this permission. |
+
+## Steps
+
+### 1. Open the purchase orders of a location
+
+1. Open the facility.
+2. Select a location.
+3. Select **Inventory**.
+4. Select **Purchase Orders**.
+
+### 2. Start a new order
+
+Select **Create Order**.
+
+### 3. Enter the order details
+
+Complete the form.
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the purchase order. |
+| Note | More information about the order. This field is optional. |
+| Intent | The level of commitment of the order. |
+| Category | The type of supplies that you request. |
+| Priority | The urgency of the order. |
+| Reason | The reason for the order. |
+| Vendor/Distributor | The external supplier organization that provides the items. |
+| Destination | The location that receives the items. Care sets the current location by default. Confirm the value, or select a different location. |
+
+Note: Which fields are mandatory depends on your deployment's configuration.
+
+### 4. Create the order
+
+Create the order. Care saves the order with the status Draft.
+
+## Expected Outcome
+
+- Care creates the purchase order with the status Draft.
+- The order shows in the purchase orders list of the location.
+- The order has no items yet. Add the items in a separate step.
+
+## Related
+
+Concepts:
+
+- [Purchase Order](../../../concepts/supply/purchase-order.mdx)
+
+Flows:
+
+- [Add items to a purchase order](./add-items-purchase-order.mdx)
+- [View a purchase order](./view-purchase-order.mdx)

@@ -1,0 +1,74 @@
+---
+sidebar_position: 1
+---
+
+# Create a supply delivery
+
+## Overview
+
+This flow describes how to create a [supply delivery](../../../concepts/supply/supply-delivery.mdx) in Care. The
+delivery starts as a Draft, and you add the delivered items in a separate step.
+
+## Pre-requisites
+
+- You are a member of the facility that sends the stock.
+- Your facility has the source location and the destination location.
+- If you start from a [supply order](../../../concepts/supply/supply-request.mdx), someone raised
+  that order at your facility.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Supply Delivery on Facility | Lets you create a supply delivery for the facility. Facility Admin and Admin have this permission. |
+
+## Steps
+
+### 1. Open the outgoing deliveries list
+
+Open the facility. Select a location. Select **Inventory**. Select **To Dispatch**. Select
+the **Outgoing Deliveries** tab.
+
+Note: You can also start this flow from an existing supply order. The supply order
+fills in the name, the source location, the destination, and the tags for you.
+
+### 2. Start a new delivery
+
+Click **Create Delivery**.
+
+### 3. Enter the delivery details
+
+Complete the fields in the form.
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the delivery. |
+| Note | More information about the delivery. This field is optional. |
+| Deliver From | The location that supplies the stock. |
+| Destination | The location that receives the stock. This field defaults to the current location. |
+
+If you start from a supply order, Care fills in these fields. Confirm the **Deliver
+From** location. Confirm the **Destination** location.
+
+### 4. Create the delivery
+
+Create the delivery. Care saves the delivery with the status Draft.
+
+## Expected Outcome
+
+- Care creates the supply delivery with the status Draft.
+- The delivery shows in the **Outgoing Deliveries** tab of the source location.
+- You can now add the delivered items to the delivery.
+
+## Related
+
+Concepts:
+
+- [Supply Delivery](../../../concepts/supply/supply-delivery.mdx)
+- [Supply Order](../../../concepts/supply/supply-request.mdx)
+
+Flows:
+
+- [Add delivered items to a supply delivery](./add-items-supply-delivery.mdx)
+- [View a supply delivery](./view-supply-delivery.mdx)

@@ -1,69 +1,51 @@
 ---
-sidebar_position: 3
+sidebar_position: 2
 ---
 
 # Inventory Item
 
-An **inventory item** is the live stock count of one product at one place in your facility — how many units of a specific medicine, consumable, or device are on hand in a particular store, ward, or pharmacy right now. It is the answer to the everyday question "do we have it, and how much?"
+## Definition
 
-## What it represents
+An **[inventory item](https://build.fhir.org/inventoryitem.html)** in Care shows how much of one stocked batch is in stock at one location. Care calculates this count for you. You cannot create or edit an inventory item, and there is no manual stock adjustment.
 
-In Care's FHIR-aligned model, an inventory item maps to the **InventoryItem** resource. Each row captures:
+## Key Attributes
 
-- **What** — the product being counted (a specific medicine, consumable, or supply)
-- **Where** — the single facility location that holds that stock (central store, ward pharmacy, OT cupboard)
-- **How much** — the current on-hand quantity, kept up to date by the system
-- **Availability** — whether the line is live, retired, or recorded in error
+| Components | What it captures |
+| --- | --- |
+| Product | The specific stocked batch that this count is for. |
+| Net Content | The quantity that is in stock now. |
+| Status | The current state of the inventory item. |
+| Expiration Date | The date after which you cannot use the batch. |
+| Batch/Lot Number | The batch or lot number of the stocked product. |
+| Purchase/Base Price | The purchase price or base price of the stocked product. |
 
-An inventory item is not a catalogue entry and not a single transaction. The catalogue says *what a product is*; deliveries and dispenses say *what moved*; the inventory item is the running balance that ties them together. There is exactly one inventory item per product-per-location pair, so "Paracetamol in the ward pharmacy" is always a single, authoritative number.
+### How the count changes
 
-## How quantity is maintained
+Every inventory item belongs to one product and one location. Care changes the count in these situations:
 
-You do not type stock counts into Care by hand. The system creates and updates inventory items for you as supply events happen, so the count always reflects what actually moved rather than what someone remembered to enter.
+- Someone receives a purchase delivery at the location and marks it complete.
+- Someone completes a supply delivery that moves stock to or from the location.
+- Someone dispenses a medicine to a patient from this stock.
 
-- **Deliveries in** raise the count — completed [supply deliveries](../supply/supply-delivery.mdx) arriving at the location add to the balance
-- **Deliveries out** lower the count — stock sent onward to another location is subtracted
-- **Dispenses** lower the count — each [medication dispense](../medications/medication-dispense.mdx) drawn from the line removes units
+### Status
 
-Because the count is recomputed from these source records, it can read negative if more was dispensed or shipped out than the system recorded coming in — a useful signal that a delivery was missed or a count is off, rather than a number to overwrite.
-
-## Lifecycle
-
-```text
-active → inactive
-active → entered_in_error
-```
-
-- **active** — the stock line is live and dispensable; this is the state every newly tracked product starts in
-- **inactive** — no longer actively dispensed, for example when stock is damaged or a product is being phased out at that location
-- **entered_in_error** — the line was created by mistake and should be disregarded
-
-Changing the status is the one thing people do to an inventory item directly; the quantity itself is always system-maintained.
-
-## How it connects
-
-An inventory item sits at the centre of the supply picture, linking the catalogue to real-world movement:
-
-- It points to a [product](../supply/product.mdx), which in turn describes the substance or device through [product knowledge](../definitions/product-knowledge.mdx)
-- It belongs to a [location](../facility/location.mdx) inside a facility — the physical place the stock lives
-- Its balance is driven by [supply deliveries](../supply/supply-delivery.mdx) (replenishment and transfers) and [medication dispenses](../medications/medication-dispense.mdx) (consumption at the bedside)
-
-Because a location or product cannot be deleted while stock rows still reference it, the inventory layer protects the integrity of your supply history.
+| Status | Description |
+| --- | --- |
+| Active | The stock count is current and in use. |
+| Inactive | The stock count is no longer in use. |
+| Entered in Error | Someone recorded the stock count by mistake. |
 
 ## Permissions
 
-Access to inventory items is governed at the facility level by role-based permissions.
+Permissions apply within a facility.
 
-| Permission | Description | System Roles |
+| Permission | Roles | What it allows |
 | --- | --- | --- |
-| `can_read_inventory_item` | View the stock lines and on-hand quantities at a facility location | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-
-Roles are granted through a user's facility and organization memberships, and permissions cascade down the organization tree — so a user with facility access sees the inventory for the locations that fall under it.
+| Can Read Inventory Item | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist | View the stock levels at a location. |
 
 ## Related
 
-- Reference: [Inventory Item (technical)](../../references/supply/inventory-item.mdx)
-- Concept: [Product](../supply/product.mdx)
-- Concept: [Supply Delivery](../supply/supply-delivery.mdx)
-- Concept: [Medication Dispense](../medications/medication-dispense.mdx)
-- Concept: [Location](../facility/location.mdx)
+- Flow: [View stock levels at a location](../../flows/supply/inventory-item/view-stock-levels.mdx)
+- Concept: [Product](../../concepts/supply/product.mdx) — the catalog and stocked-batch records that an inventory item counts
+- Concept: [Purchase Delivery](../../concepts/supply/purchase-delivery.mdx) — receiving one increases stock
+- Concept: [Supply Delivery](../../concepts/supply/supply-delivery.mdx) — completing one moves stock between locations

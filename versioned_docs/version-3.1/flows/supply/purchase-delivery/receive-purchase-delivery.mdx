@@ -1,0 +1,61 @@
+---
+sidebar_position: 3
+---
+
+# Receive and complete a purchase delivery
+
+## Overview
+
+This flow describes how to approve a [purchase delivery](../../../concepts/supply/purchase-delivery.mdx), record the goods you receive, and complete the delivery in Care. When you complete the delivery, Care updates the stock counts of the [inventory items](../../../concepts/supply/inventory-item.mdx) at the destination location.
+
+## Pre-requisites
+
+- You created the purchase delivery, and you added the delivered items to it. See [Add delivered items to a purchase delivery](./add-items-purchase-delivery.mdx).
+- The purchase delivery is in the Draft status.
+- You have the permission listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create External Supply Delivery on Facility | Lets you approve, receive, and complete a purchase delivery at the facility. Facility Admin and Admin have this permission. |
+
+## Steps
+
+### 1. Open the purchase delivery
+
+Open the purchase delivery that you want to receive.
+
+### 2. Approve the delivery
+
+Click **Mark as Approved**. Care moves the delivery from Draft to Pending.
+
+### 3. Record the goods you receive
+
+Wait until the goods arrive at the destination location. Mark the delivery as received. Confirm the condition of each item. Select Normal or Damaged for each item.
+
+### 4. Complete the delivery
+
+Click **Mark as Completed**. Care updates the stock counts of the inventory items at the destination location.
+
+Note: If the delivery is linked to a patient, the delivery is a medication return. Care then creates a refund [invoice](../../../concepts/billing/invoice.mdx) and reversed charge items on the billing account of that patient.
+
+## Expected Outcome
+
+- The purchase delivery is in the Completed status.
+- The stock counts of the inventory items at the destination location show the goods you receive.
+- Each delivered item shows the condition that you confirm: Normal or Damaged.
+- For a delivery that is linked to a patient, the billing account of that patient shows a refund invoice and reversed charge items.
+
+## Related
+
+Concepts:
+
+- [Purchase Delivery](../../../concepts/supply/purchase-delivery.mdx)
+- [Inventory Item](../../../concepts/supply/inventory-item.mdx)
+- [Invoice](../../../concepts/billing/invoice.mdx)
+
+Flows:
+
+- [Add delivered items to a purchase delivery](./add-items-purchase-delivery.mdx)
+- [View a purchase delivery](./view-purchase-delivery.mdx)

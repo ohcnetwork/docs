@@ -4,65 +4,89 @@ sidebar_position: 1
 
 # Product
 
-A **product** in Care is a specific batch of a stockable item — a medication, nutritional product, or consumable — as it physically exists at one facility. It is the bridge between your catalogue ("we carry Paracetamol 500mg") and your shelves ("this box, lot A1234, expiring next March").
+## Definition
 
-## What it represents
+Care keeps two kinds of records for every item that a facility stocks or dispenses. A **Product Knowledge** entry is the catalog definition of a type of product, for example "Paracetamol 500mg tablet". A **Product** is one facility's stocked batch of that catalog entry, with its own lot number, expiry date, and purchase price.
 
-In Care's FHIR-aligned model, a product maps loosely to the **Medication** / supply resource family, but Care treats it as the concrete, batch-level instance of a catalogue definition. It captures:
+Note: Care does not map these two records to a single named FHIR R5 resource.
 
-- **Batch detail** — the lot number and expiry date that make one delivery distinct from the next
-- **Pricing & packing** — the purchase price for this batch and the number of units in a standard pack
-- **Catalogue link** — which product definition this batch instantiates
-- **Billing link** — an optional charge definition so the item can be billed when it is used
-- **Status** — whether this batch is in use, retired, or was recorded in error
+## Key Attributes
 
-The key distinction: a product is neither the catalogue entry nor your stock count. The catalogue entry describes *what* an item is in the abstract; a product describes *this particular batch* at a facility; the running quantity on hand is tracked separately by inventory. One catalogue entry can have many products underneath it — one per batch received.
+### Product Knowledge
 
-## How it connects
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the catalog entry. This is required. |
+| Slug | A short unique code that identifies the catalog entry. This is required. |
+| Product Type | The kind of product: Medication, Nutritional Product, or Consumable. This is required. |
+| Category | The group that the catalog entry belongs to. This is required. |
+| Code | A standard medical code for the product. This is optional. |
+| Base Unit | The unit that measures the product, for example tablet or millilitre. This is required. |
+| Status | The stage of the catalog entry. This is required. |
+| Alternate Identifier | Another identifier for the product. This is optional. |
+| Alternate names | Trade names and other aliases of the product. This is optional. |
+| Storage guidelines | The instructions to store the product. This is optional. |
 
-A product sits in the middle of the supply chain, pointing up at the catalogue and down at the stock:
+### Product
 
-- **[Product knowledge](../definitions/product-knowledge.mdx)** — the catalogue definition the product instantiates. Name, codes, dosage form, and product type are read from here, never copied onto the product. A product cannot exist without one.
-- **[Inventory item](../supply/inventory-item.mdx)** — tracks the quantity of a product on hand at a location. The product says *what batch*; the inventory item says *how much, and where*.
-- **[Facility](../facility/facility.mdx)** — every product belongs to exactly one facility, scoped to where it was received rather than shared across your network.
-- **[Charge item definition](../definitions/charge-item-definition.mdx)** — an optional link that raises a charge automatically when the product is billed.
+| Components | What it captures |
+| --- | --- |
+| Status | The stage of the stocked batch. This is required. |
+| Product Knowledge | The catalog entry that the batch belongs to. This is required. You select it when you create the product, and you cannot change it later. |
+| Lot Number | The batch number that the supplier prints on the product. This is optional. |
+| Expiration Date | The date that the batch expires on. This is required. |
+| Standard Pack Size | The number of base units in one pack. This is optional. |
+| Purchase Price | The price that the facility paid for the product. This is optional. |
+| Charge Item Definition | The price that Care uses to bill this product to a patient. This is optional. |
 
-## Types
+## Status
 
-A product's type comes from its catalogue definition, not from the product itself, so you classify an item once and every batch you receive inherits that classification. Care recognises three kinds:
+Product Knowledge and Product use different status values.
 
-- **Medication** — a drug or therapeutic agent
-- **Nutritional product** — feeds, supplements, and similar items
-- **Consumable** — gloves, syringes, dressings, and other single-use supplies
+### Product Knowledge status
 
-## Lifecycle
+| Status | Description |
+| --- | --- |
+| Draft | The catalog entry is not ready for use. |
+| Active | Staff can use the catalog entry. |
+| Retired | The catalog entry is no longer in use. |
 
-```text
-active → inactive
-active → entered_in_error
-```
+### Product status
 
-- **active** — the batch is in use and can be dispensed, consumed, or billed
-- **inactive** — the batch is no longer in use but is retained for history (for example, stock that is fully consumed or expired)
-- **entered_in_error** — the record was created by mistake; it is kept for auditability rather than deleted
+| Status | Description |
+| --- | --- |
+| Active | The facility stocks and dispenses this batch. |
+| Inactive | The facility no longer uses this batch. |
+| Entered in Error | Someone created this batch by mistake. |
 
-Unlike some clinical resources, a product keeps no server-side status history — it simply reflects its current status.
+Note: Care has no delete action for these records. Retire a catalog entry, or set a product to Inactive or Entered in Error.
+
+## Ownership and Sharing
+
+A product always belongs to one catalog entry and one facility. A catalog entry is either global or private. A superuser manages global catalog entries, and all facilities share them. A facility admin manages the private catalog entries of that facility.
+
+## How Products Connect to Stock
+
+An inventory item tracks how much of a product is in stock at one location. Staff most often create a new product while they receive a purchase delivery. When a delivered item is not already in stock, the person who receives the delivery creates the product record for that batch, expiry date, and price.
+
+You can link a product to a charge item definition. Care then creates a billable charge item when staff dispense the product.
 
 ## Permissions
 
-Access to products is granted per facility, so who can see or change a batch depends on the roles a user holds there.
+Permissions apply within a facility.
 
-| Permission | Description | System Roles |
+| Permission | Roles | What it allows |
 | --- | --- | --- |
-| `can_write_product` | Create, update, or upsert products (batches) at a facility | Facility Admin, Admin |
-| `can_read_product` | List and view products at a facility | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-
-Roles are assigned through facility and organization memberships, and permissions cascade down the organization tree — a role granted on a parent organization is inherited by the facilities beneath it. Creating or editing products is limited to administrators, while a broad set of clinical and pharmacy roles can read them.
+| Can Create Product Knowledge on Facility | Facility Admin, Admin | Create and edit catalog entries. |
+| Can Create Product on Facility | Facility Admin, Admin | Create and edit products. |
+| Can Read Product Knowledge | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist | View catalog entries. |
+| Can Read Product | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist | View products. |
 
 ## Related
 
-- Reference: [Product (technical)](../../references/supply/product.mdx)
-- Concept: [Product knowledge](../definitions/product-knowledge.mdx)
-- Concept: [Inventory item](../supply/inventory-item.mdx)
-- Concept: [Supply request](../supply/supply-request.mdx)
-- Concept: [Charge item definition](../definitions/charge-item-definition.mdx)
+- Flow: [Add a product to the catalog](../../flows/supply/product/add-product-to-catalog.mdx)
+- Flow: [Edit or retire a catalog entry](../../flows/supply/product/edit-retire-catalog-entry.mdx)
+- Flow: [Add a product instance](../../flows/supply/product/add-product-instance.mdx)
+- Flow: [Edit a product instance](../../flows/supply/product/edit-product-instance.mdx)
+- Concept: [Inventory Item](../../concepts/supply/inventory-item.mdx)
+- Concept: [Purchase Delivery](../../concepts/supply/purchase-delivery.mdx)
