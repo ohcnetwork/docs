@@ -1,0 +1,82 @@
+---
+sidebar_position: 3
+---
+
+# Add a symptom or diagnosis from past records
+
+## Overview
+
+This flow describes how to bring the earlier symptoms or diagnoses of a patient into the current encounter. You select the records that you want, instead of searching for each term again. Care stores each of these records as a [condition](../../../concepts/clinical/condition.mdx).
+
+## Pre-requisites
+
+- The patient has an open encounter at the facility, and that encounter is the patient's active encounter.
+- You or a colleague recorded symptoms or diagnoses for the patient in an earlier encounter.
+- The encounter is not Completed, Cancelled, Discontinued, or Entered in Error. In these states, all add and edit controls are read-only.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can view clinical data about patients | View the symptoms and the diagnoses of the patient. |
+| Can Read encounter related clinical data | View the symptoms and the diagnoses of the encounter. |
+| Update Encounter related clinical data | Add symptoms and diagnoses to the encounter. |
+
+## Steps
+
+### 1. Open the symptom screen or the diagnosis screen
+
+Go to the **Overview** tab of the encounter.
+
+For symptoms, select the edit (pencil) icon in the **Symptoms** section. You can also press the keyboard shortcut **s**.
+
+For diagnoses, select the edit (pencil) icon in the **Diagnoses** section. You can also press the keyboard shortcut **d**.
+
+### 2. Open the past records dialog
+
+Select **Symptom History** or **Diagnosis History**.
+
+A dialog opens with the title **Past Symptoms** or **Past Diagnoses**. The dialog lists the records of the patient from all encounters. The dialog leaves out the records with the Verification value Entered in Error.
+
+Note: If the patient has nothing to show, the dialog shows "No Records Found".
+
+### 3. Select the records
+
+Select the checkbox of each record that you want. The dialog shows the count under **Selected**.
+
+If the list is longer than one page, select **Load More** to see more records.
+
+### 4. Add the records
+
+Select **Add Selected**.
+
+To leave the dialog without adding anything, select **Cancel**.
+
+Care adds the selected records to the list of the current encounter.
+
+### 5. Review and submit
+
+Change the Status, the Verification, the Severity, and the Note of each added record if you need to.
+
+Select **Submit**.
+
+## Expected Outcome
+
+- Care shows the confirmation "Questionnaire submitted successfully".
+- The added records appear in the **Symptoms** section or the **Diagnoses** section of the encounter **Overview** tab.
+- If you select a term that the encounter already has, Care shows "Symptom already exists!" or "Diagnosis already exists!". Care does not add a second row.
+
+## Related
+
+Concepts:
+
+- [Condition](../../../concepts/clinical/condition.mdx)
+
+Flows:
+
+- [Record a symptom](./record-symptom.mdx)
+- [Record a diagnosis](./record-diagnosis.mdx)
+- [Update a symptom or diagnosis](./update-condition.mdx)
+- [Mark a symptom or diagnosis as entered in error](./condition-entered-in-error.mdx)
+- [View the clinical history](./view-clinical-history.mdx)

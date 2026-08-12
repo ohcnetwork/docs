@@ -1,0 +1,78 @@
+---
+sidebar_position: 6
+---
+
+# View the clinical history
+
+## Overview
+
+This flow describes how to review the symptoms and the diagnoses of a patient. Care stores each of them as a [condition](../../../concepts/clinical/condition.mdx). You can review the records of the current encounter, or the records of all past encounters.
+
+## Pre-requisites
+
+- You have the permissions listed below. Without one of them, the encounter shows "You do not have permission to view clinical data for this encounter".
+- You do not need write access. This flow is read-only, and it works for an encounter of any status.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can view clinical data about patients | Lets you view the symptoms and the diagnoses of a patient. |
+| Can Read encounter related clinical data | Lets you view the symptoms and the diagnoses of an encounter. |
+
+By default, doctors, nurses, administrators, and facility administrators can read encounter clinical data. Staff can view patient clinical data.
+
+## Steps
+
+### 1. Review the records of the current encounter
+
+1. Open the encounter.
+2. Go to the **Overview** tab.
+3. Read the **Symptoms** section and the **Diagnoses** section. Both sections show the records of that encounter.
+
+Note: When nothing is recorded, the sections show "No Symptoms" with "No symptoms have been recorded", or "No Diagnoses" with "No Diagnoses have been recorded".
+
+### 2. Open the full patient history
+
+1. Select **See Clinical History** on the encounter. You can also press the keyboard shortcut **h**.
+2. The clinical history page of the patient opens. The title of the page shows the name of the patient.
+
+### 3. Review the past records
+
+1. Select the **Past Symptoms** tab or the **Past Diagnoses** tab.
+2. The records show grouped by year and then by date, newest first.
+3. Read each record. A record shows the clinical term, badges for Status, Verification, and Severity, the onset date, and who reported it.
+4. Select **Show notes** to open the note text. Select **Hide notes** to close the note text.
+5. If the record comes from another encounter, select **Go to Encounter** to open that encounter.
+
+### 4. Read the badges
+
+- Status values: Active, Recurrence, Relapse, Inactive, Remission, Resolved.
+- Verification values: Unconfirmed, Provisional, Differential, Confirmed, Refuted, Entered in Error.
+- Severity values: Mild, Moderate, Severe.
+
+Note: A user retracted a record with the Verification value Entered in Error. Do not use that record for clinical decisions.
+
+### 5. Leave the history page
+
+Select **Back to Encounter** or **Back to Patient**.
+
+## Expected Outcome
+
+- You see the symptoms and the diagnoses of the current encounter in the **Overview** tab.
+- You see the symptoms and the diagnoses of all past encounters in the **Past Symptoms** tab and the **Past Diagnoses** tab.
+- You return to the encounter or to the patient after you finish the review.
+
+## Related
+
+Concepts:
+
+- [Condition](../../../concepts/clinical/condition.mdx)
+
+Flows:
+
+- [Record a symptom](./record-symptom.mdx)
+- [Record a diagnosis](./record-diagnosis.mdx)
+- [Add a symptom or diagnosis from past records](./add-condition-from-past-records.mdx)
+- [Update a symptom or diagnosis](./update-condition.mdx)
+- [Mark a symptom or diagnosis as entered in error](./condition-entered-in-error.mdx)

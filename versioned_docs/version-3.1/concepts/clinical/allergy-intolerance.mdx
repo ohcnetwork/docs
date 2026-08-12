@@ -1,79 +1,112 @@
 ---
-sidebar_position: 4
+sidebar_position: 3
 ---
 
-# Allergy & Intolerance
+# Allergy Intolerance
 
-An **allergy or intolerance** records that a patient reacts badly to a particular substance — a food, a medication, an environmental trigger, or a biologic. It is the standing safety flag that warns clinicians before a harmful exposure happens, and lets the platform check new orders against what a patient cannot tolerate.
+## Definition
 
-## What it represents
+An **[allergy or intolerance](https://build.fhir.org/allergyintolerance.html)** in Care is a substance that causes a reaction in a patient. The substance is a food, a medication, an environmental substance, or a biologic substance. Every allergy belongs to one patient. You record it from an encounter of that patient.
 
-In Care's FHIR-aligned model, this maps to the **AllergyIntolerance** resource. Each record captures:
+## Key Attributes
 
-- **The substance** — a coded allergen drawn from a curated SNOMED CT list, not free text, so it can be matched against medications and other clinical logic
-- **Clinical status** — whether the sensitivity is currently active, inactive, or resolved
-- **Verification status** — how certain the assertion is, from unconfirmed through confirmed, or even refuted or entered in error
-- **Criticality** — the potential for serious harm if the patient is exposed again
-- **Category and type** — what kind of substance it is, and whether it is a true allergy or a non-immune intolerance
-- **Timing and notes** — when it was first recorded, the most recent known reaction, structured onset details, and a free-text clinical note
+| Components | What it captures |
+| --- | --- |
+| Substance | The substance that the patient reacts to. You select it from a standard SNOMED CT allergy terminology. There is no default, so you must select one. |
+| Category | The type of the substance. The default is Medication. |
+| Criticality | The risk of a serious reaction. The default is Low. |
+| Status | How certain the record is. The default is Confirmed. |
+| Clinical Status | The current clinical state of the allergy. The default is Active. |
+| Occurrence | The date when the patient last reacted to the substance. Care does not accept a future date. The default is empty. |
+| Note | Free text about the allergy. The default is empty. |
 
-An allergy record is an assertion about a *risk*, not a log of a reaction that occurred. A single confirmed peanut allergy stays on the record over time even if the patient never reacts again — it is the patient's standing safety profile, distinct from a one-off [Observation](../clinical/observation.mdx) or a documented [Condition](../clinical/condition.mdx).
+### Category
 
-## Type and classification
+The Category shows the type of the substance. Select one of these values:
 
-Two distinctions shape how a record reads:
+- Food
+- Medication
+- Environment
+- Biologic
 
-- **Type** — an **allergy** is an immune-mediated response; an **intolerance** is a non-immune adverse reaction (for example, lactose intolerance). The default is allergy.
-- **Category** — the kind of substance: **food**, **medication**, **environment**, or **biologic**. Category is set when the record is created and is fixed thereafter.
+Note: You cannot change the Category after you save the allergy.
 
-**Criticality** sits alongside these to express stakes — `low`, `high`, or `unable_to_assess` — answering "how dangerous is the next exposure?" rather than "how sure are we this is real?", which is what verification status answers.
+### Criticality
+
+The Criticality shows the risk of a serious reaction. Select one of these values:
+
+- Low
+- High
+- Unable to Assess
+
+### Status
+
+The **Status** column shows how certain the record is. Select one of these values:
+
+| Status | Description |
+| --- | --- |
+| Unconfirmed | Care has no confirmation of the allergy. |
+| Presumed | The allergy is likely, but nobody confirmed it. |
+| Confirmed | Somebody confirmed the allergy. |
+| Refuted | Somebody ruled out the allergy. |
+| Entered in Error | Somebody recorded the allergy by mistake. |
+
+Note: Care offers Entered in Error only for a saved allergy.
+
+### Clinical Status
+
+The Clinical Status shows the current clinical state of the allergy. Set it from the more-options (**⋮**) menu of the row.
+
+| Clinical Status | Description | Menu item |
+| --- | --- | --- |
+| Active | The allergy still applies to the patient. | **Mark Active** |
+| Inactive | The allergy no longer applies to the patient. | **Mark Inactive** |
+| Resolved | The allergy is over. | **Mark Resolved** |
+
+Care shows an inactive allergy in a lighter shade. Care strikes through a resolved allergy.
+
+### Terminology
+
+The substances come from a standard SNOMED CT allergy terminology.
+
+Note: Your deployment's administrator can change the available terminology.
 
 ## Lifecycle
 
-A record carries two independent status axes. Clinical status tracks whether the sensitivity is live; verification status tracks how trustworthy the assertion is.
+You record and change allergies from the **Overview** tab of the encounter. Use the **Allergies** section, or use the **Allergy** quick action.
 
-```text
-Clinical status:      active → inactive → resolved
-Verification status:  unconfirmed → presumed → confirmed
-                                 ↘ refuted / entered_in_error
-```
+While the encounter is open, you can change the Criticality, the Status, the Clinical Status, the Occurrence, and the Note of a saved allergy. You cannot change the Substance or the Category after you save the allergy.
 
-- **active** — the allergy is currently relevant to the patient's care
-- **inactive** — no longer considered active, but kept for history
-- **resolved** — the patient is believed to have outgrown or recovered from the sensitivity
-- **unconfirmed / presumed / confirmed** — increasing levels of certainty that the allergy is real
-- **refuted** — investigated and found not to be a genuine allergy
-- **entered_in_error** — recorded by mistake; flagged so it no longer drives safety logic
+All add and edit controls are read-only when the encounter status is Completed, Cancelled, Discontinued, or Entered in Error.
 
-These axes move independently: a record can be clinically `active` yet only `unconfirmed`, and a `refuted` allergy is kept rather than deleted so the decision is auditable.
+Care never deletes a saved allergy. To retract one, set its Status to Entered in Error. Care then leaves the allergy out of the **Allergies** section and out of the allergy history.
 
-## How it connects
+Care links each allergy to the encounter where you last recorded or changed it. If you change an allergy from a later encounter, Care keeps the earlier version with the first encounter.
 
-- **Patient** — every allergy belongs to one [patient](../clinical/patient) and is part of their standing clinical profile. The patient is derived automatically and is never set by the client.
-- **Encounter** — each allergy is recorded against the [encounter](../clinical/encounter.mdx) in which a clinician asserted it, anchoring it to a moment in the patient's timeline. Records are tied to both, so an allergy never outlives the patient or encounter it belongs to.
-- **Medications** — because the substance is a code from a curated value set rather than free text, an allergy can be matched against a [medication request](../medications/medication-request.mdx) and other ordering logic, instead of relying on a clinician to read a note.
+Allergies stay with the patient. The allergy history of the patient shows them across all encounters.
 
 ## Permissions
 
-Allergy and intolerance records have no permission file of their own — as patient clinical data, they are governed by the **patient** and **encounter** permissions a user holds in the relevant facility. Recording an allergy is gated by write access to the patient; reading is allowed by the patient's clinical-data permission, or, failing that, by the encounter's clinical-data read permission for a specified encounter; editing is gated by write access to the encounter's clinical data.
+Your role controls what you can do with an allergy.
 
-| Permission | Description | System Roles |
-| --- | --- | --- |
-| `can_write_patient` | Create an allergy record — the create path checks write access to the patient | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
-| `can_view_clinical_data` | View a patient's clinical data, including their allergies and intolerances | Staff, Doctor, Nurse, Admin, Facility Admin |
-| `can_read_encounter_clinical_data` | Read an encounter's clinical data — the fallback used to reach allergies when patient-level clinical access is absent, scoped to the matching encounter | Admin, Doctor, Nurse, Facility Admin |
-| `can_write_encounter_clinical_data` | Update an allergy record — the update path checks write access to its encounter's clinical data | Admin, Doctor, Nurse, Facility Admin |
+| Permission | What it allows |
+| --- | --- |
+| Can submit questionnaire about patient encounters | Submit the allergy screen of an encounter. |
+| Can Update a Patient's data | Record a new allergy for the patient. |
+| Update Encounter related clinical data | Change or retract an allergy of an encounter. |
+| Can view clinical data about patients | View the allergies of a patient. |
+| Can Read encounter related clinical data | View the allergies of one encounter. |
 
-Roles are granted to users through organization, facility, and patient memberships; permissions cascade down the organization tree, so a role held higher up applies to the facilities and patients beneath it.
+By default, doctors, nurses, administrators, and facility administrators can record and change allergies. Staff can view patient clinical data, but staff do not have encounter clinical-data access.
+
+## FHIR R5 alignment
+
+Care follows FHIR R5 for allergies. The substance, the category, the criticality, the verification status, the clinical status, the last occurrence, and the note map to the FHIR AllergyIntolerance resource.
 
 ## Related
 
-- Reference: [Allergy Intolerance (technical)](../../references/clinical/allergy-intolerance.mdx)
-- Concept: [Patient](../clinical/patient)
-- Concept: [Encounter](../clinical/encounter.mdx)
-- Concept: [Condition](../clinical/condition.mdx)
-- Concept: [Observation](../clinical/observation.mdx)
-
-## FHIR reference
-
-This concept aligns with the FHIR **AllergyIntolerance** resource, which represents a clinician's assertion of a patient's propensity for an adverse reaction to a substance. Care follows its core structure — coded substance, clinical and verification status, criticality, category, and type.
+- Flow: [Record an allergy](../../flows/clinical/allergy-intolerance/record-allergy.mdx)
+- Flow: [Update an allergy](../../flows/clinical/allergy-intolerance/update-allergy.mdx)
+- Flow: [Mark an allergy as entered in error](../../flows/clinical/allergy-intolerance/allergy-entered-in-error.mdx)
+- Flow: [View allergy history](../../flows/clinical/allergy-intolerance/view-allergy-history.mdx)
+- Concept: [Condition](../../concepts/clinical/condition.mdx)

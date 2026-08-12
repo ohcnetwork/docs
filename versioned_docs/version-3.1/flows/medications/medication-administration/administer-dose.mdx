@@ -1,0 +1,97 @@
+---
+sidebar_position: 1
+---
+
+# Administer a dose
+
+## Overview
+
+This flow describes how to record a dose of a prescribed [medicine](../../../concepts/medications/medication-administration.mdx) that staff gave to a patient during an encounter in Care.
+
+## Pre-requisites
+
+- The patient is registered in Care, and you record the dose for that patient.
+- The medicine is prescribed on the encounter. See [Prescribe a medication](../../../flows/medications/medication-request/prescribe-medication.mdx).
+- The medicine is active. Care does not let you administer a discontinued medicine.
+- The encounter is open. You cannot record a dose when the encounter status is Completed, Cancelled, Discontinued, or Entered in Error.
+- You have the permission listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Update Encounter related clinical data | Lets you record a medicine administration on the encounter. |
+
+## Steps
+
+### 1. Open the Medicine Administration sub-tab
+
+1. Open the encounter.
+2. Select the **Medicines** tab.
+3. Select the **Medicine Administration** sub-tab.
+
+Note: Press `g` then `m` to go to the **Medicines** tab.
+
+Care shows a grid. The **Medicine** column lists the prescribed medicines. Four columns to the
+right show six-hour time slots.
+
+### 2. Find the medicine
+
+Care opens the grid on the **Medications** tab. Select the **Nutrition** tab for nutritional
+products. To narrow the list, enter the name in the **Search Medication** box.
+
+### 3. Open the administration form
+
+In the current time slot column, select **Administer** for the medicine. Care opens the
+**Administer Medicine** dialog.
+
+Note: Care shows **Administer** only in the current time slot. Care also hides it when the
+medicine is discontinued, or when the time slot falls outside the prescribed schedule.
+
+Note: To record doses for more than one medicine at a time, select **Administer Medicine** at
+the top of the sub-tab. Select each medicine that you gave, then submit the panel.
+
+### 4. Check the dosage
+
+Care fills the dose, the route, the site, and the method from the prescription. If the
+prescription has more than one dosage instruction, select the instruction that you gave under
+**Select Dosage Instruction**.
+
+### 5. Set the status
+
+Care sets **Status** to Completed. Change the status if staff did not complete the dose.
+
+### 6. Record the time
+
+Care sets **Start Time** and **End Time** to the current date and time.
+
+To record a dose from an earlier time, select **Yes** for **Is this administration for a past
+time**. Care then lets you set **Start Time** and **End Time**.
+
+Note: Care warns you when the time falls outside the prescribed schedule. Care still saves the
+record.
+
+### 7. Add a note
+
+Enter free text in **Administration Notes** to record more detail. This field is optional.
+
+### 8. Save the administration
+
+Select **Administer Medicine** to save the record.
+
+## Expected Outcome
+
+- Care shows the message "Medicine Administration saved".
+- Care adds the dose to the time slot as a coloured chip with the time of the dose.
+- Care shows the last administered time on the medicine row.
+
+## Related
+
+Concepts:
+
+- [Medicine Administration](../../../concepts/medications/medication-administration.mdx)
+
+Flows:
+
+- [View the medicine administration record](./view-medicine-administration.mdx)
+- [Update an administration record](./update-administration-record.mdx)

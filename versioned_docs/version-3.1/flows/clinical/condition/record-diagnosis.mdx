@@ -1,0 +1,118 @@
+---
+sidebar_position: 2
+---
+
+# Record a diagnosis
+
+## Overview
+
+This flow describes how to record one or more diagnoses for a patient during an encounter. Care stores each diagnosis as a [condition](../../../concepts/clinical/condition.mdx).
+
+## Pre-requisites
+
+- The patient has an open encounter at the facility, and that encounter is the patient's active encounter. Without an active encounter, the screen shows "Diagnosis cannot be recorded without an active encounter".
+- The encounter is not Completed, Cancelled, Discontinued, or Entered in Error. In these states, all add and edit controls are read-only.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can view clinical data about patients | Lets you open the clinical data of the encounter. |
+| Can Read encounter related clinical data | Lets you see the diagnoses of the encounter. |
+| Update Encounter related clinical data | Lets you record a diagnosis. |
+
+Doctors, nurses, administrators, and facility administrators have the Update Encounter related clinical data permission by default.
+
+Without view access, the encounter shows "You do not have permission to view clinical data for this encounter".
+
+## Steps
+
+### 1. Open the diagnosis screen
+
+Open the encounter. Go to the **Overview** tab. Find the **Diagnoses** section. Select the edit (pencil) icon.
+
+You can also press the keyboard shortcut **d** on any encounter screen. The shortcut opens the same diagnosis screen.
+
+The diagnosis screen shows the diagnoses that the encounter already has.
+
+### 2. Start a new diagnosis
+
+Select **Add Diagnosis**. For each further diagnosis, the control reads **Add another Diagnosis**.
+
+### 3. Search for the diagnosis
+
+A search box opens. Type a minimum of 3 characters. The screen shows a message below the search box that tells you the minimum length.
+
+The results come from a standard SNOMED CT clinical-finding terminology.
+
+The search box has two tabs:
+
+- **Search**: the terms that match the text that you type.
+- **Starred**: the terms that you pinned. Select the star icon on a result to pin it.
+
+Note: Your administrator sets the clinical terminology for your deployment. Your administrator can also change it.
+
+### 4. Select the term
+
+Select a term. A new row appears with these default values:
+
+| Component | Default |
+| --- | --- |
+| Status | Active |
+| Verification | Confirmed |
+| Severity | Moderate |
+| Onset Date | Today |
+
+The row shows a badge with the label **Diagnosis**. This badge marks the record as specific to this visit.
+
+### 5. Change the values
+
+Change the values of the row if you need to.
+
+| Component | What it captures |
+| --- | --- |
+| Status | The current state of the diagnosis: Active, Recurrence, Relapse, Inactive, Remission, or Resolved. The placeholder reads "Select diagnosis status". |
+| Verification | The certainty of the diagnosis: Unconfirmed, Provisional, Differential, Confirmed, or Refuted. The placeholder reads "Select verification status". |
+| Severity | The severity of the diagnosis: Mild, Moderate, or Severe. You can leave this field empty. The field then shows "Choose severity". |
+| Onset Date | The date when the diagnosis started. Care does not accept a future date. |
+
+Note: Care does not offer Entered in Error as a verification value for a new diagnosis.
+
+### 6. Add a note
+
+To add a note, open the more-options (**⋮**) menu of the row. Select **Add notes**. Type the note.
+
+Select **Show notes** to open the note text. Select **Hide notes** to close the note text.
+
+### 7. Add the other diagnoses
+
+Repeat from step 2 for each further diagnosis.
+
+If you select a term that the encounter already has, Care shows the warning "Diagnosis already exists!". Care does not add a second row.
+
+### 8. Submit the diagnoses
+
+Select **Submit**.
+
+## Expected Outcome
+
+- Care shows the confirmation "Questionnaire submitted successfully".
+- The diagnoses appear in the **Diagnoses** section of the encounter **Overview** tab.
+- The diagnoses appear in the **Past Diagnoses** clinical history of the patient.
+
+When the encounter has no diagnosis, the section shows "No Diagnoses" with the message "No Diagnoses have been recorded".
+
+## Related
+
+Concepts:
+
+- [Condition](../../../concepts/clinical/condition.mdx)
+
+Flows:
+
+- [Record a symptom](./record-symptom.mdx)
+- [Add a symptom or diagnosis from past records](./add-condition-from-past-records.mdx)
+- [Update a symptom or diagnosis](./update-condition.mdx)
+- [Mark a symptom or diagnosis as entered in error](./condition-entered-in-error.mdx)
+- [View the clinical history](./view-clinical-history.mdx)

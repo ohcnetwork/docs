@@ -1,76 +1,103 @@
 ---
-sidebar_position: 3
+sidebar_position: 4
 ---
 
 # Condition
 
-A **condition** is a clinical problem recorded for a patient — a diagnosis, a chronic illness, or a presenting symptom. It is how a patient's diagnoses and problem list are captured, giving every clinician a shared, durable view of what the patient is being treated for.
+## Definition
 
-In the Care product UI, conditions are surfaced as **Symptoms**.
+A **[condition](https://build.fhir.org/condition.html)** in Care is a clinical problem that affects a patient. Care records a condition as a symptom or as a diagnosis. A symptom is what the patient reports or the clinician observes. A diagnosis is the clinician's determination of the condition.
 
-## What it represents
+Every symptom and every diagnosis belongs to one patient. You record it against one encounter. You do not select the patient separately, because Care uses the patient of the encounter.
 
-A condition is a *standing statement* about a patient's health, not a one-time reading. A blood pressure value or a lab result is an [observation](../clinical/observation.mdx) — true at the moment it was taken. A condition is a claim the care team is making and tracking: "this patient has diabetes," "this patient presented with chest pain." That claim persists across visits until someone changes its status, which is why a condition needs two things an observation does not — a statement of **how certain** the team is, and a statement of **how the condition is progressing**.
+## Key Attributes
 
-To keep problems comparable across patients and facilities, the condition itself is recorded as a coded clinical finding (drawn from a SNOMED CT vocabulary) rather than free text. Onset, optional severity, the encounter it was noted in, and a free-text note round out the record.
+Symptoms and diagnoses capture the same attributes.
 
-## Classification
+| Components | What it captures |
+| --- | --- |
+| Clinical Term | The clinical term for the condition. You select it from a standard SNOMED CT clinical-finding terminology. There is no default, so you must select one. |
+| Status | The current clinical state of the condition. The default is Active. |
+| Verification | How certain the record is. The default is Confirmed. |
+| Severity | How severe the condition is. The default is Moderate. For a diagnosis you can leave it empty, and the field then shows "Choose severity". |
+| Onset Date | When the condition started. The default is today. Care does not accept a future date. |
+| Note | Free text about the condition. The default is empty. |
 
-The **category** answers "what kind of problem is this, and where does it live in the record?" Every condition is one of:
+### Status
 
-- **Problem-list item** — an ongoing problem the care team is tracking for this patient
-- **Encounter diagnosis** — a diagnosis made or confirmed during a specific visit
-- **Chronic condition** — a long-term condition such as diabetes or hypertension, carried across encounters
+The Status shows the current clinical state of the condition. Select one of these values:
 
-Running alongside the category is a separate axis — the **verification status** — that records certainty. A symptom under investigation might be `unconfirmed`, `provisional`, or `differential`; a settled diagnosis is `confirmed`; something logged in error is `refuted` or `entered_in_error`. Care always requires a verification status, so the record never blurs a working hypothesis with an established fact.
+- Active
+- Recurrence
+- Relapse
+- Inactive
+- Remission
+- Resolved
+
+### Verification
+
+The Verification shows how certain the record is. Select one of these values:
+
+- Unconfirmed
+- Provisional
+- Differential
+- Confirmed
+- Refuted
+- Entered in Error
+
+### Severity
+
+The Severity shows how severe the condition is. Select one of these values:
+
+- Mild
+- Moderate
+- Severe
+
+### Category
+
+A diagnosis also shows a category badge with the label **Diagnosis**. This badge marks the record as specific to that visit.
+
+### Terminology
+
+The clinical terms come from a standard SNOMED CT clinical-finding terminology. The same terminology serves symptoms and diagnoses.
+
+Note: Your deployment's administrator can change the available terminology.
 
 ## Lifecycle
 
-The **clinical status** tracks where a condition stands over time. It is distinct from verification — that is about how sure the team is; this is about the condition's actual course:
+You record symptoms and diagnoses from the **Overview** tab of the encounter. Use the **Symptoms** section and the **Diagnoses** section.
 
-```text
-active → inactive → remission → resolved
-   ↑         |
-   └─ recurrence / relapse ─┘
-```
+You cannot record a symptom or a diagnosis without an active encounter. Without an active encounter, the screen shows "Symptoms cannot be recorded without an active encounter" or "Diagnosis cannot be recorded without an active encounter".
 
-- **active** — currently present and being managed
-- **recurrence** — returned after a symptom-free period
-- **relapse** — returned after being in remission
-- **inactive** — no longer active, but not formally resolved
-- **remission** — symptoms have abated, but the condition may return
-- **resolved** — fully cleared
-- **unknown** — current state is not known
+While the encounter is open, you can change the Status, the Verification, the Severity, and the Note of a saved record. You cannot change the Onset Date after you save the record.
 
-This is not a one-way pipeline. A chronic condition can cycle through active, remission, and recurrence many times over a patient's history.
+Care never deletes a saved symptom or diagnosis. To retract one, set its Verification to Entered in Error. The record stays visible with that label. Care leaves the records with the Verification value Entered in Error out of the **Past Symptoms** list and the **Past Diagnoses** list.
 
-## How it connects
-
-A condition never stands alone — it is always anchored to a patient and the visit where it was noted:
-
-- **Patient** — the person the condition describes. Care derives this automatically from the encounter, so the condition is always attached to the right record; clients never set it directly.
-- **Encounter** — the visit during which the condition was recorded. Every condition is created in the context of an encounter; chronic conditions can later be re-associated with a new encounter as care continues.
-
-Conditions sit alongside the patient's other clinical records — most closely [allergies and intolerances](../clinical/allergy-intolerance.mdx), which capture a different kind of standing risk, and [observations](../clinical/observation.mdx), which capture point-in-time measurements and findings.
+Symptoms and diagnoses stay with the patient. The clinical history of the patient shows them across all encounters. Use the **Past Symptoms** tab and the **Past Diagnoses** tab.
 
 ## Permissions
 
-A condition has no permission file of its own — as patient clinical data, it is governed by the **patient** and **encounter** clinical-data permissions a user holds in the relevant facility. Creating, updating, and deleting a condition is gated by write access to the encounter's clinical data; reading it requires the patient's clinical-data permission, falling back to the encounter's clinical-data read permission. Chronic conditions are a special case — updating one is gated by the patient's clinical-data permission rather than the encounter's. Conditions can also be captured by submitting a symptom or diagnosis questionnaire.
+Your role controls what you can do with a symptom or a diagnosis.
 
-| Permission | Description | System Roles |
-| --- | --- | --- |
-| `can_write_encounter_clinical_data` | Create, update, or delete a condition (the create, update, and destroy paths check write access to the encounter's clinical data; chronic-condition updates are the exception below) | Admin, Doctor, Nurse, Facility Admin |
-| `can_view_clinical_data` | Read a patient's conditions, and update a chronic condition (the read path checks the patient's clinical-data permission; chronic-condition updates check this same permission) | Staff, Doctor, Nurse, Admin, Facility Admin |
-| `can_read_encounter_clinical_data` | Read conditions via an encounter when patient-level clinical access is absent (the read path falls back to this when an `encounter` query param is supplied) | Admin, Doctor, Nurse, Facility Admin |
-| `can_submit_patient_questionnaire` | Submit a patient-subject questionnaire (such as symptom or diagnosis), which can record conditions | Volunteer, Staff, Doctor, Nurse, Admin, Facility Admin, Administrator |
-| `can_submit_encounter_questionnaire` | Submit an encounter-linked questionnaire, which can record conditions | Staff, Doctor, Nurse, Admin, Facility Admin |
+| Permission | What it allows |
+| --- | --- |
+| Can view clinical data about patients | View the symptoms and the diagnoses of a patient. |
+| Can Read encounter related clinical data | View the symptoms and the diagnoses of an encounter. |
+| Update Encounter related clinical data | Record and change symptoms and diagnoses. |
 
-Roles are granted to users through facility, organization, or patient memberships, and they cascade down the organization tree — a role held high in the hierarchy applies to the facilities and patients beneath it.
+By default, doctors, nurses, administrators, and facility administrators can record and change clinical data. Staff can view patient clinical data, but staff do not have encounter clinical-data access.
+
+All add and edit controls are read-only when the encounter status is Completed, Cancelled, Discontinued, or Entered in Error.
+
+## FHIR R5 alignment
+
+Care follows FHIR R5 for conditions. The clinical term, the status, the verification, the severity, the category, the onset date, and the note map to the FHIR Condition resource.
 
 ## Related
 
-- Reference: [Condition (technical)](../../references/clinical/condition.mdx)
-- Concept: [Patient](../clinical/patient)
-- Concept: [Encounter](../clinical/encounter.mdx)
-- Concept: [Allergy / intolerance](../clinical/allergy-intolerance.mdx)
-- Concept: [Observation](../clinical/observation.mdx)
+- Flow: [Record a symptom](../../flows/clinical/condition/record-symptom.mdx)
+- Flow: [Record a diagnosis](../../flows/clinical/condition/record-diagnosis.mdx)
+- Flow: [Add a symptom or diagnosis from past records](../../flows/clinical/condition/add-condition-from-past-records.mdx)
+- Flow: [Update a symptom or diagnosis](../../flows/clinical/condition/update-condition.mdx)
+- Flow: [Mark a symptom or diagnosis as entered in error](../../flows/clinical/condition/condition-entered-in-error.mdx)
+- Flow: [View the clinical history](../../flows/clinical/condition/view-clinical-history.mdx)

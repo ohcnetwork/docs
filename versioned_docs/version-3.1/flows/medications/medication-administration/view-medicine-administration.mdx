@@ -1,0 +1,97 @@
+---
+sidebar_position: 2
+---
+
+# View the medication administration record
+
+## Overview
+
+This flow describes how to read the [medicine administration](../../../concepts/medications/medication-administration.mdx) record of an encounter in Care.
+
+## Pre-requisites
+
+- The patient is registered in Care, and you read the record for that patient.
+- The encounter has at least one prescribed medicine.
+- You have one of the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can view clinical data about patients | Lets you view the medicine administrations of the patient. |
+| Can Read encounter related clinical data | Lets you view the medicine administrations of one encounter. |
+
+## Steps
+
+### 1. Open the Medicine Administration sub-tab
+
+1. Open the encounter.
+2. Select the **Medicines** tab.
+3. Select the **Medicine Administration** sub-tab.
+
+Note: Press `g` then `m` to go to the **Medicines** tab.
+
+### 2. Read the grid
+
+The **Medicine** column lists the medicines. Four columns to the right show six-hour time slots.
+A blue dot marks the current time slot.
+
+Each medicine row shows the dosage, the frequency, and the route. The row also shows one of
+these badges.
+
+| Badge | What it means |
+| --- | --- |
+| Active | The patient takes the medicine now. |
+| Stopped | Staff discontinued the medicine. |
+| PRN | Staff give the medicine as needed. |
+
+Note: When a medicine has more than one prescription, Care shows a count next to the name.
+Select the arrow to expand the row and read each prescription on its own line.
+
+### 3. Read the doses
+
+Care shows each recorded dose as a chip in its time slot. The chip shows the time of the dose.
+The colour of the chip shows the status. When a time slot has more than three doses, Care shows
+"+n More".
+
+Note: Select a chip to open the record. See [Update an administration record](./update-administration-record.mdx).
+
+### 4. Move to other time slots
+
+Select the arrow at the left of the grid to move back four time slots. Select the arrow at the
+right to move forward.
+
+Note: Care stops at the earliest prescription date. The left arrow then shows the message
+"Cannot view slots before the earliest prescription date".
+
+### 5. Search for a medicine
+
+Enter the name in the **Search Medication** box. Care shows only the medicines that match.
+
+### 6. Show discontinued medicines
+
+Care hides discontinued medicines. A message under the grid shows how many Care hides.
+
+Select **Show discontinued** to add them to the grid. Care then shows the message
+"Showing all medications".
+
+### 7. Open the drug chart
+
+Select **View Drug Chart** to open the printable chart for the encounter.
+
+## Expected Outcome
+
+- You see which doses staff gave, at what time, and in what state.
+- You see the last administered time for each medicine.
+
+## Related
+
+Concepts:
+
+- [Medicine Administration](../../../concepts/medications/medication-administration.mdx)
+- [Medication Request](../../../concepts/medications/medication-request.mdx)
+
+Flows:
+
+- [Administer a dose](./administer-dose.mdx)
+- [Update an administration record](./update-administration-record.mdx)

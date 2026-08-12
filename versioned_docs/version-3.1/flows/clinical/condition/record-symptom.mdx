@@ -1,0 +1,122 @@
+---
+sidebar_position: 1
+---
+
+# Record a symptom
+
+## Overview
+
+This flow describes how to record a symptom for a patient during an encounter. Care stores each symptom as a [condition](../../../concepts/clinical/condition.mdx).
+
+## Pre-requisites
+
+- The patient has an open encounter at the facility, and that encounter is the patient's active encounter.
+- The encounter is not Completed, Cancelled, Discontinued, or Entered in Error. In these states, all add and edit controls are read-only.
+- You have the permissions listed below.
+
+Note: Without an active encounter, the screen shows "Symptoms cannot be recorded without an active encounter".
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can view clinical data about patients | Lets you see the symptoms of the patient. |
+| Can Read encounter related clinical data | Lets you see the symptoms of the encounter. |
+| Update Encounter related clinical data | Lets you record and change symptoms. |
+
+Doctors, nurses, administrators, and facility administrators have the Update Encounter related clinical data permission by default.
+
+Without view access, the encounter shows "You do not have permission to view clinical data for this encounter".
+
+## Steps
+
+### 1. Open the symptom screen
+
+Open the encounter. Go to the **Overview** tab. Find the **Symptoms** section. Select the edit (pencil) icon.
+
+You can also press the keyboard shortcut **s** on any encounter screen. The shortcut opens the same symptom screen.
+
+The symptom screen shows the symptoms that the encounter already has.
+
+### 2. Start a new symptom
+
+Select **Add Symptom**. For each further symptom, the control reads **Add another Symptom**.
+
+A search box opens.
+
+### 3. Search for the symptom
+
+Type a minimum of 3 characters. The screen shows a message below the search box that tells you the minimum length.
+
+The results come from a standard SNOMED CT clinical-finding terminology.
+
+The search box has two tabs:
+
+- **Search**: the terms that match the text that you type.
+- **Starred**: the terms that you pinned.
+
+To pin a term, select the star icon on a result.
+
+Note: Your administrator sets the clinical terminology for your deployment. Your administrator can also change it.
+
+### 4. Select the term
+
+Select a term. A new row appears with these default values:
+
+| Component | Default |
+| --- | --- |
+| Status | Active |
+| Verification | Confirmed |
+| Severity | Moderate |
+| Onset Date | Today |
+
+If you select a term that the encounter already has, Care shows the warning "Symptom already exists!". Care does not add a second row.
+
+### 5. Change the values
+
+Change the values of the row if you need to.
+
+| Component | Options |
+| --- | --- |
+| Status | Active, Recurrence, Relapse, Inactive, Remission, Resolved |
+| Verification | Unconfirmed, Provisional, Differential, Confirmed, Refuted |
+| Severity | Mild, Moderate, Severe |
+| Onset Date | Any date up to today |
+
+Note: Care does not accept a future onset date. Care does not offer Entered in Error for a new symptom.
+
+### 6. Add a note
+
+To add a note, open the more-options (**⋮**) menu of the row. Select **Add notes**. Type the note.
+
+Select **Show notes** to open the note text. Select **Hide notes** to close the note text.
+
+### 7. Add more symptoms
+
+Repeat from step 2 for each further symptom.
+
+### 8. Submit
+
+Select **Submit**.
+
+## Expected Outcome
+
+- Care shows the confirmation "Questionnaire submitted successfully".
+- The symptoms appear in the **Symptoms** section of the encounter **Overview** tab.
+- The symptoms appear in the **Past Symptoms** clinical history of the patient.
+
+When the encounter has no symptom, the section shows "No Symptoms" with the message "No symptoms have been recorded".
+
+## Related
+
+Concepts:
+
+- [Condition](../../../concepts/clinical/condition.mdx)
+
+Flows:
+
+- [Record a diagnosis](./record-diagnosis.mdx)
+- [Add a symptom or diagnosis from past records](./add-condition-from-past-records.mdx)
+- [Update a symptom or diagnosis](./update-condition.mdx)
+- [Mark a symptom or diagnosis as entered in error](./condition-entered-in-error.mdx)
+- [View the clinical history](./view-clinical-history.mdx)

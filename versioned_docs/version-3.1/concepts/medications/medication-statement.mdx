@@ -4,66 +4,73 @@ sidebar_position: 4
 
 # Medication Statement
 
-A **medication statement** is a record of what a patient is actually taking, has taken, or intends to take — as *reported*, not as ordered by your facility. It captures the real-world medication picture: drugs started at another hospital, over-the-counter products, and what a patient or relative tells you during a visit.
+## Definition
 
-## What it represents
+A **[medication statement](https://build.fhir.org/medicationstatement.html)** in Care records a
+medicine that a patient reports taking, or has taken on an ongoing basis. Unlike a
+[medication request](../../concepts/medications/medication-request.mdx), a medication statement is not an order.
+It records what the patient says they take, not what staff prescribe. Care records every
+medication statement against an encounter of the patient.
 
-In Care's FHIR-aligned model, a medication statement maps to the **MedicationStatement** resource. The key distinction is its source of truth: a statement is a *snapshot of reality*, not an instruction. It does not order, supply, or administer anything.
+## Key Attributes
 
-So every statement carries two things a prescription does not: a single coded drug taken from a SNOMED CT value set rather than free text, and an explicit account of *who said so* — the patient, a relative, or a clinician. Around that core it records the status, the period the drug is or was taken, free-text dosage instructions, and the encounter it was recorded in.
-
-If your facility is actively prescribing a drug, that belongs in a [medication request](../medications/medication-request.mdx). Reach for a statement when the source of truth lives outside that order — a home medication list, a drug started elsewhere, or a patient's own account of what they take.
-
-## Lifecycle
-
-A statement carries a single current status that reflects the patient's relationship to the medication. It is not a running log — updating the status replaces the previous value, and only the status, period, and notes can change after creation.
-
-```text
-intended → active → on_hold → completed / stopped
-                              not_taken / unknown / entered_in_error
-```
-
-- **intended** — the patient plans to take the medication but has not started
-- **active** — the medication is currently being taken
-- **on_hold** — taking has been paused
-- **completed** — the course has finished as expected
-- **stopped** — the medication was stopped before completion
-- **not_taken** — the patient is not taking the medication
-- **unknown** — the status could not be determined
-- **entered_in_error** — the record was created by mistake and should be disregarded
-
-## Information source
-
-Because a statement is reported rather than ordered, it always names its source. This is what separates a self-reported or second-hand account from a managed prescription, and it tells a clinician how much to trust the entry.
-
-| Source | Meaning |
+| Components | What it captures |
 | --- | --- |
-| Patient | The patient self-reported it |
-| Related person | A relative or carer reported it |
-| Practitioner | A clinician recorded it on the patient's behalf |
+| Medication | The medicine that the patient takes. This field is mandatory. You cannot change it after you save the entry. |
+| Source | Who reported the medicine: the **Patient**, a **Practitioner**, or a **Related Person**. Care selects **Patient** by default. You cannot change it after you save the entry. |
+| Status | The current state of the statement. See Status below. This field is mandatory. You can change it after you save the entry. |
+| Dosage Instructions | Free text that describes how the patient takes the medicine. This field is mandatory. You cannot change it after you save the entry. |
+| Medication Taken Between | The start date and the end date of the period in which the patient takes the medicine. The start date is mandatory. The end date is optional. Care shows **Ongoing** when there is no end date. You cannot change these dates after you save the entry. |
+| Reason | Why the patient takes the medicine, as free text of up to 100 characters. This field is optional. You cannot change it after you save the entry. |
+| Note | Free text about the medicine. This field is optional. You can change it after you save the entry. |
 
-## How it connects
+### Where Care shows medication statements
 
-- **Patient** — every statement is about one [patient](../clinical/patient). The patient is derived automatically from the encounter, so it is never set by hand.
-- **Encounter** — a statement is recorded within an [encounter](../clinical/encounter.mdx), anchoring it to a specific visit and clinician.
-- **Medication request** — the active-order counterpart. Use a [medication request](../medications/medication-request.mdx) when your facility is the one prescribing; use a statement to capture everything else.
+Care shows the medication statements of a patient in two places. The **Medication Statements**
+sub-tab of the **Medicines** tab shows them during an encounter. The **Past Medications** section
+of the patient's **Clinical History** tab shows them by date.
+
+Both places list every medication statement of the patient. They do not list only the statements
+of one encounter.
+
+## Status
+
+| Status | Description |
+| --- | --- |
+| Active | The patient currently takes the medicine. |
+| On Hold | The patient has paused the medicine. |
+| Completed | The patient finished the course. |
+| Stopped | The patient stopped the medicine before finishing. |
+| Intended | The patient plans to take the medicine. |
+| Not Taken | The patient did not take the medicine. |
+| Unknown | The state is not known. |
+| Entered in Error | Staff recorded the statement by mistake. |
+
+Care offers the **Entered in Error** status only for a statement that you saved. Care keeps a
+statement with this status, but hides it from the **Medication Statements** sub-tab and from
+**Past Medications**.
 
 ## Permissions
 
-Access to medication statements is governed by the clinical-data permissions on the encounter and patient. Creating, updating, and deleting a statement all require write access to the encounter's clinical data, while listing and reading require view access to the patient's clinical data (or, when filtered by encounter, read access to that encounter's clinical data).
+| Permission | What it allows |
+| --- | --- |
+| Update Encounter related clinical data | Record, update, or retract a medication statement. |
+| Can submit questionnaire about patients | Open the form that records a medication statement. |
+| Can view questionnaire responses on patient | Open the **Updates** tab of the patient. |
+| Can view clinical data about patients | View the medication statements of a patient. |
+| Can Read encounter related clinical data | Read the clinical records of the encounter. |
 
-| Permission | Description | System Roles |
-| --- | --- | --- |
-| `can_write_encounter_clinical_data` | Create, update, or delete a medication statement on an open encounter | Admin, Doctor, Nurse, Facility Admin |
-| `can_view_clinical_data` | View a patient's clinical data, the primary gate for listing and reading statements | Staff, Doctor, Nurse, Admin, Facility Admin |
-| `can_read_encounter_clinical_data` | Read an encounter's clinical data, the fallback gate when results are filtered to a specific encounter | Admin, Doctor, Nurse, Facility Admin |
+To record, change, or retract a medication statement, you also need an open encounter. Care
+blocks these actions when the encounter status is Completed, Cancelled, Discontinued, or
+Entered in Error.
 
-Roles are granted through a user's organization and facility memberships, and permissions cascade down the organization tree — a role held at a parent organization applies to the facilities and patients beneath it.
+Note: After you save a medication statement, you can only change its **Status** and its **Note**.
+The medicine, the source, the dosage instructions, the period, and the reason stay fixed.
 
 ## Related
 
-- Reference: [Medication Statement (technical)](../../references/medications/medication-statement.mdx)
-- Concept: [Medication Request](../medications/medication-request.mdx)
-- Concept: [Medication Administration](../medications/medication-administration.mdx)
-- Concept: [Patient](../clinical/patient)
-- Concept: [Encounter](../clinical/encounter.mdx)
+- Flow: [Record a medication statement](../../flows/medications/medication-statement/record-medication-statement.mdx)
+- Flow: [View medication statements for an encounter](../../flows/medications/medication-statement/view-medication-statements.mdx)
+- Flow: [Update a medication statement](../../flows/medications/medication-statement/update-medication-statement.mdx)
+- Flow: [Mark a medication statement as entered in error](../../flows/medications/medication-statement/medication-statement-entered-in-error.mdx)
+- Concept: [Medication Request](../../concepts/medications/medication-request.mdx)
