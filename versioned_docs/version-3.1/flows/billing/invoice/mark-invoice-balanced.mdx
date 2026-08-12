@@ -1,0 +1,54 @@
+---
+sidebar_position: 5
+---
+
+# Mark an invoice as balanced
+
+## Overview
+
+This flow describes how to mark an issued [invoice](../../../concepts/billing/invoice.mdx) as balanced in Care. Care checks the payments and credit notes recorded against the invoice, then closes it.
+
+## Pre-requisites
+
+- The invoice is issued. See [Issue an invoice](./issue-invoice.mdx).
+- You record the payments and credit notes for the invoice before you start. See [Payment Reconciliation](../../../concepts/billing/payment-reconciliation.mdx).
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Write Invoice | Lets you mark an invoice as balanced. Facility Admin, Admin, Staff, Doctor, Nurse, and Pharmacist have this permission. |
+
+## Steps
+
+### 1. Open the invoice
+
+Open the invoice page for the invoice that you want to close. The action is available only while the invoice is Issued.
+
+### 2. Mark the invoice as balanced
+
+Click **Mark as balanced**.
+
+Note: Press `b` on the invoice page to mark the invoice as balanced.
+
+Note: This action is final. You cannot change the invoice after Care marks it as balanced.
+
+## Expected Outcome
+
+- Care checks the payments and credit notes recorded against the invoice.
+- The invoice status changes to Balanced.
+- The charge items with the status Billed change to Paid.
+- You cannot change the invoice after this point.
+
+## Related
+
+Concepts:
+
+- [Invoice](../../../concepts/billing/invoice.mdx)
+- [Payment Reconciliation](../../../concepts/billing/payment-reconciliation.mdx)
+
+Flows:
+
+- [Issue an invoice](./issue-invoice.mdx)
+- [Cancel an invoice or mark it entered in error](./cancel-invoice.mdx)

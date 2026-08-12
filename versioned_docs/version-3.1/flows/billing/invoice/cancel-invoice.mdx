@@ -1,0 +1,64 @@
+---
+sidebar_position: 6
+---
+
+# Cancel an invoice or mark it entered in error
+
+## Overview
+
+This flow describes how to cancel an [invoice](../../../concepts/billing/invoice.mdx) in Care, or how to mark it as Entered in Error.
+
+## Pre-requisites
+
+- You open the page of the invoice that you want to cancel.
+- The invoice is not Balanced, Cancelled, or Entered in Error.
+- The invoice has no active payments recorded against it.
+- The invoice has no active credit notes recorded against it.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Write Invoice | Lets you cancel an invoice, or mark it as Entered in Error, soon after the invoice was created. Facility Admin, Admin, Staff, Doctor, Nurse, and Pharmacist hold this permission. |
+| Can Destroy Invoice | Lets you cancel an invoice, or mark it as Entered in Error, after the facility's free-cancel window has passed. Facility Admin and Admin hold this permission. |
+
+Note: By default, the free-cancel window is effectively immediate. In most cases you need the Can Destroy Invoice permission.
+
+## Steps
+
+### 1. Open the dropdown menu
+
+Open the invoice page. Click the dropdown menu.
+
+Note: The menu does not show these actions when the invoice is Balanced, Cancelled, or Entered in Error.
+
+### 2. Choose a reason
+
+Select **Mark as Cancelled** to cancel the invoice.
+
+Select **Mark as entered in error** when the invoice was raised by mistake.
+
+### 3. Confirm the action
+
+Confirm the action.
+
+Note: Care blocks this action if the invoice has active payments or credit notes. Resolve the payments and the credit notes first.
+
+## Expected Outcome
+
+- Care sets the invoice status to Cancelled or to Entered in Error.
+- Care reverts the [charge items](../../../concepts/billing/charge-item.mdx) on the invoice to Billable.
+- You can add the reverted charge items to a new invoice.
+
+## Related
+
+Concepts:
+
+- [Invoice](../../../concepts/billing/invoice.mdx)
+- [Charge Item](../../../concepts/billing/charge-item.mdx)
+
+Flows:
+
+- [Issue an invoice](./issue-invoice.mdx)
+- [Mark an invoice as balanced](./mark-invoice-balanced.mdx)

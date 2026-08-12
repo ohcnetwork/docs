@@ -1,0 +1,59 @@
+---
+sidebar_position: 3
+---
+
+# Cancel a charge item
+
+## Overview
+
+This flow describes how to cancel a [charge item](../../../concepts/billing/charge-item.mdx) in Care. You give a reason for the cancellation when you change the status.
+
+## Pre-requisites
+
+- Someone added the charge item, and its status is Billable.
+- If the charge item is attached to an invoice, that invoice is still a draft. You cannot cancel a charge item that is attached to an issued or balanced invoice. Cancel the [invoice](../../../concepts/billing/invoice.mdx) first.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Cancel Charge Item | Lets you cancel a charge item. Facility Admin and Admin have this permission. |
+
+## Steps
+
+### 1. Open the row menu
+
+Find the charge item in the list. Open the row menu on the charge item's row.
+
+Note: The status options are available only while the charge item's status is Billable.
+
+### 2. Choose a new status
+
+Choose the status that gives the reason for the cancellation. Care shows these reasons:
+
+- Not Billable
+- Aborted
+- Entered in Error
+
+### 3. Confirm the change
+
+Confirm the change. Care applies the new status to the charge item.
+
+## Expected Outcome
+
+- The charge item shows the new status.
+- If the charge item is attached to a draft invoice, Care removes it from that invoice.
+- Care updates the totals of that draft invoice.
+
+## Related
+
+Concepts:
+
+- [Charge Item](../../../concepts/billing/charge-item.mdx)
+- [Invoice](../../../concepts/billing/invoice.mdx)
+
+Flows:
+
+- [Add charge items](./add-charge-items.mdx)
+- [Edit a charge item](./edit-charge-item.mdx)

@@ -1,0 +1,81 @@
+---
+sidebar_position: 1
+---
+
+# Record a payment
+
+## Overview
+
+This flow describes how to record a [payment reconciliation](../../../concepts/billing/payment-reconciliation.mdx) in Care. You record a payment against an issued [invoice](../../../concepts/billing/invoice.mdx), or as a general credit on an [account](../../../concepts/billing/account.mdx).
+
+## Pre-requisites
+
+- If you record a payment against an invoice, the invoice is issued.
+- If you record a general credit, you open the account page for the patient.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Write Payment Reconciliation | Record a payment or a credit note. Facility Admin, Admin, Staff, Doctor, Nurse, and Pharmacist have this permission. |
+
+## Steps
+
+### 1. Start the payment
+
+Start the payment from one of these places:
+
+- On an issued invoice, click **Record Payment**. For a refund invoice, click **Record Credit Note**.
+- After you issue an invoice, Care offers the same action immediately.
+- On an account page, click **Advance/Receipt** to record a payment on the account. To record a credit note, open the menu and select **Record Credit Note**.
+
+Note: Press `r` on an invoice page or an account page to open Record Payment. Press `c` on an account page to open Advance/Receipt.
+
+### 2. Enter the payment details
+
+Complete the form fields.
+
+| Components | What it captures |
+| --- | --- |
+| Payment Method | How the payer pays. Select Cash, Credit Card, Credit Account, Check, Direct Deposit or Debit Card. |
+| Payment Type | The nature of the transaction. Select Payment or Advance. |
+| Issuer Type | Who pays. Select Patient or Insurer. |
+| Location | The place where you collect the payment. |
+| Amount Paid | The amount that the payer pays. |
+| Amount Received | The cash amount that you receive from the payer. |
+| Reference Number | The transaction reference for the payment. |
+| Payment Date | The date of the payment. |
+| Note | More information about the payment. |
+
+For a credit note, Care does not ask for an Issuer Type. Enter the Refund Amount in place of the Amount Paid.
+
+If you select Cash as the Payment Method, enter the Amount Received. Care calculates the change to return.
+
+For all other payment methods, you can enter a Reference Number.
+
+Note: The Payment Date cannot be in the future.
+
+Note: Whether the Location field is mandatory depends on your facility's configuration.
+
+### 3. Submit the payment
+
+Click the submit button to save the payment.
+
+## Expected Outcome
+
+- Care records the payment against the invoice, or as a credit on the account.
+- For a cash payment, Care shows the change to return to the payer.
+
+## Related
+
+Concepts:
+
+- [Payment Reconciliation](../../../concepts/billing/payment-reconciliation.mdx)
+- [Invoice](../../../concepts/billing/invoice.mdx)
+- [Account](../../../concepts/billing/account.mdx)
+
+Flows:
+
+- [View a payment](./view-payment.mdx)
+- [Cancel a payment or mark it entered in error](./cancel-payment.mdx)

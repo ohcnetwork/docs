@@ -4,81 +4,69 @@ sidebar_position: 5
 
 # Payment Reconciliation
 
-A **payment reconciliation** in Care is the record of a single payment made toward a patient's account — how much was paid, how, when, and by whom. It is how money received at the counter, online, or as a deposit becomes a traceable entry against what the patient owes.
+## Definition
 
-## What it represents
+A **[payment reconciliation](https://build.fhir.org/paymentreconciliation.html)** in Care records a payment that a patient or an insurer makes against an account. You can also record a credit note, which returns money to the payer and subtracts the amount from the balance. A payment can target one specific invoice, or stay as a general credit on the account.
 
-In Care's FHIR-aligned model, a payment reconciliation maps to the **PaymentReconciliation** resource. It captures:
+## Key Attributes
 
-- **Who paid and how** — whether the payer is the patient or an insurer, and the payment method (cash, card, cheque, direct deposit, and similar)
-- **What it applies to** — the account being paid against, and optionally the single invoice this payment settles
-- **How much** — the amount tendered, any amount returned as change, and the net amount that lands on the account
-- **Context** — when the payment happened, where it was taken (e.g. a billing counter), and references such as a cheque or authorization number
+| Components | What it captures |
+| --- | --- |
+| Account | The account that the payment belongs to. Every payment needs an account. |
+| Target Invoice | The invoice that the payment settles. Leave it empty to record a general credit on the account. |
+| Payment Method | How the payer pays the money: Cash, Credit Card, Credit Account, Check, Direct Deposit, or Debit Card. |
+| Payment Type | The nature of the payment: Payment or Advance. |
+| Issuer Type | Who pays the money: Patient or Insurer. |
+| Location | The place where you collect the payment. |
+| Amount Paid | The money that the payer gives. For a credit note, this is the Refund Amount. |
+| Amount Received | The cash that you take from the payer. This applies only to cash payments. |
+| Reference Number | The transaction number or receipt number for the payment. |
+| Payment Date | The date of the payment. |
+| Note | Free text about the payment. |
 
-A payment reconciliation is not a bill. The [invoice](../billing/invoice.mdx) states what is owed; the payment reconciliation records what was actually paid. Several payments can be recorded against one account over time, and a payment can also be a refund or credit note rather than money coming in.
+### Required fields
 
-## How money is calculated
+Account, Payment Method, Payment Type, Amount Paid, and Payment Date are always required. Issuer Type is required for every payment except a credit note. Location is required only if your facility's configuration asks for it.
 
-Care does not simply trust a single "amount" field. Each payment carries two figures, and the net is derived from them:
+Note: The Payment Date cannot be in the future.
 
-- **Tendered amount** — what the payer handed over
-- **Returned amount** — what was given back (typically change)
-- **Amount** — the net that posts to the account, always computed as `tendered − returned`
+### Cash payments
 
-This keeps cash handling honest: the returned amount must be smaller than the tendered amount, and the net is calculated server-side rather than taken at face value. A record can also be flagged as a **credit note**, which inverts the meaning — money owed back to the payer rather than money received.
+For a cash payment, enter the Amount Received. The Amount Received must be equal to or more than the Amount Paid. Care does not show the Reference Number field for cash payments.
 
-## Classification
+### Status
 
-Each payment is tagged so it can be reported and audited consistently. The tags answer a few plain questions:
+| Status | Description |
+| --- | --- |
+| Active | The payment counts towards the account balance. |
+| Cancelled | Someone cancelled the payment. It no longer counts towards the balance. |
+| Draft | The payment is not complete. |
+| Entered in Error | Someone recorded the payment by mistake. |
 
-- **Why** — its `type`: a normal `payment`, an `adjustment` (a correction), or an `advance` (paid ahead of charges)
-- **How it arrived** — its `kind`: `deposit`, `periodic_payment`, `online`, or `kiosk`
-- **Who is paying** — its `issuer_type`: the `patient` or an `insurer`
-- **What instrument** — its `method`: cash, credit card, cheque, debit card, direct deposit, and similar, drawn from standard HL7 payment-method codes
-- **Where processing landed** — its `outcome`: `queued`, `complete`, `partial`, or `error`
+## Relationships
 
-## Lifecycle
-
-A payment moves through a small set of states that mirror real-world handling:
-
-```text
-draft → active → cancelled / entered_in_error
-```
-
-- **draft** — being prepared, not yet a final record of money received
-- **active** — a confirmed payment that counts against the account
-- **cancelled** — a once-valid payment that has been voided
-- **entered_in_error** — recorded by mistake; kept for audit but excluded from balances
-
-## How it connects
-
-A payment reconciliation always sits inside the billing picture for one patient:
-
-- It is recorded against an **[account](../billing/account.mdx)** — the running ledger for a patient, which is always required.
-- It may optionally be allocated to one **[invoice](../billing/invoice.mdx)**, settling that specific bill. With no invoice, the payment simply credits the account balance.
-- It is anchored to a **[facility](../facility/facility.mdx)** and may record the location where the payment was taken (e.g. a billing counter).
-
-Because it points at an account and, through that account, at the [patient](../clinical/patient), a payment reconciliation ties financial activity back to the same person whose [encounters](../clinical/encounter.mdx) and orders drove the charges.
+- Every payment belongs to one account.
+- A payment can target one specific invoice. Without a target invoice, the payment stays as a general credit on the account.
+- A credit note subtracts its amount from the balance instead of adding to it.
+- You can move a payment from one account to another account. Both accounts must belong to the same patient.
 
 ## Permissions
 
-Access to payment records is governed by facility-scoped role-based permissions.
+Care checks these permissions at the facility level.
 
-| Permission | Description | System Roles |
+| Permission | What it allows | Roles |
 | --- | --- | --- |
-| `can_write_payment_reconciliation` | Create, update, cancel within the free-cancel window, or reassign payment records to another account | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
-| `can_read_payment_reconciliation` | List and view payment records | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| `can_destroy_payment_reconciliation` | Cancel a payment record after the free-cancel window has passed | Facility Admin, Admin |
+| Can Write Payment Reconciliation | Record a payment, update a payment, and move a payment to another account. | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| Can Read Payment Reconciliation | View and list payments. | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Destroy Payment Reconciliation | Cancel a payment after the facility's free-cancel window ends. | Facility Admin, Admin |
 
-Roles are granted through a user's facility and organization memberships, and permissions cascade down the organization tree, so a role held higher up applies to the facilities beneath it.
+Note: By default the free-cancel window ends immediately. You usually need the Can Destroy Payment Reconciliation permission to cancel a payment.
 
 ## Related
 
-- Reference: [Payment Reconciliation (technical)](../../references/billing/payment-reconciliation.mdx)
-- Concept: [Account](../billing/account.mdx)
-- Concept: [Invoice](../billing/invoice.mdx)
-- Concept: [Charge item](../billing/charge-item.mdx)
-
-## FHIR reference
-
-This concept aligns with the FHIR [PaymentReconciliation](https://build.fhir.org/paymentreconciliation.html) resource, which records the outcome of payment processing against accounts and invoices.
+- Flow: [Record a payment](../../flows/billing/payment-reconciliation/record-payment.mdx)
+- Flow: [View a payment](../../flows/billing/payment-reconciliation/view-payment.mdx)
+- Flow: [Cancel a payment or mark it entered in error](../../flows/billing/payment-reconciliation/cancel-payment.mdx)
+- Flow: [Move a payment to another account](../../flows/billing/payment-reconciliation/move-payment.mdx)
+- Concept: [Account](../../concepts/billing/account.mdx)
+- Concept: [Invoice](../../concepts/billing/invoice.mdx)

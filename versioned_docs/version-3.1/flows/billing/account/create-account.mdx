@@ -1,0 +1,71 @@
+---
+sidebar_position: 1
+---
+
+# Create an account
+
+## Overview
+
+This flow describes how to create an [account](../../../concepts/billing/account.mdx) for a patient at a facility. The account collects the charges and payments for that patient at that facility.
+
+## Pre-requisites
+
+- The patient is registered in Care.
+- You are a member of the facility that bills the patient.
+- The patient has no active, open account at the facility. Care blocks a second active, open account for the same patient at the same facility.
+- You have the permissions listed below.
+
+Note: Care creates a default account for you when you add the first [charge item](../../../concepts/billing/charge-item.mdx) for a patient with no active, open account. In that case, you do not need to create the account yourself.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Account | Create an account for a patient at a facility. Facility Admin and Admin hold this permission. |
+
+## Steps
+
+### 1. Open the account list
+
+Start from the patient or from the facility.
+
+- From the patient: open the patient profile. Select the **Accounts** tab.
+- From the facility: open the facility. Select **Billing**. Select **Accounts**.
+
+### 2. Start the new account
+
+Click **Create Account**. Care opens the account form.
+
+### 3. Fill in the account details
+
+Complete the form fields.
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the account. This field is mandatory. |
+| Description | More detail about the account. This field is optional. |
+| Status | The state of the account: Active, Inactive, On Hold, or Entered in Error. This field is mandatory. Keep the value Active for a new account. |
+| Billing Status | The billing state of the account: Open, Care Completed, Billing, Closed Bad Debt, Closed Voided, Closed Completed, or Closed Combined. This field is mandatory and starts at Open. Keep the value Open for a new account. |
+
+### 4. Save the account
+
+Save the form. Care creates the account for the patient and the facility.
+
+## Expected Outcome
+
+- Care creates the account and shows it in the account list.
+- Care sets the service period start date to the current time.
+- Care links the account to the patient and the facility that you created it for. You cannot change this link later.
+- You can set the primary encounter afterwards, when you edit the account.
+
+## Related
+
+Concepts:
+
+- [Account](../../../concepts/billing/account.mdx)
+- [Charge Item](../../../concepts/billing/charge-item.mdx)
+
+Flows:
+
+- [View an account](./view-account.mdx)
+- [Edit an account](./edit-account.mdx)

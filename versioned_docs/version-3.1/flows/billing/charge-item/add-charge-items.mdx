@@ -1,0 +1,76 @@
+---
+sidebar_position: 1
+---
+
+# Add charge items
+
+## Overview
+
+This flow describes how to add one or more [charge items](../../../concepts/billing/charge-item.mdx) for a patient in Care. You add charge items to record the billable products and services that the patient receives.
+
+## Pre-requisites
+
+- You have the permissions listed below.
+- The patient has an active, billable [account](../../../concepts/billing/account.mdx).
+- If the patient has no active, open account, Care creates one for you when you add the first charge item.
+- You start the flow from an appointment page, a service request page, or the Charge Items tab of an account.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Charge Item | Add charge items to a patient's account. Facility Admin, Admin, Staff, Doctor, Nurse, and Pharmacist roles hold this permission. |
+
+## Steps
+
+### 1. Open the Add Charge Items form
+
+Go to the appointment page, the service request page, or the Charge Items tab of the account.
+
+Click **Add Charge Items**.
+
+Note: On an appointment page or the billing tab of an account, press `a` to open the Add Charge Items form.
+
+### 2. Select the charge item definitions
+
+Select one or more charge item definitions. Each charge item definition is a pre-configured product or service with a price.
+
+| Components | What it captures |
+| --- | --- |
+| Charge Item Definition | The pre-configured, priced product or service that the patient receives. |
+| Quantity | The number of units of the product or service. |
+| Performer | The person who performed the billed service. This field is optional. |
+
+### 3. Set the quantity
+
+Set the quantity for each selected charge item definition.
+
+### 4. Select the performer
+
+Select the performer for each charge item. Skip this field if you do not record a performer.
+
+### 5. Submit the form
+
+Submit the form to create the charge items.
+
+Note: Press `i` on the appointment page or the account page to create an [invoice](../../../concepts/billing/invoice.mdx) from the charge items.
+
+## Expected Outcome
+
+- Care creates one charge item for each selected charge item definition.
+- Each new charge item has the status Billable.
+- The charge items show on the Charge Items tab of the account.
+- If the patient had no active, open account, Care creates the account and adds the charge items to it.
+
+## Related
+
+Concepts:
+
+- [Charge Item](../../../concepts/billing/charge-item.mdx)
+- [Account](../../../concepts/billing/account.mdx)
+- [Invoice](../../../concepts/billing/invoice.mdx)
+
+Flows:
+
+- [Edit a charge item](./edit-charge-item.mdx)
+- [Cancel a charge item](./cancel-charge-item.mdx)

@@ -4,66 +4,64 @@ sidebar_position: 2
 
 # Charge Item
 
-A **charge item** is a single billable line for one service or product given to a patient — a consultation fee, a lab test, a dispensed medicine, a bed-day. It is the atom of billing in Care: the smallest unit that records *what was charged, how much, and why*, before anything is grouped onto an invoice.
+## Definition
 
-## What it represents
+A **[charge item](https://build.fhir.org/chargeitem.html)** in Care records one billable service or item against a patient's account. A consultation, a procedure, or a dispensed medicine is each a charge item. Charge items are the building blocks that Care bundles into invoices.
 
-In Care's FHIR-aligned model, a charge item maps to the **ChargeItem** resource. Each one ties four things together:
+You do not open charge items on their own. Charge items always appear inside an appointment, a service request, or the Charge Items tab of an account.
 
-- **What** — the service or product, named by a title and an optional billing code
-- **How much** — the quantity and a full price breakdown that resolves to a total
-- **Why** — the activity that produced it, such as a service request, a dispensed medication, an appointment, or a bed stay, and who performed it
-- **Where** — the patient and the account it sits on, and optionally the encounter it relates to
+## Key Attributes
 
-The key idea is that a charge item is *self-contained*: it carries its own pricing rather than looking up a live rate, so the cost is locked at the moment of charging and never drifts when the catalogue changes later. And a charge item is not an invoice. Charges accumulate on an account as care happens; an [invoice](../billing/invoice.mdx) is the separate, later act of selecting some of them and presenting them for payment.
+| Components | What it captures |
+| --- | --- |
+| Title | The name of the charge. You must enter a title. |
+| Description | More detail about the charge. This is optional. |
+| Quantity | How many units of the service or item the patient receives. You must enter a quantity. |
+| Price Components | The base price and any surcharge, discount, tax, or informational amount. You must enter at least one price component. |
+| Note | A free-text note about the charge. This is optional. |
+| Status | The current state of the charge item. See [Status](#status). |
+| Charge Item Definition | The pre-configured and priced item or service that the charge item comes from, if any. |
+| Performer | The person who performed the billed service. This is optional. |
+| Source record | The clinical record that the charge comes from, where relevant. This is a service request, a medication dispense, an appointment, or a bed association. |
 
-## How it connects
+### Account and Encounter
 
-A charge item never floats on its own — it always points back at the records around it:
+Every charge item belongs to exactly one account. A charge item is optionally linked to one encounter.
 
-- **Account** — every charge item lives on exactly one [account](../billing/account.mdx), the running ledger for a patient. Omit the account and it lands on the patient's default one.
-- **Patient** — the person being billed. Charge against an [encounter](../clinical/encounter.mdx) and the patient is inherited from it automatically.
-- **Encounter** — the visit or admission the charge relates to. Optional: charges can also exist outside any single encounter.
-- **Charge item definition** — an optional template. Applying a [charge item definition](../definitions/charge-item-definition.mdx) builds a fully-priced charge item from the facility's catalogue, so staff never re-key prices by hand.
-- **Invoice** — once a charge is billed and settled, it links back to the [invoice](../billing/invoice.mdx) that paid it.
+You can move a charge item from one account to another account while its status is Billable.
 
-## Pricing model
+### Status
 
-Price is never a single number. A charge item holds a list of **monetary components** that stack up to the total: a **base** per-unit price (exactly one, multiplied by quantity), **surcharges** added on top, **discounts** subtracted (optionally capped by a discount rule), and **tax** applied to what remains. A component can also be marked **informational** — shown for reference but excluded from the total.
+| Status | Description |
+| --- | --- |
+| Billable | The charge item is ready for an invoice. This is the starting status. |
+| Not Billable | The charge item does not go on an invoice. |
+| Aborted | Someone stopped the charge item. |
+| Entered in Error | Someone recorded the charge item by mistake. |
+| Billed | Care sets this status when the charge item goes on an invoice. |
+| Paid | Care sets this status when the invoice for the charge item is Balanced. |
 
-Care recomputes this breakdown on the server every time a charge is created or edited; clients never set the total themselves. When a price departs from the catalogue rate, an override reason can be recorded alongside it.
-
-## Lifecycle
-
-A charge item moves through billing states as it is priced, invoiced, and settled:
-
-```text
-billable → billed → paid
-```
-
-- **billable** — priced and ready to be placed on an invoice
-- **billed** — included on an invoice (set by the platform, not by hand)
-- **paid** — settled, with a link to the invoice and the date it cleared (also platform-set)
-
-Off to the side, a charge can instead be cancelled — recorded but never billed (`not_billable`), called off before billing (`aborted`), or withdrawn as a mistake (`entered_in_error`). Cancelling a charge that was sitting on a draft invoice pulls it off and rebalances that invoice; a charge already on a finalised invoice cannot be cancelled at all. The `billed` and `paid` states are never set manually — they only ever reflect what billing has actually done. Cancellation is free for a short window after creation; after that it requires an explicit permission.
+Note: Not Billable, Aborted, and Entered in Error are the reasons that you choose when you cancel a Billable charge item. Care sets Billed and Paid for you as the invoice moves through its lifecycle.
 
 ## Permissions
 
-Access to charge items is governed by facility-scoped permissions.
+Care checks these permissions at the facility level.
 
-| Permission | Description | System Roles |
+| Permission | What it allows | Roles |
 | --- | --- | --- |
-| `can_create_charge_item` | Create a charge item, apply charge item definitions, and move charge items between accounts | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
-| `can_create_negative_charge_item` | Allow charge items priced below zero (reversals/credits) when applying definitions | Facility Admin, Admin |
-| `can_read_charge_item` | View charge items and their pricing | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| `can_update_charge_item` | Edit an existing charge item | Facility Admin, Admin |
-| `can_cancel_charge_item` | Cancel a charge item after the free-cancel window has elapsed | Facility Admin, Admin |
+| Can Create Charge Item | Add charge items to an account. | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
+| Can Update Charge Item | Edit a charge item and move charge items to another account. | Facility Admin, Admin |
+| Can Read Charge Item | View and list charge items. | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Cancel Charge Item | Cancel a charge item. | Facility Admin, Admin |
 
-Roles are granted to users through facility and organization memberships, and permissions cascade down the organization tree — a role held higher up applies to the facilities and patients beneath it.
+Note: Care lets you edit or cancel a charge item only while its status is Billable.
 
 ## Related
 
-- Reference: [Charge Item (technical)](../../references/billing/charge-item.mdx)
-- Concept: [Account](../billing/account.mdx)
-- Concept: [Charge Item Definition](../definitions/charge-item-definition.mdx)
-- Concept: [Invoice](../billing/invoice.mdx)
+- Flow: [Add charge items](../../flows/billing/charge-item/add-charge-items.mdx)
+- Flow: [Edit a charge item](../../flows/billing/charge-item/edit-charge-item.mdx)
+- Flow: [Cancel a charge item](../../flows/billing/charge-item/cancel-charge-item.mdx)
+- Flow: [Move charge items to another account](../../flows/billing/charge-item/move-charge-items.mdx)
+- Concept: [Account](../../concepts/billing/account.mdx) — every charge item belongs to one account
+- Concept: [Invoice](../../concepts/billing/invoice.mdx) — bundles billable charge items for billing
+- Concept: [Payment Reconciliation](../../concepts/billing/payment-reconciliation.mdx) — records the payments that mark charge items as Paid
