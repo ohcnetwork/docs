@@ -1,0 +1,71 @@
+---
+sidebar_position: 3
+---
+
+# Mark a response as entered in error
+
+## Overview
+
+This flow describes how to mark a [questionnaire response](../../../concepts/clinical/questionnaire-response.mdx) as entered in error. Care then shows the response as invalid.
+
+## Pre-requisites
+
+- A user filed at least one response for the patient.
+- You can read the responses of the patient, as described in [View questionnaire responses](./view-questionnaire-responses.mdx).
+- A user filed the response through a form. Care does not offer this action for a response that a structured clinical record creates. An allergy record and a diagnosis record are structured clinical records.
+- The response is not marked as entered in error.
+- You mark the response inside the time limit that your deployment sets. After that time, only a system administrator can mark the response.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can submit questionnaire about patients | Lets you mark a patient-level response as entered in error. |
+| Can submit questionnaire about patient encounters | Lets you mark a response of an encounter as entered in error. |
+
+Note: You need the same access that lets you submit the response. The access must match the patient or the encounter of the response.
+
+## Steps
+
+### 1. Open the list of responses
+
+Open the list of responses of the patient. [View questionnaire responses](./view-questionnaire-responses.mdx) describes this step.
+
+### 2. Open the actions menu of the response
+
+Find the response that you want to mark. Click **More Actions** on that response.
+
+Note: Care hides this menu for a response that is already marked as entered in error.
+
+### 3. Select Mark as entered in error
+
+Select **Mark as entered in error**. Care opens a confirmation dialog.
+
+Note: Care does not show this option for a response that a structured clinical record creates.
+
+### 4. Confirm the action
+
+Read the warning in the dialog. The dialog states that you cannot undo the action. It also states that Care marks the response as entered in error, and shows it as invalid.
+
+Click **Confirm**. Care updates the status of the response.
+
+Note: The time limit for this action depends on your deployment's configuration. After that time, only a system administrator can mark the response as entered in error.
+
+## Expected Outcome
+
+- Care marks the response as entered in error.
+- Care shows the Entered in Error badge on the response, and closes the response in the list.
+- You cannot change the response.
+- You cannot remove the mark from the response.
+
+## Related
+
+Concepts:
+
+- [Questionnaire Response](../../../concepts/clinical/questionnaire-response.mdx)
+
+Flows:
+
+- [View questionnaire responses](./view-questionnaire-responses.mdx)
+- [Print a questionnaire response](./print-a-questionnaire-response.mdx)

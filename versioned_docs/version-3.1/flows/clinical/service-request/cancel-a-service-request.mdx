@@ -1,0 +1,63 @@
+---
+sidebar_position: 4
+---
+
+# Cancel a service request
+
+## Overview
+
+This flow describes how to cancel a [service request](../../../concepts/clinical/service-request.mdx) that the care team no longer needs.
+
+## Pre-requisites
+
+- You raised a service request for the patient, or another user raised it, and you can open its detail page.
+- The service request is not complete and not already cancelled.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Write Service Request on Facility | Cancel a service request at the facility. Facility Admin, Admin, Doctor, and Nurse hold this permission. |
+
+## Steps
+
+### 1. Open the service request
+
+Open the detail page of the service request that you want to cancel.
+
+### 2. Open the actions menu
+
+Select the actions menu at the top of the detail page. Care shows the two cancel actions.
+
+### 3. Select the end state
+
+Select one of the two actions.
+
+| Action | What it means |
+| --- | --- |
+| Mark as revoked | The care team called off the request. Care sets the status to Revoked. |
+| Mark as entered in error | The care team created the request by mistake. Care sets the status to Entered in Error. |
+
+Note: Care cancels the service request at once. Care does not ask you to confirm.
+
+Note: If the service request is complete or already cancelled, Care blocks the cancellation.
+
+## Expected Outcome
+
+- Care sets the service request to Revoked or to Entered in Error.
+- The service request becomes read-only. You can no longer change it.
+- If the service request has a linked billing charge, Care sets that charge to Aborted. Care also removes the charge from the draft invoice.
+- If the linked invoice is not a draft, Care blocks the cancellation.
+
+## Related
+
+Concepts:
+
+- [Service Request](../../../concepts/clinical/service-request.mdx)
+
+Flows:
+
+- [Create a service request](./create-a-service-request.mdx)
+- [View service requests](./view-service-requests.mdx)
+- [Complete a service request](./complete-a-service-request.mdx)

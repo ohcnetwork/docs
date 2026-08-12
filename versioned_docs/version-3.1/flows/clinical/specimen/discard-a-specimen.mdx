@@ -1,0 +1,63 @@
+---
+sidebar_position: 3
+---
+
+# Discard a specimen
+
+## Overview
+
+This flow describes how to discard a [specimen](../../../concepts/clinical/specimen.mdx) in Care and record the reason for the discard.
+
+## Pre-requisites
+
+- You collected the specimen, and the specimen card shows on the service request page.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Specimen on Facility | Lets you discard a specimen at the facility. Facility Admin, Admin, Doctor, and Nurse have this permission. |
+
+## Steps
+
+### 1. Open the specimen card menu
+
+Go to the service request page. Find the card of the specimen that you discard. Open the menu on the specimen card.
+
+### 2. Select Discard
+
+Select **Discard** in the menu. Care opens a confirmation dialog. The dialog asks for the reason for the discard.
+
+### 3. Select the reason and confirm
+
+Select one of these reasons:
+
+| Reason | What it records |
+| --- | --- |
+| Unavailable | The specimen is not available. |
+| Unsatisfactory | The specimen does not meet the quality requirements. |
+| Entered in Error | A user created the specimen by mistake. |
+
+Confirm the dialog. Care sets the status of the specimen to the reason that you select.
+
+Note: The three reason labels in this dialog show in English only. The current build does not translate them to other languages.
+
+Note: A discard is final. A discarded specimen does not return to the Available status.
+
+## Expected Outcome
+
+- Care shows the specimen with the status that matches the reason that you select.
+- The specimen stays discarded, and you cannot return it to the Available status.
+
+## Related
+
+Concepts:
+
+- [Specimen](../../../concepts/clinical/specimen.mdx)
+
+Flows:
+
+- [Collect a specimen](./collect-a-specimen.mdx)
+- [Process a specimen](./process-a-specimen.mdx)
+- [View specimen history](./view-specimen-history.mdx)

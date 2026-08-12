@@ -1,0 +1,90 @@
+---
+sidebar_position: 1
+---
+
+# Collect a specimen
+
+## Overview
+
+This flow describes how to collect a [specimen](../../../concepts/clinical/specimen.mdx) for a service request in Care. You record the collection details and identify the specimen with a QR code or an accession identifier.
+
+## Pre-requisites
+
+- A user created a service request for the patient, and you open that service request.
+- The requested test or procedure needs one or more specimens.
+- The service request is in Draft or Active status. You can edit specimen fields only in these two statuses.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Specimen on Facility | Lets you collect a specimen for a service request at the facility. Facility Admin, Admin, Doctor, and Nurse have this permission. |
+
+## Steps
+
+### 1. Open the service request
+
+Open the detail page of the service request that needs the specimen.
+
+The page shows a **Specimens** section. This section lists one card for each required specimen type. Each card shows the collection instructions for that specimen type.
+
+### 2. Start the collection
+
+Select **Collect Specimen** on the card of the specimen type that you collect.
+
+Care creates a draft specimen and opens the collection form.
+
+### 3. Record the collection details
+
+Enter the collection details in the form.
+
+| Component | What it captures |
+| --- | --- |
+| Collection Date & Time | The date and time of the collection. This field is optional. |
+| Quantity | The collected amount and its unit. If you enter one of the two, enter both. |
+| Body Site | The part of the body that you collect the specimen from. This field is optional. |
+| Fasting Status | The fasting state of the patient, and the fasting duration. This field is optional. |
+| Notes | More information about the collection. This field is optional. |
+
+The form also shows the container requirements for the specimen type, if the type defines them. These requirements are read-only.
+
+Note: Care records you as the collector of the specimen.
+
+### 4. Identify the specimen
+
+Select how you identify the specimen with the **Generate QR Code** and **Scan Existing** toggle.
+
+- To create a new identifier, select **Generate QR Code**.
+- To use an identifier that the container already has, select **Scan Existing**. Scan the accession identifier, or type it.
+
+### 5. Submit the form
+
+Select the submit button on the collection form.
+
+Care changes the status of the specimen from Draft to Available.
+
+### 6. Print the labels
+
+To print the QR code labels, go back to the service request page. Select **Print All QR Codes**. Care prints a label for each selected specimen.
+
+## Expected Outcome
+
+- Care records the specimen with your collection details.
+- The status of the specimen changes from Draft to Available.
+- The specimen has a QR code or an accession identifier.
+- You can print a QR code label for the specimen from the service request page.
+
+## Related
+
+Concepts:
+
+- [Specimen](../../../concepts/clinical/specimen.mdx)
+- [Service Request](../../../concepts/clinical/service-request.mdx)
+
+Flows:
+
+- [Process a specimen](./process-a-specimen.mdx)
+- [Discard a specimen](./discard-a-specimen.mdx)
+- [View specimen history](./view-specimen-history.mdx)
+- [View service requests](../../../flows/clinical/service-request/view-service-requests.mdx)

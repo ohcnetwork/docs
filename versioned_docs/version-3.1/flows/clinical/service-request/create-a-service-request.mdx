@@ -1,0 +1,94 @@
+---
+sidebar_position: 1
+---
+
+# Create a service request
+
+## Overview
+
+This flow describes how to raise a new [service request](../../../concepts/clinical/service-request.mdx) for a patient from an encounter in Care. A service request asks another team to do a test, a procedure, or another service for the patient.
+
+## Pre-requisites
+
+- The patient is registered in Care.
+- The patient has an encounter at the facility, and you record the service request under that encounter.
+- The encounter is still open. Care hides the create option for a completed or an inactive encounter.
+- You are a member of the facility.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Write Service Request on Facility | Create and change service requests for patients at the facility. Facility Admin, Admin, Doctor, and Nurse roles hold this permission. |
+
+## Steps
+
+### 1. Open the patient's encounter
+
+1. Open the patient in the facility.
+2. Open the encounter for which you raise the service request.
+
+### 2. Open the Service Requests tab
+
+Select the **Service Requests** tab in the encounter.
+
+Care shows the service requests that already exist for the encounter.
+
+Note: Press G and then S to open the **Service Requests** tab.
+
+### 3. Start a new service request
+
+Select **Create Service Request**.
+
+Care opens the service request form for the encounter.
+
+Note: Care shows the **Create Service Request** option only when the encounter is open.
+
+### 4. Select the service
+
+Select a service in the **Select Activity Definition** list. Care adds a card for that service to the form.
+
+Care copies the title, the category, and the code from the service that you select. Care also copies the body site, the locations, and the healthcare service. Care sets the status to Active, the intent to Order, and the priority to Routine. Care sets you as the requester.
+
+To request more than one service, select another service in the same list.
+
+### 5. Fill in the service request details
+
+Open the card of the service and complete the fields.
+
+| Components | What it captures |
+| --- | --- |
+| Priority | How urgent the request is: Routine, Urgent, ASAP, or STAT. This field is mandatory. |
+| Body Site | The part of the body for the service. |
+| Patient Instruction | The instructions for the patient, such as how to prepare for a test. |
+| Requester | The facility member who asks for the service. |
+| Note | More information for the team that does the service. |
+
+Care takes the patient and the encounter from the page that you start on. You do not select the patient.
+
+Note: When the form holds more than one service, select **Apply to All** to set the same requester for every service.
+
+Note: Which fields are mandatory depends on your deployment's configuration.
+
+### 6. Submit the service request
+
+Select **Submit**.
+
+## Expected Outcome
+
+- Care creates the service request for the patient under the current encounter.
+- The new request shows in the Service Requests list of the encounter.
+
+## Related
+
+Concepts:
+
+- [Service Request](../../../concepts/clinical/service-request.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [View service requests](./view-service-requests.mdx)
+- [Complete a service request](./complete-a-service-request.mdx)
+- [Cancel a service request](./cancel-a-service-request.mdx)

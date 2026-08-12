@@ -1,0 +1,81 @@
+---
+sidebar_position: 1
+---
+
+# View questionnaire responses
+
+## Overview
+
+This flow describes how to read the [questionnaire responses](../../../concepts/clinical/questionnaire-response.mdx) that users filed for a patient. Care shows the responses in three places.
+
+## Pre-requisites
+
+- The patient is registered in Care.
+- A user filed at least one response for the patient.
+- If you open the responses from an encounter, that encounter belongs to the patient.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can view questionnaire responses on patient | Lets you open the **Updates** tab of the patient and read the responses. |
+| Can Read encounter related clinical data | Lets you read the responses of an encounter. |
+| Can view clinical data about patients | Lets you read the responses of an encounter of the patient. |
+
+Note: For the responses of an encounter, one of the last two permissions is enough.
+
+## Steps
+
+### 1. Choose where to open the responses
+
+Choose one of these three entry points:
+
+- Open the **Updates** tab of the patient. This tab lists the responses to patient-level forms.
+- Open the **Responses** tab of the encounter. This tab lists the responses to the forms of that encounter. Inside an encounter, press `g` then `r` to open this tab.
+- Open the **Clinical History** page of the patient, then go to the **Responses** section. This section lists the responses across all encounters of the patient. Inside an encounter, press `h` to open the clinical history.
+
+Note: The **Updates** tab shows an **Add Patient Updates** button if you have permission to submit patient-level forms.
+
+### 2. Read the list of responses
+
+On the **Responses** tab and on the **Clinical History** page, Care shows two panels on a large screen. The left panel lists short cards. The right panel shows the full response that you select. On a small screen, the left panel closes. Click **View Responses** to open the list.
+
+Each response shows this information:
+
+| Components | What it captures |
+| --- | --- |
+| Title | The name of the form. A response that a structured clinical record creates shows the type of that record, for example Allergy Intolerance. |
+| Date and time | When the user filed the response. |
+| Filed by | The user who filed the response. |
+| Entered in Error | A badge that marks the response as invalid. |
+
+Note: Care closes a response with the Entered in Error badge. Click the response to open it.
+
+### 3. Filter the list by form
+
+On the **Responses** tab and on the **Clinical History** page, click **Select Forms** in the left panel. Select the form that you want to read. Care then lists only the responses to that form.
+
+To clear the filter, click the clear icon in the **Select Forms** button.
+
+Note: You can also click the title of a response. Care then filters the list to that form.
+
+### 4. Open a response
+
+Click a card in the left panel. Care shows the full response in the right panel. The response groups the answers by question. Click **See Note** on an answer to read the note that the user attached.
+
+## Expected Outcome
+
+- Care lists the responses of the patient or of the encounter.
+- Care shows the answers and the notes of the response that you select.
+
+## Related
+
+Concepts:
+
+- [Questionnaire Response](../../../concepts/clinical/questionnaire-response.mdx)
+
+Flows:
+
+- [Print a questionnaire response](./print-a-questionnaire-response.mdx)
+- [Mark a response as entered in error](./mark-a-response-as-entered-in-error.mdx)

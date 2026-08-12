@@ -1,64 +1,65 @@
 ---
-sidebar_position: 13
+sidebar_position: 12
 ---
 
-# Clinical Notes
+# Notes
 
-A **clinical note** in Care is the care team's written commentary about a patient — the place where staff record narrative, hand-offs, and discussion in their own words rather than in structured fields. Notes are organized into threads, so a single topic stays together as a conversation instead of scattering across the record.
+## Definition
 
-## What it represents
+**Clinical Notes** is the space where staff record and exchange written notes about a patient. Care groups the messages into titled discussions, so different topics stay separate. You find Clinical Notes in the **Notes** tab, which shows a panel called **Discussions**.
 
-In Care's FHIR-aligned model, clinical notes map to the **Communication** resource — running written exchanges about a patient. A note thread holds:
+Clinical Notes is a Care feature for staff collaboration. Care does not map Clinical Notes to an FHIR R5 resource.
 
-- **A subject** — every thread is anchored to one patient, and optionally narrowed to a single encounter
-- **A title** — a short label for what the thread is about
-- **Messages** — the entries posted into the thread over time by the care team
-- **A preserved history** — authorship, timestamps, and prior versions of every edited message
+## Key Attributes
 
-A note is not a substitute for structured clinical data. Diagnoses belong in [conditions](../clinical/condition.mdx), allergies in [allergy records](../clinical/allergy-intolerance.mdx), and measurements in [observations](../clinical/observation.mdx). Notes are the human layer that ties that data together — the reasoning, context, and discussion that coded fields can't hold.
+A discussion groups related messages under one title. A message is one entry in a discussion.
 
-## Threads and messages
+| Components | What it captures |
+| --- | --- |
+| Title | The subject of the discussion. The title holds up to 255 characters. |
+| Message | The text of one entry in a discussion. The text supports Markdown formatting. |
+| Author | The staff member who wrote the message. Care records this for you. |
+| Time | The date and time of the message. Care records this for you. |
 
-Notes live in a two-level structure: **threads** that hold **messages**.
+A discussion holds a title only. A message holds text only. This module has no status, no category, and no coded value.
 
-- A **thread** is one conversation, anchored to a patient and optionally to one of that patient's encounters.
-- A **message** is a single entry inside a thread. Many people can add messages to the same thread over time.
+### Encounter discussions and patient discussions
 
-That anchoring gives a thread its scope:
+Care keeps two separate spaces for discussions:
 
-| Scope | What it means | Typical use |
+- Encounter discussions belong to one [encounter](../../concepts/clinical/encounter.mdx). You see them in the Notes tab of that encounter.
+- Patient discussions belong to the patient. You see them in the Notes tab of the patient profile.
+
+The two lists never overlap. A patient discussion never appears inside an encounter. An encounter discussion never appears on the patient profile.
+
+### Order of discussions and messages
+
+Care lists the discussions with the most recent first. Inside a discussion, the newest message appears at the bottom. Care loads older messages 20 at a time as you scroll up.
+
+### Permanence
+
+Care shows no way to delete a discussion. Care shows no way to delete a message. After you send a message, the message stays in the discussion.
+
+### Attachments and mentions
+
+Care does not support file attachments in messages. Care does not support user mentions in messages.
+
+### Who can see and write
+
+| Action | Permission | Roles |
 | --- | --- | --- |
-| Patient-level | Attached to the patient, not to any one visit | Longitudinal commentary across encounters — care coordination, ongoing concerns |
-| Encounter-level | Attached to a specific [encounter](../clinical/encounter.mdx) | Discussion tied to one admission or visit — shift hand-offs, ward notes |
+| See encounter discussions and messages | Can Read encounter related clinical data | Doctor, Nurse, Admin, Facility Admin |
+| Start an encounter discussion, or post a message in one | Update Encounter related clinical data | Doctor, Nurse, Admin, Facility Admin |
+| See patient discussions and messages | Can view clinical data about patients | Staff, Doctor, Nurse, Admin, Facility Admin |
+| Start a patient discussion, or post a message in one | Can Update a Patient's data | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
 
-Because threads hang off the patient record, they follow the patient over time. Deleting a patient removes their threads; deleting a thread removes its messages.
+If the encounter is closed, you cannot start a discussion in it. You also cannot post a message in it. Care treats an encounter as closed when its status is Completed, Cancelled, Discontinued, or Entered in error.
 
-## Edit history
-
-A note is meant to be an auditable record, not just a scratchpad. When someone edits a message, the new text becomes the visible body — but the previous version is never thrown away:
-
-```text
-Posted → Edited → Edited again
-```
-
-Each edit appends the prior text, its author, and the time of the change to the message's history, oldest first. The platform maintains this trail server-side; clients cannot rewrite or erase what was already said. So a thread reliably shows not only what the team currently thinks, but what was written and when.
-
-## Permissions
-
-Notes have no permission file of their own. Access follows the [patient](../clinical/patient) and [encounter](../clinical/encounter.mdx) permissions, since every thread is anchored to a patient and may be scoped to an encounter.
-
-| Permission | Description | System Roles |
-| --- | --- | --- |
-| `can_write_patient` | Create or update a patient-scoped thread or message (used when the note is not tied to an encounter) | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
-| `can_write_encounter_clinical_data` | Create or update an encounter-scoped thread or message (the encounter must not be closed) | Admin, Doctor, Nurse, Facility Admin |
-| `can_view_clinical_data` | Read a patient's clinical record, including their note threads and messages | Staff, Doctor, Nurse, Admin, Facility Admin |
-| `can_read_encounter_clinical_data` | Read encounter-scoped threads and messages when patient-level clinical access is not granted | Admin, Doctor, Nurse, Facility Admin |
-
-Roles are granted through a person's organization, facility, or patient membership, then cascade down the organization tree — access granted at a parent organization flows to the facilities and patients beneath it.
+Note: No deployment setting changes how Clinical Notes behaves.
 
 ## Related
 
-- Reference: [Notes (technical)](../../references/clinical/notes.mdx)
-- Concept: [Patient](../clinical/patient)
-- Concept: [Encounter](../clinical/encounter.mdx)
-- Concept: [Observation](../clinical/observation.mdx)
+- Flow: [Start a discussion](../../flows/clinical/notes/start-a-discussion.mdx)
+- Flow: [Post a message to a discussion](../../flows/clinical/notes/post-a-message.mdx)
+- Flow: [Find discussions for a patient or an encounter](../../flows/clinical/notes/find-discussions.mdx)
+- Concept: [Encounter](../../concepts/clinical/encounter.mdx)

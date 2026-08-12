@@ -1,0 +1,68 @@
+---
+sidebar_position: 4
+---
+
+# Verify a consent
+
+## Overview
+
+This flow describes the verification of a [consent](../../../concepts/clinical/consent.mdx). A verification is a second confirmation of a consent that a member of staff recorded for a patient.
+
+Note: The current version of Care has no screen for consent verification. You cannot add, view, or remove a verification from the web application. The steps below record what the system holds today. Review this flow again after the product adds the screen.
+
+## Pre-requisites
+
+- The patient has an encounter at the facility, and a member of staff recorded a consent for that encounter.
+- You did not verify this consent before. Care refuses a second verification from the same user.
+- You have the permission listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Update Encounter related clinical data | Lets you add a verification to a consent, and remove a verification from a consent. |
+
+The Admin, Doctor, Nurse, and Facility Admin roles hold this permission.
+
+## Steps
+
+### 1. Open the consent
+
+Open the encounter of the patient. Select the **Consents** tab. Select **See Details** on the consent that you want to verify.
+
+### 2. Add the verification
+
+The consent record has no verification section, so you cannot add a verification here.
+
+When you add a verification, Care holds this information:
+
+| Component | What it captures |
+| --- | --- |
+| Verification Type | The source of the confirmation: **Family** for a family member or a representative, or **Validation** for the patient. |
+| Verified by | The name of the user who confirms the consent. |
+| Verification date | The date and time of the confirmation. |
+
+Care accepts one verification for each user on one consent. A second verification from the same user gives an error.
+
+### 3. Remove the verification
+
+The consent record has no verification section, so you cannot remove a verification here.
+
+Care removes only a verification that the same user added.
+
+## Expected Outcome
+
+- Care holds the verification type, the name of the verifier, and the date and time of the verification.
+- Care does not show this information on any screen in the current version.
+
+## Related
+
+Concepts:
+
+- [Consent](../../../concepts/clinical/consent.mdx)
+
+Flows:
+
+- [Record a consent](./record-a-consent.mdx)
+- [View consents](./view-consents.mdx)
+- [Update a consent](./update-a-consent.mdx)

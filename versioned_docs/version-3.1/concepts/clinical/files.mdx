@@ -1,0 +1,77 @@
+---
+sidebar_position: 9
+---
+
+# Clinical - Files
+
+## Definition
+
+A **file** in Care is an attachment that you upload and link to another record. You can
+attach a file to a Patient, an Encounter, a Consent, a Diagnostic Report, or a Service
+Request. Files keep scans, photos, recordings, and documents together with the record
+they belong to. Care shows the attachments in a **Files** tab on the Patient page and on
+the Encounter page.
+
+Note: Care stores files as generic attachments. This module has no formal FHIR R5
+resource mapping in Care.
+
+## Key Attributes
+
+| Components | What it captures |
+| --- | --- |
+| File Name | The name that Care shows for the attachment. You can change this name. |
+| Attached to | The record that the file belongs to: a Patient, an Encounter, a Consent, a Diagnostic Report, or a Service Request. |
+| Category | An internal classification of the file. |
+| Upload status | Whether the upload of the file is complete. |
+| Archived | Whether you removed the file from active use. Care shows this only after the upload is complete. |
+
+### Category
+
+Category is an internal classification. You cannot select a category when you add a file.
+Most category values have no visible label in the Care screens today.
+
+### How you add a file
+
+You can add a file in three ways:
+
+- Choose a file from your device.
+- Capture a photo with the camera.
+- Record audio in the browser.
+
+The maximum size of one file is 100 MB. Care accepts common image, video, and audio
+types. Care also accepts text documents, office documents, and PDF files.
+
+### How you open a file
+
+Care shows a preview in the browser for images, PDF files, video files, and HTML files.
+For an audio file, Care shows a separate playback control. Care shows no preview for
+other file types. To open a file of another type, download it.
+
+### What you can do with a file
+
+You can rename a file, archive a file, or download a file. To archive a file, you must
+give a reason. You cannot undo an archive action. Care has no permanent delete action.
+Archiving is the only way to remove a file from active use.
+
+## Permissions
+
+| Action | Permission |
+| --- | --- |
+| View a file | The same permission that lets you view clinical data for the Patient or the Encounter. |
+| Upload, rename, or archive a file | The same permission that lets you write to the Patient or the Encounter. |
+
+For a file that belongs to an Encounter, the Encounter must not be inactive. If the
+Encounter is inactive, you cannot upload, rename, or archive its files.
+
+## Related
+
+- Flow: [Upload a file](../../flows/clinical/files/upload-a-file.mdx)
+- Flow: [View or preview a file](../../flows/clinical/files/view-or-preview-a-file.mdx)
+- Flow: [Rename a file](../../flows/clinical/files/rename-a-file.mdx)
+- Flow: [Archive a file](../../flows/clinical/files/archive-a-file.mdx)
+- Flow: [Download a file](../../flows/clinical/files/download-a-file.mdx)
+- Concept: [Patient](../../concepts/clinical/patient)
+- Concept: [Encounter](../../concepts/clinical/encounter.mdx)
+- Concept: [Consent](../../concepts/clinical/consent.mdx)
+- Concept: [Diagnostic Report](../../concepts/clinical/diagnostic-report.mdx)
+- Concept: [Service Request](../../concepts/clinical/service-request.mdx)

@@ -1,76 +1,96 @@
 ---
-sidebar_position: 8
+sidebar_position: 5
 ---
 
-# Service Request
+# Clinical - Service Request
 
-A **service request** is an order to do something for a patient — run a lab test, take an X-ray, book a counselling session, perform a procedure. It turns a clinician's "please do this" into a tracked item that another team can pick up and that later results can attach to.
+## Definition
 
-## What it represents
+A **[service request](https://build.fhir.org/servicerequest.html)** in Care is a request for a service for a patient. The service is a diagnostic test, a procedure, or a referral. You create a service request inside an encounter. Care takes the patient from that encounter. Clinical staff use the service request to tell other staff what to do. The request also states where to do the service and how urgent it is.
 
-In Care's FHIR-aligned model, a service request maps to the **ServiceRequest** resource. It captures:
+You start a service request from the facility service catalogue. You select an **Activity Definition**. Care copies the title, the category, the code, the body site, the locations, and the healthcare service from that entry.
 
-- **What is being asked for** — a coded service or procedure, an optional body site, and a free-text title
-- **Why and how** — the category of work, the priority, and any notes or patient instructions
-- **Where it sits in care** — the patient and encounter it was raised in, the facility, and optionally the service, locations, or clinician fulfilling it
-- **Its standing** — an intent (firm order or mere proposal?) and a lifecycle status everyone can see
+You work with service requests on the **Service Requests** tab of an encounter. You also see the requests of one facility location in the **Service Requests** list of that location.
 
-The key thing to hold onto: a service request is the *order*, not the *result*. The specimen that gets collected, the diagnostic report that comes back, the observations that get recorded — those are separate records that each point back to the originating request. One request can spawn several of them.
+## Key Attributes
 
-## Intent — how binding is it?
+| Components | What it captures |
+| --- | --- |
+| Title | The short name that identifies the request. Care copies it from the activity definition. |
+| Status | The stage of the request. See [Status](#status). |
+| Intent | How strong the request is. See [Intent](#intent). |
+| Priority | How urgent the request is. See [Priority](#priority). |
+| Category | The type of service that you request. Care copies it from the activity definition. See [Category](#category). |
+| Code | The test or the procedure that the request asks for, for example a laboratory test or an imaging study. Care copies it from the activity definition. |
+| Do Not Perform | A flag that tells staff not to do the requested service. |
+| Note | Extra information for the staff who receive the request. |
+| Occurrence | The date and time for the requested service. |
+| Patient Instruction | The instructions for the patient about the requested service. |
+| Body Site | The part of the body for the requested service. |
+| Locations | The facility locations where staff do the requested service. |
+| Healthcare Service | The entry in the facility service catalogue that does the work. Care copies it from the activity definition. |
+| Requester | The facility member who makes the request. You can select only a member of the facility. |
+| Tags | The labels that help you group and find service requests. |
 
-Every request carries an **intent** that says how committed the order is, so the same record can represent anything from a tentative idea to a confirmed instruction: a `proposal` is a suggestion someone has put forward; a `plan` is part of an agreed plan of care; a `directive` is a standing instruction; an `order` is a firm request to actually carry the work out. Intent answers "is this real yet?" — distinct from status, which answers "where has it got to?"
+### Status
 
-## Category and priority
+| Status | Description |
+| --- | --- |
+| Draft | You prepare the request. The request is not yet active. |
+| Active | Staff can act on the request. |
+| On Hold | Staff stop work on the request for now. |
+| Entered in Error | Someone created the request by mistake. |
+| Completed | Staff finished the requested service. |
+| Revoked | Someone cancelled the request. |
+| Ended | Care does not use this status. No action in Care sets it. |
 
-Two coded fields route and rank the work. **Category** decides which team picks it up — `laboratory`, `imaging`, `counselling`, `surgical_procedure`, or `education`. **Priority** sets how soon — `routine`, `urgent`, `asap`, or `stat`. Together they let a busy department triage a queue of requests without reading every one in full.
+Care creates a new request with the status Active. Care also sets the intent to Order and the priority to Routine. Completed, Revoked, and Entered in Error are final statuses. Care blocks all further actions on a request in a final status. You reach Completed with the **Mark as Complete** action. You reach Revoked with the **Mark as revoked** action. You reach Entered in Error with the **Mark as entered in error** action.
 
-## Lifecycle
+### Intent
 
-A request always sits in exactly one status — there is deliberately no "unknown". The active states are on the left; the four on the right are terminal.
+| Intent | Description |
+| --- | --- |
+| Proposal | Someone suggests the service. |
+| Plan | Someone plans the service. |
+| Directive | Someone gives a direction for the service. |
+| Order | Someone orders the service. |
 
-```text
-draft → active → on_hold → completed
-                        ↘ ended / revoked / entered_in_error
-```
+### Priority
 
-- **draft** — being written, not yet actionable
-- **active** — live and ready to be worked on
-- **on_hold** — paused for now, expected to resume
-- **completed** — the work has been fulfilled
-- **ended** — stopped before completion, with no intent to resume
-- **revoked** — cancelled or withdrawn
-- **entered_in_error** — created by mistake; kept for audit, treated as void
+| Priority | Description |
+| --- | --- |
+| Routine | Staff do the service in the normal order of work. |
+| Urgent | Staff do the service before routine work. |
+| ASAP | Staff do the service as soon as possible. |
+| STAT | Staff do the service immediately. |
 
-## How it connects
+### Category
 
-A service request is the hub that ties an order to the rest of the record:
+| Category | Description |
+| --- | --- |
+| Laboratory | A laboratory test. |
+| Imaging | An imaging study. |
+| Counselling | A counselling service. |
+| Procedure | A surgical procedure. |
+| Education | An education service for the patient. |
 
-- It is always raised inside an **encounter**, and the patient is inherited from that encounter — you never set the patient directly.
-- It can be created from an **activity definition**, a reusable template that supplies the category and the catalogue of valid service codes.
-- Once work begins, a **specimen** may be collected against it, and a **diagnostic report** and its **observations** are produced for it — all linking back to this request.
-- It can name the **healthcare service** that fulfils it and the **locations** within the facility where it applies, plus the **requester** who placed it.
+### Specimens and Diagnostic Reports
+
+A service request can have linked specimens and linked diagnostic reports. A specimen is a sample that staff collect for a test. A diagnostic report holds the results for the request.
 
 ## Permissions
 
-Access to service requests is governed by these facility-scoped permissions.
-
-| Permission | Description | System Roles |
+| Permission | What it allows | Roles |
 | --- | --- | --- |
-| `can_write_service_request` | Create, update, complete, cancel, and apply an activity definition to service requests within a facility | Facility Admin, Admin, Doctor, Nurse |
-| `can_read_service_request` | List and view service requests within a facility | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| `can_write_specimen` | Create a specimen against a service request | Facility Admin, Admin, Doctor, Nurse |
-
-Roles are granted through a user's facility, organization, or patient memberships, and permissions cascade down the organization tree — a role given high in the tree applies to the facilities beneath it.
+| Can Write Service Request on Facility | Create, complete, and cancel a service request. | Facility Admin, Admin, Doctor, Nurse |
+| Can Read Service Request | View a service request. | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
 
 ## Related
 
-- Reference: [Service Request (technical)](../../references/clinical/service-request.mdx)
-- Concept: [Encounter](../clinical/encounter.mdx) — the context every request is raised in
-- Concept: [Activity Definition](../definitions/activity-definition.mdx) — the template a request can be built from
-- Concept: [Specimen](../clinical/specimen.mdx) — collected to fulfil a request
-- Concept: [Diagnostic Report](../clinical/diagnostic-report.mdx) — the result produced for a request
-
-## FHIR reference
-
-This concept aligns with the FHIR **ServiceRequest** resource. Care implements a minimal, opinionated subset and uses snake_case values for status, intent, and priority rather than FHIR's hyphenated codes.
+- Flow: [Create a service request](../../flows/clinical/service-request/create-a-service-request.mdx)
+- Flow: [View service requests](../../flows/clinical/service-request/view-service-requests.mdx)
+- Flow: [Complete a service request](../../flows/clinical/service-request/complete-a-service-request.mdx)
+- Flow: [Cancel a service request](../../flows/clinical/service-request/cancel-a-service-request.mdx)
+- Concept: [Encounter](../../concepts/clinical/encounter.mdx)
+- Concept: [Specimen](../../concepts/clinical/specimen.mdx)
+- Concept: [Diagnostic Report](../../concepts/clinical/diagnostic-report.mdx)
