@@ -1,0 +1,79 @@
+---
+sidebar_position: 1
+---
+
+# Create a report template
+
+## Overview
+
+This flow describes how to create a new [report template](../../../concepts/platform/report-template.mdx) for a facility in Care.
+
+## Pre-requisites
+
+- You are a member of the facility that you create the template for.
+- You know which data the report must show, so that you can pick the correct template type and context.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Template on Facility | Create a report template for the facility. Facility Admin, Admin, Doctor, and Nurse have this permission. |
+
+## Steps
+
+### 1. Open the template builder
+
+Open the **Templates** page of the facility.
+
+Select **Create Template**. Care opens the template builder.
+
+### 2. Fill in the template details
+
+Complete the fields in the builder.
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the template. This field is required. Care creates a matching short name for the URL from the name. You can change the short name. The short name has 5 to 25 characters. Use lowercase letters, numbers, and hyphens only. |
+| Status | The state of the template: Draft, Active, or Retired. A new template normally starts as Draft. |
+| Template Type | The kind of document that the template produces: Discharge Summary, Patient Summary, or Account Report. This field is required. |
+| Context | The set of data fields that the template can use. This field is required. The context must match the template type that you select. |
+| Default Format | The output format of the report: PDF or HTML. This field is required. |
+| Description | A short text about the purpose of the template. This field is optional. |
+| Template Body | The content of the document. This field is required. Write the content in the Jinja2 templating language in the large text area. |
+
+### 3. Insert data fields into the template body
+
+The builder shows the available data fields for the context that you select in a side panel.
+
+Put the cursor in the template body at the position for the data field.
+
+Select a data field in the side panel. Care inserts a placeholder for that field at the cursor position.
+
+The placeholder shows the real value in the report. For example, insert the patient name or the discharge advice.
+
+### 4. Check the result
+
+Render a sample of the template before you save it. See [Preview a template](./preview-a-template.mdx).
+
+### 5. Save the template
+
+Select **Save**.
+
+## Expected Outcome
+
+- Care shows the message "Template saved".
+- Care opens the builder page of the new template, so that you can continue to edit it.
+
+## Related
+
+Concepts:
+
+- [Report Template](../../../concepts/platform/report-template.mdx)
+
+Flows:
+
+- [Preview a template](./preview-a-template.mdx)
+- [Edit a report template](./edit-a-report-template.mdx)
+- [View report templates](./view-report-templates.mdx)
+- [Generate and view a report](./generate-and-view-a-report.mdx)

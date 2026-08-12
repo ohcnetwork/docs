@@ -1,0 +1,69 @@
+---
+sidebar_position: 2
+---
+
+# Create a child tag
+
+## Overview
+
+This flow describes how to add a child tag under a root [tag](../../../concepts/platform/tagging.mdx) in Care.
+
+A child tag gives users a fixed set of choices under one parent. When a user applies tags to a record, only one child tag from the same parent applies at a time. If the user selects another child under the same parent, Care replaces the current selection. Root tags without children do not have this limit. Users can combine them freely.
+
+## Pre-requisites
+
+- You or another administrator created the root tag that you want to extend.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Tag Config on Facility | Lets you create a tag in the facility. Facility Admin and Admin have this permission. |
+
+## Steps
+
+### 1. Open the root tag
+
+Open the detail page of the root tag. See the [View tags](./view-tags.mdx) flow.
+
+### 2. Start the child tag form
+
+Go to the Child Tags section. Select **Add child tag**. Care opens the same tag form that you use for a root tag. Care links the new tag to the parent tag.
+
+### 3. Complete the tag form
+
+Enter the details of the child tag.
+
+| Components | What it captures |
+| --- | --- |
+| Display name | The name that users see for this tag. |
+| Category | The category of the tag. Care fills this field from the parent tag. |
+| Resource | The record type that the tag applies to. Care disables this field. A child tag always uses the resource type of its parent. |
+| Priority | The order of the tag in lists. Care sets the priority of the parent as the default value. |
+| Status | The status of the tag. |
+| Description | More information about the tag. |
+
+You enter Display name, Status, and Description in the same way as for a root tag.
+
+### 4. Save the tag
+
+Select the submit button.
+
+## Expected Outcome
+
+- Care shows the message "Tag Config created successfully".
+- The new tag is in the Child Tags list of the parent tag.
+
+## Related
+
+Concepts:
+
+- [Tag](../../../concepts/platform/tagging.mdx)
+
+Flows:
+
+- [Create a tag](./create-a-tag.mdx)
+- [View tags](./view-tags.mdx)
+- [Edit a tag](./edit-a-tag.mdx)
+- [Archive a child tag](./archive-a-child-tag.mdx)

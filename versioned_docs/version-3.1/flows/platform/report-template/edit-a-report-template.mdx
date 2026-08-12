@@ -1,0 +1,73 @@
+---
+sidebar_position: 3
+---
+
+# Edit a report template
+
+## Overview
+
+This flow describes how to change an existing [report template](../../../concepts/platform/report-template.mdx) in Care. Use the same flow to retire a template.
+
+## Pre-requisites
+
+- The facility has a report template that you want to change.
+- You are a member of that facility.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Template on Facility | Lets you create and edit report templates. Facility Admin, Admin, Doctor, and Nurse have this permission. |
+
+## Steps
+
+### 1. Open the template
+
+Go to the **Templates** page of the facility. See [View report templates](./view-report-templates.mdx).
+
+Select the template that you want to change. Care opens the same builder that you use to create a template. The builder shows the current values of the template.
+
+### 2. Change the template
+
+Change any of the fields in the table below.
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the template. |
+| Status | The state of the template: Draft, Active, or Retired. |
+| Template Type | The kind of document that the template produces: Discharge Summary, Patient Summary, or Account Report. |
+| Context | The set of data fields that the template can use. The context must match the template type. |
+| Default Format | The output format of the report: PDF or HTML. |
+| Description | A short text about the purpose of the template. |
+| Template Body | The content of the document. |
+
+Note: Only a template with Status set to Active can generate a report. A template with Status set to Draft or Retired does not appear as an option. See [Generate and view a report](./generate-and-view-a-report.mdx).
+
+### 3. Retire the template
+
+To stop staff from using the template for new reports, set Status to Retired.
+
+Note: Care has no delete action and no separate retire action for a report template. Use the Status field.
+
+### 4. Save the template
+
+Select **Save**.
+
+## Expected Outcome
+
+- Care saves your changes and shows the message "Template updated".
+- If you set Status to Retired, staff can no longer use the template to generate a new report.
+
+## Related
+
+Concepts:
+
+- [Report Template](../../../concepts/platform/report-template.mdx)
+
+Flows:
+
+- [Create a report template](./create-a-report-template.mdx)
+- [Preview a template](./preview-a-template.mdx)
+- [View report templates](./view-report-templates.mdx)
+- [Generate and view a report](./generate-and-view-a-report.mdx)
