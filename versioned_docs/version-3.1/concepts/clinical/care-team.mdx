@@ -1,52 +1,54 @@
 ---
-sidebar_position: 15
+sidebar_position: 11
 ---
 
-# Care team
+# Clinical - Care Team
 
 ## Definition
 
-The **care team** of an [encounter](../clinical/encounter.mdx) is the list of users who look after the patient during that episode of care. Each member holds a practitioner role, such as a physician or a nurse. The first member in the list is the primary member, and Care shows that member on the encounter card and on printed documents. A care team belongs to one encounter, so a patient with two open encounters has two separate care teams.
+The **[care team](https://build.fhir.org/encounter.html#Encounter.participant)** lists the staff who look after a patient during one encounter. Each entry names a staff member and the clinical role that person holds on that encounter. Care keeps the team as a list on the encounter. Care does not keep the team as a separate record with its own identifier, status, or time period. The list matches the participant part of the FHIR R5 Encounter resource. It does not match the standalone [FHIR CareTeam](https://build.fhir.org/careteam.html) resource.
 
 ## Key Attributes
 
 | Components | What it captures |
 | --- | --- |
-| Member | The Care user who takes part in the episode of care. |
-| Role | The practitioner role of the member for this encounter, such as physician or nurse. |
-| Primary | The first member in the list. Care shows this member as the main contact for the encounter. |
-| Order | The position of each member in the list. The order sets which member is primary. |
-
-### Member
-
-You select a member in two steps. First you select a facility department. Then you select a user from that department. A user can appear only once in a care team. Care shows an error if you add the same user two times.
+| Staff member | The person who looks after the patient during the encounter. |
+| Role | The clinical role that the staff member holds on the encounter. |
+| Primary member | The one member who leads the care of the patient. |
 
 ### Role
 
-The role comes from the Practitioner Role value set. The value set holds the SNOMED CT healthcare professional and healthcare-related organization codes. You must select a role for each member.
+Care takes the roles from a clinical terminology set. The list of roles that you can choose differs between deployments.
 
-The care team has no status of its own. It follows the encounter: when the encounter is complete, you can no longer change the care team.
+Note: The roles available to you depend on your deployment's configuration.
+
+### Primary member
+
+Care marks one member of the list as Primary. Care always treats the first person in the list as the primary member. To change the primary member, move a different person to the top of the list.
+
+### How Care saves the team
+
+Care saves the whole team together as one list each time the team changes. Every change replaces the complete list. There is no separate action to add one member or to remove one member.
+
+### Use in encounter lists
+
+Care lets you filter the encounters of a patient by care team member. Keep the team correct, so that these filters show the right encounters.
 
 ## Permissions
 
-Care controls the care team through the encounter, not through a separate permission of its own.
-
-| Permission | Description | System Roles |
+| Permission | Who holds it | What it allows |
 | --- | --- | --- |
-| `can_read_encounter` | See the care team of an encounter. | Admin, Doctor, Nurse, Facility Admin |
-| `can_write_encounter` | Add a member, remove a member, or change the primary member. | Admin, Doctor, Nurse, Facility Admin |
+| Update Encounter non clinical | Administrator, Doctor, Nurse, Facility Administrator | Add members, remove members, and reorder members. |
 
-Two more rules apply to a change:
+A user who can open the encounter but cannot change it sees the same list in read-only form.
 
-- Care refuses the change when the encounter is in a completed state.
-- Care refuses a member who cannot see the encounter.
+## Where to find it
 
-Users get these roles through their organization and facility memberships. Permissions cascade down the organization tree, so a role at a parent organization applies to the facilities and encounters below it.
+Open an encounter. Select **Encounter Actions**, then select **Manage Care Team**. You can also select **Manage Care Team** on the side panel of the **Overview** tab.
 
 ## Related
 
-- Concept: [Encounter](../clinical/encounter.mdx)
-- Concept: [Patient](../clinical/patient)
-- Flow: [Manage the care team of an encounter](../../flows/clinical/encounter/manage-encounter-care-team.mdx)
-- Reference: [Care team](../../references/clinical/care-team.mdx)
-- Reference: [Encounter](../../references/clinical/encounter.mdx)
+- Flow: [Add care team members](../../flows/clinical/care-team/add-care-team-members.mdx)
+- Flow: [View the care team](../../flows/clinical/care-team/view-the-care-team.mdx)
+- Flow: [Modify the care team](../../flows/clinical/care-team/modify-the-care-team.mdx)
+- Concept: [Encounter](../../concepts/clinical/encounter.mdx)

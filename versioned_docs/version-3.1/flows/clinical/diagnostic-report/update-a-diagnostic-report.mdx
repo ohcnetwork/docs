@@ -1,0 +1,69 @@
+---
+sidebar_position: 3
+---
+
+# Update a diagnostic report
+
+## Overview
+
+This flow describes how to change the details of a [diagnostic report](../../../concepts/clinical/diagnostic-report.mdx) in Care. You update the report from its detail view.
+
+## Pre-requisites
+
+- A user entered the diagnostic report in Care, and you update that report.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Diagnostic Report on Facility | Lets you create and update diagnostic reports at the facility. Facility Admin, Admin, Doctor, and Nurse users have this permission. |
+
+## Steps
+
+### 1. Open the diagnostic report
+
+Open the detail view of the diagnostic report that you want to update.
+
+### 2. Change the report details
+
+Change the fields that you want to update.
+
+| Components | What it captures |
+| --- | --- |
+| Status | The progress of the report: Registered, Preliminary, Partial, or Final. |
+| Category | The clinical service that produced the report. |
+| Code | The test or panel that the report covers. |
+| Note | Extra remarks about the report. |
+| Conclusion | The interpretation of the results. |
+
+You can change these fields at any time. Care does not enforce an order of status changes. If you have the permission, you can set the status directly to Registered, Preliminary, Partial, or Final.
+
+Note: You cannot change the service request that the report links to. Care sets this link when you create the report.
+
+### 3. Change the observation results
+
+If the status of the report is not Final, add or change the observation results.
+
+If the status of the report is Final, Care locks the results. Care rejects every change to the results of a Final report.
+
+### 4. Save the report
+
+Save your changes.
+
+## Expected Outcome
+
+- Care stores the new details of the diagnostic report.
+- The detail view shows the updated status, category, code, note, and conclusion.
+
+## Related
+
+Concepts:
+
+- [Diagnostic Report](../../../concepts/clinical/diagnostic-report.mdx)
+
+Flows:
+
+- [Enter diagnostic report results](./enter-diagnostic-report-results.mdx)
+- [View a diagnostic report](./view-a-diagnostic-report.mdx)
+- [Print a diagnostic report](./print-a-diagnostic-report.mdx)

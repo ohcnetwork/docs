@@ -1,0 +1,102 @@
+---
+sidebar_position: 1
+---
+
+# Record a consent
+
+## Overview
+
+This flow describes how to record a [consent](../../../concepts/clinical/consent.mdx) against an encounter of a patient. You can also attach the signed consent form and other supporting documents.
+
+## Pre-requisites
+
+- The patient is registered in Care, and you open an encounter of that patient.
+- You open the encounter from the facility, and the encounter is active.
+- You have the permission listed below. Care hides the **Add Consent** button from the users who cannot write to the encounter.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Update Encounter related clinical data | Lets you record a consent against an encounter. Admin, Doctor, Nurse, and Facility Admin have this permission. |
+
+## Steps
+
+### 1. Open the Consents tab
+
+1. Open the encounter of the patient.
+2. Select the **Consents** tab.
+
+### 2. Start the consent form
+
+Select **Add Consent**. Care opens the **Add Consent** sheet.
+
+The sheet holds these fields.
+
+| Components | What it captures |
+| --- | --- |
+| Consent Given On | The date and time when the patient gives the consent. This field is mandatory. |
+| Consent Valid From | The date and time from which the consent is valid. This field is optional. |
+| Consent Valid Until | The date and time until which the consent is valid. This field is optional. |
+| Consent Decision | The answer of the patient: **Permit** or **Deny**. |
+| Category | The subject of the consent. |
+| Status | The current state of the consent: Draft, Active, Inactive, Not Done, or Entered in Error. Care sets **Active** as the default value. |
+| Note | Free text about the consent. This field is optional. |
+
+### 3. Enter the consent details
+
+1. Enter the date and time in **Consent Given On**.
+2. Enter **Consent Valid From** and **Consent Valid Until** for a consent with a validity period.
+3. Select **Permit** or **Deny** for **Consent Decision**.
+4. Select the **Status** of the consent.
+5. Enter a **Note** about the consent.
+
+### 4. Select the category
+
+Open the **Category** list. Care shows a short description under each option.
+
+| Category | Description |
+| --- | --- |
+| Research | Consent to take part in a research protocol and to share information. |
+| Privacy Consent | Consent to collect, access, use, or share information. |
+| Treatment | Consent to undergo a specific treatment. |
+| Do Not Resuscitate | Consent to not receive CPR or resuscitation in a cardiac event. |
+| Advance Directive | Consent that the patient gives before a possible need for medical treatment. |
+| Advance Care Directive | Consent for the actions to take if the patient can no longer decide. |
+
+Select the category of the consent.
+
+Note: Care also holds a **Comfort Care** category, but this form has no option for it. You cannot select Comfort Care. This is a known gap in the product.
+
+### 5. Attach the supporting documents
+
+You can attach one or more files to the consent in the **Supporting Documents** section.
+
+1. Choose a file. Care accepts these file types: jpg, jpeg, png, and pdf.
+2. Enter a name for the file. The name is mandatory.
+3. Repeat these steps for each more file.
+
+Note: Care uploads the files after it saves the consent record.
+
+### 6. Save the consent
+
+Select **Save**.
+
+## Expected Outcome
+
+- Care shows the message "Consent created successfully".
+- Care shows the new consent as a card on the **Consents** tab.
+- Care uploads the attached files to the new consent.
+
+## Related
+
+Concepts:
+
+- [Consent](../../../concepts/clinical/consent.mdx)
+- [Files](../../../concepts/clinical/files.mdx)
+
+Flows:
+
+- [View consents](./view-consents.mdx)
+- [Update a consent](./update-a-consent.mdx)
+- [Verify a consent](./verify-a-consent.mdx)

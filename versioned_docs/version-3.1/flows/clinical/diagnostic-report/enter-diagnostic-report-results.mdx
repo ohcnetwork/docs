@@ -1,0 +1,88 @@
+---
+sidebar_position: 1
+---
+
+# Enter diagnostic report results
+
+## Overview
+
+This flow describes how to create a [diagnostic report](../../../concepts/clinical/diagnostic-report.mdx) for a service request. You record the result of each observation, and you set the report status.
+
+## Pre-requisites
+
+- The patient has a service request at the facility, and you record the diagnostic report for that service request.
+- If the service request needs a specimen, the laboratory staff collect and process the specimen first.
+- If an external laboratory sends the result as a document, you have that file on your device.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Diagnostic Report on Facility | Lets you create a diagnostic report and enter its observations. Facility Admin, Admin, Doctor, and Nurse have this permission. |
+
+## Steps
+
+### 1. Open the service request
+
+Open the detail page of the service request. The page shows the specimen section, the processing section, and the diagnostic report form together.
+
+### 2. Start the diagnostic report
+
+Open the diagnostic report form on the service request page.
+
+| Components | What it captures |
+| --- | --- |
+| Category | The type of diagnostic service that produces the result. |
+| Code | The test or panel that the report covers. |
+
+### 3. Enter the observation values
+
+The form shows one row for each observation that the service request requires.
+
+Enter the values for each row.
+
+| Components | What it captures |
+| --- | --- |
+| Value | The measured result of the observation. |
+| Unit | The unit of measurement for the value. |
+| Interpretation | The reading of the value, such as High, Low, or Normal. Enter it where it applies. |
+
+### 4. Attach a file
+
+Attach a file to the report when an external laboratory sends the result as a document.
+
+Choose a file from your device, or capture an image with the camera.
+
+### 5. Set the status
+
+A new report starts with the status Registered.
+
+Set the status to Preliminary or Partial when you record the first results.
+
+Set the status to Final when all results are complete.
+
+Note: You cannot change the observation rows after you set the status to Final.
+
+### 6. Save the report
+
+Save the diagnostic report.
+
+## Expected Outcome
+
+- Care creates the diagnostic report for the service request.
+- The report shows the observation values, the units, and the interpretations that you entered.
+- The report shows the status that you set.
+
+## Related
+
+Concepts:
+
+- [Diagnostic Report](../../../concepts/clinical/diagnostic-report.mdx)
+
+Flows:
+
+- [View a diagnostic report](./view-a-diagnostic-report.mdx)
+- [Update a diagnostic report](./update-a-diagnostic-report.mdx)
+- [Print a diagnostic report](./print-a-diagnostic-report.mdx)
+- [Create a service request](../../../flows/clinical/service-request/create-a-service-request.mdx)
