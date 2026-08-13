@@ -1,0 +1,85 @@
+---
+sidebar_position: 2
+---
+
+# Add or manage users in a responsibility
+
+## Overview
+
+This flow describes how to add people to a [responsibility](../../../concepts/access-governance/responsibility.mdx) in Care. It also describes how to change or remove the designation of a person.
+
+## Pre-requisites
+
+- A super administrator created the responsibility. See [Create a responsibility](./create-responsibility.mdx).
+- You belong to the responsibility. If you do not belong to it, you belong to a responsibility that manages it. Your role in the managing responsibility holds the permission Can Manage Connected Role Organizations.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can List Users in an Organizations | Lets you open the Users list of the responsibility. |
+| Can Manage Users in an Organization | Lets you link, remove, or change the designation of a person in the responsibility. |
+| Can create User in care | Lets you create a Care account from the Users list. |
+
+## Steps
+
+### 1. Open the responsibility
+
+Open your dashboard. Select the **Responsibilities** tab. Click the card of the responsibility. Care opens the **Users** list of the responsibility.
+
+Note: The **Responsibilities** page in the Admin sidebar does not manage the people in a responsibility. Open the responsibility from your dashboard, or from the responsibilities switcher in the sidebar.
+
+### 2. Read the Users list
+
+The **Users** list shows a card for each person in this responsibility. Each card shows the designation of the person.
+
+To find one person, use the search box. You can search by username or by phone number.
+
+### 3. Link a person who has a Care account
+
+Click **Link User**. Care opens the **Link User to Organization** sheet.
+
+Search for the person. Select the person from the results. Select a designation in **Select Role**. Care shows only the roles that apply to a responsibility.
+
+Click **Link to Organization**.
+
+For the full field-by-field steps, see [Assign a role to a user](../../../flows/access-governance/access-control/assign-role-to-user.mdx).
+
+### 4. Add a person who has no Care account
+
+Click **Add User**. Care opens the **Add New User** sheet. Complete the account details.
+
+In **Responsibility Assignments**, select this responsibility in **Responsibility**. Select a designation in **Designation**. To add more responsibilities for the person, click **Add Another**.
+
+If you skip **Responsibility Assignments**, Care opens the **Link User to Organization** sheet after it creates the account. Then select the designation as described in step 3.
+
+For the account fields, see [Create a user](../../../flows/access-governance/user/create-user.mdx).
+
+### 5. Change or remove a designation
+
+Click **Edit** on the card of the person. Care opens the **Edit User Role** sheet.
+
+To change the designation, select a role in **Select New Role**. Click **Update Role**.
+
+To remove the person from the responsibility, click **Remove User**. Care asks you to confirm. Click **Remove**.
+
+For the full steps, see [Change or remove a user's role](../../../flows/access-governance/access-control/change-or-remove-user-role.mdx).
+
+## Expected Outcome
+
+- The **Users** list shows the person with the designation that you selected.
+- The person gets the permissions of that role inside this responsibility.
+- If you remove a person, the **Users** list no longer shows that person.
+
+## Related
+
+Concepts:
+
+- [Responsibility](../../../concepts/access-governance/responsibility.mdx)
+
+Flows:
+
+- [Create a responsibility](./create-responsibility.mdx)
+- [Assign a role to a user](../../../flows/access-governance/access-control/assign-role-to-user.mdx)
+- [Change or remove a user's role](../../../flows/access-governance/access-control/change-or-remove-user-role.mdx)

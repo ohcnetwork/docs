@@ -1,0 +1,62 @@
+---
+sidebar_position: 4
+---
+
+# Delete an organization
+
+## Overview
+
+This flow describes how to delete a government [organization](../../../concepts/access-governance/organization.mdx) in Care. Care deletes only an organization that has no child organizations.
+
+## Pre-requisites
+
+- You are a Care superuser.
+- The organization has no child organizations. If the organization has children, delete or move the children first.
+
+## Permissions
+
+Care does not grant this action through a role permission.
+
+| Access | What it allows |
+| --- | --- |
+| Care superuser | Lets you delete a government organization that has no children. Care blocks all other users. |
+
+## Steps
+
+### 1. Open the Governance organizations
+
+Select **Organizations** in the Admin sidebar. Then select **Governance**.
+
+Note: The **Governance** item under **Organizations** holds the government organizations. It is not the **Governance** section inside a responsibility.
+
+### 2. Open the parent organization
+
+Select the parent of the organization in the tree. Care lists the children of that organization at the right.
+
+### 3. Open the menu on the organization card
+
+Find the card of the organization in the list. Click the three-dot menu on that card. Select **Delete**.
+
+Note: Care blocks the deletion when the organization has child organizations. Delete or move the children first.
+
+### 4. Confirm the deletion
+
+Care shows the dialog "Delete Organization". The dialog asks you to confirm the deletion and shows the name of the organization. Click **Delete** to confirm. Click **Cancel** to keep the organization.
+
+## Expected Outcome
+
+- Care deletes the organization.
+- Care shows the message "Organization deleted successfully".
+- The organization no longer shows in the organization tree.
+
+## Related
+
+Concepts:
+
+- [Organisation](../../../concepts/access-governance/organization.mdx)
+
+Flows:
+
+- [Create an organization](./create-organization.mdx)
+- [Update an organization](./update-organization.mdx)
+- [View the organization hierarchy](./view-organization-hierarchy.mdx)

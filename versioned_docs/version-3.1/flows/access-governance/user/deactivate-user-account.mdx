@@ -1,0 +1,68 @@
+---
+sidebar_position: 5
+---
+
+# Deactivate a user account
+
+## Overview
+
+This flow describes how to deactivate a [user](../../../concepts/access-governance/user.mdx) account in Care. Care archives the account, or removes it, and the person can no longer sign in. Care names this action **Delete Account**.
+
+## Pre-requisites
+
+- You are a Care superuser.
+- You know which user account to deactivate.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| None. Care lets a superuser deactivate a user account. | Lets you deactivate this user account. |
+
+## Steps
+
+### 1. Open the user profile
+
+Open the profile page of the user account to deactivate.
+
+Note: Only a Care superuser can deactivate an account. No other role can do this. A user who is not a superuser cannot deactivate their own account.
+
+### 2. Find the Danger Zone card
+
+Go to the bottom of the profile page. Find the **Danger Zone** card. The card holds the **Delete Account** action.
+
+Note: The **Danger Zone** card shows only to a Care superuser.
+
+### 3. Start the deactivation
+
+Click **Delete Account**. Care opens the **Verify Account Deletion request** dialog.
+
+### 4. Confirm the deactivation
+
+Type **Delete Account** in the box. Type the text exactly. Care keeps the action button inactive until the text agrees.
+
+Click **Delete Account** to deactivate the account. On your own profile, the button reads **Delete My Account**.
+
+Note: Click **Cancel** to stop the action.
+
+## Expected Outcome
+
+- Care shows the message "User Deleted Successfully".
+- If the account signed in one time or more before, Care keeps its history and marks the account "Archived".
+- If the account never signed in, Care removes the account.
+- The card of an archived account shows a grey "Archived" badge in place of **See Details**.
+- The user of an archived account can no longer sign in.
+
+Note: Care has no option in the interface to reactivate an archived account.
+
+## Related
+
+Concepts:
+
+- [User](../../../concepts/access-governance/user.mdx)
+
+Flows:
+
+- [Create a user](./create-user.mdx)
+- [Search for a user](./search-for-user.mdx)

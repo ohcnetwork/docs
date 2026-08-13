@@ -1,0 +1,79 @@
+---
+sidebar_position: 4
+---
+
+# Turn on two-factor authentication
+
+## Overview
+
+This flow describes how you add two-factor authentication to your own [user](../../../concepts/access-governance/user.mdx) account in Care. Two-factor authentication uses a time-based one-time password from an authenticator app.
+
+## Pre-requisites
+
+- You are signed in as yourself.
+- You have an authenticator app on your phone or device, for example Google Authenticator, Microsoft Authenticator, or Duo Mobile.
+- You know your current password.
+
+Note: Two-factor authentication is a self-service setting. You turn it on for your own account only. An administrator cannot turn it on for another person.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| None. Care lets the owner of the account manage this setting. | Lets you turn two-factor authentication on or off for your own account. |
+
+## Steps
+
+### 1. Open the security settings
+
+Go to your profile page. Find the **Two Factor Authentication** card. Click **Enable two-factor authentication**.
+
+Note: The **Two Factor Authentication** card shows only on your own profile.
+
+### 2. Confirm your password
+
+Care opens the **Confirm Password** dialog. Enter your current password. Click **Continue**.
+
+### 3. Scan the QR code
+
+Care shows a QR code. Open your authenticator app. Scan the QR code with the app.
+
+Note: If you cannot scan the code, click **Copy setup key** below the QR code. Care shows the secret key and copies it. Enter the key in your authenticator app.
+
+### 4. Verify the setup
+
+Your authenticator app generates a 6-digit code. Enter the code in **Enter the verification code**. Click **Verify Code**.
+
+### 5. Save your backup codes
+
+Care shows a set of backup codes. Click **Copy**, **Download**, or **Print** to keep the codes. Save the codes in a safe place. If you lose access to your authenticator app, use a backup code to sign in.
+
+Click **Done** to close the dialog.
+
+Note: To replace the codes later, click **Regenerate backup codes** on the **Two Factor Authentication** card. Enter your current password. Click **Regenerate**. Care shows new codes. The old codes stop working.
+
+### 6. Turn off two-factor authentication
+
+Do this step only when you want to remove two-factor authentication.
+
+1. Go to the **Two Factor Authentication** card on your profile page.
+2. Click **Disable 2FA**.
+3. Enter your current password in the **Disable two-factor authentication** dialog.
+4. Click **Confirm**.
+
+## Expected Outcome
+
+- Care turns on two-factor authentication for your account.
+- The **Two Factor Authentication** card reads "Two-factor authentication is currently active on your account."
+- Care asks for a 6-digit code from your authenticator app each time you sign in.
+- You hold a set of backup codes for the times when your authenticator app is not available.
+
+## Related
+
+Concepts:
+
+- [User](../../../concepts/access-governance/user.mdx)
+
+Flows:
+
+- [Change your password](./change-password.mdx)

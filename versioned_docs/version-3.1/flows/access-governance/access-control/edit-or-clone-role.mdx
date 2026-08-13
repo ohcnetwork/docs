@@ -1,0 +1,78 @@
+---
+sidebar_position: 2
+---
+
+# Edit or clone a role
+
+## Overview
+
+This flow describes how to change a custom [role](../../../concepts/access-governance/access-control.mdx) in Care. It also describes how to clone a role.
+
+Care includes system roles, such as Doctor. You cannot change a system role. Clone the system role, then adjust the permissions of the copy. The original role stays the same for all other users.
+
+## Pre-requisites
+
+- You are a super administrator in Care.
+- The role that you want to change or clone is in the roles list.
+
+## Permissions
+
+Care does not control role management with a permission. Only a super administrator can edit or clone a role.
+
+## Steps
+
+### 1. Open the roles list
+
+1. Open the Admin sidebar.
+2. Select **RBAC**.
+3. Select **Roles**.
+
+Care shows each role as a card. A system role shows a **System** badge and a lock icon.
+
+### 2. Open the role menu
+
+Click the menu icon on the role card. The menu shows **Edit** and **Clone**.
+
+Note: The menu of a system role shows only **Clone**. You cannot change the name, description, contexts, or permissions of a system role.
+
+### 3. Edit a custom role
+
+1. Select **Edit** on the card of a custom role.
+2. Care opens the role form with the current values.
+3. Change the **Name**, **Description**, **Contexts**, or **Permissions**.
+4. Click **Update Role**.
+
+To close the form without a change, click **Cancel**.
+
+| Component | What it captures |
+| --- | --- |
+| Name | The name of the role. |
+| Description | The purpose of the role. |
+| Contexts | The levels at which the role applies. |
+| Permissions | The actions that the role allows. |
+
+### 4. Clone a role
+
+1. Select **Clone** on the card of any role. You can clone a system role.
+2. Care opens the role form with the contexts and the permissions of the original role.
+3. Care sets the name to "`{original name}` (Copy)".
+4. Change the name and the permissions of the new role.
+5. Click **Create Role**.
+
+## Expected Outcome
+
+- Care saves your changes to the custom role.
+- After a clone, Care adds a new custom role to the roles list. You can edit that role.
+- The original role keeps its name, contexts, and permissions.
+
+## Related
+
+Concepts:
+
+- [Roles and Permission](../../../concepts/access-governance/access-control.mdx)
+
+Flows:
+
+- [Create a role](./create-role.mdx)
+- [View the permissions matrix](./view-permissions-matrix.mdx)
+- [Assign a role to a user](./assign-role-to-user.mdx)

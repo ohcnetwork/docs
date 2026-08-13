@@ -1,0 +1,85 @@
+---
+sidebar_position: 1
+---
+
+# Create a user
+
+## Overview
+
+This flow describes how to create a new [user](../../../concepts/access-governance/user.mdx) account in Care. You create the user from the **Users** tab of an organization, a responsibility, or a department.
+
+## Pre-requisites
+
+- You have the permission listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can create User in care | Lets you create a new user account. |
+
+## Steps
+
+### 1. Open the Users tab
+
+Open the **Users** tab of an organization, a responsibility, or a department.
+
+- For an organization or a responsibility, go to Admin, then Organizations. Select Governance, Suppliers, or Responsibilities. Select one item, then open **Users**.
+- For a department, go to the facility, then Settings, then Departments. Select one department, then open **Users**.
+
+### 2. Open the new user form
+
+Click **Add User**. Care opens the **Add New User** panel.
+
+### 3. Complete the user details
+
+Enter the details of the person.
+
+| Components | What it captures |
+| --- | --- |
+| Prefix | An optional title, for example Dr., Mr., Mrs., Ms., Miss, or Prof. |
+| First Name | The person's first name. Required. |
+| Last Name | The person's last name. Required. |
+| Suffix | An optional suffix after the name. |
+| Username | A unique sign-in name, 4 to 16 characters, lowercase letters, numbers, underscore, or hyphen. Required, and you cannot change it later. Care checks that the name is available as you type. |
+| Email | The person's email address. Required, and you cannot change it later. |
+| Password Setup Method | Select **Set password now** to set a password immediately. Select **Send email invitation** to email the person a link to set their own password. |
+| Password / Confirm Password | Required only if you select **Set password now**. At least 8 characters, with an upper case letter, a lower case letter, and a digit. |
+| Phone Number | The person's phone number. Required. |
+| Gender | Male, Female, Transgender, or Non Binary. Required. |
+| Responsibility Assignments | One or more pairs of **Responsibility** and **Designation**. Care links the new user to each responsibility that you add. Optional. |
+| Government organization | The government organization of the person. Select it one level at a time, for example State and then District. Optional. |
+
+Note: The default country setting of your deployment controls the phone number format on this screen.
+
+Note: Care lists each responsibility one time only. Click **Add Another** to add one more pair.
+
+### 4. Create the user
+
+Click **Create User**. Care creates the account and shows a confirmation message.
+
+If you select **Send email invitation**, Care emails the person a link to set up the password.
+
+### 5. Link the user
+
+If you work in a responsibility, and you already added a responsibility assignment for that responsibility, Care skips this step.
+
+In all other conditions, Care opens the **Link User** panel. Assign the role of the new user in this panel. See [Assign a role to a user](../../../flows/access-governance/access-control/assign-role-to-user.mdx).
+
+## Expected Outcome
+
+- Care creates the user account.
+- Care shows the message "User added successfully".
+- The person receives an email with a link to set up the password, if you select **Send email invitation**.
+- Care links the user to the responsibilities and designations that you select.
+
+## Related
+
+Concepts:
+
+- [User](../../../concepts/access-governance/user.mdx)
+
+Flows:
+
+- [Edit a user's profile](./edit-user-profile.mdx)
+- [Assign a role to a user](../../../flows/access-governance/access-control/assign-role-to-user.mdx)
