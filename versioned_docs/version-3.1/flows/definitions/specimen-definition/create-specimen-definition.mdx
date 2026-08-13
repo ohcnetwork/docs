@@ -1,0 +1,96 @@
+---
+sidebar_position: 1
+---
+
+# Create a specimen definition
+
+## Overview
+
+This flow describes how to create a new [specimen definition](../../../concepts/definitions/specimen-definition.mdx) for your facility in Care.
+
+## Pre-requisites
+
+- You are a member of the facility.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Read Specimen Definition | Lets you open the specimen definitions list of the facility. |
+| Can Create Specimen Definition on Facility | Lets you create a new specimen definition for your facility. |
+
+## Steps
+
+### 1. Open the specimen definitions list
+
+1. Go to your facility.
+2. Select **Settings**.
+3. Select **Specimen Definitions**.
+
+### 2. Start a new definition
+
+Click **Add Definition**.
+
+### 3. Fill in the basic information
+
+Complete the fields under **Basic Information**.
+
+| Components | What it captures |
+| --- | --- |
+| Title | The name of the specimen definition. Required. |
+| Slug | A short identifier that is unique in the facility. Care makes a slug from the title, and you can edit it. Use 5 to 25 characters. Use letters, numbers, underscores, and hyphens only. Required. |
+| Status | Draft, Active, or Retired. Care selects Active. Required. |
+| Derived From URI | The web address of the definition that this specimen definition is based on. Enter a complete web address. Optional. |
+| Description | Extra detail about the specimen definition. Required. |
+
+### 4. Add the specimen details
+
+Complete the fields under **Specimen Details**.
+
+| Components | What it captures |
+| --- | --- |
+| Type Collected | The type of specimen to collect. Search for the type in the list. Required. |
+| Collection | The method that staff use to collect the specimen. Search for the method in the list. Optional. |
+| Patient Preparation | The instructions for the patient before collection. Click **Add** for each instruction. Optional. |
+
+### 5. Add the type tested information
+
+Complete the fields under **Type Tested Information**. All fields in this section are optional.
+
+| Components | What it captures |
+| --- | --- |
+| Is Derived | A switch that records if the tested specimen comes from another specimen. Care sets the switch to off. |
+| Single Use | A switch that records if the laboratory uses the specimen one time only. Care sets the switch to off. |
+| Preference | Preferred or Alternate. Care selects Preferred. |
+| Retention time | The time that the laboratory keeps the specimen. Enter a number and select a unit. |
+| Requirement | The requirements for the delivery and the special handling of the specimen. |
+
+Complete the fields under **Container Information** to describe the container.
+
+| Components | What it captures |
+| --- | --- |
+| Description | Extra detail about the container. |
+| Cap | The cap type of the container. Search for the cap type in the list. |
+| Capacity | The volume of the container. Enter a number and select a unit. |
+| Minimum Volume | The smallest usable volume. Select the **Quantity** tab to enter a number and a unit. Select the **Text** tab to enter a description. |
+| Preparation | The steps to prepare the container before collection. |
+
+### 6. Save the definition
+
+Click **Save**. To leave the form without saving, click **Cancel**.
+
+## Expected Outcome
+
+- Care shows the message "Specimen definition created".
+- Care opens the specimen definitions list. The list shows the definitions with the Status Active.
+
+## Related
+
+Concepts:
+
+- [Specimen Definition](../../../concepts/definitions/specimen-definition.mdx)
+
+Flows:
+
+- [Update or retire a specimen definition](./update-or-retire-specimen-definition.mdx)

@@ -2,58 +2,39 @@
 sidebar_position: 2
 ---
 
-# Response Template
+# Questionnaire Response Template
 
-A **response template** is a saved starting point for filling out a [questionnaire](../definitions/questionnaire.mdx). It bundles pre-filled answers, draft medication orders, and standing procedure requests that a clinician can drop into a patient's record instead of typing everything from scratch — a "favourite" or order set: the work you do once, ready to reuse on the next similar patient.
+## Definition
 
-## What it represents
+A **questionnaire response template** is a saved set of medications and service requests. You apply the template when you fill a questionnaire. The template prevents the entry of the same orders for each patient. You can change every value that the template fills in.
 
-A response template is a Care-specific authoring convenience, not a FHIR resource. The key thing to understand is that it is a recipe, not a record. Nothing in a template touches a patient until a clinician applies it and submits the resulting [questionnaire response](../clinical/questionnaire-response.mdx) — only then are real orders, requests, and observations created. Editing or deleting a template never changes responses already submitted from it.
+Note: A questionnaire response template is a convenience feature of Care. No FHIR R5 resource applies to it.
 
-This separation is what makes templates safe to standardise and tweak: a department can revise its admission order set without disturbing a single chart.
+## Key Attributes
 
-## What a template can carry
+| Components | What it captures |
+| --- | --- |
+| Template Name | The name that identifies the template. Care asks for this name. |
+| Description | More detail about the content that the template fills in. This detail is optional. |
+| Medications | The medications that the template adds to the form. |
+| Service Requests | The service requests that the template adds to the form. |
+| Questionnaire | The questionnaire that the template belongs to. Care sets this link for you. |
+| Facility | The facility that you work in when you create the template. Care sets this link for you. |
+| Select Department | The departments that you share the template with. |
 
-A template bundles up to three kinds of content, and any of them may be empty:
+### Who can see a template
 
-- **Questionnaire answers** — default values for the linked questionnaire's questions, so a form opens partly (or fully) completed
-- **Medication requests** — draft prescriptions, each optionally pointing at a known product, that become real orders once applied
-- **Activity definitions** — pre-built procedure or service requests (labs, imaging, procedures) the template fires off when used
+You always see the templates that you create. You also see a template in these two conditions:
 
-Care keeps a running list of which of these sections a template actually contains, so a client can tell at a glance what applying it will do — without opening the template up.
+- Another person shares the template with you.
+- Another person shares the template with a department that you are a member of.
 
-## How it connects
-
-A response template sits alongside the form tooling rather than inside a single patient's chart:
-
-- It optionally targets one [questionnaire](../definitions/questionnaire.mdx) — the form it knows how to pre-fill. A template with no questionnaire is a free-standing bundle of orders.
-- Applying it produces a [questionnaire response](../clinical/questionnaire-response.mdx), which is what actually lands in the patient's record.
-- Its draft orders reference the same primitives a clinician would create by hand — medication requests and the products behind them, and activity definitions that drive service requests.
-
-## Sharing and ownership
-
-A template is offered to people by scope rather than owned by one author:
-
-- **Facility-wide** — tied to a facility so everyone working there can reach it
-- **Organization** — narrowed to specific facility organizations within that facility
-- **Individual users** — shared directly with named users
-- **Instance-wide** — left unscoped to a facility, making it available across the deployment
-
-Because sharing is by facility, organization, or user, the same template can be a personal shortcut for one doctor or a standardised order set for an entire department.
-
-## Permissions
-
-Reading and listing response templates is not gated by a permission slug — the API instead scopes results to templates a user can already reach: those they created, those shared directly with them, and those shared with a facility organization they belong to. Creating, updating, and deleting a template all require a single write permission.
-
-| Permission | Description | System Roles |
-| --- | --- | --- |
-| `can_write_questionnaire_response_template` | Create, update, and delete response templates (including their sharing scope) | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist |
-
-Roles are granted through a user's facility and organization memberships, and permissions cascade down the organization tree — so a user's reach over templates follows wherever those memberships place them.
+Note: The template stays personal when you select no department.
 
 ## Related
 
-- Reference: [Questionnaire Response Template (technical)](../../references/definitions/questionnaire-response-template.mdx)
-- Concept: [Questionnaire](../definitions/questionnaire.mdx) — the form a template pre-fills
-- Concept: [Questionnaire Response](../clinical/questionnaire-response.mdx) — what applying a template creates
-- Concept: [Medication Request](../medications/medication-request.mdx) — the draft orders a template can carry
+- Flow: [Create a response template](../../flows/definitions/questionnaire-response-template/create-response-template.mdx)
+- Flow: [Apply a response template](../../flows/definitions/questionnaire-response-template/apply-response-template.mdx)
+- Flow: [Update or delete a response template](../../flows/definitions/questionnaire-response-template/update-or-delete-response-template.mdx)
+- Concept: [Questionnaire](../../concepts/definitions/questionnaire.mdx)
+- Concept: [Questionnaire Response](../../concepts/clinical/questionnaire-response.mdx)
