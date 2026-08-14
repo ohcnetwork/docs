@@ -1,0 +1,77 @@
+---
+sidebar_position: 2
+---
+
+# Build include and exclude rules
+
+## Overview
+
+This flow describes how to build the include and exclude rules of a [valueset](../../../concepts/definitions/valueset.mdx) in Care. The rules decide which codes the valueset contains.
+
+## Pre-requisites
+
+- You create a new valueset, or you change an existing valueset. See [Create a valueset](./create-valueset.mdx).
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| None (Care superuser only) | Lets you change a valueset's rules. |
+
+## Steps
+
+### 1. Open the rule panels
+
+The valueset form has two panels: **Include rules** and **Exclude rules**. A rule in **Include rules** adds codes to the valueset. A rule in **Exclude rules** removes codes that match an include rule.
+
+### 2. Add a rule
+
+Select **Add Rule** in the panel that you want to change.
+
+### 3. Select the code system
+
+On the new rule, select a **System** from the list. Examples of a system are LOINC, SNOMED, and UCUM.
+
+In the **Version** box, enter the version of that system. This field is optional.
+
+### 4. Add exact codes
+
+Do these steps to put single codes in the rule:
+
+1. Select **Add Concept** in the **Concepts** area. Care adds a row with a **Code** box and a display box.
+2. Enter the code in the **Code** box.
+3. Select the verify button next to the code. Care looks up the code and fills in the display name.
+
+The display box shows **Unverified** until Care finds the code. After a successful lookup, Care shows the message "Code verified successfully".
+
+### 5. Add a filter
+
+A filter selects a group of codes with one condition. For example, a filter selects all codes that are a type of X.
+
+Do these steps to add a filter:
+
+1. Select **Add Filter** in the **Filters** area. Care adds a row with a **Property** box, an **Operator** box, and a **Value** box.
+2. Enter the property.
+3. Enter the operator.
+4. Enter the value.
+
+### 6. Delete a rule
+
+To remove a rule, select the trash icon at the top of that rule. To remove one concept or one filter, select the trash icon on that row.
+
+## Expected Outcome
+
+- The valueset contains the include rules and the exclude rules that you built.
+- The valueset gives the codes that match an include rule, minus the codes that match an exclude rule.
+
+## Related
+
+Concepts:
+
+- [Valueset](../../../concepts/definitions/valueset.mdx)
+
+Flows:
+
+- [Create a valueset](./create-valueset.mdx)
+- [Preview a valueset before saving](./preview-valueset.mdx)

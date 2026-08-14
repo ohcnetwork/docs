@@ -1,0 +1,70 @@
+---
+sidebar_position: 4
+---
+
+# Use an activity definition to order a service
+
+## Overview
+
+This flow describes how a clinician uses an [activity definition](../../../concepts/definitions/activity-definition.mdx) template to order a service for a patient. The other flows in this module cover how an administrator builds the template.
+
+## Pre-requisites
+
+- The patient is registered in Care and has an open encounter at the facility.
+- The facility has one or more activity definitions with the status Active.
+- You have the permission listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Write Service Request on Facility | Create and change service requests for patients at the facility. Facility Admin, Admin, Doctor, and Nurse roles hold this permission. |
+
+## Steps
+
+### 1. Open the Service Requests tab
+
+Open the encounter of the patient. Select the **Service Requests** tab.
+
+### 2. Start a new service request
+
+Select **Create Service Request**.
+
+### 3. Select the activity definition
+
+1. Select **Select Activity Definition**.
+2. Open the resource category that holds the template.
+3. Select the template.
+
+Care adds a card for that service to the form. Care copies the Title, the Category, the Code, the Body Site, and the Locations from the template. Care also copies the Healthcare Service.
+
+Note: Care shows only the activity definitions with the status Active.
+
+### 4. Adjust the details
+
+Change the Priority, the Body Site, the Patient Instruction, the Requester, and the Note on the card.
+
+Note: Priority is mandatory. The default value is Routine.
+
+### 5. Add more services or submit
+
+Repeat step 3 to add more services to the same form. Select **Submit** to save all the services together.
+
+## Expected Outcome
+
+- Care creates a service request for the patient under the current encounter.
+- If the template has linked charge item definitions, Care creates the matching charge items for the patient.
+
+For the full ordering flow, and the other ways to create a service request, see the [Service Request](../../../concepts/clinical/service-request.mdx) module.
+
+## Related
+
+Concepts:
+
+- [Activity Definition](../../../concepts/definitions/activity-definition.mdx)
+- [Service Request](../../../concepts/clinical/service-request.mdx)
+
+Flows:
+
+- [Create a service request](../../../flows/clinical/service-request/create-a-service-request.mdx)
+- [Create an activity definition](./create-activity-definition.mdx)

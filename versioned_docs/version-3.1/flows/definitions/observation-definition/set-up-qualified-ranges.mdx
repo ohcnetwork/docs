@@ -1,0 +1,76 @@
+---
+sidebar_position: 2
+---
+
+# Set up qualified ranges
+
+## Overview
+
+This flow describes how to set up qualified ranges on an [observation definition](../../../concepts/definitions/observation-definition.mdx) in Care. Qualified ranges are the rules that decide the interpretation that Care gives to a result. A rule can depend on the patient, such as age, gender, or tags, or on the encounter.
+
+## Pre-requisites
+
+- You create or edit an observation definition. See [Create an observation definition](./create-observation-definition.mdx).
+- You have the permission listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Observation Definition on Facility | Lets you add or change interpretation rules. |
+
+## Steps
+
+### 1. Add an interpretation rule
+
+Go to the **Observation Interpretation** panel on the observation definition form. Click **Add Interpretation**. Care opens the **Add/Edit Interpretation** panel.
+
+Note: You can add rules to the observation definition, or to its components. Care disables one panel when you use the other.
+
+### 2. Name the rule
+
+Enter a short title for the rule in the title box at the top of the panel. Use a title that you recognise later in the list of rules.
+
+### 3. Add conditions
+
+Conditions decide when Care applies the rule. Conditions are optional. Click **Add** in the **Conditions** section for each condition.
+
+For each condition, select the metric, the operation, and the value.
+
+| Components | What it captures |
+| --- | --- |
+| Metric | The item to check, such as Patient Age, Patient Gender, Encounter Class, Patient Tags, or Encounter Tags. |
+| Operation | How Care compares the value: Equals to, In range, or Has tag. |
+| Value | The value that Care compares against. |
+
+### 4. Add the value ranges
+
+Click **Add** in the **Ranges** section. Enter the interpretation text in the **Display** box, for example Normal, Abnormal, or Critical. Enter a **Min** value and a **Max** value for that range. Turn on the highlight switch to make Care mark a result in that range.
+
+Click **Add** again for each further range.
+
+### 5. Set the fallback interpretation
+
+Turn on **Fallback** for the rule. Care applies the fallback when a result matches the conditions of the rule, but no range holds the value.
+
+### 6. Save the rule
+
+Click **Save**. To discard the rule, click **Cancel**.
+
+Note: Care checks the rules in the order that you add them. Care skips a rule when the conditions do not match. If no range holds the value and the rule has no fallback, Care checks the next rule.
+
+## Expected Outcome
+
+- The rule shows in the **Observation Interpretation** panel of the observation definition.
+- Care gives an interpretation to each new result for this observation definition from the first rule that matches.
+
+## Related
+
+Concepts:
+
+- [Observation Definition](../../../concepts/definitions/observation-definition.mdx)
+
+Flows:
+
+- [Create an observation definition](./create-observation-definition.mdx)
+- [Update or retire an observation definition](./update-or-retire-observation-definition.mdx)

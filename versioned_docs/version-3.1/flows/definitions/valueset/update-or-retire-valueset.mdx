@@ -1,0 +1,73 @@
+---
+sidebar_position: 4
+---
+
+# Update or retire a valueset
+
+## Overview
+
+This flow describes how to change the details of a [valueset](../../../concepts/definitions/valueset.mdx) in Care. It also describes how to retire a valueset that you no longer use.
+
+## Pre-requisites
+
+- You are a Care superuser.
+- The valueset is already in Care.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| None (Care superuser only) | Lets you update or retire a valueset. |
+
+## Steps
+
+### 1. Open the valueset
+
+1. Open the Admin sidebar.
+2. Select **Valuesets**.
+3. Select the status tab of the valueset. Care shows the **Active** tab first.
+4. To find the valueset by name, enter the name in the **Search ValueSets** box.
+5. Select **Edit** on the row of the valueset.
+
+Note: Care marks some valuesets as system-defined. These valuesets come with Care, and other parts of Care depend on them. Care shows **View** in place of **Edit** on these rows. Do not change a system-defined valueset.
+
+### 2. Change the valueset details
+
+Change any of these fields:
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the valueset. |
+| Slug | The short identifier that Care uses in links. |
+| Description | The purpose of the valueset. |
+| Status | The current stage of the valueset. |
+| Include rules | The rules that add codes to the valueset. |
+| Exclude rules | The rules that remove codes from the valueset. |
+
+Select **Save ValueSet**. To leave the page without a change, select **Cancel**.
+
+### 3. Retire the valueset
+
+Do this step only when you no longer use the valueset.
+
+1. Set **Status** to **Retired**.
+2. Select **Save ValueSet**.
+
+Note: Care has no delete action for a valueset. Retire the valueset instead.
+
+## Expected Outcome
+
+- Care saves your changes to the valueset.
+- If you set the status to Retired, Care shows the valueset as retired.
+
+## Related
+
+Concepts:
+
+- [Valueset](../../../concepts/definitions/valueset.mdx)
+
+Flows:
+
+- [Create a valueset](./create-valueset.mdx)
+- [Build include and exclude rules](./build-include-and-exclude-rules.mdx)

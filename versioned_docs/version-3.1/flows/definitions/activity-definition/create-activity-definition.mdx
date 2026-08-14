@@ -1,0 +1,87 @@
+---
+sidebar_position: 1
+---
+
+# Create an activity definition
+
+## Overview
+
+This flow describes how to create an [activity definition](../../../concepts/definitions/activity-definition.mdx) for your facility in Care. An activity definition is a template for a service that your facility gives.
+
+## Pre-requisites
+
+- You are a member of the facility.
+- You have the permission listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Activity Definition on Facility | Create and change activity definitions for the facility. Facility Admin and Admin roles hold this permission. |
+
+## Steps
+
+### 1. Open the activity definitions list
+
+1. Open your facility.
+2. Select **Settings**.
+3. Select **Activity Definitions**.
+
+Care shows the resource categories of the facility. To make a new category, select **Add Category**.
+
+### 2. Start a new activity definition
+
+1. Open the resource category for the new template.
+2. Select **Add Activity Definition**.
+
+Care opens the form and sets Resource Category to the category that you open.
+
+### 3. Fill in the details
+
+Complete the fields in the form.
+
+| Components | What it captures |
+| --- | --- |
+| Title | The name of the template, for example "CBC Test". Required. |
+| Slug | A short code that Care uses in links. Required. Care makes the Slug from the Title. The Slug must have 5 to 25 characters. |
+| Description | Extra detail about the template. Required. |
+| Usage | Notes on when to use this template. Required. |
+| Status | Draft, Active, Retired, or Unknown. The default value is Active. |
+| Category | The type of the service: Laboratory, Imaging, Surgical Procedure, Counselling, or Education. Required. |
+| Resource Category | The catalogue category of your facility for this template. Required. This field is not the same as Category. |
+| Kind | Always Service Request. |
+| Derived From URI | The web address of the source that this template comes from. Optional. |
+| Code | The standard medical code for the procedure. Search for the code in the list. Required. |
+| Body Site | The body part that this template applies to. Optional. |
+| Diagnostic Report Codes | The codes for the diagnostic reports that this activity gives. Optional. |
+| Healthcare Service | The facility service that does this activity. Optional. |
+| Locations | The facility locations where staff do this activity. Optional. |
+
+Note: Category and Resource Category are two different fields. Category holds the type of the service. Resource Category holds the catalogue category of your facility.
+
+### 4. Add the requirements
+
+Add the requirements for the activity definition. You can add the requirements before you save the form.
+
+For the steps, see [Link requirements to an activity definition](./link-requirements-to-activity-definition.mdx).
+
+### 5. Save the activity definition
+
+Select **Create**.
+
+## Expected Outcome
+
+- Care shows the message "Activity definition created successfully".
+- Care opens the activity definitions list again.
+- The new activity definition shows in the resource category that you selected.
+
+## Related
+
+Concepts:
+
+- [Activity Definition](../../../concepts/definitions/activity-definition.mdx)
+
+Flows:
+
+- [Link requirements to an activity definition](./link-requirements-to-activity-definition.mdx)
+- [Update or retire an activity definition](./update-or-retire-activity-definition.mdx)
