@@ -172,7 +172,7 @@ const config = {
         ({
         siteTitle: 'Care',
         siteDescription:
-          'Care is an open source Hospital/Health Management Information System by Open Healthcare Network. These docs cover clinical concepts, flows and references, deployment playbooks, self-hosting guides and contribution workflows.',
+          'Care is an open-source Electronic Medical Record (EMR) platform for managing patients, health workers, and hospitals. It is built and maintained in the open, and contributions of every kind are welcome — code, documentation, bug reports, and translations.',
         depth: 3,
         enableDescriptions: true,
         onRouteError: 'warn',
