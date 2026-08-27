@@ -8,6 +8,9 @@ import {themes as prismThemes} from 'prism-react-renderer';
 
 const EDIT_URL = 'https://github.com/ohcnetwork/docs/tree/main/';
 
+const CURRENT_LOCALE = process.env.DOCUSAURUS_CURRENT_LOCALE ?? 'en';
+const IS_DEFAULT_LOCALE = CURRENT_LOCALE === 'en';
+
 /** @type {Array<{id: string, label: string, path: string, routeBasePath: string, sidebarPath: string, sidebarId: string}>} */
 const CARE_DEPLOYMENTS = [
   {
@@ -145,16 +148,74 @@ const config = {
     ],
   ],
 
-  plugins: [...CARE_DEPLOYMENTS, ...GUIDE_SECTIONS].map((instance) => [
-    '@docusaurus/plugin-content-docs',
-    {
-      id: instance.id,
-      path: instance.path,
-      routeBasePath: instance.routeBasePath,
-      sidebarPath: instance.sidebarPath,
-      editUrl: EDIT_URL,
-    },
-  ]),
+  plugins: [
+    ...[...CARE_DEPLOYMENTS, ...GUIDE_SECTIONS].map(
+      (instance) =>
+        /** @type {import('@docusaurus/types').PluginConfig} */ ([
+          '@docusaurus/plugin-content-docs',
+          {
+            id: instance.id,
+            path: instance.path,
+            routeBasePath: instance.routeBasePath,
+            sidebarPath: instance.sidebarPath,
+            editUrl: EDIT_URL,
+          },
+        ])
+    ),
+    // Generates /llms.txt (+ per-page .md files) so AI agents can read the
+    // Care docs without scraping HTML. See https://llmstxt.org
+    // Only for the default (en) locale — the plugin has no per-locale cache.
+    IS_DEFAULT_LOCALE &&
+      /** @type {import('@docusaurus/types').PluginConfig} */ ([
+        '@signalwire/docusaurus-plugin-llms-txt',
+        /** @type {import('@signalwire/docusaurus-plugin-llms-txt').PluginOptions} */
+        ({
+        siteTitle: 'Care',
+        siteDescription:
+          'Care is an open-source Electronic Medical Record (EMR) platform for managing patients, health workers, and hospitals. It is built and maintained in the open, and contributions of every kind are welcome — code, documentation, bug reports, and translations.',
+        depth: 3,
+        enableDescriptions: true,
+        onRouteError: 'warn',
+        content: {
+          enableMarkdownFiles: true,
+          enableLlmsFullTxt: true,
+          relativePaths: false,
+          includeDocs: true,
+          includePages: true,
+          // Only index the latest released version; older versions stay out of
+          // llms.txt so agents don't quote outdated behaviour.
+          includeVersionedDocs: false,
+          excludeRoutes: ['/search/**', '/ml/**', '/**/tags/**'],
+        },
+        includeOrder: [
+          '/concepts/**',
+          '/flows/**',
+          '/references/**',
+          '/deployments/**',
+          '/deployment/**',
+          '/contributing/**',
+          '/blog/**',
+        ],
+        optionalLinks: [
+          {
+            title: 'Care (backend) repository',
+            url: 'https://github.com/ohcnetwork/care',
+            description: 'Django REST backend source code.',
+          },
+          {
+            title: 'Care frontend repository',
+            url: 'https://github.com/ohcnetwork/care_fe',
+            description: 'React frontend source code.',
+          },
+          {
+            title: 'Documentation repository',
+            url: 'https://github.com/ohcnetwork/docs',
+            description: 'Source of this documentation site.',
+          },
+        ],
+        }),
+      ]),
+  ],
 
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
