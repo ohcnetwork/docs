@@ -43,7 +43,7 @@ Work through the stages in order. Read the reference for a stage when you reach 
 | --- | --- | --- |
 | 1. Set up | Open the state folder, read memory, start or resume a session, see what the machine has | `references/setup.md` |
 | 2. Intake | Ask which Care version, which branches, how to get the code, which pages and media. Pin the code to exact commits. Check that the module exists there. See which pages the site already has | `references/setup.md`, `references/existing-docs.md` |
-| 3. Research | Read the pinned code and the existing pages. Record facts with their evidence. Find the user tasks. Trace the permission path of each. Probe what a run can settle, and file what you find | `references/research.md`, `references/permissions.md`, `references/probes.md`, `references/issues.md`, `references/existing-docs.md` |
+| 3. Research | Read the pinned code and the existing pages. Record facts with their evidence. Find the user tasks. Trace the permission path of each. Probe what a run can settle. Record findings, and file only the certain ones the user approves | `references/research.md`, `references/permissions.md`, `references/probes.md`, `references/issues.md`, `references/existing-docs.md` |
 | 4. Confirm | Show the proposed pages and every open question. Wait for the user | `references/questions.md` |
 | 5. Write | Draft each page from confirmed facts only, then review it with fresh eyes | `references/writing.md` |
 | 6. Media | If wanted: agree on an environment, record the flows, take screenshots, confirm permissions at runtime | `references/media.md` |
@@ -92,7 +92,7 @@ Keep `session.md` current. Update it at every stage change and whenever somethin
 ## Rules that hold throughout
 
 - **The user's own clones are read-only to you.** Never check out, switch, stash, pull, fetch or commit in them. People are in the middle of other work there.
-- **Documentation is written only in the docs repository.** You may also edit this skill, in the copy you were started from. You never commit or push to `care` or `care_fe`. A finding becomes a GitHub issue, as `references/issues.md` describes. You fix product code only when the user asks, and then in a separate checkout.
+- **Documentation is written only in the docs repository.** You may also edit this skill, in the copy you were started from. You never commit or push to `care` or `care_fe`. A finding is recorded in the session. It becomes a GitHub issue only when the user agrees and the defect is certain, as `references/issues.md` describes. You fix product code only when the user asks, and then in a separate checkout.
 - **The backend decides what a page says.** When the frontend and the backend disagree, document the backend and file the disagreement. Ask the user only when the backend itself can be read two ways.
 - **Patient data.** Do not open, record or screenshot a Care instance until a person confirms it holds no real patient data. Whatever is on screen stays in the image forever.
 - **Credentials.** Ask for them when needed and pass them as environment variables. Never write them into memory, a session file or a spec.

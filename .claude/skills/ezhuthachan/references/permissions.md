@@ -57,7 +57,7 @@ These patterns occur in Care. Whether each applies to your module is something t
 - **Borrowed permissions.** Many clinical resources have no permissions of their own and are governed by patient or encounter permissions. The permission to cite is the one the handler checks, whatever the resource is called.
 - **Unused permissions.** A permission file can define permissions that no viewset checks. Never list a permission because it exists; list it because a gate checks it.
 - **Frontend object permissions.** `hasPermission(permission, objectPermissions)` looks only in the list it is given when one is passed, for example the permissions that came with the facility. Note which list each check uses.
-- **Frontend and backend disagreeing.** The frontend hides a button the backend would allow, or shows one the backend refuses. Record both sides. The page describes what the backend does. The disagreement is filed as an issue, as `issues.md` describes. Do not ask which side to document.
+- **Frontend and backend disagreeing.** The frontend hides a button the backend would allow, or shows one the backend refuses. Record both sides. The page describes what the backend does. Do not ask which side to document. File the disagreement only when `issues.md` says it is a certain defect and the user has agreed.
 - **Two roles, one name.** More than one default role can have the same display name in different contexts. When you name a role, make sure the reader can tell which.
 - **Custom roles.** If the pinned version lets administrators create or edit roles, the role lists in the code are defaults. Then write "by default, the Doctor and Nurse roles hold this permission".
 

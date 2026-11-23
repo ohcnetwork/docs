@@ -145,7 +145,7 @@ Put each flow in `plan.md` as described in `questions.md`, with status `proposed
 
 Reading two codebases closely turns up bugs: a button the backend will refuse, a missing permission check, an enum value with no label, a status nothing can reach, a shortcut bound to an action that is gone. Write each one in `report.md` when you see it, with the file and lines, what disagrees with what, and how sure you are. Report what you read or ran, not what you suspect about code you did not open. An empty list is a fine result.
 
-Then settle what a run can settle, with `probes.md`, and file each finding with `issues.md`. The page follows the backend. A disagreement between the frontend and the backend is an issue, not a question for the user.
+Then settle what a run can settle, with `probes.md`. Record each finding in `report.md`. File one only when `issues.md` allows it: the user has agreed, and the defect is certain. The page follows the backend. A disagreement between the frontend and the backend is not a question about what to write.
 
 ## With subagents
 

@@ -29,7 +29,7 @@ Sort questions into two kinds:
 
 Do not ask what you can find out, including by writing a probe and running it (`probes.md`). Each question should be one that only a person can answer: a preference, or a product decision the code does not settle.
 
-When the frontend and the backend disagree, the backend is the source of truth for the page and the disagreement is an issue (`issues.md`). Ask about it only when the backend itself can be read two ways.
+When the frontend and the backend disagree, the backend is the source of truth for the page. Ask about it only when the backend itself can be read two ways. Filing the disagreement follows `issues.md`: ask the user first, and only when the defect is certain.
 
 ## questions.md
 
