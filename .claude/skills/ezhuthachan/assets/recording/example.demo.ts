@@ -18,6 +18,8 @@ test("Create a workspace", async ({ page }) => {
     await page.goto("/facility/FACILITY_ID/settings/workspaces");
     const create = page.getByRole("button", { name: t("create_workspace") });
     await expect(create).toBeVisible();
+    // The first screen has loaded: start the video and the captions here, not on the loading screen.
+    rec.ready();
     await pointer.reset();
     await rec.shot({ highlight: create });
     await pointer.click(create);

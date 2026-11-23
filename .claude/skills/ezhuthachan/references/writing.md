@@ -85,7 +85,7 @@ Run these on each draft before review. Fix what they print, or be able to explai
 grep -o '\[\[E[0-9, E]*\]\]' "$D" | grep -o 'E[0-9]*' | sort -u | while read -r e; do grep -q "^## $e\$" "$S/facts.md" || echo "no fact for $e"; done
 
 # 2. Blocks with no marker (outside Related)
-awk '/^## /{related = ($0 ~ /^## Related/)} !related' "$D" | grep -nvE '\[\[(E[0-9]|none)|^#|^$|^---|^\| ?-|^\| Permission|^:::|^ *<|^!\[|^import |^sidebar_position'
+awk '/^## /{related = ($0 ~ /^## Related/)} !related' "$D" | grep -nvE '\[\[(E[0-9]|none)|^#|^$|^---|^\| ?-|^\| Permission|^:::|^ *<|^!\[|^import |^sidebar_position' | grep -v '^[0-9]*:$'
 
 # 3. Bold text that is not a label in the pinned locale file
 grep -o '\*\*[^*]*\*\*' "$D" | sed 's/\*\*//g' | sort -u | while IFS= read -r l; do grep -qF "\": \"$l\"" "$S/src/care_fe/public/locale/en.json" || echo "not in en.json: $l"; done
@@ -99,6 +99,8 @@ grep -nE '\{#|\{/\*|</?(content|invoke|parameter)|antml:|[{}]' "$D"
 # 6. Words to avoid
 grep -niE '(^|[^a-z])(will|simply|easily|seamless|powerful|utilize|via|e\.g\.|i\.e\.|etc\.)([^a-z]|$)' "$D"
 ```
+
+If `grep` in your shell is a wrapper or a replacement such as ugrep, run the checks with `/usr/bin/grep` or `command grep`. On 23 November 2026 one such wrapper made check 2 print empty lines that were not findings.
 
 What the output means:
 

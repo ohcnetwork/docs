@@ -71,6 +71,17 @@ export class Recording {
   private readonly cues: Cue[] = [];
   private readonly calls = new Map<string, ApiCall>();
   private shots = 0;
+  private trimMs = 0;
+
+  /**
+   * Marks the moment the first screen has finished loading. The video and the captions start here,
+   * so the clip does not open on the app's loading screen. Call it once, before the first pointer move.
+   */
+  ready(): void {
+    // The video starts when the page is created, a moment before this recording object; a short
+    // margin keeps that moment of the loading screen out of the first frame.
+    this.trimMs = Date.now() - this.startedAt + 300;
+  }
 
   constructor(
     private readonly page: Page,
@@ -131,7 +142,7 @@ export class Recording {
     fs.writeFileSync(`${base}.api.json`, `${JSON.stringify([...this.calls.values()], null, 2)}\n`);
     fs.writeFileSync(
       `${base}.vtt`,
-      `WEBVTT\n\n${this.cues.map((cue, i) => `${i + 1}\n${vttTime(cue.from)} --> ${vttTime(cue.to)}\n${cue.title}\n`).join("\n")}`,
+      `WEBVTT\n\n${this.cues.map((cue, i) => `${i + 1}\n${vttTime(Math.max(0, cue.from - this.trimMs))} --> ${vttTime(Math.max(0, cue.to - this.trimMs))}\n${cue.title}\n`).join("\n")}`,
     );
 
     // Video is off in a screenshots-only run.
@@ -140,7 +151,7 @@ export class Recording {
     await video.saveAs(webm);
     // yuv420p is required by Safari and QuickTime. A constant 30 fps removes the stutter of
     // Playwright's variable frame rate. faststart lets playback begin before the download ends.
-    ffmpeg(["-i", webm, "-vf", "fps=30", "-c:v", "libx264", "-profile:v", "high", "-pix_fmt", "yuv420p", "-crf", "22", "-preset", "slow", "-movflags", "+faststart", "-an", `${base}.mp4`]);
+    ffmpeg(["-ss", (this.trimMs / 1000).toFixed(3), "-i", webm, "-vf", "fps=30", "-c:v", "libx264", "-profile:v", "high", "-pix_fmt", "yuv420p", "-crf", "22", "-preset", "slow", "-movflags", "+faststart", "-an", `${base}.mp4`]);
     const duration = Number(
       execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "default=nw=1:nk=1", `${base}.mp4`]).toString().trim(),
     );

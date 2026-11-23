@@ -53,7 +53,7 @@ Rules for writing to memory:
 List open sessions first:
 
 ```bash
-grep -HE "^- (Module|Stage):" "$EZ"/sessions/*/session.md 2>/dev/null
+ls "$EZ/sessions" 2>/dev/null | while read -r id; do grep -HE "^- (Module|Stage):" "$EZ/sessions/$id/session.md"; done
 ```
 
 If an open session matches what the user is asking for, ask whether to resume it. To resume, read its `session.md`, then `plan.md` and `questions.md`, then do the upstream check in "Resuming" below.

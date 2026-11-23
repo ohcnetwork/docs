@@ -1,5 +1,3 @@
-import fs from "node:fs";
-
 import { defineConfig, devices } from "@playwright/test";
 
 // Every setting that differs between environments comes from the environment, so the same
@@ -41,7 +39,8 @@ export default defineConfig({
       // The example is a template with placeholder keys, never a flow to run.
       testIgnore: /example\.demo\.ts/,
       dependencies: ["login"],
-      use: { storageState: fs.existsSync(AUTH) ? AUTH : undefined },
+      // The login project always runs first (dependency) and writes this file before any flow context opens.
+      use: { storageState: AUTH },
     },
   ],
 });

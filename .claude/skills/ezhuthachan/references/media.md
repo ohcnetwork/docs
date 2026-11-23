@@ -48,6 +48,8 @@ $S/src/care_fe/README.md, $S/src/care_fe/tests/README.md and $S/src/care_fe/scri
 
 Before you start a service, install dependencies, or reset a database, tell the user what you are about to run and get their agreement. Installing frontend dependencies takes about 1 GB.
 
+Give a Docker stack its own Compose project name, for example `docker compose -p ez-<session id> -f docker-compose.yaml -f docker-compose.local.yaml up -d --build --wait`, run in `$S/src/care`. Without `-p`, Compose names the project after the folder, `care`, and would share containers and volumes with a stack the user runs from their own clone; a `teardown` would then delete their database. Use the same `-p` for every later command, including `exec`, `stop` and `down`. If the build stops with `DeadlineExceeded` while loading the base image's metadata, pull that image first (the `FROM` line of `docker/dev.Dockerfile`) and build again.
+
 One trap to check every time: the frontend decides which backend to call from its own configuration (`REACT_CARE_API_URL` in its env files, read in `care.config.ts`), and the default in the repository points at a shared hosted backend. A frontend started without changing that talks to the hosted backend, not to your local one. After signing in, confirm which backend the app is calling before you create anything.
 
 ### One recording at a time per environment
@@ -69,7 +71,7 @@ Copy the kit into the session and install Playwright at the version the product 
 ```bash
 cp "<this skill>/assets/recording/"*.ts "$S/media/"
 cd "$S/media"
-grep '"@playwright/test"' "$S/src/care_fe/package.json"       # the version to install
+node -p "require('$S/src/care_fe/package-lock.json').packages['node_modules/@playwright/test'].version"   # the version to install
 npm init -y >/dev/null && npm install --save-dev @playwright/test@<that version>
 npx playwright install chromium
 ```
@@ -87,7 +89,7 @@ export EZ_USERNAME=<account>  EZ_PASSWORD=<password>
 
 What is in the kit:
 
-- `kit.ts`: `startRecording(page, slug)` returns a recording with `step()`, `shot()`, `pointer` and `finish()`. `t(key)` gives the text of a label from the pinned locale file and fails on an unknown key.
+- `kit.ts`: `startRecording(page, slug)` returns a recording with `step()`, `shot()`, `ready()`, `pointer` and `finish()`. `t(key)` gives the text of a label from the pinned locale file and fails on an unknown key. `package.json` gives only a version range; the lock file gives the version care_fe really installs, which is the one the command above reads.
 - `pointer.ts`: a visible cursor that moves along eased paths, clicks with a ripple, and types at human speed.
 - `login.setup.ts`: signs in through the login page. Compare its selectors with `tests/setup/auth.setup.ts` in the pinned `care_fe` before the first run.
 - `playwright.config.ts`: 1440 by 900, video on, one worker.
@@ -106,6 +108,7 @@ Name it `<flow-slug>.demo.ts`. Start from `example.demo.ts`.
 **Record only what a person can do.** A viewer must be able to repeat everything they see.
 
 - One `page.goto`, at the start, to the screen where the flow begins. Reach every later screen by clicking: the sidebar, a tab, a row, a breadcrumb.
+- Call `rec.ready()` once that first screen has loaded, before the first pointer move. The video and the captions then start there, not on the app's loading screen.
 - Use `pointer.click()` and `pointer.type()`, so the cursor travels and text appears as typed. Plain `click()` and `fill()` are for setup the camera never sees.
 - Never use `page.evaluate` or a direct API call to do a step of the flow.
 - After typing into a search or picker, wait for the options and click one. Do not press Enter blind.
