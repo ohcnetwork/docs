@@ -6,53 +6,97 @@ sidebar_position: 1
 
 ## Overview
 
-This flow describes how to create a token category for a facility in Care. A category groups tokens, for example by the kind of visit. See [Token](../../../concepts/scheduling/token.mdx).
+<video src="/media/scheduling/token/create-token-category.mp4" poster="/media/scheduling/token/create-token-category.poster.png" controls width="720">
+  <track kind="captions" src="/media/scheduling/token/create-token-category.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to create a [token](../../../concepts/scheduling/token.mdx) category for a facility in Care. A token category groups the tokens issued against the schedules of one resource type, and its shorthand comes before their token numbers.
 
 ## Pre-requisites
 
-- The facility is created in Care.
+- You sign in to Care with a staff account.
+- You are a member of the facility.
+- You know which resource type the category is for: practitioner, location or healthcare service.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create on Token Category | Lets you create a token category. |
-| Can list token category on Facility | Lets you see the token categories of the facility. |
+| Can Create on Token Category | Lets you create a token category. You must hold it in the [Administration organization](../../../concepts/access-governance/facility-organization.mdx), which every facility has. If you hold it only in a department or team, Care refuses to create the category with "Access Denied to Token Category". By default, the Admin, Staff and Facility Admin roles hold it. The Administrator role does not hold it. |
+| Can list token category on Facility | Lets you see **Token Category** in the settings and open the list of categories. Hold it in the Administration organization or in a department or team of the facility. By default, the Admin, Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
 
 ## Steps
 
-### 1. Open the facility settings
+### 1. Open the token categories
 
-Open the facility. Go to the settings and select **Token Category**.
+In the facility sidebar, select **Settings**.
 
-### 2. Start a new category
+In the settings sidebar, under **Facility**, select **Token Category**.
 
-Select the option to create a token category. Care opens the **Create Token Category** form.
+Care opens the **Token Categories** page.
+
+The page has a section for each resource type: **Practitioner**, **Location** and **Healthcare Service**.
+
+![The Token Categories page with the Practitioner section outlined, listing General Consultation as the default and Review](/media/scheduling/token/create-token-category-1.png)
+
+### 2. Add a category to a resource type
+
+Find the section for the resource type of the category.
+
+You cannot change the resource type after you create the category. Make sure that you use the correct section.
+
+In that section, select **Add**.
+
+If the section has no categories yet, you can also select **Add Token Category**.
+
+Care opens the **Create Token Category** form for that resource type.
+
+![The Add button of the Practitioner section outlined on the Token Categories page](/media/scheduling/token/create-token-category-2.png)
 
 ### 3. Complete the fields
 
-| Field | What to enter |
+| Components | What it captures |
 | --- | --- |
-| Name | A descriptive name for the category. This is required. |
-| Shorthand | A short form of the name. Care shows it on the token. This is required. |
+| **Resource Type** | The resource type of the section. You cannot change it here or later. |
+| **Name** | A descriptive name for the category. This field is required. |
+| **Shorthand** | A short identifier for the category, at most 5 characters. This field is required. |
 
-### 4. Save the category
+As you type the shorthand, the form shows a preview of the token numbers.
 
-Save the form. Care shows the message "Token category created successfully."
+Each token number of the category is the shorthand, a hyphen and the number padded to three digits, for example GEN-007.
+
+If you leave **Name** or **Shorthand** empty, Care shows "This field is required".
+
+![The Create Token Category form for practitioners with the name Walk-in, the shorthand WALK and the preview Tokens will be issued as WALK-001](/media/scheduling/token/create-token-category-3.png)
+
+### 4. Create the category
+
+Select **Create**.
+
+Care shows "Token category created successfully."
+
+![The Practitioner section listing the new Walk-in category with the shorthand WALK after the success message](/media/scheduling/token/create-token-category-4.png)
 
 ## Expected Outcome
 
-- The category appears in the list of token categories for the facility.
-- Staff can select the category when they create a token.
+- The **Token Categories** page lists the category in the section of its resource type.
+- The category shows its shorthand, its name and a sample token number, for example "Tokens issued as GEN-001".
+- The new category is not the default for its resource type. To make it the default, see [Edit a token category or make it the default](./edit-token-category.mdx).
+- Staff can select the category only for new tokens of its resource type.
+- You cannot delete a token category. You can change its name and shorthand later.
 
 ## Related
 
 Concepts:
 
 - [Token](../../../concepts/scheduling/token.mdx)
+- [Schedule & Availability](../../../concepts/scheduling/schedule.mdx)
+- [Facility Organization](../../../concepts/access-governance/facility-organization.mdx)
 
 Flows:
 
-- [Create a token](./create-token.mdx)
-- [Manage a token queue](./manage-token-queue.mdx)
+- [Edit a token category or make it the default](./edit-token-category.mdx)
+- [Generate a token for an appointment](./generate-token-for-appointment.mdx)
+- [Create a token without an appointment](./create-token.mdx)
+- [Serve patients from a token queue](./manage-token-queue.mdx)

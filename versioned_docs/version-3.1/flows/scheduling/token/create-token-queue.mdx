@@ -1,0 +1,175 @@
+---
+sidebar_position: 3
+---
+
+# Create a token queue
+
+## Overview
+
+<video src="/media/scheduling/token/create-token-queue.mp4" poster="/media/scheduling/token/create-token-queue.poster.png" controls width="720">
+  <track kind="captions" src="/media/scheduling/token/create-token-queue.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to create a [token queue](../../../concepts/scheduling/token.mdx) in Care, and how to rename a queue or make it the primary queue. A queue holds the tokens of one practitioner, location or healthcare service for one date, and a resource can have several queues on that date.
+
+## Pre-requisites
+
+- You sign in to Care with a staff account.
+- You are a member of the facility.
+- The queue is for today or a later date. Care does not let you select a past date.
+- If the queue is for another practitioner, that practitioner is a member of the facility. The practitioner also has a schedule, a queue or a service point in this facility. The practitioner picker lists only such practitioners. See [Create a schedule template](../schedule/create-schedule-template.mdx).
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create on Token | Lets you create a queue, rename it and make it the primary queue. Where you must hold it depends on the resource of the queue. For a practitioner: the Administration organization, which every facility has, an organization the practitioner belongs to, or one above it. For a location: an organization linked to the location or one above it, an organization of its parent location, or the Administration organization. For a healthcare service that a department or team manages: that department or team, or one above it. A role in the Administration organization alone does not count for such a service. For a healthcare service that no organization manages: the Administration organization. If you save a new queue without this permission, Care shows "You do not have permission to create token queue". By default, the Admin, Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can list token on Object | Lets you see the queues of the practitioner, location or healthcare service on the queue list, and open a queue to rename it. You must hold it in the same place as Can Create on Token. By default, the Admin, Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can list bookings on Object | Shows **Queues** in the facility sidebar, which opens the queues of a practitioner. You must hold it in the Administration organization, or in a department or team of the facility. By default, the Admin, Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can Read Healthcare Service | Lets you see the services on the **Services** page and open a service. You need it to reach the queues of a healthcare service, or of a location from a service's page. You can hold it in any organization of the facility. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can View Facility Organizations | Optional. Lets you see the departments under **All Dept.** and the sub-departments in the practitioner picker. You need it only to choose a practitioner outside your own departments. You can hold it in any organization of the facility. The Administration organization appears in the picker only if you hold the permission there. By default, the Facility Admin, Admin, Staff, Doctor, Administrator, Nurse and Volunteer roles hold it. |
+
+## Steps
+
+### 1. Open the queue list
+
+In the facility sidebar, under **Patient Management**, select **Queues**.
+
+The queue list opens on today's date.
+
+Note: A location and a healthcare service have their own queue lists. See [Create a queue for a location or a healthcare service](#create-a-queue-for-a-location-or-a-healthcare-service).
+
+### 2. Select the date
+
+In **Date**, select the date of the queue.
+
+Note: **Create Queue** is disabled when the selected date is in the past.
+
+![The Date calendar open on the queue list with the current date selected](/media/scheduling/token/create-token-queue-1.png)
+
+### 3. Select the practitioner
+
+**Selected practitioner** shows the practitioner whose queues are on the list.
+
+Care first selects the practitioner you chose last in this facility, in this browser. If you have not chosen one, Care selects you.
+
+To choose another practitioner, open the practitioner picker.
+
+Select a department, then select the practitioner.
+
+By default, the picker shows your own departments. Switch **My Dept.** to **All Dept.** to see all departments.
+
+If a department has sub-departments, Care shows them when you open the department.
+
+Note: If you have no schedule, queue or service point in this facility, nobody is selected. The queue list is then empty, and **Create Queue** creates the queue for you. To create it for another practitioner, select that practitioner first.
+
+![The queue list with Jonathan Grover selected as the practitioner, showing the queue OPD Morning marked Primary](/media/scheduling/token/create-token-queue-2.png)
+
+### 4. Open the Create Queue form
+
+Select **Create Queue**.
+
+If the list has no queues for the date, it shows "No queues found". Select **Create First Queue**.
+
+The **Create Queue** form opens.
+
+![The Create Queue button on the queue list outlined](/media/scheduling/token/create-token-queue-3.png)
+
+### 5. Enter the queue details
+
+| Components | What it captures |
+| --- | --- |
+| **Queue Name** | The name of the queue. Required. |
+| **Date** | The date of the queue. It starts at the date that you selected on the queue list. You cannot select a past date. Required. |
+
+![The Create Queue form with the queue name OPD Evening and the current date](/media/scheduling/token/create-token-queue-4.png)
+
+### 6. Save the queue
+
+Select **Create Queue**.
+
+![The queue list showing the new queue OPD Evening after the message Queue created successfully](/media/scheduling/token/create-token-queue-5.png)
+
+### Create a queue for a location or a healthcare service
+
+The steps are the same, but you start from the queue list of the location or the healthcare service. This list has no practitioner picker.
+
+To open the queue list of a healthcare service:
+
+1. In the facility sidebar, select **Services**.
+2. Select the service. The service's page opens.
+3. Select the **Queues** card.
+
+You can also use the service's sidebar. Under **Scheduling**, select **Queues**.
+
+To open the queue list of a location:
+
+1. In the facility sidebar, select **Services**.
+2. Select a service that has the location.
+3. In the service's list of locations, select **View appointments** for the location. This link shows for a scheduling service.
+4. The location's workspace opens.
+5. In the location's sidebar, under **Scheduling**, select **Queues**.
+
+Then do steps 2, 4, 5 and 6 above.
+
+### Rename a queue
+
+You can rename a queue from the queue list or from its queue board. Only the name can change.
+
+1. On the queue list, in the **Settings** column, select the three-dot menu of the queue.
+2. Select **Edit queue name**.
+3. The **Edit Queue** form opens.
+4. In **Queue Name**, enter the new name.
+5. Select **Update Queue**.
+
+On the queue board, the settings menu also has **Edit queue name**. It opens the same form.
+
+To open a queue board from the queue list, select the queue name or **Open**.
+
+### Set the primary queue
+
+If the resource has no other queue on that date, a new queue that you create becomes the primary queue.
+
+On the queue list, the primary queue shows the **Primary** badge.
+
+A token created from the patient's page, without an appointment, goes into the primary queue of the resource for today. This option shows only if your Care deployment turned it on. See [Create a token without an appointment](./create-token.mdx).
+
+A token for an appointment goes into a queue that Care generates for that resource and date. It does not go into a queue that staff create. The **Generate Token** form for an appointment does not let you choose a queue. See [Generate a token for an appointment](./generate-token-for-appointment.mdx).
+
+To make another queue the primary queue:
+
+1. On the queue list, in the **Settings** column, select the three-dot menu of the queue.
+2. Select **Set as Primary**.
+
+Care makes the change at once, with no confirmation. The other queues of the resource on that date stop being primary.
+
+**Set as Primary** is disabled for the queue that is already primary.
+
+![The three-dot menu of the OPD Evening queue with Set as Primary outlined](/media/scheduling/token/create-token-queue-6.png)
+
+![The queue list with OPD Evening now marked Primary and OPD Morning no longer primary](/media/scheduling/token/create-token-queue-7.png)
+
+## Expected Outcome
+
+- Care shows the message "Queue created successfully".
+- The queue list shows the new queue on its date.
+- If the resource had no other queue on that date, the new queue is primary and shows **Primary**.
+- After a rename, Care shows the message "Queue updated successfully".
+
+## Related
+
+Concepts:
+
+- [Token](../../../concepts/scheduling/token.mdx)
+- [Locations](../../../concepts/facility/location.mdx)
+- [Healthcare Service](../../../concepts/facility/healthcare-service.mdx)
+- [Facility Organization](../../../concepts/access-governance/facility-organization.mdx)
+
+Flows:
+
+- [Set up service points](./set-up-service-points.mdx)
+- [Serve patients from a token queue](./manage-token-queue.mdx)
+- [Generate a token for an appointment](./generate-token-for-appointment.mdx)
+- [Create a token without an appointment](./create-token.mdx)
+- [Create a schedule template](../schedule/create-schedule-template.mdx)

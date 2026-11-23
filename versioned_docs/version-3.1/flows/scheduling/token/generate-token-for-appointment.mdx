@@ -1,0 +1,101 @@
+---
+sidebar_position: 5
+---
+
+# Generate a token for an appointment
+
+## Overview
+
+<video src="/media/scheduling/token/generate-token-for-appointment.mp4" poster="/media/scheduling/token/generate-token-for-appointment.poster.png" controls width="720">
+  <track kind="captions" src="/media/scheduling/token/generate-token-for-appointment.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to give a patient a [token](../../../concepts/scheduling/token.mdx) for an appointment with a practitioner. The token puts the patient in a queue for that practitioner.
+
+## Pre-requisites
+
+- You are a member of the facility.
+- The patient has an [appointment](../../../concepts/scheduling/booking.mdx) at the facility, and the appointment has no token yet. An appointment can have only one token.
+- If the appointment is Cancelled, Entered in Error, Rescheduled, No Show or Fulfilled, Care does not offer **Generate Token**.
+- A token category exists for the practitioner resource type. See [Create a token category](./create-token-category.mdx).
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can update bookings on Object | Lets you generate the token. When you save, Care checks this permission and no token permission. Hold it where the paragraph below the table says. Without it, Care shows "You do not have permission to update bookings". By default, the Admin, Staff, Facility Admin, Doctor and Nurse roles hold it. The Administrator role does not hold it. |
+| Can Create on Token | Shows **Generate Token** on the appointment page. It does not let you generate the token without "Can update bookings on Object". Hold it in the Administration organization, which every facility has, or in a department or team of the facility. By default, the Admin, Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can list bookings on Object | Lets you see **Appointments** in the facility sidebar, and list and open the appointments of the practitioner. For the sidebar item and the appointment page, hold it in the Administration organization, or in a department or team. To list and open the appointments, also hold it where the paragraph below the table says. By default, the Admin, Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can list token category on Facility | Lets you see the token categories in the **Generate Token** form. Hold it in the Administration organization, or in a department or team of the facility. By default, the Admin, Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+
+Care checks "Can update bookings on Object" and "Can list bookings on Object" for the practitioner of the appointment. Hold them in the Administration organization, in a [facility organization](../../../concepts/access-governance/facility-organization.mdx) that the practitioner belongs to, or in an organization above it.
+
+## Steps
+
+### 1. Open the appointment
+
+- In the facility sidebar, under **Patient Management**, select **Appointments**.
+- Choose the practitioner of the appointment. The page lists the appointments of that practitioner.
+- Open the patient's appointment. The appointment page has a **Token** section.
+
+![The Appointments board for the practitioner Jonathan Grover with the booked appointment of Anjali Nair outlined](/media/scheduling/token/generate-token-for-appointment-1.png)
+
+### 2. Select Generate Token
+
+- In the **Token** section, find the **Token not generated** panel.
+- Select **Generate Token**. You can also press T.
+- Care opens the **Generate Token** form.
+- If the **Token** section shows a token card, the appointment already has a token.
+- If the **Token** section shows no panel and no token card, check the appointment status and your permissions.
+
+![The Token section of the appointment page showing Token not generated and the Generate Token button](/media/scheduling/token/generate-token-for-appointment-2.png)
+
+### 3. Check the token category
+
+- The **Token Category** field lists the token categories for practitioners.
+- Care selects the default category and marks it "(Default)".
+- If the practitioner resource type has no default category, Care selects no category. Select one from the list.
+- To use a different category, select it from the list.
+
+![The Generate Token form with the token category General Consultation selected as the default](/media/scheduling/token/generate-token-for-appointment-3.png)
+
+### 4. Add a note
+
+- Optionally, enter a **Note**.
+
+### 5. Generate the token
+
+- Select **Generate Token**.
+- The button stays disabled until you select a category.
+- Care shows "Token generated successfully".
+
+![The token card GEN-001 on the appointment page with a QR code, Queue Board and Print Token, after the token is generated](/media/scheduling/token/generate-token-for-appointment-4.png)
+
+## Expected Outcome
+
+- The **Token** section of the appointment page shows the token card.
+- The token card shows a QR code for the patient.
+- The token card has **Queue board**, which opens the queue of the token, and **Print Token**.
+- The token is linked to the appointment and to the patient.
+- Care puts the token in a queue that Care generates for the practitioner and the date of the appointment. Care never uses a queue that staff create.
+- If Care has not generated that queue yet, Care creates it. On the queue list, this queue has the title **Primary Queue**.
+- Care counts token numbers separately for each category in the queue. The number starts with the shorthand of the category, for example GEN-007.
+- The appointments list shows the token number for the appointment.
+- If the appointment is cancelled or rescheduled later, its token does not change.
+
+## Related
+
+Concepts:
+
+- [Token](../../../concepts/scheduling/token.mdx)
+- [Appointment Booking](../../../concepts/scheduling/booking.mdx)
+- [Facility Organization](../../../concepts/access-governance/facility-organization.mdx)
+
+Flows:
+
+- [Create a token category](./create-token-category.mdx)
+- [Create a token without an appointment](./create-token.mdx)
+- [Serve patients from a token queue](./manage-token-queue.mdx)
+- [Cancel a token](./cancel-token.mdx)
+- [View and print a patient's tokens](./view-patient-tokens.mdx)
