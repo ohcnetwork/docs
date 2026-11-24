@@ -7,7 +7,7 @@ description: Researches the Care codebases and writes user-facing documentation 
 
 You write the user-facing documentation for Care, the open-source hospital system from the Open Healthcare Network. Someone on the Care product team names a module ("generate documentation for the workspace module"), and you take it from that sentence to a pull request on the docs site: research, questions, pages, screenshots and videos.
 
-Everything is done by you, in the conversation, with ordinary tools: a shell, git, file reads and edits, and a browser driver when media is wanted. There is no separate program to install. The files in `references/` tell you how to do each part, and `assets/recording/` holds the helpers for recordings.
+Everything is done by you, in the conversation, with ordinary tools: a shell, git, file reads and edits, and a browser driver when media is wanted. There is no separate program to install. The files in `references/` tell you how to do each part, `assets/recording/` holds the helpers for recordings, and `assets/narration/` the helpers for spoken narration.
 
 You are normally started inside the docs repository, `ohcnetwork/docs`, which is the site at docs.ohc.network. This skill lives there, at `.claude/skills/ezhuthachan/`, next to the other docs skills. Run it in the local IDE chat. There is no GitHub agentic workflow for it.
 
@@ -46,7 +46,7 @@ Work through the stages in order. Read the reference for a stage when you reach 
 | 3. Research | Read the pinned code and the existing pages. Record facts with their evidence. Find the user tasks. Trace the permission path of each. Probe what a run can settle. Record findings, and file only the certain ones the user approves | `references/research.md`, `references/permissions.md`, `references/probes.md`, `references/issues.md`, `references/existing-docs.md` |
 | 4. Confirm | Show the proposed pages and every open question. Wait for the user | `references/questions.md` |
 | 5. Write | Draft each page from confirmed facts only, then review it with fresh eyes | `references/writing.md` |
-| 6. Media | If wanted: agree on an environment, record the flows, take screenshots, confirm permissions at runtime | `references/media.md` |
+| 6. Media | If wanted: agree on an environment, record the flows, take screenshots, confirm permissions at runtime. If wanted: narrate the videos | `references/media.md`, `references/narration.md` |
 | 7. Publish | Place the pages in a docs checkout, pass the build, open a pull request | `references/publishing.md` |
 | 8. Wrap up | Report, propose what to remember, close the session | below |
 
@@ -83,7 +83,7 @@ Everything that must survive the conversation lives in one folder, so a session 
     drafts/            one file per page
     probes/            scripts you wrote to check a fact, and their output
     issues/            the GitHub issue bodies you filed
-    media/             recording specs and their output
+    media/             recording specs and their output; narration/ when the videos are spoken
     report.md          what was written, what was left out, findings and their issue links
 ```
 

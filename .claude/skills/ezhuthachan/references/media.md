@@ -164,6 +164,10 @@ If a step cannot be performed as written, the page is wrong or the instance runs
 
 Take each `<slug>.api.json` back to the permission path of that flow, as "Confirming at runtime" in `permissions.md` describes. This is where missed gates are caught. If the user agreed to proof runs, do them now.
 
+## Narration
+
+If the user wants the videos spoken, do it now, before the media goes into the pages; see `narration.md`.
+
 ## Put the media in the pages
 
 Decide the domain and module folder first; they are set in `publishing.md`. Media files are published under `/media/<domain>/<module>/`.

@@ -131,7 +131,7 @@ Ask these together, in one round. Offer the remembered answer as the default whe
 
 4. **Which pages?** A concept page, flow pages, or both. Ask whether there are flows they already know they want.
 
-5. **Screenshots and videos?** Only whether they want them. The questions about where to record come at the media stage, when they matter.
+5. **Screenshots and videos?** Only whether they want them, and whether the videos should be spoken. The questions about where to record and which voice come at the media stage, when they matter.
 
 6. **Anything about the readers I should know?** For example, the page is mainly for front-desk staff.
 

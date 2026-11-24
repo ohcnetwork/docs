@@ -104,6 +104,7 @@ The pull request body says:
 - The pinned commits of `care` and `care_fe` the pages were verified against.
 - How they were verified: from code, by recording against which environment, and which permission paths were confirmed by execution.
 - Where the pages differ from the house style on purpose: the language tiers, the version rule, the full permission path, and any media markup that is new.
+- If the videos are narrated: that the voice is AI-generated, with which service and model, and whose voice it is (see the end of `narration.md`).
 - What was left out because it could not be verified, and the questions still open.
 - Suspected product bugs found on the way.
 
