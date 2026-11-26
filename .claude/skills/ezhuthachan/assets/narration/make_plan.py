@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
-"""Build plan.json from the recorded captions.
+"""Build plan.json from the recorded captions and the narration script.
 
 Reads ../out/<slug>.vtt, the captions the recording kit wrote, and writes plan.json
-next to this script. Each caption cue becomes one spoken line, which says only what
-the caption says:
+next to this script. Each caption cue becomes one spoken line. The line comes from
+script/<slug>.txt when that file exists: one line of text per caption, in order, and
+a line may hold several sentences ("#" lines and blank lines are skipped). Without a
+script, the line says only what the caption says:
 
     "3. Select Cancel Token"  ->  "Step 3. Select Cancel Token."
     "Set the primary queue"   ->  "Set the primary queue."
 
-Usage: make_plan.py [--order slug,slug,...] VOICE[=voice_id] [VOICE[=voice_id] ...]
+Usage: make_plan.py --draft [slug ...]
+           write script/<slug>.txt with those caption-only lines, for each flow that
+           has no script yet, to be extended with context by hand
+       make_plan.py [--order slug,slug,...] VOICE[=voice_id] [VOICE[=voice_id] ...]
 
 VOICE is a short folder name such as "gauri"; voice_id is its id from
 creative_list_voices. One voice reads every flow. Several voices take turns flow by
@@ -24,6 +29,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(os.path.dirname(HERE), "out")
 PLAN = os.path.join(HERE, "plan.json")
+SCRIPTS = os.path.join(HERE, "script")
 
 
 def seconds(stamp):
@@ -44,15 +50,47 @@ def spoken(caption):
 
 
 def file_for(line):
-    if line.isascii():
-        name = re.sub(r"[^a-z0-9]+", "-", line.lower()).strip("-")
-    else:
-        name = hashlib.sha1(line.encode()).hexdigest()[:12]
-    return name + ".mp3"
+    digest = hashlib.sha1(line.encode()).hexdigest()
+    if not line.isascii():
+        return digest[:12] + ".mp3"
+    name = re.sub(r"[^a-z0-9]+", "-", line.lower()).strip("-")
+    # A line with context is long; keep the file name short and unique.
+    return (name if len(name) <= 60 else f"{name[:50].rstrip('-')}-{digest[:8]}") + ".mp3"
+
+
+def script_lines(slug, caps):
+    """The spoken lines of a flow: its script when there is one, else the captions."""
+    path = os.path.join(SCRIPTS, f"{slug}.txt")
+    if not os.path.exists(path):
+        return [spoken(t) for _, _, t in caps]
+    lines = [" ".join(x.split()) for x in open(path, encoding="utf-8") if x.strip() and not x.lstrip().startswith("#")]
+    if len(lines) != len(caps):
+        sys.exit(f"{path} has {len(lines)} lines; the recording has {len(caps)} captions. Write one line per caption.")
+    return lines
+
+
+def draft(slugs):
+    os.makedirs(SCRIPTS, exist_ok=True)
+    for f in sorted(os.listdir(SRC)):
+        slug = f[:-4]
+        if not f.endswith(".vtt") or (slugs and slug not in slugs):
+            continue
+        path = os.path.join(SCRIPTS, f"{slug}.txt")
+        if os.path.exists(path):
+            print(f"kept     {path}")
+            continue
+        caps = cues(os.path.join(SRC, f))
+        with open(path, "w", encoding="utf-8") as out:
+            out.write("# One line per caption, in order. Add a sentence or two of context from the page to each.\n")
+            out.write("".join(f"# caption: {t}\n{spoken(t)}\n" for _, _, t in caps))
+        print(f"drafted  {path} ({len(caps)} lines)")
 
 
 def main():
     args = sys.argv[1:]
+    if args[:1] == ["--draft"]:
+        draft(args[1:])
+        return
     order = []
     if "--order" in args:
         i = args.index("--order")
@@ -66,8 +104,9 @@ def main():
     flows = {}
     for f in sorted(os.listdir(SRC)):
         if f.endswith(".vtt"):
-            flows[f[:-4]] = [dict(start=a, end=b, text=t, say=spoken(t), file=file_for(spoken(t)))
-                             for a, b, t in cues(os.path.join(SRC, f))]
+            caps = cues(os.path.join(SRC, f))
+            flows[f[:-4]] = [dict(start=a, end=b, text=t, say=say, file=file_for(say))
+                             for (a, b, t), say in zip(caps, script_lines(f[:-4], caps))]
     unknown = [s for s in order if s not in flows]
     if unknown:
         sys.exit("no recording for: " + ", ".join(unknown))
