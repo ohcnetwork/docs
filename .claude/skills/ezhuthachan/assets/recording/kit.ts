@@ -12,12 +12,14 @@
 //   EZ_API_URL      backend URL; API calls are recognised by this prefix
 //   EZ_LOCALE_FILE  path to the locale file in the pinned care_fe checkout, e.g. .../public/locale/en.json
 //   EZ_OUT          output folder (default ./out)
+//   EZ_CAPTURE      1 to record at 2x with capture.ts instead of Playwright's video (no poster then)
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
 import { test, type Locator, type Page } from "@playwright/test";
 
+import { Capture } from "./capture";
 import { installCursor, Pointer } from "./pointer";
 
 export const OUT = path.resolve(process.env.EZ_OUT ?? "out");
@@ -72,6 +74,9 @@ export class Recording {
   private readonly calls = new Map<string, ApiCall>();
   private shots = 0;
   private trimMs = 0;
+  /** The sharp 2x capture (capture.ts), used when Playwright's own video is off. */
+  capture: Capture | null = null;
+  private readyAt = 0;
 
   /**
    * Marks the moment the first screen has finished loading. The video and the captions start here,
@@ -80,7 +85,8 @@ export class Recording {
   ready(): void {
     // The video starts when the page is created, a moment before this recording object; a short
     // margin keeps that moment of the loading screen out of the first frame.
-    this.trimMs = Date.now() - this.startedAt + 300;
+    this.readyAt = Date.now();
+    this.trimMs = this.readyAt - this.startedAt + (this.capture ? 0 : 300);
   }
 
   constructor(
@@ -134,6 +140,8 @@ export class Recording {
   /** Holds the final screen, then writes the video, poster, captions and API log. */
   async finish(holdMs = 2500): Promise<void> {
     await this.page.waitForTimeout(holdMs);
+    const endAt = Date.now();
+    await this.capture?.stop();
     const video = this.page.video();
     await this.page.close();
     fs.mkdirSync(OUT, { recursive: true });
@@ -145,6 +153,10 @@ export class Recording {
       `WEBVTT\n\n${this.cues.map((cue, i) => `${i + 1}\n${vttTime(Math.max(0, cue.from - this.trimMs))} --> ${vttTime(Math.max(0, cue.to - this.trimMs))}\n${cue.title}\n`).join("\n")}`,
     );
 
+    if (this.capture) {
+      this.capture.write(base, this.readyAt || this.startedAt, endAt);
+      return;
+    }
     // Video is off in a screenshots-only run.
     if (!video) return;
     const webm = `${base}.webm`;
@@ -167,5 +179,12 @@ export class Recording {
  */
 export async function startRecording(page: Page, name: string): Promise<Recording> {
   await installCursor(page);
-  return new Recording(page, name);
+  const recording = new Recording(page, name);
+  // EZ_CAPTURE=1 (Playwright's own video is then off, see playwright.config.ts) records a sharp 2x
+  // video with an input log, for the finishing scripts. A screenshots-only run records nothing.
+  if (process.env.EZ_CAPTURE === "1" && !page.video() && !process.env.EZ_SHOTS_ONLY) {
+    recording.capture = new Capture(page, path.join(OUT, `.frames-${name}`));
+    await recording.capture.start();
+  }
+  return recording;
 }

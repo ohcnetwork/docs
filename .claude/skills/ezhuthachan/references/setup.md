@@ -74,6 +74,7 @@ Create `session.md`, `facts.md`, `plan.md`, `questions.md` and `report.md` in `$
 - Module: Workspaces
 - Request: "generate documentation for the workspace module"
 - Requested by: <name, if known>
+- Job: not confirmed (documentation, deck videos, finding issues, or something else)
 - Stage: intake
 - Care version: not confirmed
 - Pages wanted: not confirmed
@@ -116,6 +117,8 @@ Ports 9000 and 4000 are the defaults for the Care backend and frontend. Somethin
 
 Ask these together, in one round. Offer the remembered answer as the default where memory has one.
 
+0. **What is this session for?** Documentation pages for docs.ohc.network, videos for the deck at deck.ohc.network, finding issues in Care, or something else. Ask every new session, even when the request seems to say; see "First, ask what the session is for" in `SKILL.md`. The answer decides which of the questions below apply.
+
 1. **Which Care version is this for, and which branch holds it in each repository?** Always ask, every session, even when memory has an answer, because the mapping moves as releases are cut. Show the real branches so the choice is concrete:
 
    ```bash
@@ -131,9 +134,14 @@ Ask these together, in one round. Offer the remembered answer as the default whe
 
 4. **Which pages?** A concept page, flow pages, or both. Ask whether there are flows they already know they want.
 
-5. **Screenshots and videos?** Only whether they want them, and whether the videos should be spoken. The questions about where to record and which voice come at the media stage, when they matter.
+5. **Screenshots and videos?** Only whether they want them. Documentation videos are plain (no zoom), narrated and subtitled; the questions about where to record and which voice come at the media stage, when they matter.
 
 6. **Anything about the readers I should know?** For example, the page is mainly for front-desk staff.
+
+Questions 4 to 6 are for documentation. For the other jobs, ask these instead:
+
+- **Deck videos:** which features, one video each; who will watch them; desktop or phone for each; whether they should be spoken; and where the finished files should go.
+- **Finding issues:** which areas or features, and as which roles; whether to check what the team already knows of before reporting (see "Before you file" in `issues.md`); and whether anything may be filed at all.
 
 Do not ask what the code can tell you. Which screens exist, what the buttons say, and who may do what are research.
 

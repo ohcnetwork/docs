@@ -8,6 +8,7 @@ exits 1 if any check fails.
 
 Overlaps are judged by where each caption's speech ends, not by counting the gaps
 in the sound: cloned voices pause after "Step 3.", which splits one line in two.
+Subtitle pieces of one step (cue ids "3.1", "3.2", ...) count as one caption.
 
 Usage: check.py [slug ...]    (no slug: every video in out/)
 """
@@ -32,8 +33,15 @@ def stream_length(path, stream):
 
 
 def captions(vtt):
+    """One (start, end) per step; the pieces of a step's subtitle are joined."""
     t = lambda s: sum(float(x) * m for x, m in zip(s.split(":"), (3600, 60, 1)))
-    return [(t(a), t(b)) for a, b in re.findall(r"(\d\d:\d\d:\d\d\.\d+) --> (\d\d:\d\d:\d\d\.\d+)", open(vtt).read())]
+    steps = {}
+    found = re.findall(r"(?:^|\n)([^\n]*)\n(\d\d:\d\d:\d\d\.\d+) --> (\d\d:\d\d:\d\d\.\d+)", open(vtt).read())
+    for n, (ident, a, b) in enumerate(found):
+        key = ident.strip().split(".")[0] or str(n)
+        start, end = steps.get(key, (t(a), t(b)))
+        steps[key] = (min(start, t(a)), max(end, t(b)))
+    return sorted(steps.values())
 
 
 def check(slug):

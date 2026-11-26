@@ -9,6 +9,9 @@ Each clip is trimmed of silence and starts LEAD seconds after its caption. When 
 line does not fit before the next caption with GAP to spare, the video holds a frame
 for the missing time. The voice is never sped up. The captions are re-timed to match.
 
+The subtitles in out/<slug>.vtt are the spoken words, split into pieces of at most
+MAX_CUE characters and timed along the voice. A piece's cue id is "<step>.<piece>".
+
 Which frame is held is set per step in "hold_frame" in plan.json, keyed "<slug> <step>":
   (not listed)   the step's first frame
   "last"         the step's last frame
@@ -24,6 +27,7 @@ No slug means every flow. NARRATOR=<voice> makes that voice read every flow.
 """
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -34,6 +38,7 @@ TRIM = os.path.join(HERE, "trimmed")
 CHECK = os.path.join(HERE, "check")
 LEAD = 0.25   # silence before the voice, from the start of the caption
 GAP = 0.5     # silence after the voice, before the next caption may start
+MAX_CUE = 84  # characters in one subtitle: two lines of about 42
 PLAN = json.load(open(os.path.join(HERE, "plan.json"), encoding="utf-8"))
 FRAME = 1 / 30
 
@@ -114,10 +119,31 @@ def layout(slug):
         room = (c["end"] if i + 1 == n else seg_end) - c["start"]
         hold = max(0.0, LEAD + speech + GAP - room)
         new_start = c["start"] + shift
-        plan.append(dict(text=c["text"], wav=wav, seg=(c["start"], seg_end), hold=hold, speech=speech,
+        plan.append(dict(text=c["text"], say=c["say"], wav=wav, seg=(c["start"], seg_end), hold=hold, speech=speech,
                          new_start=new_start, voice_at=new_start + LEAD))
         shift += hold
     return plan, vlen, shift
+
+
+def subtitle_pieces(text):
+    """A spoken line in subtitle-sized pieces: whole sentences where they fit, else cut at a comma or a space."""
+    parts = []
+    for sentence in re.split(r"(?<=[.!?])\s+", " ".join(text.split())):
+        while len(sentence) > MAX_CUE:
+            cut = sentence.rfind(", ", 0, MAX_CUE)
+            cut = cut + 1 if cut >= MAX_CUE // 3 else sentence.rfind(" ", 0, MAX_CUE)
+            if cut <= 0:
+                break
+            parts.append(sentence[:cut].strip())
+            sentence = sentence[cut:].strip()
+        parts.append(sentence)
+    joined = []
+    for part in parts:
+        if joined and len(joined[-1]) + 1 + len(part) <= MAX_CUE:
+            joined[-1] += " " + part
+        else:
+            joined.append(part)
+    return joined
 
 
 def lines(slugs):
@@ -205,7 +231,15 @@ def encode(slug, plan, vlen, shift):
         f.write("WEBVTT\n")
         for i, p in enumerate(plan):
             end = plan[i + 1]["new_start"] if i + 1 < n else cues[i]["end"] + shift
-            f.write(f"\n{i + 1}\n{ts(p['new_start'])} --> {ts(end)}\n{p['text']}\n")
+            # Each piece shows while its share of the voice plays: the first from the step's start, the last until the next step.
+            chunks = subtitle_pieces(p["say"])
+            total = sum(len(x) for x in chunks)
+            at = p["voice_at"]
+            for k, chunk in enumerate(chunks):
+                a = p["new_start"] if k == 0 else at
+                at += p["speech"] * len(chunk) / total
+                b = end if k + 1 == len(chunks) else at
+                f.write(f"\n{i + 1}.{k + 1}\n{ts(a)} --> {ts(b)}\n{chunk}\n")
     return duration(mp4)
 
 

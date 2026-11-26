@@ -7,7 +7,9 @@ if (!feUrl) throw new Error("EZ_FE_URL is not set. Set it to the frontend URL of
 
 const AUTH = ".auth/user.json";
 // EZ_SHOTS_ONLY=1 takes the screenshots without recording video, which is much faster.
-const video = process.env.EZ_SHOTS_ONLY ? "off" : { mode: "on" as const, size: { width: 1440, height: 900 } };
+// EZ_CAPTURE=1 turns Playwright's video off; the kit then records at 2x through capture.ts.
+const video =
+  process.env.EZ_SHOTS_ONLY || process.env.EZ_CAPTURE === "1" ? "off" : { mode: "on" as const, size: { width: 1440, height: 900 } };
 
 export default defineConfig({
   testDir: ".",
