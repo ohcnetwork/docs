@@ -2,6 +2,25 @@
 
 Record every finding in `report.md`. Filing one on GitHub is a separate step, and it happens only with the user's agreement.
 
+## When finding issues is the job
+
+Then the findings are what the session delivers. For each area the user named, use the screens as each role they named would, on an environment at the pinned commits. Note anything that fails, that contradicts the code, or that contradicts another screen. Reproduce each one, keep the evidence (see "Evidence"), find the cause in the code with the file and lines, and decide whether it may be filed (see "What may be filed") or stays a note. Then check what the team already knows (see "Before you file") and show the user the list. The rest of this file applies as written.
+
+## Evidence
+
+Keep a screenshot, or the request and the response, for each finding. When the wrong state lasts only a moment, such as an error that flashes while something loads, or a value that is wrong and then corrects itself:
+
+- Slow the request that ends it, so the wrong state stays on screen long enough for a screenshot, and say in the finding that you did:
+
+  ```ts
+  await page.route("**/api/v1/<path>/**", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 4000));
+    await route.continue();
+  });
+  ```
+
+- Or, when it appeared in a 2x recording (`EZ_CAPTURE=1`), take the frames from the raw recording, which keeps every painted frame: `ffmpeg -ss <seconds> -i out/<slug>.mp4 -frames:v 1 out/<slug>-flash.png`.
+
 The backend is what a page describes. When the frontend disagrees with it, write the page from the backend. Do not ask which side to document. Ask only when the backend itself can be read two ways.
 
 ## What may be filed
@@ -33,13 +52,20 @@ If `gh` is missing or not signed in, say so and leave the approved text in `repo
 
 ## Before you file
 
-Search, so you do not open a duplicate:
+Find out whether the team already knows. Open GitHub issues are only one place:
 
-```bash
-gh search issues --repo ohcnetwork/care --repo ohcnetwork/care_fe "<distinctive words>" --state open
-```
+- **GitHub:** issues and pull requests in both repositories, in any state.
 
-An existing issue gets a comment with the pinned commit and the files, not a second issue. Comment only on a finding the user approved.
+  ```bash
+  gh search issues --repo ohcnetwork/care --repo ohcnetwork/care_fe "<distinctive words>"
+  gh search prs --repo ohcnetwork/care --repo ohcnetwork/care_fe "<distinctive words>"
+  ```
+
+  A pull request merged after your pinned commit may already fix it. Say so, and check on a newer commit if you can, before you file.
+- **Jira:** the team's site, openhealthcarenetwork.atlassian.net, across all projects, with a text search (`text ~ "<words>"`) when an Atlassian connector is available.
+- **Slack:** the channel where the team collects issues for the release you are testing. Ask the user which one; for 3.1 it was `#enhancements-for-care-3-1`. Without a Slack connector, read it in the built-in browser after the user signs in. Thread replies and posts that are only a screenshot are easy to miss; say what you did not read.
+
+For each finding, note where it is already mentioned, or that it is not. A finding the team already tracks is not filed again. An existing issue gets a comment with the pinned commit and the files, not a second issue. Comment only on a finding the user approved.
 
 ## Where it goes
 

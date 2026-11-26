@@ -4,6 +4,8 @@ Stage 6, when the user asked for screenshots or videos. A recording does three j
 
 Every recording drives a real Care instance and creates real records in it. So the first part of this stage is a conversation, not a command.
 
+When the session's job is deck videos (see `SKILL.md`), read "Videos for the deck" at the end of this file first. The parts about pages, such as step titles that match a page, the API log, and putting media in pages, do not apply to it.
+
 ## Agree on an environment
 
 People run Care in different ways, and some do not run it at all. Ask; do not pick. Offer what you saw in the setup check as context ("something is listening on ports 9000 and 4000; is that a Care you want me to use?").
@@ -52,6 +54,14 @@ Give a Docker stack its own Compose project name, for example `docker compose -p
 
 One trap to check every time: the frontend decides which backend to call from its own configuration (`REACT_CARE_API_URL` in its env files, read in `care.config.ts`), and the default in the repository points at a shared hosted backend. A frontend started without changing that talks to the hosted backend, not to your local one. After signing in, confirm which backend the app is calling before you create anything.
 
+A second dependency sits outside the stack. Searches for coded values, such as diagnoses, medicines and the codes in a value set, go from the backend to a SNOMED terminology server, set by `SNOWSTORM_DEPLOYMENT_URL` (`config/settings/base.py` in `care`; read the default at your pin, which in November 2026 was a public server). When that server is down, those searches fail and every flow that uses one breaks, which looks like a product bug. Before you report one, or change a spec, check that it answers:
+
+```bash
+curl -s -m 15 -o /dev/null -w '%{http_code}\n' "<SNOWSTORM_DEPLOYMENT_URL>/metadata"   # 200 when it is up
+```
+
+If it does not, record the other flows and come back to these later.
+
 ### One recording at a time per environment
 
 Two sessions recording against the same database spoil each other's data. Take a lock before recording and release it after:
@@ -91,6 +101,7 @@ What is in the kit:
 
 - `kit.ts`: `startRecording(page, slug)` returns a recording with `step()`, `shot()`, `ready()`, `pointer` and `finish()`. `t(key)` gives the text of a label from the pinned locale file and fails on an unknown key. `package.json` gives only a version range; the lock file gives the version care_fe really installs, which is the one the command above reads.
 - `pointer.ts`: a visible cursor that moves along eased paths, clicks with a ripple, and types at human speed.
+- `capture.ts`: with `EZ_CAPTURE=1`, the kit records through the browser's screencast at device pixels (2x, so 2880 by 1800 at the default window) instead of Playwright's own video, and logs every mouse move, click, key and page change to `<slug>.events.json`. Playwright's video is too soft to zoom into. Use this when the video will be zoomed or shown large, as deck videos are. It writes no poster and the files are large, so a docs page keeps Playwright's video.
 - `login.setup.ts`: signs in through the login page. Compare its selectors with `tests/setup/auth.setup.ts` in the pinned `care_fe` before the first run.
 - `playwright.config.ts`: 1440 by 900, video on, one worker.
 - `example.demo.ts`: the shape of a flow spec. Its keys and URL are placeholders.
@@ -137,7 +148,7 @@ Each flow writes to `$S/media/out/`:
 | --- | --- |
 | `<slug>.mp4` | The video |
 | `<slug>.poster.png` | Its poster frame |
-| `<slug>.vtt` | Captions, one cue per step |
+| `<slug>.vtt` | Captions, one cue per step; narration replaces them with subtitles of the spoken words |
 | `<slug>.api.json` | The API calls the flow made, with status codes |
 | `<slug>-1.png`, `<slug>-2.png`, ... | Step screenshots, with the target outlined |
 
@@ -151,11 +162,43 @@ Check that the cursor is visible, the right element is outlined, nothing is half
 
 An empty `api.json` after a flow that clearly loaded data means the app is calling a backend other than `EZ_API_URL`. Stop and find out which.
 
+## Finish: speed up, zoom and frame
+
+A deck video, or any video the user wants with the zoom-in look, is finished from a 2x recording (`EZ_CAPTURE=1`) with the scripts in `assets/finishing/`. Documentation videos are not: they stay Playwright's plain video, narrated and subtitled.
+
+```bash
+cp "<this skill>/assets/finishing/"* "$S/media/"
+cd "$S/media"
+./finish.sh out/<slug>.mp4                       # or out/<slug>.mp4:<final name>, several at once
+```
+
+- `retime.py` speeds the recording up. Movement plays 1.8 times faster, a stretch where nothing changes is cut to 0.8 seconds, and the last screen holds 1.5 seconds. Pass `--speed`, `--still` or `--end` after a second colon: `out/x.mp4:x:--speed 1.5`.
+- `zoom.py` puts the app in a rounded window over a gradient, 1920 by 1304. It zooms in where the clicks, the typing and a resting cursor are, follows the cursor, and zooms back out when the screen is replaced. `--plan-only` prints the zoom shots, `--skip N` leaves out a shot that looks wrong, and `--plain` frames without zooming. A 1600 by 1000 window fits the frame best; it takes any window up to 1760 by 1144.
+- `frame.py` frames a 1x video, and scales a phone recording (taller than wide) to 884 by 1920 without a frame.
+
+`finish.sh` writes `final-zoom/<name>.mp4` and `final-plain/<name>.mp4`, and a contact sheet, `out/fast/<name>-sheet.png`. Deliver both versions; people choose between them. A phone recording gets only the plain one. Look at the sheet and at a few full frames before you call a video done: it opens on a settled screen, shows no error toast or spinner, and each result stays on screen for about a second.
+
+If you change these scripts, three ffmpeg traps:
+
+- A still image looped as an input (`-loop 1`) runs at 25 frames a second unless you pass `-framerate`. Combined with 30 fps video through `zoompan`, the result plays 1.2 times too fast and freezes at the end. The scripts pass `-framerate 30`. After a change, check that a finished video lasts exactly as long as the sped-up one.
+- Current ffmpeg (9.0 when this was written) no longer has `-filter_complex_script`. Pass a filter file as `-/filter_complex <file>`.
+- ffmpeg and Playwright read standard input. In a `while read` loop they swallow the rest of the list. Give ffmpeg `-nostdin`, and give both `< /dev/null`.
+
+## Several recorders at once
+
+When many videos are wanted, hand them to helpers (subagents) that record in parallel on the one environment. The session holds the environment lock for all of them. Within it:
+
+- Write a brief in `$S/media/` that every helper reads first: the URLs, the accounts by role (credentials stay in the environment), the story of each video, the data rules below, how to check the result, and what to report. A helper knows nothing else.
+- Record one at a time. Browsers recording at once make one another's videos stutter. Every recording and every render goes through `./withlock.sh` from `assets/finishing/`, which waits for `.recording.lock` in the media folder: `EZ_OUT=out/<run> ./withlock.sh npx playwright test <spec>`. Never delete the lock by hand; a lock older than 30 minutes is cleared by the script.
+- Give each run its own output folder (`EZ_OUT=out/<run>`), so runs do not overwrite one another's files.
+- Each helper creates its own patients and encounters off camera, with invented names it has checked are not in the database yet, and changes nothing it did not create.
+- Anything created on camera gets a real-sounding name, the kind a hospital would use for a form, a workspace, a schedule or a value set. Never "Test" or "Demo".
+
 ## When the screen does not match the page
 
 If a step cannot be performed as written, the page is wrong or the instance runs different code. Do not quietly bend the spec until it passes.
 
-1. Find out which it is: compare the instance's commit with your pin, and re-read the code for that step.
+1. Find out which it is: compare the instance's commit with your pin, check the terminology server (see "Starting a stack yourself") when the step searches for a code, and re-read the code for that step.
 2. If the page was wrong, correct the fact, then the page, then the spec, and send the page through review again.
 3. If the instance differs from the pin, tell the user.
 4. If one flow fails, carry on with the others and report the failure.
@@ -166,7 +209,7 @@ Take each `<slug>.api.json` back to the permission path of that flow, as "Confir
 
 ## Narration
 
-If the user wants the videos spoken, do it now, before the media goes into the pages; see `narration.md`.
+Documentation videos are narrated and subtitled, and stay plain (no zoom). Do it now, before the media goes into the pages; see `narration.md`.
 
 ## Put the media in the pages
 
@@ -191,3 +234,21 @@ Write alt text that says what the image shows, for readers who cannot see it.
 The captions track and the screenshots are new to the docs site; before this, pages had a video and nothing else. This markup passed the docs build for every language on 20 November 2026. The build is still the judge each time: if it rejects something here, fix or remove it and say so in the pull request.
 
 Set each recorded flow to `recorded` in `plan.md`, and release the environment lock.
+
+## Videos for the deck
+
+When the session's job is videos for the deck at deck.ohc.network, the same kit records them. The user set these rules on 24 and 25 November 2026; follow all of them:
+
+- **What to make.** The deck's existing videos, remade on the current Care screens (ask which slides; in November 2026 they were slide 16 onward of the Canva deck), and one video for each main new feature of the release when asked. Each tells one small story that shows what a feature is for, to hospital decision makers. When the user asks for a comparison, show the variants first: for workspaces, two or three different workspaces before the work in one of them.
+- **Data that looks real.** Realistic invented names for people, patients and everything created on camera; no real hospital or person, and never "Test" or "Demo".
+- **Silent.** No voice and no captions, unless the user asks for them (`narration.md`).
+- **Sped up like the originals.** About 15 to 30 seconds after the speed-up; the raw recording is usually 1.5 to 2.5 times longer. `retime.py` does this.
+- **Sharp.** Record with `EZ_CAPTURE=1` and a 1600 by 1000 viewport (set `viewport` in `playwright.config.ts`).
+- **Framed like the originals.** The app in a rounded window with a soft shadow over a gradient, 1920 by 1304.
+- **Two versions of every video**, kept apart: `final-plain/` without zoom and `final-zoom/` with the zoom that goes in and out like the originals and follows the cursor. `finish.sh` makes both. A phone video (a phone-sized viewport, 442 by 960 worked, with `isMobile: true`) gets only the plain version, a plain screen recording like the deck's original.
+- **Plain first.** Deliver the plain versions first, then the zoom versions, and send each video as soon as it is ready, with where the file is. The user takes the files straight from the output folders.
+- **File names.** The feature name only, in lower case, such as `bed-management.mp4`: no product, version or slide prefix such as `care31-` or `slide-22-`. A file that is not finished starts with `in-progress-`.
+- **Clean frames.** Each video opens on a settled screen and shows no error, spinner or flash. Cut a flash that only the recording caught (a code or a message that appears for a moment) from the raw recording before finishing, and shift the times in `<slug>.events.json` by the length removed.
+- **Real roles.** A facility administrator for facility settings, a doctor or nurse for clinical work. Never the superuser.
+
+Several videos usually go to several helpers; see "Several recorders at once". There is no pull request.
