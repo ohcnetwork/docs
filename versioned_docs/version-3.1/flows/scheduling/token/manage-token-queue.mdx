@@ -1,68 +1,254 @@
 ---
-sidebar_position: 3
+sidebar_position: 7
 ---
 
-# Manage a token queue
+# Serve patients from a token queue
 
 ## Overview
 
-This flow describes how to work through a token queue in Care. Staff serve patients in order and record when each patient is finished. See [Token](../../../concepts/scheduling/token.mdx).
+<video src="/media/scheduling/token/manage-token-queue.mp4" poster="/media/scheduling/token/manage-token-queue.poster.png" controls width="720">
+  <track kind="captions" src="/media/scheduling/token/manage-token-queue.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to serve patients from a [token queue](../../../concepts/scheduling/token.mdx) on the queue board. You serve the next patient at a service point, open the encounter, and mark the token as complete.
+
+The **Ongoing** tab of the queue board holds the tokens that wait, the tokens that a service point calls or serves, and the tokens that wait for re-call. The **Finished** tab holds the completed and cancelled tokens.
 
 ## Pre-requisites
 
-- A token queue holds at least one token.
+- You are a member of the facility.
+- The practitioner, location or healthcare service of the queue has at least one active service point. See [Set up service points](./set-up-service-points.mdx).
+- The queue holds at least one token with the label **Waiting** or **Call Next**.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can list token on Object | Lets you see the queue and its tokens. |
-| Can Create on Token | Lets you change the status of a token. |
+| Can Create on Token | Lets you serve the next patient, mark a token as now serving, and mark a token as complete. Hold it in the place of the queue's resource, as the list below the table shows. By default, the Admin, Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can list token on Object | Lets you open the queue board and see its tokens and service points. Hold it in the same place as "Can Create on Token". By default, the Admin, Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can list bookings on Object | Shows **Queues** under **Patient Management** in the facility sidebar, where you reach the queues of a practitioner. Hold it in the Administration organization, which every facility has, or in a department or team of the facility. By default, the Admin, Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can Read Healthcare Service | Lets you reach the queues of a healthcare service, or of a location, through **Services** in the facility sidebar. It also lets the board show the name of a healthcare service. Hold it in any organization of the facility. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can View Facility Organizations | Needed only to choose a practitioner outside your own departments, under **All Dept.** in **Selected practitioner**. Hold it in any organization of the facility. The Administration organization appears in the list only if you hold it there. By default, the Facility Admin, Admin, Staff, Doctor, Administrator, Nurse and Volunteer roles hold it. |
+| Can List Facility Locations | Optional. Lets the board show the name of a location. The board opens without it. Hold it in an organization of the location. By default, the Admin, Doctor, Facility Admin, Administrator, Nurse, Staff and Pharmacist roles hold it. |
+| Can list token category on Facility | Needed only for **Set Category**, which lists the token categories. Hold it in the Administration organization or in a department or team of the facility. By default, the Admin, Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can Read Patient Identifier Config | Needed only when you use **Filter by Identifier** with an identifier type of the facility. Hold it in any organization of the facility. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+
+Where you must hold "Can Create on Token" and "Can list token on Object" depends on the resource of the queue:
+
+- For a practitioner's queue: the Administration organization, or an organization of the facility that the practitioner belongs to, or a parent of that organization.
+- For a location's queue: an organization linked to the location or to its parent location, or a parent of one of them. The Administration organization also counts.
+- For a healthcare service's queue: the service's managing organization or a parent of it. If the service has no managing organization, the Administration organization.
+- If a department or team manages the service, hold them in that department or team, or in one above it. A role in the Administration organization alone does not count.
+
+Note: The queue board shows its actions to everyone who can open it. If you do not hold "Can Create on Token" in the right place, Care refuses the change.
 
 ## Steps
 
-### 1. Open the queues
+### 1. Open the queue board
 
-Open the facility and select **Queues**. The page lists the token queues of the facility. The primary queue of a resource shows the **Primary** marker.
+Open the queue list of the resource:
 
-### 2. Open a queue
+- For a practitioner, select **Queues** under **Patient Management** in the facility sidebar.
+- For a healthcare service, select **Services** in the facility sidebar. Select the service. On the page that opens, select the **Queues** card.
+- For a location, open the page of a healthcare service that lists the location. Select **View appointments** for the location. In the sidebar of the location, select **Queues** under **Scheduling**.
 
-Select the queue that you want to work through.
+For another practitioner, select that practitioner in **Selected practitioner**.
 
-### 3. Read the tabs
+The practitioner picker starts with your own departments. To see all departments, select **All Dept.**
 
-The queue holds two tabs:
+Select the **Date** of the queue. The list starts at today.
 
-| Tab | What it shows |
+Select the name of the queue, or select **Open**. You can also select **Open queue board** in the row's menu.
+
+You can also open the queue board from a token. Select **Queue board** on the token card on the patient's page or on the appointment page.
+
+An encounter that came from an appointment with a token also has a **Queue board** link in its header.
+
+The queue board opens on the **Ongoing** tab. The top of the board shows the resource's name and the date of the queue.
+
+The top of the board also shows the queue's name, unless Care created the queue itself. A **Primary** badge marks the primary queue.
+
+![The top of the queue board for the OPD Morning queue of Jonathan Grover, marked Primary, with the queue name and date outlined](/media/scheduling/token/manage-token-queue-1.png)
+
+### 2. Turn on Auto Refresh
+
+To update the board at a fixed interval, turn on **Auto Refresh**.
+
+The tooltip of the switch shows the interval in seconds. Your deployment sets the interval. It is 10 seconds by default.
+
+On small screens, **Auto Refresh** is in the settings menu of the board.
+
+### 3. Choose the service points to show
+
+On the **Ongoing** tab, open the **Service Points** selector.
+
+Under **Assigned service points**, select the service points that you work at.
+
+Select **Done**.
+
+The selector offers only active service points. Until you make a choice in this browser, the board shows all of them.
+
+If you choose no service point, the selector shows **Assign Service points**. The board then shows no service point section and no **Serve Next Patient**.
+
+**Manage service points** in the settings menu of the board opens the same choice.
+
+Care saves this choice only in this browser. The choice applies to every queue of the same resource.
+
+Note: This choice changes only what the board shows. To add or change service points, see [Set up service points](./set-up-service-points.mdx).
+
+![The Service Points selector open with Room 2 and Room 1 checked and Consultation Room 1 cleared](/media/scheduling/token/manage-token-queue-2.png)
+
+### 4. Read the Ongoing tab
+
+The **Ongoing** tab has two columns, **Waiting** and **Called + Now Serving**.
+
+| Part | What it shows |
 | --- | --- |
-| Ongoing | The tokens that wait, and the tokens that staff serve now. |
-| Finished | The tokens that staff finished. The table shows Token Number, Patient Name, Encounter, Service Points and Status. |
+| **Waiting** | The tokens that are not at a service point yet. If nobody waits, the column shows "No patient is waiting in this queue". |
+| **Called + Now Serving** | One section for each service point that you chose. |
+| A service point's section | The name of the service point and its **Category**, which is **All** until you set one. Under **Now Serving**, the tokens that the service point serves now. Below them, the tokens called to the service point. |
+| **Awaiting Re-Call** | A button in the header of the second column, with a count. It opens the tokens that wait for re-call. It is not available when the count is 0. |
 
-Turn on **Auto Refresh** to update the queue without a reload.
+On small screens, **Waiting** and **Called + Now Serving** are two tabs.
 
-### 4. Serve the next patient
+Each token card shows the patient's name, an **Encounter** button, a status label and the token number.
 
-Select **Serve Next Patient**. Care moves the next token to In Progress and shows it as the current token.
+The token number is the shorthand of the token category, a hyphen and a three-digit number, for example GEN-007.
 
-If the queue has no waiting token, the tab shows that no patient waits.
+| Label | What it means |
+| --- | --- |
+| **Waiting** | The token is not at a service point yet. |
+| **Call Next** | The token is called to a service point. The patient is not served yet. |
+| **Serving** | A service point serves the patient now. |
+| **Recall** | The token waits for re-call. |
 
-### 5. Manage the service points
+![The Waiting column of the Ongoing tab with the tokens of Anjali Nair, Rahul Menon and Fathima Rasheed](/media/scheduling/token/manage-token-queue-3.png)
 
-To split the queue between more than one place, select **Manage Service Points**. Each service point serves the queue and records the token that it serves now.
+### 5. Find a waiting patient
+
+To find a patient in **Waiting** by name, type the name in **Search patients**.
+
+To find a patient by an identifier, use **Filter by Identifier**.
+
+Both filters apply to the **Waiting** column only.
+
+### 6. Set a category for a service point
+
+This step is optional. Until you set a category, the section of the service point shows **All**.
+
+In the section of the service point, open its settings menu.
+
+Select **Set Category**.
+
+Select a token category, or select **All**. The menu lists the token categories of the queue's resource type.
+
+After this, **Serve Next Patient** at this service point takes only tokens of that category.
+
+Care saves the category only in this browser.
+
+### 7. Serve the next patient
+
+In the section of your service point, select **Serve Next Patient**, the megaphone button.
+
+If the service point serves nobody, the section also shows **Serve Next Patient** under "No patient is being served".
+
+Care takes the token that was created first among the tokens labelled **Waiting** or **Call Next**.
+
+If a category is set for the service point with **Set Category**, Care takes only tokens of that category.
+
+Care moves the token to that service point with the label **Serving**, under **Now Serving**.
+
+Care does not use the lowest token number.
+
+Care acts at once. It asks for no confirmation and shows no success message.
+
+If no token qualifies, Care shows the error "No tokens found".
+
+Note: **Serve Next Patient** does not change the token that the service point served before. That token stays under **Now Serving** until you change it.
+
+![The Room 1 section with no patient being served and the Serve Next Patient button](/media/scheduling/token/manage-token-queue-4.png)
+
+![The Room 1 section with Anjali Nair under Now Serving, labelled Serving with the token GEN-001](/media/scheduling/token/manage-token-queue-5.png)
+
+### 8. Mark a called token as now serving
+
+This step applies to a token with the label **Call Next** in the section of your service point.
+
+Open the menu of the token. Select the three-dot button on the token card, or right-click the card.
+
+Select **Mark as Now Serving**.
+
+The token moves under **Now Serving**, with the label **Serving**. Care acts at once, with no confirmation.
+
+To call a token to a service point without serving it, see [Move a token in the queue](./move-token.mdx).
+
+### 9. Open the encounter from a token
+
+Select the patient's name on the token card, or select **Encounter**.
+
+Care opens the page that fits the token:
+
+- If the token has an encounter, Care opens the **Updates** tab of that encounter.
+- If the token has no encounter but has an appointment, Care opens the appointment page. The **Start Consultation** form opens by itself.
+- If the token has neither, Care opens the patient's page. The **Create Encounter** form opens by itself.
+
+To start an encounter, see [Create an encounter](../../clinical/encounter/create-encounter.mdx).
+
+### 10. Mark the token as complete
+
+Open the menu of the token.
+
+Select **Mark as Complete**. Every token on the **Ongoing** tab has this action.
+
+Care shows "Token has been completed". The token moves to the **Finished** tab.
+
+Note: If the token came from an appointment, you can also close it from the encounter. Two actions in the header of that encounter also mark the token as complete:
+
+- **Mark as Complete**, with the description "Close encounter, appointment & token".
+- **Close Appointment**, with the description "Close appointment & token only".
+
+This happens only if the token is still on the **Ongoing** tab. See [Complete an encounter](../../clinical/encounter/complete-encounter.mdx).
+
+![The token menu of Anjali Nair with Mark as Complete outlined](/media/scheduling/token/manage-token-queue-6.png)
+
+### 11. Check the Finished tab
+
+Select the **Finished** tab.
+
+The tab lists the tokens with the status **Fulfilled** or **Cancelled**.
+
+The table has the columns **Token Number**, **Patient Name**, **Encounter**, **Service Points**, **Status** and **Actions**.
+
+Select the patient's name to open the patient's page.
+
+Select **Encounter** to go to the encounter, as in step 9.
+
+On small screens, the tab shows cards instead of a table.
+
+If no token is finished, the tab shows "No tokens finished".
+
+To move a completed token back to the queue, see [Move a token in the queue](./move-token.mdx).
+
+![The Finished tab listing the token GEN-001 of Anjali Nair at Room 1 with the status Fulfilled](/media/scheduling/token/manage-token-queue-7.png)
 
 ## Expected Outcome
 
-- Staff serve the patients in the order of their token numbers.
-- Finished tokens move to the Finished tab.
+- The token of the patient you served is on the **Finished** tab, with the status **Fulfilled**.
+- When **Now Serving** is empty, the section shows "No patient is being served" and **Serve Next Patient**.
 
 ## Related
 
 Concepts:
 
 - [Token](../../../concepts/scheduling/token.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
 
 Flows:
 
-- [Create a token](./create-token.mdx)
+- [Set up service points](./set-up-service-points.mdx)
+- [Move a token in the queue](./move-token.mdx)
 - [Cancel a token](./cancel-token.mdx)
+- [Generate a token for an appointment](./generate-token-for-appointment.mdx)
+- [View and print a patient's tokens](./view-patient-tokens.mdx)
+- [Complete an encounter](../../clinical/encounter/complete-encounter.mdx)

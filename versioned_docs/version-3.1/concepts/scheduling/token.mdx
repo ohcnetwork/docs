@@ -6,58 +6,150 @@ sidebar_position: 3
 
 ## Definition
 
-A **token** in Care is a numbered place in a queue. Care gives a token to a patient so that staff call the patient in order.
+A token in Care is a numbered place in a token queue for a practitioner, a location or a healthcare service. Staff serve the tokens of a queue in turn at service points.
 
-A token belongs to one token queue. The queue holds the tokens for one resource on one date. The resource is a practitioner, a location, or a healthcare service.
+Staff generate a token for a patient's appointment. If your deployment has turned it on, staff can also create a token from the patient's page, without an appointment.
 
 ## Key Attributes
 
 | Components | What it captures |
 | --- | --- |
-| Token Number | The number of the token in its queue. |
-| Patient | The patient that holds the token. |
-| Token Queue | The queue that the token belongs to. |
+| Token Number | The number that Care gives the token. Care shows it after the shorthand of the token category, for example GEN-007. |
+| Patient | The patient that the token is for. |
+| Token Queue | The queue that holds the token. A queue is for one resource on one date. |
 | Token Category | The category of the token. This is required. |
-| Sub Queue | The service point that serves the token. This is optional. |
-| Status | The state of the token. |
+| Service Point | The service point that the token is called to, is served at, or was served at. A token with the label Waiting has no service point. |
+| Status | The state of the token. Every new token starts as Created. |
 | Note | Free text about the token. This is optional. |
-| Booking | The appointment that the token belongs to, when staff generate the token from an appointment. |
-
-### Status values
-
-| Status | What it means |
-| --- | --- |
-| Created | Care created the token, and the patient waits. |
-| In Progress | Staff are serving the patient. |
-| Fulfilled | Staff finished serving the patient. |
-| Unfulfilled | Staff did not serve the patient. |
-| Cancelled | Staff cancelled the token. |
-| Entered in Error | Staff recorded the token by mistake. |
+| Appointment | The appointment that the token was generated for, if the token came from an appointment. |
+| Encounter | The encounter of the token's appointment, after staff create an encounter from that appointment. |
 
 ### Token queues
 
-A token queue holds the tokens for one resource on one date. A queue has a name, and one queue for a resource is the primary queue. Care creates some queues automatically.
+A token queue holds the tokens for one resource on one date. The resource is a practitioner, a location or a healthcare service. Each queue has a name. After staff create a queue, they can rename it, but they cannot change its date or its resource. Staff cannot create a queue for a date in the past.
 
-### Sub queues
+A resource can have more than one queue on the same date. When staff create the first queue of a resource for a date, that queue becomes the primary queue. The queue list and the queue board show a **Primary** badge on it. **Set as Primary** makes a queue the primary queue, and the other queues of that resource on that date stop being primary.
 
-A sub queue is a service point inside a queue. Use sub queues when more than one place serves the same queue, for example more than one room for vaccination. A sub queue is active or inactive, and it records the token that it serves now.
+Care also creates a queue on its own when a new token needs one:
+
+- For a token from the patient's page, Care uses today's primary queue of the chosen resource. If there is none, Care creates a primary queue named "System Generated".
+- For a token from an appointment, Care uses a queue that Care generates for the appointment's resource and date, and creates that queue if it does not exist yet. Staff cannot choose the queue, so these tokens never go to a queue that staff create.
+
+The queue list shows a queue named "System Generated" with the name **Primary Queue**. The queue board does not show the name of a queue that Care generated, only its date.
+
+### Service points
+
+A service point is one of the places that serve the tokens of a resource, for example one of several vaccination rooms. The technical reference uses the name sub-queue for a service point.
+
+A service point belongs to the practitioner, location or healthcare service, not to a queue. The same service points serve every queue of that resource, on every date.
+
+A service point is **Active** or **Inactive**, and a new service point starts as **Active**. The queue board offers only the active service points.
+
+Each queue board shows the active service points that you choose with **Manage service points** in the board's settings menu, or all of them when you choose none. Care keeps this choice in your browser, for each resource, so it applies to every queue of that resource.
+
+A service point records the token that it serves now. When staff select **Serve Next Patient** for a service point, Care takes the token that was created first among the tokens labelled Waiting or Call Next. Care moves it to that service point with the label Serving, and it becomes the token that the service point serves now.
+
+With **Set Category**, staff can limit a service point to one token category. **Serve Next Patient** then takes only tokens of that category. Care keeps this choice in your browser.
 
 ### Token categories
 
-A token category groups tokens, for example by the kind of visit. Each category has a name and a shorthand. An administrator sets one category as the default for the facility.
+Token categories group the tokens that are issued against a schedule. Each category has a name, a shorthand of at most 5 characters, and a resource type: practitioner, location or healthcare service.
+
+The resource type is fixed when the category is created, and it cannot be changed later. The token forms offer only the categories of the resource type that the token is for.
+
+The shorthand is the start of every token number in the category. For example, a category with the shorthand GEN shows its tokens as GEN-001, GEN-002 and GEN-003.
+
+Each resource type can have one default category in a facility, and Care preselects it in the token forms. Making a category the default removes the default from the other categories of that resource type. You cannot remove the default without making another category the default. Care has no way to delete a token category.
+
+### Token numbers
+
+Care gives each new token its number, and staff do not choose it. Care counts the numbers separately for each category in a queue, so two tokens in the same queue can have the same number when their categories differ.
+
+**Serve Next Patient** does not follow the numbers. It takes the token that was created first, not the token with the lowest number.
+
+### Appointment and encounter
+
+Staff generate a token for an appointment with **Generate Token** on the appointment page. An appointment can have only one token. Care does not offer **Generate Token** when the appointment has the status Cancelled, Entered in Error, Rescheduled, No Show or Fulfilled.
+
+The token is for the appointment's patient, and its queue date is the date of the appointment's slot. Its category must be a category of the appointment's resource type. Cancelling or rescheduling the appointment does not change its token. The appointments list shows the token number of each appointment that has a token.
+
+On the queue board, each token card has an **Encounter** button. If the token's appointment has an encounter, the button opens the **Updates** tab of that encounter. If the appointment has no encounter yet, Care opens the appointment with the **Start Consultation** form. For a token without an appointment, Care opens the patient's page with the **Create Encounter** form.
+
+On an encounter that came from an appointment, **Mark as Complete** closes the encounter, the appointment and the token, and **Close Appointment** closes the appointment and the token only. Both set the token to Fulfilled if it is still Created, In Progress or Unfulfilled.
+
+Token cards on the patient's page and on the appointment page have a **Queue board** link to the token's queue. So does the header of an encounter that came from an appointment with a token.
+
+### Status
+
+A token has one of six statuses. Care sets Created for every new token, and staff set the other statuses with the actions on the queue board and on the encounter.
+
+| Status | Description |
+| --- | --- |
+| Created | The token waits to be served. Every new token starts with this status. **Move to Waiting**, **Move to Calling** and **Move back to waiting** set it again, and so does calling a token to a service point. |
+| In Progress | A service point serves the token. **Serve Next Patient**, **Mark as Now Serving**, **Move back to In-service** and the actions that put a token in service at another service point set this status. |
+| Unfulfilled | The token is awaiting recall. On the queue board it has the label **Recall**. **Move to Awaiting Recall** sets this status and takes the token off its service point. |
+| Fulfilled | The token is complete. **Mark as Complete** on the queue board sets this status. For a token that came from an appointment, completing the encounter or closing the appointment also sets it. |
+| Cancelled | Staff cancelled the token with **Cancel Token**. Care also takes the token off its service point. |
+| Entered in Error | Staff marked the token with **Mark as entered in error**. Care also takes the token off its service point. |
+
+The queue board has two tabs. The **Ongoing** tab is for the tokens that are still in the queue: Created, In Progress and Unfulfilled. A token at a service point shows only when the board shows that service point. The tab shows each token with one of these labels:
+
+- **Waiting**: a Created token that is not at a service point. It is in the **Waiting** column.
+- **Call Next**: a Created token that is called to a service point.
+- **Serving**: an In Progress token, under **Now Serving** at its service point.
+- **Recall**: an Unfulfilled token. **Awaiting Re-Call** lists these tokens.
+
+The **Finished** tab lists the Fulfilled and Cancelled tokens. From this tab, staff can move a completed token back: to in service if it had a service point, otherwise to waiting. They can also move it to awaiting recall.
 
 ## Permissions
 
-| Permission | What it allows |
-| --- | --- |
-| Can Create on Token | Create tokens and change them. |
-| Can list token on Object | See tokens and queues. |
-| Can Create on Token Category | Create and change token categories. |
-| Can list token category on Facility | See the token categories of the facility. |
+Where you must hold a token permission depends on the resource of the queue, the service point or the token:
+
+- Practitioner: the Administration organization, which every facility has; an organization of the facility that the practitioner is a member of; or an organization above an organization of the practitioner.
+- Location: an organization that the location is linked to, an organization above a linked organization, an organization of its parent location, or the Administration organization.
+- Healthcare service: if a department or team manages the service, that department or team, or an organization above it. A role in the Administration organization alone does not count. If nothing manages the service, the Administration organization.
+
+| Permission | What it allows | Where you must hold it | Default roles |
+| --- | --- | --- | --- |
+| Can list token category on Facility | See the token categories: the **Token Category** settings page, the category lists in the token forms, and **Set Category** on the queue board. Care also checks it before a category is edited or made the default. | The Administration organization, or a department or team of the facility. | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
+| Can Create on Token Category | Create and edit token categories, and make a category the default. | The Administration organization only. | Admin, Staff, Facility Admin |
+| Can list token on Object | See the queues and service points of a resource, open its queue board, and see its tokens. See a patient's tokens on the patient's page. | For a queue or a service point: as in the list above, for its resource. For a patient's tokens: the Administration organization, or a department or team of the facility. | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
+| Can Create on Token | Create a queue, rename it and set it as the primary queue. Add and edit service points. Create a token from the patient's page. Use **Serve Next Patient** and every token action on the queue board. Care also shows **Generate Token** on the patient's page and on the appointment page only to holders of this permission. | For the queue, service point or token: as in the list above, for its resource. For **Generate Token** to show: the Administration organization, or a department or team of the facility. | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
+| Can list bookings on Object | Show **Queues** under **Patient Management** in the facility sidebar, which opens the queues of a practitioner. Open an appointment and its Token section. The **Queues** item in the sidebar of a location or a healthcare service does not check this permission. | For the sidebar and the appointment page: the Administration organization, or a department or team of the facility. For the appointment itself, also: as in the list above, for the appointment's resource. | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
+| Can update bookings on Object | Generate a token for an appointment. Care checks this permission when it saves the token, not a token permission. It is also one of the permissions that show **Search patients** in the facility sidebar. | For an appointment: as in the list above, for the appointment's resource. For the sidebar: the Administration organization, or a department or team of the facility. | Admin, Staff, Facility Admin, Doctor, Nurse |
+| Can Read Healthcare Service | See the healthcare services on the **Services** page, and open a service's page, which leads to the service's queues and its locations. Pick a healthcare service in the **Create Token** form. | Any organization of the facility. | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can List Facility Locations | Pick a location in the **Create Token** form, and see the location's name on its queue board. Care shows only the locations that are linked to an organization where you hold it. | An organization that the location is linked to. | Admin, Doctor, Facility Admin, Administrator, Nurse, Staff, Pharmacist |
+| Can View Facility Organizations | In the practitioner picker, switch from **My Dept.** to **All Dept.** to see the departments that you are not a member of. | Any organization of the facility. Held in the Administration organization, it also lists that organization. | Facility Admin, Admin, Staff, Doctor, Administrator, Nurse, Volunteer |
+| Can Read Patient Identifier Config | Search for a patient by an identifier type of the facility, in the patient search and with **Filter by Identifier** on the queue board. | Any organization of the facility. | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can list encounters | Show **Search patients** in the facility sidebar, which leads to the patient's page. "Can Create encounter" or "Can update bookings on Object" also shows it. | The Administration organization, or a department or team of the facility. | Admin, Doctor, Nurse, Facility Admin |
+| Can Create encounter | Show **Search patients** in the facility sidebar, which leads to the patient's page. "Can list encounters" or "Can update bookings on Object" also shows it. | The Administration organization, or a department or team of the facility. | Admin, Doctor, Nurse, Facility Admin |
+
+You hold a permission in an organization when you are a member of that organization with a role that includes the permission. To open any of these screens, you must be a member of an organization of the facility, or of an organization that the facility is part of.
+
+To generate a token for an appointment, you need both "Can Create on Token" to see **Generate Token** and "Can update bookings on Object" to save the token.
+
+The buttons and menus on the queue list and the queue board, and the buttons in the token forms, do not check your permissions. If you do not have the permission for an action, Care shows an error message when it tries to save the change.
+
+Your deployment can change the roles, so the table shows the roles that hold each permission by default.
 
 ## Related
 
 - Flow: [Create a token category](../../flows/scheduling/token/create-token-category.mdx)
-- Flow: [Create a token](../../flows/scheduling/token/create-token.mdx)
-- Flow: [Manage a token queue](../../flows/scheduling/token/manage-token-queue.mdx)
+- Flow: [Edit a token category or make it the default](../../flows/scheduling/token/edit-token-category.mdx)
+- Flow: [Create a token queue](../../flows/scheduling/token/create-token-queue.mdx)
+- Flow: [Set up service points](../../flows/scheduling/token/set-up-service-points.mdx)
+- Flow: [Generate a token for an appointment](../../flows/scheduling/token/generate-token-for-appointment.mdx)
+- Flow: [Create a token without an appointment](../../flows/scheduling/token/create-token.mdx)
+- Flow: [Serve patients from a token queue](../../flows/scheduling/token/manage-token-queue.mdx)
+- Flow: [Move a token in the queue](../../flows/scheduling/token/move-token.mdx)
 - Flow: [Cancel a token](../../flows/scheduling/token/cancel-token.mdx)
+- Flow: [View and print a patient's tokens](../../flows/scheduling/token/view-patient-tokens.mdx)
+- Flow: [Complete an encounter](../../flows/clinical/encounter/complete-encounter.mdx)
+- Concept: [Appointment Booking](../scheduling/booking.mdx)
+- Concept: [Schedule & Availability](../scheduling/schedule.mdx)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Patient](../clinical/patient)
+- Concept: [Locations](../facility/location.mdx)
+- Concept: [Healthcare Service](../facility/healthcare-service.mdx)
+- Concept: [Facility Organization](../access-governance/facility-organization.mdx)
+- Reference: [Token](../../references/scheduling/token.mdx)

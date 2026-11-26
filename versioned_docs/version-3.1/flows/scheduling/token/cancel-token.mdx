@@ -1,47 +1,94 @@
 ---
-sidebar_position: 4
+sidebar_position: 9
 ---
 
 # Cancel a token
 
 ## Overview
 
-This flow describes how to cancel a token in Care. Use it when the patient leaves, or when staff do not serve the token. See [Token](../../../concepts/scheduling/token.mdx).
+<video src="/media/scheduling/token/cancel-token.mp4" poster="/media/scheduling/token/cancel-token.poster.png" controls width="720">
+  <track kind="captions" src="/media/scheduling/token/cancel-token.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to cancel a [token](../../../concepts/scheduling/token.mdx) on the queue board, or how to mark it as entered in error.
 
 ## Pre-requisites
 
-- The token is in a queue.
+- You are a member of the facility.
+- You open the queue board of the queue that holds the token. See [Serve patients from a token queue](./manage-token-queue.mdx).
+- The token is on the **Ongoing** tab: in **Waiting**, in the section of a service point, or under **Awaiting Re-Call**.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create on Token | Lets you cancel a token. |
-| Can list token on Object | Lets you see the queue and its tokens. |
+| Can Create on Token | Lets you cancel a token or mark it as entered in error. Hold it in the place of the queue's resource, as the list below the table shows. By default, the Admin, Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can list token on Object | Lets you open the queue board and see its tokens and service points. Hold it in the same place as "Can Create on Token". By default, the Admin, Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can list bookings on Object | Shows **Queues** under **Patient Management** in the facility sidebar, where you reach the queues of a practitioner. Hold it in the Administration organization, which every facility has, or in a department or team of the facility. By default, the Admin, Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can Read Healthcare Service | Lets you reach the queues of a healthcare service, or of a location, through **Services** in the facility sidebar. Hold it in any organization of the facility. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can View Facility Organizations | Needed only to choose a practitioner outside your own departments, under **All Dept.** in **Selected practitioner**. Hold it in any organization of the facility. The Administration organization appears in the list only if you hold it there. By default, the Facility Admin, Admin, Staff, Doctor, Administrator, Nurse and Volunteer roles hold it. |
+
+Where you must hold "Can Create on Token" and "Can list token on Object" depends on the resource of the queue:
+
+- For a practitioner's queue: the Administration organization, or an organization of the facility that the practitioner belongs to, or a parent of that organization.
+- For a location's queue: an organization linked to the location or to its parent location, or a parent of one of them. The Administration organization also counts.
+- For a healthcare service's queue: the service's managing organization or a parent of it. If the service has no managing organization, the Administration organization.
+- If a department or team manages the service, hold them in that department or team, or in one above it. A role in the Administration organization alone does not count.
+
+Note: The queue board shows its actions to everyone who can open it. If you do not hold "Can Create on Token" in the right place, Care refuses the change.
 
 ## Steps
 
-### 1. Open the queue
+### 1. Find the token
 
-Open the facility and select **Queues**. Select the queue that holds the token. See [Manage a token queue](./manage-token-queue.mdx).
+On the **Ongoing** tab, find the token in **Waiting** or in the section of a service point.
 
-### 2. Find the token
+To find a waiting patient by name, type the name in **Search patients**.
 
-Find the token on the **Ongoing** tab.
+For a token that waits for re-call, select **Awaiting Re-Call**. Find the token in the dialog.
 
-### 3. Cancel the token
+![The waiting token GEN-002 of Rahul Menon outlined on the Ongoing tab](/media/scheduling/token/cancel-token-1.png)
 
-Select **Cancel Token** on that token. Care asks you to confirm.
+### 2. Open the menu of the token
+
+Select the three-dot button on the token card, or right-click the card.
+
+### 3. Select Cancel Token
+
+Select **Cancel Token**.
+
+To mark the token as entered in error instead, select **Mark as entered in error**.
+
+![The token menu of Rahul Menon with Cancel Token outlined](/media/scheduling/token/cancel-token-2.png)
 
 ### 4. Confirm
 
+A dialog with the title **Cancel Token** opens.
+
+The dialog asks: "Are you sure you want to cancel the token [token number] for [patient name]? This action cannot be undone."
+
+Care fills in the number of the token and the name of the patient.
+
 Select **Cancel Token** to confirm.
+
+If you selected **Mark as entered in error**, the dialog has the title **Mark as entered in error**.
+
+That dialog asks: "Are you sure you want to mark the token [token number] for [patient name] as entered in error? This action cannot be undone."
+
+Select **Mark as entered in error** to confirm.
+
+![The Cancel Token dialog asking to confirm the cancellation of the token GEN-002 for Rahul Menon](/media/scheduling/token/cancel-token-3.png)
+
+![The queue board after the cancellation, with Anjali Nair and Fathima Rasheed waiting and one token on the Finished tab](/media/scheduling/token/cancel-token-4.png)
 
 ## Expected Outcome
 
-- The token status changes to Cancelled.
-- Staff do not call the token in the queue.
+- The cancelled token leaves its service point and the **Ongoing** tab.
+- The token appears on the **Finished** tab, with the status **Cancelled**.
+- **Serve Next Patient** does not take a cancelled token.
+- A token that you mark as entered in error leaves its service point. It appears on neither tab of the queue board.
+- The patient's token list still shows the token, with the status **Cancelled** or **Entered in Error**. See [View and print a patient's tokens](./view-patient-tokens.mdx).
 
 ## Related
 
@@ -51,5 +98,6 @@ Concepts:
 
 Flows:
 
-- [Create a token](./create-token.mdx)
-- [Manage a token queue](./manage-token-queue.mdx)
+- [Serve patients from a token queue](./manage-token-queue.mdx)
+- [Move a token in the queue](./move-token.mdx)
+- [View and print a patient's tokens](./view-patient-tokens.mdx)
