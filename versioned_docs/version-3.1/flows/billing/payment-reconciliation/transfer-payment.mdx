@@ -1,0 +1,96 @@
+---
+sidebar_position: 9
+---
+
+# Transfer an amount to another account
+
+## Overview
+
+This flow describes how to transfer an amount from one [account](../../../concepts/billing/account.mdx) to one of the patient's other accounts with **Transfer Payment**, which records two new [payments](../../../concepts/billing/payment-reconciliation.mdx). [Move payments to another account](./move-payment.mdx) moves whole existing payments instead, and records no new payments.
+
+## Pre-requisites
+
+- You are a member of the facility.
+- The account has the status Active. Its billing status can be any status.
+- The patient has another account in this facility.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Write Payment Reconciliation | Lets you save the transfer. Care needs it for both payments. You need it through a role in any organization of the facility. Facility Admin, Staff, Doctor, Nurse and Pharmacist have it by default. |
+| Can Read Account | Lets you open the account and see the patient's other accounts. You need it in the facility. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist have it by default. |
+| Can Read Invoice | Lets you see the invoices on the **Invoices** tab, where the account page opens. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist have it by default. |
+
+Care shows **Transfer Payment** without a permission check. If you do not have Can Write Payment Reconciliation, Care shows an error when you save.
+
+## Steps
+
+### 1. Open the account
+
+Open the account that holds the amount. See [View an account](../account/view-account.mdx).
+
+![Care screen for step 1, Open the account](/media/billing/payment-reconciliation/transfer-payment-1.png)
+
+### 2. Open Transfer Payment
+
+Open the more-options (**⋮**) menu.
+
+Select **Transfer Payment**.
+
+The form "Transfer Payment" opens: "Transfer a payment amount from this account to another account".
+
+![Care screen for step 2, Open Transfer Payment](/media/billing/payment-reconciliation/transfer-payment-2.png)
+
+### 3. Enter the amount
+
+In **Amount**, enter the amount to transfer.
+
+The amount must be more than 0.
+
+Note: The amount cannot be more than the Total Paid of this account. If it is, Care shows "Transfer amount cannot exceed the total paid amount".
+
+![Care screen for step 3, Enter the amount](/media/billing/payment-reconciliation/transfer-payment-3.png)
+
+### 4. Select the target account
+
+Select the account that receives the amount.
+
+The list shows the patient's other accounts, of every status, each with its status and billing status.
+
+![Care screen for step 4, Select the target account](/media/billing/payment-reconciliation/transfer-payment-4.png)
+
+### 5. Transfer the amount
+
+Select **Transfer Payment**.
+
+Note: **Transfer Payment** is available only after you enter an amount more than 0 and select an account.
+
+![Care screen for step 5, Transfer the amount](/media/billing/payment-reconciliation/transfer-payment-5.png)
+
+![Care screen for step 5, Transfer the amount](/media/billing/payment-reconciliation/transfer-payment-6.png)
+
+## Expected Outcome
+
+- Care shows "Payment transferred successfully".
+- The account that you transfer from gets an Outgoing Transfer. It is a credit note with the note "Transferred to account" and the ID of the other account.
+- The target account gets an Incoming Transfer. Its note is "Transferred from account" and the ID of the first account.
+- Care records both payments with the Payment Method Cash, the status Active and the current date, without a location.
+- The Total Paid goes down on the account that you transfer from, and goes up on the target account.
+- Care saves both payments, or neither of them.
+- The two payments are separate. Each one is cancelled on its own. See [Cancel a payment](./cancel-payment.mdx).
+
+## Related
+
+Concepts:
+
+- [Payment Reconciliation](../../../concepts/billing/payment-reconciliation.mdx)
+- [Account](../../../concepts/billing/account.mdx)
+
+Flows:
+
+- [Move payments to another account](./move-payment.mdx)
+- [Cancel a payment](./cancel-payment.mdx)
+- [Find payments](./find-payments.mdx)
+- [View an account](../account/view-account.mdx)

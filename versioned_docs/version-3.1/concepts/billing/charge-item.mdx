@@ -6,62 +6,103 @@ sidebar_position: 2
 
 ## Definition
 
-A **[charge item](https://build.fhir.org/chargeitem.html)** in Care records one billable service or item against a patient's account. A consultation, a procedure, or a dispensed medicine is each a charge item. Charge items are the building blocks that Care bundles into invoices.
-
-You do not open charge items on their own. Charge items always appear inside an appointment, a service request, or the Charge Items tab of an account.
+A [charge item](https://build.fhir.org/chargeitem.html) in Care is one billable service or product on a patient's account. Every charge item belongs to exactly one account. Each charge item that you add comes from a charge item definition, which gives it its title, description and price. Only Billable charge items can go on an invoice.
 
 ## Key Attributes
 
 | Components | What it captures |
 | --- | --- |
-| Title | The name of the charge. You must enter a title. |
-| Description | More detail about the charge. This is optional. |
-| Quantity | How many units of the service or item the patient receives. You must enter a quantity. |
-| Price Components | The base price and any surcharge, discount, tax, or informational amount. You must enter at least one price component. |
-| Note | A free-text note about the charge. This is optional. |
-| Status | The current state of the charge item. See [Status](#status). |
-| Charge Item Definition | The pre-configured and priced item or service that the charge item comes from, if any. |
-| Performer | The person who performed the billed service. This is optional. |
-| Source record | The clinical record that the charge comes from, where relevant. This is a service request, a medication dispense, an appointment, or a bed association. |
+| Title | The name of the charge item. Care copies it from the charge item definition, and you cannot change it. |
+| Description | More detail about the charge item, copied from the charge item definition. This is optional. |
+| Quantity | The number of units that the patient receives. |
+| Price | The price of one unit: a base price and any surcharges, discounts and taxes. It can also hold informational amounts, such as MRP, that do not change the total. |
+| Total | The amount that Care calculates from the price and the quantity. |
+| Status | The current state of the charge item. See Status below. |
+| Charge Item Definition | The priced template that the charge item comes from. |
+| Performer | The person who performed the service. This is optional. The performer must be a member of the facility. |
+| Resource | The record that the charge item is for: a service request, a medication dispense, an appointment or a bed stay. This is optional. |
+| Account | The account that holds the charge item. |
+| Encounter | The encounter that the charge item belongs to. This is optional. |
+| Note | A free-text note about the charge item. This is optional. |
+| Invoice | The invoice that the charge item is on, if any. The account page shows the invoice number with the status. |
 
-### Account and Encounter
+### Account and encounter
 
-Every charge item belongs to exactly one account. A charge item is optionally linked to one encounter.
+Every charge item belongs to exactly one account, and it can belong to one encounter.
 
-You can move a charge item from one account to another account while its status is Billable.
+You add and manage charge items on the account page, on the **Charge Items** and **Bed Charge Items** tabs, and on the **Create Invoice** page of the account.
+
+When Care adds a charge item without a chosen account, it uses the patient's Active account with billing status Open at the facility. If the patient has no such account, Care creates one, named after the patient and the date. This is how a new billing period starts after an account leaves Open.
+
+You can move Billable charge items that are on no invoice to another account of the same patient at the facility.
+
+The **Total Billable** of the account is the sum of the totals of its Billable charge items. Care calculates it when someone rebalances the account, when an invoice or a payment of the account changes, and when charge items move to another account. Adding, editing or cancelling a charge item does not update it by itself.
+
+### Price and total
+
+Care copies the price from the charge item definition. It merges in the price components of the definition's category, and it replaces global components with the facility's own values when the facility has them. A component with conditions is added only when its conditions are met for the patient, the facility and the encounter.
+
+Care calculates the total in this order: the base price times the quantity, plus surcharges, minus discounts, plus taxes. Discounts are taken from the price after surcharges, and taxes from the price after discounts. The discount configuration of the definition, or of the facility, can limit how many discounts apply.
+
+Care refuses a charge item whose total is below zero. When you add charge items from definitions, a user with Can Create Negative Charge Item can save a total below zero.
+
+If **Can Edit Charge Item** is cleared on the charge item definition, you cannot change the unit price, quantity, discounts or note of its charge items. Care keeps the price and the quantity on every edit.
+
+### Resource
+
+Care adds some charge items by itself, as part of other work. The user does not need Can Create Charge Item for these.
+
+- Booking an appointment on a schedule that has a charge item definition adds a charge item for that appointment. The schedule's practitioner is the performer. For a revisit within the revisit period of the schedule, Care uses the revisit charge item definition.
+- Dispensing a medication whose product has a charge item definition adds a charge item for the dispensed quantity. The prescriber is the performer.
+- Creating a service request from an activity definition adds one charge item for each charge item definition of the activity definition. The requester is the performer.
+
+When the appointment, the medication dispense or the service request is cancelled, Care sets its charge items to Aborted. If a charge item is on a draft invoice, Care also takes it off that invoice. If a charge item is on an invoice that is not a draft, Care refuses to cancel it: "Cannot cancel charge item in a non-draft invoice".
+
+Users add other charge items themselves, and need Can Create Charge Item. Charge items for a bed stay come from the **Bed Charge Items** tab of the account. Users can also add charge items from a service request while it is Draft or Active.
+
+The service request page shows its charge items as cards with no edit or cancel actions. The appointment page shows its charge items view-only.
 
 ### Status
 
 | Status | Description |
 | --- | --- |
-| Billable | The charge item is ready for an invoice. This is the starting status. |
-| Not Billable | The charge item does not go on an invoice. |
-| Aborted | Someone stopped the charge item. |
-| Entered in Error | Someone recorded the charge item by mistake. |
-| Billed | Care sets this status when the charge item goes on an invoice. |
-| Paid | Care sets this status when the invoice for the charge item is Balanced. |
+| Billable | The charge item is ready to go on an invoice. A charge item that you add starts with this status. |
+| Billed | The charge item is on an invoice, including a draft invoice. If someone removes it from a draft invoice, or cancels the invoice, it goes back to Billable. |
+| Paid | The invoice of the charge item moved from Issued to Balanced. If someone cancels the invoice, the charge item goes back to Billable. |
+| Not Billable | A cancelled status. The charge item does not go on an invoice. |
+| Aborted | A cancelled status. Care also sets it when the appointment, the medication dispense or the service request is cancelled. |
+| Entered in Error | A cancelled status. The charge item does not go on an invoice. |
 
-Note: Not Billable, Aborted, and Entered in Error are the reasons that you choose when you cancel a Billable charge item. Care sets Billed and Paid for you as the invoice moves through its lifecycle.
+You cancel a Billable charge item when you mark it as Not Billable, Entered in Error or Aborted. After that, nobody can change the charge item, so you cannot undo a cancellation.
+
+Care sets Billed and Paid as the invoice moves through its lifecycle. You cannot set them by hand.
 
 ## Permissions
 
-Care checks these permissions at the facility level.
+Care checks each permission through your role in any organization of the facility. The roles below hold the permission by default.
 
 | Permission | What it allows | Roles |
 | --- | --- | --- |
-| Can Create Charge Item | Add charge items to an account. | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
-| Can Update Charge Item | Edit a charge item and move charge items to another account. | Facility Admin, Admin |
-| Can Read Charge Item | View and list charge items. | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| Can Cancel Charge Item | Cancel a charge item. | Facility Admin, Admin |
+| Can Create Charge Item | Add charge items, and move charge items to another account. | Facility Admin, Staff, Doctor, Nurse, Pharmacist |
+| Can Read Charge Item | See and list charge items. | Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Update Charge Item | Edit a charge item and change its status. | Facility Admin |
+| Can Cancel Charge Item | Cancel a charge item. Care also checks Can Update Charge Item. | Facility Admin |
+| Can Create Negative Charge Item | Save charge items added from definitions with a total below zero. | Facility Admin |
 
-Note: Care lets you edit or cancel a charge item only while its status is Billable.
+By default, every cancellation needs Can Cancel Charge Item. A deployment can set a period after a charge item is added. During that period, Can Update Charge Item is enough to cancel it.
 
 ## Related
 
 - Flow: [Add charge items](../../flows/billing/charge-item/add-charge-items.mdx)
+- Flow: [Add a package of charge items](../../flows/billing/charge-item/quick-add-charge-items.mdx)
+- Flow: [Add bed charges](../../flows/billing/charge-item/add-bed-charges.mdx)
 - Flow: [Edit a charge item](../../flows/billing/charge-item/edit-charge-item.mdx)
 - Flow: [Cancel a charge item](../../flows/billing/charge-item/cancel-charge-item.mdx)
 - Flow: [Move charge items to another account](../../flows/billing/charge-item/move-charge-items.mdx)
-- Concept: [Account](../../concepts/billing/account.mdx) — every charge item belongs to one account
-- Concept: [Invoice](../../concepts/billing/invoice.mdx) — bundles billable charge items for billing
-- Concept: [Payment Reconciliation](../../concepts/billing/payment-reconciliation.mdx) — records the payments that mark charge items as Paid
+- Flow: [Print charge items](../../flows/billing/charge-item/print-charge-items.mdx)
+- Concept: [Account](./account.mdx) - every charge item belongs to one account.
+- Concept: [Invoice](./invoice.mdx) - groups Billable charge items for payment.
+- Concept: [Payment Reconciliation](./payment-reconciliation.mdx) - records the payments against the account and its invoices.
+- Concept: [Charge Item Definition](../definitions/charge-item-definition.mdx) - the priced template that a charge item comes from.
+- Flow: [Rebalance an account](../../flows/billing/account/rebalance-account.mdx)
+- Reference: [Charge Item](../../references/billing/charge-item.mdx)

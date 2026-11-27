@@ -1,0 +1,121 @@
+---
+sidebar_position: 5
+---
+
+# Record an advance payment
+
+## Overview
+
+This flow describes how to record an advance [payment](../../../concepts/billing/payment-reconciliation.mdx) on an [account](../../../concepts/billing/account.mdx) in Care. Care records the payment to the account, not to an invoice, and it counts towards the Total Paid of the account.
+
+## Pre-requisites
+
+- You are a member of the facility.
+- The account has the status Active.
+- The billing status of the account is not Closed Bad Debt, Closed Voided, Closed Completed or Closed Combined.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Write Payment Reconciliation | Lets you save the payment. You need it through a role in any organization of the facility. Facility Admin, Staff, Doctor, Nurse and Pharmacist have it by default. |
+| Can List Facility Locations | Lets you see locations in the location picker and save the payment with a location. You need it in an organization that the location is linked to. Facility Admin, Administrator, Staff, Doctor, Nurse and Pharmacist have it by default. |
+| Can Read Account | Lets you find and open the account. You need it in the facility. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist have it by default. |
+| Can Read Invoice | Lets you see the invoices on the **Invoices** tab, where the account page opens. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist have it by default. |
+
+Care shows **Advance/Receipt** without a permission check. If you do not have Can Write Payment Reconciliation, Care shows an error when you save.
+
+## Steps
+
+### 1. Open the account
+
+In the facility, select **Billing**. Select **Accounts**.
+
+In the row of the account, select **Go to account**.
+
+Note: You can also open the account from the **Accounts** tab of the patient. See [View an account](../account/view-account.mdx).
+
+![Care screen for step 1, Open the account](/media/billing/payment-reconciliation/record-advance-payment-1.png)
+
+### 2. Open the payment form
+
+Select **Advance/Receipt**.
+
+On a narrow screen, select **Credit**.
+
+Note: Press `c` on a wide screen, or `r` on a narrow screen, to open the payment form.
+
+The form "Collect Payment" opens. It shows the Balance Due of the account.
+
+![Care screen for step 2, Open the payment form](/media/billing/payment-reconciliation/record-advance-payment-2.png)
+
+### 3. Enter the payment details
+
+Complete these fields.
+
+| Components | What it captures |
+| --- | --- |
+| Payment Method | How the payer pays. Select Cash, Direct Deposit, Credit Card, Debit Card, Check or Credit Account. |
+| Payment Type | Care selects Advance. You can select Payment instead. |
+| Issuer Type | Who pays. Care selects Patient. You can select Insurer instead. |
+| Location | A location of the facility. Select it in the location picker. Care fills in the location that you used last in this facility, on this browser. |
+| Amount Paid | The amount of this payment. The amount must be more than 0. |
+| Amount Received | Only for Cash. The cash that the payer gives you. It cannot be less than the Amount Paid. |
+| Reference Number | Only for methods other than Cash. Optional. A transaction ID, check number or other reference. |
+| Payment Date | The date and time of the payment. Care fills in the current time. It cannot be in the future. |
+| Notes | Optional. More information about the payment. |
+
+If the cash that the payer gives is more than the Amount Paid, Care shows the "Change to return".
+
+Note: Your deployment decides if **Location** is required. By default, it is required.
+
+Note: Your deployment can preselect a **Payment Method**.
+
+![Care screen for step 3, Enter the payment details](/media/billing/payment-reconciliation/record-advance-payment-3.png)
+
+![Care screen for step 3, Enter the payment details](/media/billing/payment-reconciliation/record-advance-payment-4.png)
+
+### 4. Save the payment
+
+Select **Record Payment**.
+
+Note: Press `Shift+Enter` to save. To close the form without saving, select **Cancel** or press `Escape`.
+
+Note: **Record Payment** stays disabled until the amount is more than 0.
+
+Note: If Care shows "You do not have permission to given location", select another location. You need Can List Facility Locations in an organization of the location.
+
+Care shows "Payment Recorded Successfully!" and "The payment has been recorded to the account."
+
+![Care screen for step 4, Save the payment](/media/billing/payment-reconciliation/record-advance-payment-5.png)
+
+### 5. Close the form
+
+Select **Close**.
+
+![Care screen for step 5, Close the form](/media/billing/payment-reconciliation/record-advance-payment-6.png)
+
+![Care screen for step 5, Close the form](/media/billing/payment-reconciliation/record-advance-payment-7.png)
+
+## Expected Outcome
+
+- Care saves the payment on the account, without an invoice.
+- Care calculates the totals of the account again at once. The Total Paid goes up and the Amount Due goes down.
+- The payment shows on the **Payments** tab of the account.
+- You can print a receipt from the page of the payment. See [Print a payment receipt](./print-payment-receipt.mdx).
+
+## Related
+
+Concepts:
+
+- [Payment Reconciliation](../../../concepts/billing/payment-reconciliation.mdx)
+- [Account](../../../concepts/billing/account.mdx)
+
+Flows:
+
+- [Record a payment for an invoice](./record-payment.mdx)
+- [Record a credit note](./record-credit-note.mdx)
+- [Find payments](./find-payments.mdx)
+- [Print a payment receipt](./print-payment-receipt.mdx)
+- [View an account](../account/view-account.mdx)

@@ -6,19 +6,21 @@ sidebar_position: 2
 
 ## Overview
 
-This flow describes how to open an [account](../../../concepts/billing/account.mdx) in Care. The account page shows the financial summary, the billing progress, and the billing records of the patient.
+This flow describes how to find an [account](../../../concepts/billing/account.mdx) and open the account page. The account page shows the details, the totals, and the Billing Status of the account, and its invoices, charge items, payments, and reports.
 
 ## Pre-requisites
 
-- Someone created the account for the patient at the facility.
-- You are a member of the facility that holds the account.
+- You are a member of the facility.
+- If you start from the patient, you can open the patient's profile in the facility. See [View a patient's profile](../../clinical/patient/view-patient-profile.mdx).
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Read Account | Lets you open an account and see its details. Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, and Pharmacist have this permission. |
+| Can Read Account | Lets you see the account list and open an account. You must hold it in the facility. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist hold it by default. |
+| Can Read Invoice | Lets you see the **Invoices** tab, which the account page opens first. You must hold it in the facility. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist hold it by default. |
+| Can Read Tag Config | Lets you use the **Tags** filter of the account list. You must hold it in the facility. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist hold it by default. |
 
 ## Steps
 
@@ -26,68 +28,140 @@ This flow describes how to open an [account](../../../concepts/billing/account.m
 
 Use one of these entry points:
 
-- Open the patient profile. Select the **Accounts** tab. This tab lists all the accounts of the patient.
-- Open the facility. Select **Billing**. Select **Accounts**.
+- In the **Administration** section of the facility sidebar, select **Billing**. Then select **Accounts**. Care shows the accounts of the facility.
+- On the patient's profile, select the **Accounts** tab. Care shows the accounts of that patient at the facility.
+- On the patient's home page, select **View Accounts**, or press `a`. Care shows the accounts of that patient.
+- On an appointment, select **Accounts**, or press `4`. Care shows the accounts of the patient of the appointment.
+- On an account page, select **Past Accounts**. Care shows the **Accounts** tab of the patient.
 
-Note: On the patient profile, you can filter the accounts by status, billing status, created date, and tags.
+Note: You can also open an account from the **Account** card of an encounter. See [Link an encounter to an account](./link-encounter-to-account.mdx).
 
-### 2. Open the account
+![Care screen for step 1, Open the account list](/media/billing/account/view-account-1.png)
 
-Click the account that you want to see. Care opens the account page.
+### 2. Find the account
 
-### 3. Read the account details
+The list shows Active accounts when it opens.
 
-The top of the page shows this information:
+To find other accounts, use the filters **Account Status**, **Period**, **Billing Status**, **Encounter Class**, and **Tags**.
+
+Note: The **Period** filter uses the date when the account was created.
+
+In **Billing** > **Accounts**, use **Filter by Identifier** to find the accounts of one patient.
+
+The list shows these columns:
+
+| Column | What it shows |
+| --- | --- |
+| **Account** | The name of the account. In **Billing** > **Accounts**, the name of the patient shows below it. |
+| **Balance** | The Amount Due of the account, rounded. |
+| **Billable** | The Total Billable of the account. |
+| **Account Status** | The status of the account. |
+| **Billing Status** | The Billing Status of the account. |
+| **Period** | The start date of the account, and its end date if it has one. |
+| **Tags** | The tags of the account. |
+| **Action** | The **Go to account** button. |
+
+If no account matches the filters, Care shows **No accounts found**.
+
+![Care screen for step 2, Find the account](/media/billing/account/view-account-2.png)
+
+### 3. Open the account
+
+In the **Action** column, select **Go to account**. Care opens the account page on the **Invoices** tab.
+
+Note: Selecting the row does not open the account.
+
+If Care cannot load the account, it shows **Account not found** and a **Back to accounts** button.
+
+![Care screen for step 3, Open the account](/media/billing/account/view-account-3.png)
+
+### 4. Read the account details
+
+The top of the account page shows the patient. Below it, Care shows these details:
 
 | Component | What it shows |
 | --- | --- |
-| Patient name | The patient that owns the account. |
-| Status badge | The current status of the account. |
-| Service period | The start date and the end date of the service period. |
-| Tags | The tags on the account. |
+| **Account** | The name of the account. |
+| **Status** | The status of the account. |
+| **Start date** | When the account starts. |
+| **End date** | When the account ends. Care shows **Ongoing** if the account has no end date. |
+| **Tags** | The tags of the account, and the **Add Tags** or **Manage Tags** button. |
 
-### 4. Read the financial summary
+![Care screen for step 4, Read the account details](/media/billing/account/view-account-4.png)
 
-The Financial Summary shows these amounts:
+### 5. Read the totals
 
 | Component | What it shows |
 | --- | --- |
-| Amount Due | The amount that the patient must still pay. |
-| Total Paid | The amount that the patient paid. |
-| Billed (Gross) | The gross amount that Care billed. |
-| Total Billable | The amount that Care can bill. |
+| **Amount Due** | Billed (Gross) minus Total Paid. If the patient owes money, Care shows the amount in red with **Pending from Patient**. Otherwise Care shows it in green with **Overpaid amount to be refunded**. |
+| **Total Paid** | The payments received on the account, minus the credit notes. |
+| **Billed (Gross)** | The total of the invoices of the account, without cancelled invoices and invoices entered in error. |
+| **Total Billable** | The total of the Billable charge items of the account. |
 
-Care calculates these amounts automatically.
+If Care has calculated the totals before, it shows when it last did so.
 
-Note: If the amounts look out of date, click **Rebalance**. Care recalculates the Financial Summary from the charge items and the payments of the account.
+Adding, editing, or cancelling a charge item does not update the totals. To calculate the totals again, see [Rebalance an account](./rebalance-account.mdx).
 
-### 5. Read the billing lifecycle stepper
+![Care screen for step 5, Read the totals](/media/billing/account/view-account-5.png)
 
-The Billing Lifecycle Stepper shows the progress of the account through these stages:
+### 6. Read the Billing Status
 
-1. Open
-2. Care Completed
-3. Billing
-4. Closed
+The **Billing Status** stepper shows the steps Open, Care Completed, Billing, and Closed.
 
-### 6. Open a tab
+The stepper shows the name of the current step and the next step. Point to another step to see its name.
 
-The account page has these tabs:
+If the account has a closed Billing Status, Closed is the current step.
 
-| Tab | Keyboard shortcut |
+![Care screen for step 6, Read the Billing Status](/media/billing/account/view-account-6.png)
+
+### 7. Open a tab
+
+Select a tab, or press its keyboard shortcut.
+
+| Tab | What it shows | Keyboard shortcut |
+| --- | --- | --- |
+| **Invoices** | The invoices of the account. The page opens on this tab. See [Find and open an invoice](../invoice/view-invoice.mdx). | `Shift+1` |
+| **Charge Items** | The charge items of the account. See [Add charge items](../charge-item/add-charge-items.mdx). | `Shift+2` |
+| **Payments** | The payments of the account. See [Find payments](../payment-reconciliation/find-payments.mdx). | `Shift+3` |
+| **Reports** | The reports of the account, and the **Generate Report** button. See [Generate and view a report](../../platform/report-template/generate-and-view-a-report.mdx). | `Shift+4` |
+| **Bed Charge Items** | The bed charge items of the account. See [Add bed charges](../charge-item/add-bed-charges.mdx). | `Shift+5` |
+
+Note: On narrow screens, some tabs move into a menu.
+
+Note: Each linked flow lists the permissions for the content of its tab.
+
+Note: The **Bed Charge Items** tab needs a primary encounter. If the account has none, the tab shows **No encounter associated**.
+
+Note: To generate an account report, you need Can Update Account and Can generate report from template. The facility also needs an active template for account reports.
+
+![Care screen for step 7, Open a tab](/media/billing/account/view-account-7.png)
+
+### 8. Start a task from the account page
+
+Use the controls on the account page to start these tasks:
+
+| Control | Task |
 | --- | --- |
-| Invoices | `Shift+1` |
-| Charge Items | `Shift+2` |
-| Payments | `Shift+3` |
-| Reports | `Shift+4` |
-| Bed Charge Items | `Shift+5` |
+| **Edit** | [Edit an account](./edit-account.mdx) |
+| **Rebalance** | [Rebalance an account](./rebalance-account.mdx) |
+| **Billing Status** stepper | [Advance the billing status](./advance-account-billing-status.mdx) |
+| **Settle & Close** | [Settle and close an account](./settle-and-close-account.mdx) |
+| **Add Tags** or **Manage Tags** | [Add or remove account tags](./manage-account-tags.mdx) |
+| **Create Invoice** | [Create an invoice](../invoice/create-invoice.mdx) |
+| **Advance/Receipt** | [Record an advance payment](../payment-reconciliation/record-advance-payment.mdx) |
+| **Record Credit Note** | [Record a credit note](../payment-reconciliation/record-credit-note.mdx) |
+| **Transfer Payment** | [Transfer an amount to another account](../payment-reconciliation/transfer-payment.mdx) |
 
-Click a tab, or press its keyboard shortcut.
+Note: Some controls show only for an Active account that does not have a closed Billing Status. Each task page lists its conditions.
+
+Note: **Record Credit Note** and **Transfer Payment** are in the more-options (**⋮**) menu. On narrow screens, **Settle & Close** also moves into the more-options (**⋮**) menu. **Create Invoice** and **Advance/Receipt** then show as **Invoice** and **Credit**.
+
+![Care screen for step 8, Start a task from the account page](/media/billing/account/view-account-8.png)
+
 ## Expected Outcome
 
-- Care shows the account page with the patient name, the status, the service period, and the tags.
-- Care shows the Financial Summary and the Billing Lifecycle Stepper.
-- You can open the Invoices, Charge Items, Payments, Reports, and Bed Charge Items tabs.
+- Care shows the account page with the details, the totals, the **Billing Status** stepper, and the tabs of the account.
+- You can start the account tasks from the account page.
 
 ## Related
 
@@ -102,4 +176,5 @@ Flows:
 
 - [Create an account](./create-account.mdx)
 - [Edit an account](./edit-account.mdx)
-- [Advance the billing status of an account](./advance-account-billing-status.mdx)
+- [Rebalance an account](./rebalance-account.mdx)
+- [Generate and view a report](../../platform/report-template/generate-and-view-a-report.mdx)

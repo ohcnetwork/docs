@@ -2,67 +2,82 @@
 sidebar_position: 3
 ---
 
-# Edit an invoice
+# Edit the details of a draft invoice
 
 ## Overview
 
-This flow describes how to change the details and the items of a draft [invoice](../../../concepts/billing/invoice.mdx) in Care.
+This flow describes how to change the issue date, the payment terms and the note of a draft [invoice](../../../concepts/billing/invoice.mdx) in Care. To add, remove or change the items of the invoice, see [Change the items of a draft invoice](./edit-invoice-items.mdx).
 
 ## Pre-requisites
 
-- Someone created the invoice, and its status is Draft.
+- The invoice status is Draft. Care shows **Edit Details** only for a draft invoice.
+- If the invoice is locked, you have Can Manage Locked Invoice, so that you can open it.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Write Invoice | Lets you change the details and the items of a draft invoice. Facility Admin, Admin, Staff, Doctor, Nurse, and Pharmacist have this permission. |
+| Can Write Invoice | Save the new details. Facility Admin, Staff, Doctor, Nurse and Pharmacist hold it. |
+| Can Read Invoice | Open the invoice. Care also checks it when you save. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it. |
+| Can Manage Locked Invoice | Only to open a locked invoice. Facility Admin holds it. |
+
+You hold each permission through a role in any organization of the facility. The roles named are the default roles.
 
 ## Steps
 
 ### 1. Open the invoice
 
-Open the invoice that you want to change. Confirm that the status of the invoice is Draft. You cannot change an invoice after you issue it.
+Open the draft invoice. See [Find and open an invoice](./view-invoice.mdx).
 
-### 2. Edit the invoice details
+![Care screen for step 1, Open the invoice](/media/billing/invoice/edit-invoice-1.png)
 
-Change the invoice details on the invoice page.
+### 2. Open the details form
 
-| Component | What it captures |
+Select **Edit Details**.
+
+Care opens **Edit Invoice Details**.
+
+![Care screen for step 2, Open the details form](/media/billing/invoice/edit-invoice-2.png)
+
+### 3. Change the details
+
+Change the values that you need.
+
+| Components | What it captures |
 | --- | --- |
-| Issue Date | The date of the invoice. |
-| Payment Terms | The terms of payment for the invoice. |
+| Issue Date | The date of issue. You cannot select a date in the future. |
+| Payment Terms | The conditions for payment. |
 | Note | More information about the invoice. |
 
-Save your changes.
+If the date is in the future, Care shows **Issue date cannot be in the future**.
 
-### 3. Edit the invoice items
+![Care screen for step 3, Change the details](/media/billing/invoice/edit-invoice-3.png)
 
-Change the [charge items](../../../concepts/billing/charge-item.mdx) on the invoice page. You can do these actions:
+### 4. Save the changes
 
-- Add a charge item that belongs to the same account.
-- Create a charge item from a Charge Item Definition, and add it to the invoice.
-- Remove a charge item from the invoice.
-- Change the title, quantity, price, tax, discount, or performer of an item.
+Select **Save Changes**.
 
-Note: Press `o` to open Other Charge Items. This shows the other charge items of the account that you can add.
-Save your changes.
+The button is available only after you change a value.
+
+![Care screen for step 4, Save the changes](/media/billing/invoice/edit-invoice-4.png)
+
+![Care screen for step 4, Save the changes](/media/billing/invoice/edit-invoice-5.png)
 
 ## Expected Outcome
 
-- The invoice shows the new details and the new items.
-- The invoice stays in Draft status, and you can issue it.
+- Care shows **Invoice updated successfully**.
+- The invoice shows the new details.
+- The invoice status stays Draft.
 
 ## Related
 
 Concepts:
 
 - [Invoice](../../../concepts/billing/invoice.mdx)
-- [Charge Item](../../../concepts/billing/charge-item.mdx)
 
 Flows:
 
-- [Create an invoice](./create-invoice.mdx)
-- [View an invoice](./view-invoice.mdx)
+- [Change the items of a draft invoice](./edit-invoice-items.mdx)
+- [Find and open an invoice](./view-invoice.mdx)
 - [Issue an invoice](./issue-invoice.mdx)

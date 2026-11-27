@@ -1,0 +1,102 @@
+---
+sidebar_position: 5
+---
+
+# Add a package of charge items
+
+## Overview
+
+
+This flow describes how to add a package of [charge items](../../../concepts/billing/charge-item.mdx) to an account with **Quick Add**. A package is a child tag of charge item definitions, and selecting it adds every Active definition that carries the tag.
+
+## Pre-requisites
+
+- The account status is Active, and its billing status is not a closed status. Otherwise, Care does not show **Quick Add**.
+- The facility has tag groups for charge item definitions, with packages as child tags under them. If it has none, the **Packages** section is empty. To set up tags and child tags, see [Create a tag](../../platform/tagging/create-a-tag.mdx) and [Create a child tag](../../platform/tagging/create-a-child-tag.mdx).
+- The charge item definitions of the package carry the package tag, and they are Active.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Charge Item | Lets you add the charge items when you select **Add Items**. Facility Admin, Staff, Doctor, Nurse and Pharmacist hold it by default. |
+| Can Read Account | Lets you open the account. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it by default. |
+| Can Read Invoice | Lets you see the **Invoices** tab, which the account page opens first. You must hold it in the facility. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist hold it by default. |
+| Can Read Charge Item | Lets you see the **Charge Items** tab of the account. The same eight roles hold it by default. |
+| Can Read Tag Config | Lets you see the tag groups and the packages. The same eight roles hold it by default. |
+| Can Read Charge Item Definition | Lets Care load the charge item definitions of a package. The same eight roles hold it by default. |
+
+Care checks each permission through your role in any organization of the facility.
+
+## Steps
+
+### 1. Open the Charge Items tab of the account
+
+In the facility sidebar, select **Billing**.
+
+Select **Accounts**. Open the account of the patient. See [View an account](../account/view-account.mdx).
+
+Select the **Charge Items** tab, or press `Shift+2`.
+
+![Care screen for step 1, Open the Charge Items tab of the account](/media/billing/charge-item/quick-add-charge-items-1.png)
+
+### 2. Open Quick Add
+
+Select **Quick Add**. Care opens the **Quick Add** form.
+
+Note: The **Create Invoice** page of the account also has **Quick Add**. See [Create an invoice](../invoice/create-invoice.mdx).
+
+![Care screen for step 2, Open Quick Add](/media/billing/charge-item/quick-add-charge-items-2.png)
+
+### 3. Select a package
+
+Under **Packages**, find the tag group. Select a package in the group.
+
+Care puts every Active charge item definition with that package tag under **Items to Add**, up to 100.
+
+To take the items of a package out again, select the package again.
+
+Note: If a charge item definition is already under **Items to Add**, Care increases its quantity by 1. Care does not add a second row.
+
+![Care screen for step 3, Select a package](/media/billing/charge-item/quick-add-charge-items-3.png)
+
+### 4. Check the items to add
+
+Under **Items to Add**, change the quantity of an item with its quantity buttons.
+
+To remove one item, select its remove button. To remove all items, select **Clear all**.
+
+![Care screen for step 4, Check the items to add](/media/billing/charge-item/quick-add-charge-items-4.png)
+
+### 5. Add the charge items
+
+Check the **Estimated Total**.
+
+Select **Add Items**. The button shows the number of items.
+
+![Care screen for step 5, Add the charge items](/media/billing/charge-item/quick-add-charge-items-5.png)
+
+![Care screen for step 5, Add the charge items](/media/billing/charge-item/quick-add-charge-items-6.png)
+
+## Expected Outcome
+
+- Care adds one charge item for each item under **Items to Add**, with the quantity that you set.
+- Each charge item has the status Billable, and takes its title, description and price from its charge item definition.
+- Quick Add sets no performer.
+- Adding charge items does not update the **Total Billable** of the account at once. Care updates it when someone rebalances the account, or when an invoice or a payment of the account changes. See [Rebalance an account](../account/rebalance-account.mdx).
+
+## Related
+
+Concepts:
+
+- [Charge Item](../../../concepts/billing/charge-item.mdx)
+- [Charge Item Definition](../../../concepts/definitions/charge-item-definition.mdx)
+- [Tagging](../../../concepts/platform/tagging.mdx)
+
+Flows:
+
+- [Add charge items](./add-charge-items.mdx)
+- [Edit a charge item](./edit-charge-item.mdx)
+- [Create a tag](../../platform/tagging/create-a-tag.mdx)
+- [Create a child tag](../../platform/tagging/create-a-child-tag.mdx)

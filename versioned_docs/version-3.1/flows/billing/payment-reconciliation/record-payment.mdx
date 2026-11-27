@@ -2,70 +2,127 @@
 sidebar_position: 1
 ---
 
-# Record a payment
+# Record a payment for an invoice
 
 ## Overview
 
-This flow describes how to record a [payment reconciliation](../../../concepts/billing/payment-reconciliation.mdx) in Care. You record a payment against an issued [invoice](../../../concepts/billing/invoice.mdx), or as a general credit on an [account](../../../concepts/billing/account.mdx).
+<video src="/media/billing/payment-reconciliation/record-payment.mp4" poster="/media/billing/payment-reconciliation/record-payment.poster.png" controls width="720">
+  <track kind="captions" src="/media/billing/payment-reconciliation/record-payment.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to record a [payment](../../../concepts/billing/payment-reconciliation.mdx) against an issued [invoice](../../../concepts/billing/invoice.mdx) in Care. Care adds the payment to the invoice and to the totals of its [account](../../../concepts/billing/account.mdx).
 
 ## Pre-requisites
 
-- If you record a payment against an invoice, the invoice is issued.
-- If you record a general credit, you open the account page for the patient.
+- You are a member of the facility.
+- The invoice has the status Issued.
+- The invoice is not a refund invoice. For a refund invoice, see [Record a credit note](./record-credit-note.mdx).
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Write Payment Reconciliation | Record a payment or a credit note. Facility Admin, Admin, Staff, Doctor, Nurse, and Pharmacist have this permission. |
+| Can Write Payment Reconciliation | Lets you save the payment. You need it through a role in any organization of the facility. Facility Admin, Staff, Doctor, Nurse and Pharmacist have it by default. |
+| Can List Facility Locations | Lets you see locations in the location picker and save the payment with a location. You need it in an organization that the location is linked to. Facility Admin, Administrator, Staff, Doctor, Nurse and Pharmacist have it by default. |
+| Can Write Invoice | Lets Care mark the invoice Balanced after your payment. Without it, Care keeps the payment and shows "Failed to mark invoice as balanced". Facility Admin, Staff, Doctor, Nurse and Pharmacist have it by default. |
+| Can Read Invoice | Lets you open the invoice. You need it in the facility. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist have it by default. |
+| Can Manage Locked Invoice | Needed only for a locked invoice. Lets you open the locked invoice. Facility Admin has it by default. |
+| Can Read Account | Needed only if you open the invoice from its account. Lets you open the account. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist have it by default. |
+
+Care shows **Record Payment** without a permission check. If you do not have Can Write Payment Reconciliation, Care shows an error when you save.
 
 ## Steps
 
-### 1. Start the payment
+### 1. Open the invoice
 
-Start the payment from one of these places:
+In the facility, select **Billing**. Select **Invoices**.
 
-- On an issued invoice, click **Record Payment**. For a refund invoice, click **Record Credit Note**.
-- After you issue an invoice, Care offers the same action immediately.
-- On an account page, click **Advance/Receipt** to record a payment on the account. To record a credit note, open the menu and select **Record Credit Note**.
+In the row of the invoice, select **See Invoice**.
 
-Note: Press `r` on an invoice page or an account page to open Record Payment. Press `c` on an account page to open Advance/Receipt.
+Note: You can also open the invoice from the **Invoices** tab of its account. See [Find and open an invoice](../invoice/view-invoice.mdx).
 
-### 2. Enter the payment details
+![Care screen for step 1, Open the invoice](/media/billing/payment-reconciliation/record-payment-1.png)
 
-Complete the form fields.
+### 2. Open the payment form
+
+Select **Record Payment**.
+
+Note: Press `r` on the invoice page to open the payment form.
+
+The form "Collect Payment" opens. It shows the Invoice Total and the Amount Due, which is the invoice total less the payments already recorded.
+
+Note: When you select **Issue Invoice** on the invoice, Care opens this form by itself after the invoice is issued. See [Issue an invoice](../invoice/issue-invoice.mdx).
+
+Note: In the pharmacy, a dispense order with an unsettled invoice shows **Collect Payment**. It opens the same form for that invoice. See [Dispense a medication](../../medications/medication-dispense/dispense-medication.mdx).
+
+![Care screen for step 2, Open the payment form](/media/billing/payment-reconciliation/record-payment-2.png)
+
+### 3. Enter the payment details
+
+Complete these fields.
 
 | Components | What it captures |
 | --- | --- |
-| Payment Method | How the payer pays. Select Cash, Credit Card, Credit Account, Check, Direct Deposit or Debit Card. |
-| Payment Type | The nature of the transaction. Select Payment or Advance. |
-| Issuer Type | Who pays. Select Patient or Insurer. |
-| Location | The place where you collect the payment. |
-| Amount Paid | The amount that the payer pays. |
-| Amount Received | The cash amount that you receive from the payer. |
-| Reference Number | The transaction reference for the payment. |
-| Payment Date | The date of the payment. |
-| Note | More information about the payment. |
+| Payment Method | How the payer pays. Select Cash, Direct Deposit, Credit Card, Debit Card, Check or Credit Account. |
+| Payment Type | Care selects Payment. You can select Advance instead. |
+| Issuer Type | Who pays. Care selects Patient. You can select Insurer instead. |
+| Location | A location of the facility. Select it in the location picker. Care fills in the location that you used last in this facility, on this browser. |
+| Amount Paid | The amount of this payment. Care fills in the full invoice total, not the Amount Due. If the invoice already has payments, or if the payer pays part of the amount, change the amount. The amount must be more than 0. |
+| Amount Received | Only for Cash. The cash that the payer gives you. It cannot be less than the Amount Paid. |
+| Reference Number | Only for methods other than Cash. Optional. A transaction ID, check number or other reference. |
+| Payment Date | The date and time of the payment. Care fills in the current time. It cannot be in the future. |
+| Notes | Optional. More information about the payment. |
 
-For a credit note, Care does not ask for an Issuer Type. Enter the Refund Amount in place of the Amount Paid.
+If the cash that the payer gives is more than the Amount Paid, Care shows the "Change to return".
 
-If you select Cash as the Payment Method, enter the Amount Received. Care calculates the change to return.
+Note: Your deployment decides if **Location** is required. By default, it is required.
 
-For all other payment methods, you can enter a Reference Number.
+Note: Your deployment can preselect a **Payment Method**.
 
-Note: The Payment Date cannot be in the future.
+![Care screen for step 3, Enter the payment details](/media/billing/payment-reconciliation/record-payment-3.png)
 
-Note: Whether the Location field is mandatory depends on your facility's configuration.
+![Care screen for step 3, Enter the payment details](/media/billing/payment-reconciliation/record-payment-4.png)
 
-### 3. Submit the payment
+### 4. Save the payment
 
-Click the submit button to save the payment.
+Select **Record Payment**.
+
+Note: Press `Shift+Enter` to save. To close the form without saving, select **Cancel** or press `Escape`.
+
+Note: **Record Payment** stays disabled until the amount is more than 0.
+
+Note: If Care shows "You do not have permission to given location", select another location. You need Can List Facility Locations in an organization of the location.
+
+Care shows "Payment Recorded Successfully!" with the amount, the invoice number, the payment date and the method.
+
+![Care screen for step 4, Save the payment](/media/billing/payment-reconciliation/record-payment-5.png)
+
+![Care screen for step 4, Save the payment](/media/billing/payment-reconciliation/record-payment-6.png)
+
+### 5. Check the invoice status
+
+Care marks the invoice Balanced by itself when both of these are true:
+
+- The payments, less any credit notes, now equal the invoice total exactly.
+- You have Can Write Invoice.
+
+Care then shows "Invoice marked as balanced".
+
+If the invoice is still Issued and fully paid, select **Mark as balanced**. You can also press `Enter`.
+
+Note: **Print Receipt** in this view opens the print page of the invoice. To print the receipt of this payment, see [Print a payment receipt](./print-payment-receipt.mdx).
+
+![Care screen for step 5, Check the invoice status](/media/billing/payment-reconciliation/record-payment-7.png)
+
+![Care screen for step 5, Check the invoice status](/media/billing/payment-reconciliation/record-payment-8.png)
 
 ## Expected Outcome
 
-- Care records the payment against the invoice, or as a credit on the account.
-- For a cash payment, Care shows the change to return to the payer.
+- Care saves the payment against the invoice.
+- Care calculates the totals of the account again at once. The Total Paid goes up and the Amount Due goes down.
+- The invoice page lists the payment under "Payments Received Against This Invoice".
+- Care can mark the invoice Balanced. Step 5 gives the conditions.
 
 ## Related
 
@@ -77,5 +134,9 @@ Concepts:
 
 Flows:
 
-- [View a payment](./view-payment.mdx)
-- [Cancel a payment or mark it entered in error](./cancel-payment.mdx)
+- [Record an advance payment](./record-advance-payment.mdx)
+- [Record a credit note](./record-credit-note.mdx)
+- [Print a payment receipt](./print-payment-receipt.mdx)
+- [Cancel a payment](./cancel-payment.mdx)
+- [Issue an invoice](../invoice/issue-invoice.mdx)
+- [Mark an invoice as balanced](../invoice/mark-invoice-balanced.mdx)

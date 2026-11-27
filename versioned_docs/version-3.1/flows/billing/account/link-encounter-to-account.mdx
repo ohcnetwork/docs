@@ -1,0 +1,108 @@
+---
+sidebar_position: 8
+---
+
+# Link an encounter to an account
+
+## Overview
+
+This flow describes how to see the [account](../../../concepts/billing/account.mdx) of an [encounter](../../../concepts/clinical/encounter.mdx), and how to make the encounter the primary encounter of that account. It also describes how to create an account from the encounter when the patient has none.
+
+## Pre-requisites
+
+- The patient has an encounter at your facility, and you open that encounter.
+- If your screen is smaller than extra-large, you can change the encounter. On these screens, the **Account** card is on the **Actions** tab. Care shows that tab only to users who can change the encounter.
+- If you want to create an account, the patient has no Active, Open account at the facility.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Update Account | Lets you save this encounter as the primary encounter of the account. You must hold it in the facility. Facility Admin holds it by default. |
+| Can Read Account | Lets the **Account** card and the **Account** panel show the account. You must hold it in the facility. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist hold it by default. |
+| Can Create Account | Shows **Create Account** in the **Account** panel and lets you save the new account. You must hold it in the facility. Facility Admin holds it by default. |
+
+If you do not have Can Update Account, Care still shows **Assign This Encounter**, but it does not save the change.
+
+If you do not have Can Read Account, the card shows **No account found**.
+
+## Steps
+
+### 1. Find the Account card
+
+Open the encounter. In the summary panel of the encounter overview, find the **Account** card.
+
+On an extra-large screen, the card is on the **Details** tab. On a smaller screen, the card is on the **Actions** tab.
+
+![Care screen for step 1, Find the Account card](/media/billing/account/link-encounter-to-account-1.png)
+
+### 2. Read the card
+
+The card shows the account whose primary encounter is this encounter. Otherwise, it shows the Active, Open account of the patient at the facility.
+
+The card shows the name and the Billing Status of the account.
+
+The card is green when this encounter is the primary encounter of the account. The card is red when it is not.
+
+If Care finds no account, the card shows **No account found**.
+
+To open the account page, select the account on the card.
+
+![Care screen for step 2, Read the card](/media/billing/account/link-encounter-to-account-2.png)
+
+### 3. Make this encounter the primary encounter
+
+If the card is red, select **Assign This Encounter**.
+
+Care saves this encounter as the primary encounter of the account. Care shows **This encounter has been set as primary for the account.**
+
+Note: An account has one primary encounter. If the account had another primary encounter, this encounter replaces it.
+
+Note: An encounter can be the primary encounter of one account only.
+
+![Care screen for step 3, Make this encounter the primary encounter](/media/billing/account/link-encounter-to-account-3.png)
+
+![Care screen for step 3, Make this encounter the primary encounter](/media/billing/account/link-encounter-to-account-4.png)
+
+### 4. Open the Account panel
+
+Select the pencil button on the card. Care opens the **Account** panel.
+
+If the patient has an Active, Open account at the facility, the panel shows that account. It shows the name, the description, **Account Details**, and **Account Summary**.
+
+To open the account page, select **More details**.
+
+![Care screen for step 4, Open the Account panel](/media/billing/account/link-encounter-to-account-5.png)
+
+![Care screen for step 4, Open the Account panel](/media/billing/account/link-encounter-to-account-6.png)
+
+### 5. Create an account if the patient has none
+
+If the panel shows **No active account found**, select **Create Account**.
+
+Fill in the form. See [Create an account](./create-account.mdx).
+
+Select **Create**.
+
+Note: **Create Account** shows only if you have Can Create Account.
+
+## Expected Outcome
+
+- If you selected **Assign This Encounter**, the **Account** card is green. This encounter is now the primary encounter of the account.
+- When the account has a primary encounter, you can use its **Bed Charge Items** tab.
+- If you created an account, it has no primary encounter yet. You can set it when you edit the account. See [Edit an account](./edit-account.mdx).
+
+## Related
+
+Concepts:
+
+- [Account](../../../concepts/billing/account.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [View an account](./view-account.mdx)
+- [Create an account](./create-account.mdx)
+- [Edit an account](./edit-account.mdx)
+- [Add bed charges](../charge-item/add-bed-charges.mdx)

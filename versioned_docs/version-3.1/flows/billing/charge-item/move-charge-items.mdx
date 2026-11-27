@@ -6,48 +6,87 @@ sidebar_position: 4
 
 ## Overview
 
-This flow describes how to move one or more [charge items](../../../concepts/billing/charge-item.mdx) from one account to a different account of the same patient. Use this flow when staff add charge items to the wrong account.
+This flow describes how to move one or more Billable [charge items](../../../concepts/billing/charge-item.mdx) from one [account](../../../concepts/billing/account.mdx) to another account of the same patient at the facility.
 
 ## Pre-requisites
 
-- The patient has the account that holds the charge items you want to move.
-- The patient has a second active [account](../../../concepts/billing/account.mdx) that receives the charge items.
-- The charge items you want to move are still Billable.
+- The patient has another account at the facility. That account can have any status and any billing status.
+- The charge items that you want to move are Billable, and they are on no invoice.
+- You move at most 100 charge items at a time.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Update Charge Item | Lets you move charge items to another account of the same patient. Facility Admin and Admin have this permission. |
+| Can Create Charge Item | Lets you select charge items and move them. Without it, Care does not show the checkboxes or **Change Account**. Facility Admin, Staff, Doctor, Nurse and Pharmacist hold it by default. |
+| Can Read Account | Lets you open the account and see the other accounts of the patient. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it by default. |
+| Can Read Invoice | Lets you see the **Invoices** tab, which the account page opens first. You must hold it in the facility. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist hold it by default. |
+| Can Read Charge Item | Lets you see the charge items of the account. The same eight roles hold it by default. |
+
+Care checks each permission through your role in any organization of the facility.
 
 ## Steps
 
 ### 1. Open the Charge Items tab of the account
 
-Open the account that holds the charge items. Select the **Charge Items** tab.
+In the facility sidebar, select **Billing**.
 
-### 2. Select the charge items to move
+Select **Accounts**. Open the account that holds the charge items. See [View an account](../account/view-account.mdx).
 
-Select one or more charge items in the list. Each selected charge item must have the status Billable.
+Select the **Charge Items** tab, or press `Shift+2`.
 
-### 3. Start the account change
+Note: Use the **Charge Items** tab. The row menu on the **Bed Charge Items** tab has no **Change Account**.
 
-Click **Change Account**.
+![Care screen for step 1, Open the Charge Items tab of the account](/media/billing/charge-item/move-charge-items-1.png)
 
-### 4. Select the destination account
+### 2. Select the charge items
 
-Select the account that receives the charge items. The destination account must be another active account of the same patient.
+Select the checkbox of each charge item that you want to move.
 
-### 5. Confirm the move
+To select all the Billable charge items in the list, select the checkbox in the header row.
 
-Confirm the change. Care moves the selected charge items to the destination account.
+Note: Only Billable charge items have a checkbox that you can select. On other rows, the checkbox is disabled. Its tooltip says **Only billable charge items can be moved to another account**.
+
+![Care screen for step 2, Select the charge items](/media/billing/charge-item/move-charge-items-2.png)
+
+### 3. Start the move
+
+In the bar that shows the number of **items selected**, select **Change Account**.
+
+Note: To move one charge item, open the more-options (**⋯**) menu on its row. Select **Change Account**.
+
+Note: To clear your selection, select **Clear Selection**.
+
+![Care screen for step 3, Start the move](/media/billing/charge-item/move-charge-items-3.png)
+
+### 4. Check the charge items
+
+Care opens the **Change Account** form. Check the charge items and their totals.
+
+![Care screen for step 4, Check the charge items](/media/billing/charge-item/move-charge-items-4.png)
+
+### 5. Select the target account
+
+Under **Select target account**, select the account that receives the charge items. Each account shows its name, service period and billing status.
+
+Note: If the patient has no other account at the facility, Care shows **No other accounts available**.
+
+![Care screen for step 5, Select the target account](/media/billing/charge-item/move-charge-items-5.png)
+
+### 6. Move the charge items
+
+Select **Change Account**. The button is not available until you select an account.
+
+![Care screen for step 6, Move the charge items](/media/billing/charge-item/move-charge-items-6.png)
+
+![Care screen for step 6, Move the charge items](/media/billing/charge-item/move-charge-items-7.png)
 
 ## Expected Outcome
 
-- The selected charge items appear in the destination account.
-- The selected charge items no longer appear in the source account.
-- Care updates the totals of the source account and the destination account.
+- The charge items move to the target account. Care shows **Charge items moved to new account successfully**.
+- Care calculates the totals again for the target account and for the account that the charge items came from.
+- If Care cannot move the charge items, it shows the reason, or **Failed to change account for charge items**.
 
 ## Related
 
@@ -61,3 +100,4 @@ Flows:
 - [Add charge items](./add-charge-items.mdx)
 - [Edit a charge item](./edit-charge-item.mdx)
 - [Cancel a charge item](./cancel-charge-item.mdx)
+- [View an account](../account/view-account.mdx)

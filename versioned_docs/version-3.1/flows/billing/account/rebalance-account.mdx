@@ -1,0 +1,68 @@
+---
+sidebar_position: 6
+---
+
+# Rebalance an account
+
+## Overview
+
+This flow describes how to make Care calculate the totals of an [account](../../../concepts/billing/account.mdx) again: **Amount Due**, **Total Paid**, **Billed (Gross)**, and **Total Billable**.
+
+Adding, editing, or cancelling a charge item does not update the totals. Rebalance the account to bring **Total Billable** up to date.
+
+## Pre-requisites
+
+- You can open the account page. See [View an account](./view-account.mdx).
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Update Account | Shows **Rebalance** and lets Care calculate the totals again. You must hold it in the facility. Facility Admin holds it by default. |
+| Can Read Account | Lets you open the account page. You must hold it in the facility. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist hold it by default. |
+| Can Read Invoice | Lets you see the **Invoices** tab, which the account page opens first. You must hold it in the facility. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist hold it by default. |
+
+## Steps
+
+### 1. Open the account
+
+Open the account page. See [View an account](./view-account.mdx).
+
+### 2. Find the totals
+
+Find the totals of the account on the account page.
+
+If Care has calculated the totals before, it shows when it last did so, next to **Rebalance**.
+
+![Care screen for step 2, Find the totals](/media/billing/account/rebalance-account-1.png)
+
+### 3. Rebalance the account
+
+Select **Rebalance**. While Care calculates the totals, the link shows **Rebalancing**.
+
+Note: Care also calculates the totals again when a payment or an invoice changes. It does this when charge items move to another account, too.
+
+![Care screen for step 3, Rebalance the account](/media/billing/account/rebalance-account-2.png)
+
+![Care screen for step 3, Rebalance the account](/media/billing/account/rebalance-account-3.png)
+
+## Expected Outcome
+
+- Care shows **Account rebalanced successfully**.
+- Care calculates the totals again from the charge items, the invoices, and the payments of the account.
+- Care records the time of the calculation.
+- If the calculation fails, Care shows **Failed to rebalance account**.
+
+## Related
+
+Concepts:
+
+- [Account](../../../concepts/billing/account.mdx)
+- [Charge Item](../../../concepts/billing/charge-item.mdx)
+
+Flows:
+
+- [View an account](./view-account.mdx)
+- [Add charge items](../charge-item/add-charge-items.mdx)
+- [Cancel a charge item](../charge-item/cancel-charge-item.mdx)

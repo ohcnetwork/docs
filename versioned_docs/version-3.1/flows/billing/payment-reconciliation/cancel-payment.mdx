@@ -2,59 +2,83 @@
 sidebar_position: 3
 ---
 
-# Cancel a payment or mark it entered in error
+# Cancel a payment
 
 ## Overview
 
-This flow describes how to cancel a [payment](../../../concepts/billing/payment-reconciliation.mdx) or mark it entered in error. Care recalculates the account balance after you confirm.
+This flow describes how to cancel a [payment](../../../concepts/billing/payment-reconciliation.mdx) in Care, or mark it entered in error.
+
+After you confirm, the payment no longer counts towards the totals of its [account](../../../concepts/billing/account.mdx), and Care calculates the totals again at once.
 
 ## Pre-requisites
 
-- You recorded the payment in Care, and you open its payment detail page.
+- You are a member of the facility.
+- The status of the payment is not Cancelled or Entered in Error.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Write Payment Reconciliation | Lets you cancel a payment or mark it entered in error soon after you record it. Facility Admin, Admin, Staff, Doctor, Nurse, and Pharmacist have this permission. |
-| Can Destroy Payment Reconciliation | Lets you cancel a payment or mark it entered in error after the facility's free-cancel window ends. Facility Admin and Admin have this permission. |
+| Can Destroy Payment Reconciliation | Lets you cancel a payment or mark it entered in error. You need it through a role in any organization of the facility of the payment. Facility Admin has it by default. |
+| Can Write Payment Reconciliation | Lets you cancel a payment within a set period after it is recorded, if your deployment sets a period. By default the period is 0 minutes, so you need Can Destroy Payment Reconciliation. Facility Admin, Staff, Doctor, Nurse and Pharmacist have it by default. |
+| Can Read Payment Reconciliation | Lets you open the payment. Care also needs it when you confirm the cancellation. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist have it by default. |
 
-Note: By default, the free-cancel window is effectively immediate. Most users need the Can Destroy Payment Reconciliation permission.
+Care shows the cancel buttons without a permission check. If you do not have Can Destroy Payment Reconciliation, Care shows "User does not have permission to cancel payment reconciliation" when you confirm. Within a period set by your deployment, Can Write Payment Reconciliation is enough.
 
 ## Steps
 
-### 1. Open the payment detail page
+### 1. Open the payment
 
-Open the payment that you want to cancel or mark entered in error.
+Open the page of the payment that you want to cancel. See [View a payment](./view-payment.mdx).
 
-### 2. Choose the reason
+![Care screen for step 1, Open the payment](/media/billing/payment-reconciliation/cancel-payment-1.png)
 
-Choose one of these actions:
+### 2. Choose the action
 
-| Action | When to use it |
+Select one of these actions:
+
+| Action | What it records |
 | --- | --- |
-| Mark as Cancelled | The payment does not apply anymore. |
-| Mark as entered in error | You recorded the payment by mistake. |
+| **Mark as Cancelled** | The status of the payment changes to Cancelled. Press `c` to select it. |
+| **Mark as entered in error** | The status of the payment changes to Entered in Error. This status means that someone recorded the payment by mistake. Press `e` to select it. |
 
-Note: On the payment detail page, press `c` for **Mark as Cancelled**. Press `e` for **Mark as entered in error**.
+![Care screen for step 2, Choose the action](/media/billing/payment-reconciliation/cancel-payment-2.png)
 
-### 3. Confirm the change
+### 3. Confirm the action
 
-Confirm the reason that you chose.
+For **Mark as Cancelled**, type "Cancel Payment" in the dialog "Confirm Cancel Payment".
+
+For **Mark as entered in error**, type "Mark as Error" in the dialog "Confirm Mark as Entered in Error".
+
+Warning: You cannot undo this action.
+
+Select **Proceed**.
+
+Note: **Proceed** is available only when the text that you type matches exactly.
+
+![Care screen for step 3, Confirm the action](/media/billing/payment-reconciliation/cancel-payment-3.png)
+
+![Care screen for step 3, Confirm the action](/media/billing/payment-reconciliation/cancel-payment-4.png)
 
 ## Expected Outcome
 
-- The payment shows the status that you chose.
-- Care recalculates the balance of the account.
+- Care shows "Payment status updated".
+- The payment shows the status Cancelled or Entered in Error.
+- The payment no longer counts towards the totals of the account. Care calculates the totals again at once.
+- The page no longer shows **Mark as Cancelled** and **Mark as entered in error**.
+- If the payment was against an invoice, the invoice keeps its status. A Balanced invoice stays Balanced.
+- The receipt of the payment shows a red "Cancelled" or "Entered in Error" watermark.
 
 ## Related
 
 Concepts:
 
 - [Payment Reconciliation](../../../concepts/billing/payment-reconciliation.mdx)
+- [Account](../../../concepts/billing/account.mdx)
 
 Flows:
 
-- [Record a payment](./record-payment.mdx)
 - [View a payment](./view-payment.mdx)
+- [Print a payment receipt](./print-payment-receipt.mdx)
+- [Transfer an amount to another account](./transfer-payment.mdx)

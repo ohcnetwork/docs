@@ -6,68 +6,106 @@ sidebar_position: 3
 
 ## Overview
 
-This flow describes how to change the details of an [account](../../../concepts/billing/account.mdx) in Care. You can update the name, description, status, billing status, and primary encounter.
+This flow describes how to change the name, the description, the Status, the Billing Status, and the primary encounter of an [account](../../../concepts/billing/account.mdx).
+
+You can also use it to open a closed account again.
 
 ## Pre-requisites
 
-- Someone created the account, and you open its account page.
-- If you set a primary encounter, the patient has at least one encounter.
+- You can open the account page. See [View an account](./view-account.mdx).
+- If you set a primary encounter, the encounter is not the primary encounter of another account.
+- If you save the account as Active and Open, the patient has no other Active, Open account at the facility.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Update Account | Lets you change the details of an account. Facility Admin and Admin have this permission. |
+| Can Update Account | Shows **Edit** on the account page and lets you save the changes. You must hold it in the facility. Facility Admin holds it by default. |
+| Can Read Account | Lets you open the account page. You must hold it in the facility. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist hold it by default. |
+| Can Read Invoice | Lets you see the **Invoices** tab, which the account page opens first. You must hold it in the facility. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist hold it by default. |
+| Can list patients | Lets the **Primary Encounter** field list the encounters of the patient. You must hold it through a role on the patient. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist hold it by default. |
+
+Note: You get a role on the patient in one of these ways:
+
+- Through the organizations of the patient's ongoing encounters.
+- Through the geographic organizations of the patient.
+- Through a direct link to the patient.
 
 ## Steps
 
 ### 1. Open the account
 
-Go to the account page for the account that you want to change.
+Open the account page. See [View an account](./view-account.mdx).
 
-### 2. Start the edit
+### 2. Open the edit form
 
-Click **Edit Account**. Care opens the account details in edit mode.
+Select **Edit**. Care opens the **Edit Account** form with the current details of the account.
 
-Note: Press `e` on the account page to start the same action.
+Note: You can also press `e` on the account page. The key works only when **Edit** shows.
 
-### 3. Update the account details
+![Care screen for step 2, Open the edit form](/media/billing/account/edit-account-1.png)
+
+### 3. Change the details
 
 Change the fields that you want to update.
 
 | Components | What it captures |
 | --- | --- |
-| Name | The name of the account. This field is mandatory. |
-| Description | More detail about the account. This field is optional. |
-| Status | The state of the account. Select Active, Inactive, On Hold, or Entered in Error. |
-| Billing Status | The billing state of the account. Select Open, Care Completed, Billing, Closed Bad Debt, Closed Voided, Closed Completed, or Closed Combined. |
-| Primary Encounter | The main encounter for the account. Select one of the patient's most recent encounters. This field is optional. |
+| **Name** | The name of the account. This field is required. |
+| **Description** | More detail about the account. This field is optional. |
+| **Status** | The status of the account: Active, Inactive, Entered in Error, or On Hold. This field is required. |
+| **Billing Status** | Where the account is in billing: Open, Care Completed, or Billing. |
+| **Primary Encounter** | One of the 10 most recent encounters of the patient at this facility. Each choice shows the encounter class, the encounter status, and the start date. This field is optional. |
 
-Note: You can set the primary encounter only when you edit an account. You cannot set it when you create an account.
+Note: The form does not offer the closed Billing Status values. To close an account, see [Settle and close an account](./settle-and-close-account.mdx).
 
-Note: An encounter can be the primary encounter of one account only.
+Note: You can set an earlier Billing Status here. The **Billing Status** stepper moves forward only.
+
+Note: After you set a primary encounter, you can replace it with another encounter. You cannot remove it.
+
+Note: You can also set the primary encounter from the encounter. See [Link an encounter to an account](./link-encounter-to-account.mdx).
 
 Note: You cannot change the patient or the facility of an account.
 
+Note: Your deployment can add more fields to the form.
+
+To open a closed account again, select **Edit** on the closed account. **Edit** shows whatever the status of the account. Then do these steps:
+
+- Set **Status** to Active.
+- Set **Billing Status** to Open. If the account is closed, the field shows the closed Billing Status until you select another one.
+
+![Care screen for step 3, Change the details](/media/billing/account/edit-account-2.png)
+
 ### 4. Save the changes
 
-Click **Save**.
+Select **Update**.
+
+Note: **Update** stays disabled until you change a field.
+
+Care shows an error and does not save the changes in these cases:
+
+- The encounter is already the primary encounter of another account.
+- You save the account as Active and Open, and the patient already has another Active, Open account at the facility. Care shows "Active account already exists for this patient".
+
+![Care screen for step 4, Save the changes](/media/billing/account/edit-account-3.png)
 
 ## Expected Outcome
 
-- Care saves the new account details.
-- The account page shows the updated name, description, status, billing status, and primary encounter.
+- Care saves the changes and closes the form. Care shows no success message.
+- If you set a primary encounter, you can use the **Bed Charge Items** tab of the account.
+- If you opened a closed account again as Active and Open, it is now the default account of the patient. Charge items that are added without a chosen account go to it.
 
 ## Related
 
 Concepts:
 
 - [Account](../../../concepts/billing/account.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
 
 Flows:
 
-- [Create an account](./create-account.mdx)
 - [View an account](./view-account.mdx)
-- [Advance the billing status of an account](./advance-account-billing-status.mdx)
+- [Advance the billing status](./advance-account-billing-status.mdx)
 - [Settle and close an account](./settle-and-close-account.mdx)
+- [Link an encounter to an account](./link-encounter-to-account.mdx)

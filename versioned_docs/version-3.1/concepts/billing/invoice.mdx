@@ -6,69 +6,98 @@ sidebar_position: 4
 
 ## Definition
 
-An **[invoice](https://build.fhir.org/invoice.html)** in Care groups one or more billable charge items from an account and bills them to the patient or payer. Care uses the invoice to track the amount that is owed and whether the payer has paid it. Every invoice belongs to one account.
+An [invoice](https://build.fhir.org/invoice.html) in Care groups charge items of one account for payment. Each invoice belongs to one facility, one patient and one account.
+
+The status of an invoice does not show whether it is paid in full. Care lets you mark an invoice as balanced while an amount is still unpaid, and that amount stays in the account's Amount Due.
 
 ## Key Attributes
 
 | Components | What it captures |
 | --- | --- |
-| Account | The billing account that the invoice bills. This is required. |
-| Charge items | The billable items on the invoice. You choose them from the account. |
-| Title | A short name for the invoice. This is optional. |
-| Payment Terms | The conditions for payment. This is optional. |
+| Account | The account of the invoice. The account cannot change after you create the invoice. |
+| Charge items | The charge items on the invoice. They come from the account of the invoice, and a charge item can be on one invoice at a time. |
+| Number | The invoice number. Care makes it from the **Invoice Number Expression** in the facility settings, and an invoice has no number when the facility has no expression. |
+| Status | The stage of the invoice. See Status below. |
+| Issue Date | The date of issue. You can set it while the invoice is a draft, but not to a date in the future. If it is empty when you issue the invoice, Care sets it to the current time. |
+| Payment Terms | The conditions for payment. This is optional, and your deployment can fill in a default text. |
 | Note | Extra information about the invoice. This is optional. |
-| Issue Date | The date when you issue the invoice. Care sets this date when the invoice is issued. |
-| Number | The invoice number. The facility's configuration usually generates it. |
-| Status | The stage of the invoice in its lifecycle. |
-
-### Issue Date
-
-The issue date cannot be a date in the future.
+| Lock | Whether the invoice is locked. See Lock below. |
 
 ### Charge items
 
-While the invoice is in Draft, the line items follow the live charge items. When you issue the invoice, Care keeps a snapshot of the line items at that moment. A later change to a charge item does not change an invoice that is already issued.
+While an invoice is Draft, its lines follow the current charge items, and a change to one of those charge items updates the invoice. After the invoice leaves Draft, Care shows the lines as they were stored, and the charge items of an Issued or Balanced invoice cannot be changed.
 
-A charge item becomes Billed when you attach it to an invoice. It becomes Paid when the invoice reaches Balanced.
+A charge item becomes Billed when it goes on an invoice, and Paid when the invoice is marked as balanced. It goes back to Billable when you remove it from a draft invoice, or when you cancel the invoice or mark it Entered in Error. Care also takes a charge item off a draft invoice when its source, such as an appointment, is cancelled.
+
+### Totals
+
+Net Amount is the base price plus surcharges, minus discounts. Total is the Net Amount plus taxes, and Care rounds it to a whole number by default. An invoice cannot have a total below zero unless it is a refund invoice.
 
 ### Payments and credit notes
 
-You record payments and credit notes through Payment Reconciliation. A payment or a credit note can target one invoice.
+From an Issued invoice, you record a payment; see [Record a payment for an invoice](../../flows/billing/payment-reconciliation/record-payment.mdx). From an Issued refund invoice, you record a credit note instead; see [Record a credit note](../../flows/billing/payment-reconciliation/record-credit-note.mdx). The invoice page lists the active payments and credit notes against it, each with a total.
+
+### Lock
+
+Users with Can Manage Locked Invoice can lock and unlock an invoice, and only these users can open a locked invoice. When another user opens it, the page shows **Invoice not found**, **Invoice may not exist** and **Back to invoices**, and Care shows the error "Locked invoice permission denied."
+
+In the **Invoices** tab of an account and in **Billing** > **Invoices**, a locked invoice shows a **Locked** badge in the **Total** column instead of its amount. Every user sees the badge, Facility Admin included.
+
+A lock does not stop changes: a locked invoice can still be edited, issued, marked as balanced or cancelled. Care does not print the charge items of an account while one of them is on a locked invoice, also for users with Can Manage Locked Invoice. Care records who locked or unlocked the invoice and when, but no screen shows this record.
+
+### Invoices from the pharmacy
+
+Invoices that are created from a pharmacy dispense are created and issued in one step; see [Dispense a medication](../../flows/medications/medication-dispense/dispense-medication.mdx).
+
+When a medication return for a patient is completed, Care creates a refund invoice on the patient's account by itself and saves it as Issued. A refund invoice shows **Record Credit Note** and **Refunds Given Against This Invoice** in place of the payment labels. If the medication return is marked Entered in Error, Care cancels its refund invoice and marks its charge items Entered in Error.
 
 ### Status
 
 | Status | Description |
 | --- | --- |
-| Draft | You are still preparing the invoice. You can change it. |
-| Issued | You sent the invoice to the patient or payer. Care keeps a snapshot of the line items. |
-| Balanced | The payer settled the invoice in full. This status is final. |
-| Cancelled | You cancelled the invoice. This status is final. |
-| Entered in Error | You created the invoice by mistake. This status is final. |
+| Draft | An invoice that you create starts as Draft. You can change its details and its items. |
+| Issued | The lines of the invoice are fixed. You can record payments against it, or credit notes against a refund invoice. |
+| Balanced | A user marked the invoice as balanced, or Care did so after a payment that paid it in full. Its Billed charge items are now Paid. Any unpaid amount stays in the account's Amount Due. |
+| Cancelled | The invoice is cancelled, and the account no longer counts it. When you cancel an invoice, its charge items are Billable again. |
+| Entered in Error | Someone marked the invoice Entered in Error. Its charge items are Billable again, and the account no longer counts the invoice. |
 
-An invoice moves from Draft to Issued, and then to Balanced. From Draft or Issued, you can move the invoice to Cancelled or to Entered in Error. An invoice cannot move backward. For example, an issued invoice cannot return to Draft. An invoice also cannot move from Draft directly to Balanced.
+An invoice moves from Draft to Issued, and then to Balanced. It cannot skip Issued, and it cannot move back to an earlier status.
+
+You can cancel an invoice, or mark it Entered in Error, while it is Draft, Issued or Balanced. A Cancelled or Entered in Error invoice cannot move to any other status.
 
 ## Permissions
 
-Care checks these permissions at the facility level.
+Care checks these permissions through your roles in the organizations of the facility. The roles listed are the default roles.
 
 | Permission | What it allows | Roles |
 | --- | --- | --- |
-| Can Write Invoice | Create an invoice, edit it, issue it, add or remove items, and mark it as balanced. | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
-| Can Read Invoice | View and list invoices. | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| Can Manage Locked Invoice | Lock or unlock an invoice, and view the full detail of a locked invoice. | Facility Admin, Admin |
-| Can Destroy Invoice | Cancel an invoice after the facility's free-cancel window ends. | Facility Admin, Admin |
+| Can Read Invoice | List and open invoices. Every action on an existing invoice also needs this permission. | Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Write Invoice | Create an invoice, change the details of a draft, add and remove its items, issue it, and mark it as balanced. | Facility Admin, Staff, Doctor, Nurse, Pharmacist |
+| Can Update Charge Item | Change the price, quantity, discounts, performer or note of the items on a draft invoice. | Facility Admin |
+| Can Read Account | Open the account to create an invoice, or to add items to a draft invoice. | Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Read Charge Item | See the Billable charge items when you create an invoice or add items to it. | Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Read Charge Item Definition | Find charge item definitions when you add new charge items. | Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Create Charge Item | Add new charge items from charge item definitions while you create an invoice or add items to it. | Facility Admin, Staff, Doctor, Nurse, Pharmacist |
+| Can Destroy Invoice | Cancel an invoice, or mark it Entered in Error. | Facility Admin |
+| Can Manage Locked Invoice | Lock and unlock an invoice, and open a locked invoice. | Facility Admin |
 
-Note: By default the free-cancel window ends immediately. Cancellation therefore usually needs the Can Destroy Invoice permission.
+By default, every cancellation needs Can Destroy Invoice. A deployment can set a period after an invoice is created during which Can Write Invoice is enough to cancel it.
 
 ## Related
 
 - Flow: [Create an invoice](../../flows/billing/invoice/create-invoice.mdx)
-- Flow: [View an invoice](../../flows/billing/invoice/view-invoice.mdx)
-- Flow: [Edit an invoice](../../flows/billing/invoice/edit-invoice.mdx)
+- Flow: [Find and open an invoice](../../flows/billing/invoice/view-invoice.mdx)
+- Flow: [Edit the details of a draft invoice](../../flows/billing/invoice/edit-invoice.mdx)
+- Flow: [Change the items of a draft invoice](../../flows/billing/invoice/edit-invoice-items.mdx)
 - Flow: [Issue an invoice](../../flows/billing/invoice/issue-invoice.mdx)
 - Flow: [Mark an invoice as balanced](../../flows/billing/invoice/mark-invoice-balanced.mdx)
-- Flow: [Cancel an invoice or mark it entered in error](../../flows/billing/invoice/cancel-invoice.mdx)
+- Flow: [Cancel an invoice](../../flows/billing/invoice/cancel-invoice.mdx)
 - Flow: [Lock or unlock an invoice](../../flows/billing/invoice/lock-or-unlock-invoice.mdx)
-- Concept: [Account](../../concepts/billing/account.mdx)
-- Concept: [Charge Item](../../concepts/billing/charge-item.mdx)
-- Concept: [Payment Reconciliation](../../concepts/billing/payment-reconciliation.mdx)
+- Flow: [Print invoices](../../flows/billing/invoice/print-invoice.mdx)
+- Flow: [Record a payment for an invoice](../../flows/billing/payment-reconciliation/record-payment.mdx)
+- Flow: [Record a credit note](../../flows/billing/payment-reconciliation/record-credit-note.mdx)
+- Concept: [Account](./account.mdx)
+- Concept: [Charge Item](./charge-item.mdx)
+- Concept: [Payment Reconciliation](./payment-reconciliation.mdx)
+- Concept: [Charge Item Definition](../definitions/charge-item-definition.mdx)
+- Reference: [Invoice](../../references/billing/invoice.mdx)

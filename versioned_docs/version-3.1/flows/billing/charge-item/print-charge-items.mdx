@@ -1,0 +1,95 @@
+---
+sidebar_position: 7
+---
+
+# Print charge items
+
+## Overview
+
+This flow describes how to print a list of the [charge items](../../../concepts/billing/charge-item.mdx) of an [account](../../../concepts/billing/account.mdx) from its **Charge Items** tab.
+
+## Pre-requisites
+
+- None of the charge items is on a locked invoice. If one is, Care does not print the charge items. Unlock the invoice first. See [Lock or unlock an invoice](../invoice/lock-or-unlock-invoice.mdx).
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Read Charge Item | Lets the print page load the charge items of the account. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it by default. |
+| Can Read Account | Lets you open the account, and lets the print page load it. The same eight roles hold it by default. |
+| Can Read Invoice | Lets you see the **Invoices** tab, which the account page opens first. You must hold it in the facility. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist hold it by default. |
+| Can Read Payment Reconciliation | Lets the print page load the payments of the account. The same eight roles hold it by default. |
+
+Care checks each permission through your role in any organization of the facility.
+
+## Steps
+
+### 1. Open the Charge Items tab of the account
+
+In the facility sidebar, select **Billing**.
+
+Select **Accounts**. Open the account of the patient. See [View an account](../account/view-account.mdx).
+
+Select the **Charge Items** tab, or press `Shift+2`.
+
+![Care screen for step 1, Open the Charge Items tab of the account](/media/billing/charge-item/print-charge-items-1.png)
+
+### 2. Open the print preview
+
+Select **Print Charge Items**, or press `P`. Care opens a print preview with the title **Charge Items**.
+
+Note: If a charge item is on a locked invoice, Care shows **You do not have access to print the charge items**.
+
+![Care screen for step 2, Open the print preview](/media/billing/charge-item/print-charge-items-2.png)
+
+### 3. Choose the print options
+
+Set the options that you want. Care offers these options:
+
+- **Summary**
+- **Hide Header**
+- **Preserve Header Space**
+- **Hide Category Grouping**
+- **Group by Parent Category**
+- **Hide Payment Type Grouping**
+- **Sort by Title**
+- **Show Created By**
+- **Show Status**
+- **Include Cancelled**
+- A category filter
+
+Two of these options work as follows:
+
+| Components | What it captures |
+| --- | --- |
+| **Include Cancelled** | Adds the Entered in Error, Not Billable and Aborted charge items. Without it, the print shows only Billable, Billed and Paid charge items. |
+| **Summary** | If a charge item is not on an issued or balanced invoice, the print shows only a warning. |
+
+![Care screen for step 3, Choose the print options](/media/billing/charge-item/print-charge-items-3.png)
+
+### 4. Print the charge items
+
+Select **Print**, or press `P`.
+
+![Care screen for step 4, Print the charge items](/media/billing/charge-item/print-charge-items-4.png)
+
+## Expected Outcome
+
+- Care prints the Billable, Billed and Paid charge items of the account. With **Include Cancelled**, it also prints the cancelled charge items.
+- In **Summary** mode, the print can show only the warning **There are unbilled items in this account, turn off summary mode to review them.** To see the charge items, turn off **Summary**.
+
+## Related
+
+Concepts:
+
+- [Charge Item](../../../concepts/billing/charge-item.mdx)
+- [Account](../../../concepts/billing/account.mdx)
+
+Flows:
+
+- [View an account](../account/view-account.mdx)
+- [Add charge items](./add-charge-items.mdx)
+- [Lock or unlock an invoice](../invoice/lock-or-unlock-invoice.mdx)
+- [Print invoices](../invoice/print-invoice.mdx)

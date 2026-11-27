@@ -6,44 +6,89 @@ sidebar_position: 4
 
 ## Overview
 
-This flow describes how to issue a draft [invoice](../../../concepts/billing/invoice.mdx) in Care. When you issue an invoice, Care fixes its line items and offers to record a payment.
+<video src="/media/billing/invoice/issue-invoice.mp4" poster="/media/billing/invoice/issue-invoice.poster.png" controls width="720">
+  <track kind="captions" src="/media/billing/invoice/issue-invoice.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to issue a draft [invoice](../../../concepts/billing/invoice.mdx) in Care. When you issue an invoice, its lines are fixed, and Care opens the form to collect a payment.
 
 ## Pre-requisites
 
-- The invoice is in Draft status.
+- The invoice status is Draft.
 - The invoice has at least one charge item.
-- You have the permission listed below.
+- If the invoice is locked, you have Can Manage Locked Invoice, so that you can open it.
+- You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Write Invoice | Lets you issue the invoice. Facility Admin, Admin, Staff, Doctor, Nurse, and Pharmacist have this permission. |
+| Can Write Invoice | Issue the invoice. Facility Admin, Staff, Doctor, Nurse and Pharmacist hold it. |
+| Can Read Invoice | Open the invoice. Care also checks it when you issue the invoice. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it. |
+| Can Manage Locked Invoice | Only to open a locked invoice. Facility Admin holds it. |
+
+You hold each permission through a role in any organization of the facility. The roles named are the default roles.
+
+To record a payment after you issue the invoice, you also need Can Write Payment Reconciliation. See [Record a payment for an invoice](../payment-reconciliation/record-payment.mdx).
 
 ## Steps
 
 ### 1. Open the invoice
 
-Open the invoice page for the draft invoice.
+Open the draft invoice. See [Find and open an invoice](./view-invoice.mdx).
 
-### 2. Issue the invoice
+Note: An invoice that you create from a pharmacy dispense is already issued. See [Dispense a medication](../../medications/medication-dispense/dispense-medication.mdx).
 
-Click **Issue Invoice**.
+![Care screen for step 1, Open the invoice](/media/billing/invoice/issue-invoice-1.png)
+
+### 2. Check the invoice
+
+Make sure that the lines, the details and the totals are correct.
+
+After you issue the invoice, you cannot change its items or its details on the invoice page.
+
+![Care screen for step 2, Check the invoice](/media/billing/invoice/issue-invoice-2.png)
+
+### 3. Issue the invoice
+
+Select **Issue Invoice**.
 
 Note: Press `i` on the invoice page to issue the invoice.
 
-Care changes the invoice status from Draft to Issued. Care sets the issue date to the current time.
+Care issues the invoice at once. Care does not ask you to confirm.
 
-### 3. Record a payment
+If Care cannot issue the invoice, it shows the reason. Some examples:
 
-Care asks you to record a payment against the invoice. Record the payment, or close the prompt to record it later.
+| Message | What it means |
+| --- | --- |
+| "Cannot write invoice" | You do not have Can Write Invoice. |
+| "Invoice must have at least one charge item" | The invoice has no charge items. Add one before you issue the invoice. |
+| "Invoice contains charge items that it does not own" | One or more items are no longer Billed on this invoice, or are on another account. |
+| "The resource you are trying to access is locked" | Someone else is changing the same account at that moment. Try again. |
+
+![Care screen for step 3, Issue the invoice](/media/billing/invoice/issue-invoice-3.png)
+
+### 4. Collect a payment, or close the form
+
+Care opens **Collect Payment**.
+
+To record a payment now, follow [Record a payment for an invoice](../payment-reconciliation/record-payment.mdx).
+
+To record the payment later, close the form.
+
+After you record a payment, Care checks the totals of the invoice. If the payments minus the credit notes equal the invoice total, Care marks the invoice as balanced. Care then shows **Invoice marked as balanced**.
+
+![Care screen for step 4, Collect a payment, or close the form](/media/billing/invoice/issue-invoice-4.png)
+
+![Care screen for step 4, Collect a payment, or close the form](/media/billing/invoice/issue-invoice-5.png)
 
 ## Expected Outcome
 
 - The invoice status changes from Draft to Issued.
-- The issue date shows the time when you issued the invoice.
-- Care offers to record a payment against the invoice.
-- The line items on the invoice are frozen. A later edit to a charge item does not change what the invoice shows.
+- If the invoice had no issue date, Care sets it to the current time. If it had one, Care keeps it.
+- The lines of the invoice are fixed, and its charge items cannot be changed.
+- The invoice page shows **Record Payment** and **Mark as balanced**.
+- The invoice cannot go back to Draft.
 
 ## Related
 
@@ -54,6 +99,7 @@ Concepts:
 
 Flows:
 
-- [Edit an invoice](./edit-invoice.mdx)
+- [Record a payment for an invoice](../payment-reconciliation/record-payment.mdx)
 - [Mark an invoice as balanced](./mark-invoice-balanced.mdx)
-- [Cancel an invoice or mark it entered in error](./cancel-invoice.mdx)
+- [Change the items of a draft invoice](./edit-invoice-items.mdx)
+- [Cancel an invoice](./cancel-invoice.mdx)

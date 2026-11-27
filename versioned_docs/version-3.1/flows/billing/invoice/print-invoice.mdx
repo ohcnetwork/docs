@@ -1,0 +1,71 @@
+---
+sidebar_position: 9
+---
+
+# Print invoices
+
+## Overview
+
+This flow describes how to print an [invoice](../../../concepts/billing/invoice.mdx) in Care, or several invoices together. Care makes the printout from the invoice print template of the facility.
+
+## Pre-requisites
+
+- You can open each invoice that you print. If an invoice is locked, you have Can Manage Locked Invoice.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Read Invoice | Load each invoice for the printout. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it. |
+| Can Manage Locked Invoice | Only to print a locked invoice. Facility Admin holds it. |
+
+You hold each permission through a role in any organization of the facility. The roles named are the default roles.
+
+The pharmacy screens, including the medication return, have their own permissions. See [Dispense a medication](../../medications/medication-dispense/dispense-medication.mdx).
+
+## Steps
+
+### 1. Open the print preview
+
+To print one invoice, do one of these.
+
+- On the invoice page, select **Print**.
+- In the invoice list, select **Print** on the row of the invoice. The **Invoices** tab of an account has the same button.
+
+Note: Press `p` on the invoice page to print.
+
+To print several invoices together, do one of these.
+
+- After a pharmacy dispense, select **Print Invoices**. Care opens the print preview with all invoices of that dispense.
+- On a medication return, select **View Invoice**. On the invoice page, select **Print**. The print preview has the return invoice and the related dispense invoices.
+
+![Care screen for step 1, Open the print preview](/media/billing/invoice/print-invoice-1.png)
+
+### 2. Print
+
+Care shows a print preview from the print template of the facility.
+
+Select **Print**.
+
+On a device that shares PDF files, the button is **Share**.
+
+![Care screen for step 2, Print](/media/billing/invoice/print-invoice-2.png)
+
+## Expected Outcome
+
+- You have a printed copy of the invoice, or of each invoice in the set.
+- A copy of a Draft, Cancelled or Entered in Error invoice has a watermark with that status. Copies of Issued and Balanced invoices have no watermark.
+- When you print several invoices together, Care prints each invoice once. A watermark shows only when the printout has one invoice, and that invoice is Cancelled or Entered in Error.
+- The QR code on the printout holds the ID of the patient.
+
+## Related
+
+Concepts:
+
+- [Invoice](../../../concepts/billing/invoice.mdx)
+
+Flows:
+
+- [Find and open an invoice](./view-invoice.mdx)
+- [Dispense a medication](../../medications/medication-dispense/dispense-medication.mdx)

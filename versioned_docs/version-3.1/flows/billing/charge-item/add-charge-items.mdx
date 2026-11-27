@@ -6,61 +6,107 @@ sidebar_position: 1
 
 ## Overview
 
-This flow describes how to add one or more [charge items](../../../concepts/billing/charge-item.mdx) for a patient in Care. You add charge items to record the billable products and services that the patient receives.
+<video src="/media/billing/charge-item/add-charge-items.mp4" poster="/media/billing/charge-item/add-charge-items.poster.png" controls width="720">
+  <track kind="captions" src="/media/billing/charge-item/add-charge-items.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to add [charge items](../../../concepts/billing/charge-item.mdx) to a patient's [account](../../../concepts/billing/account.mdx) from the **Charge Items** tab of the account, or from a service request. You select charge item definitions, and Care adds one charge item for each row.
 
 ## Pre-requisites
 
+- The facility has charge item definitions for the services and products.
+- If you add from the account, the definitions are Active. The account form shows only Active definitions.
+- If you add from the account, the account status is Active. Its billing status is not a closed status. Otherwise, Care does not show **Add Charge Items**.
+- If you add from a service request, the service request is Draft or Active. The patient also has an Active account with billing status Open at the facility.
+- If you record a performer, the performer is a member of the facility.
 - You have the permissions listed below.
-- The patient has an active, billable [account](../../../concepts/billing/account.mdx).
-- If the patient has no active, open account, Care creates one for you when you add the first charge item.
-- You start the flow from an appointment page, a service request page, or the Charge Items tab of an account.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create Charge Item | Add charge items to a patient's account. Facility Admin, Admin, Staff, Doctor, Nurse, and Pharmacist roles hold this permission. |
+| Can Create Charge Item | Lets you add the charge items when you select **Add Items**. Facility Admin, Staff, Doctor, Nurse and Pharmacist hold it by default. |
+| Can Read Account | Lets you open the account, and lets the service request page find the patient's account. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it by default. |
+| Can Read Invoice | Lets you see the **Invoices** tab, which the account page opens first. You must hold it in the facility. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist hold it by default. |
+| Can Read Charge Item | Lets you see the charge items of the account or the service request. The same eight roles hold it by default. |
+| Can Read Resource Category | Lets you browse the categories in the charge item definition picker. The same eight roles hold it by default. |
+| Can Read Charge Item Definition | Lets you see and select charge item definitions in the picker. The same eight roles hold it by default. |
+| Can Read Service Request | Needed only to add from a service request. Lets you open the service request. You must hold it in an organization of the encounter or its current location, or of a service request location. The same eight roles hold it by default. |
+
+Care checks every permission except Can Read Service Request through your role in any organization of the facility.
 
 ## Steps
 
-### 1. Open the Add Charge Items form
+### 1. Open the Charge Items tab of the account
 
-Go to the appointment page, the service request page, or the Charge Items tab of the account.
+In the facility sidebar, select **Billing**.
 
-Click **Add Charge Items**.
+Select **Accounts**. Open the account of the patient. See [View an account](../account/view-account.mdx).
 
-Note: On an appointment page or the billing tab of an account, press `a` to open the Add Charge Items form.
+Select the **Charge Items** tab, or press `Shift+2`.
 
-### 2. Select the charge item definitions
+Note: To add from a service request, open the service request instead. See [View service requests](../../clinical/service-request/view-service-requests.mdx).
 
-Select one or more charge item definitions. Each charge item definition is a pre-configured product or service with a price.
+![Care screen for step 1, Open the Charge Items tab of the account](/media/billing/charge-item/add-charge-items-1.png)
+
+### 2. Open the Add Charge Items form
+
+Select **Add Charge Items**, or press `A`. Care opens the **Add Charge Items** form.
+
+Note: On a service request, **Add Charge Items** is in the charge items section. The `A` key also opens it there.
+
+Note: The **Create Invoice** page of the account also has **Add Charge Items** and **Quick Add**. See [Create an invoice](../invoice/create-invoice.mdx).
+
+![Care screen for step 2, Open the Add Charge Items form](/media/billing/charge-item/add-charge-items-2.png)
+
+### 3. Select the charge item definitions
+
+In **Select charge item definition**, browse the categories. Select a definition.
+
+Care adds the definition as a row under **Selected items**. Each row starts with a quantity of 1.
+
+To add more charge items, select more definitions. If you select the same definition again, Care adds a second row.
+
+Note: On a service request, the picker is **Select Charge Item Definitions**. Care ignores a definition that is already in the list.
+
+![Care screen for step 3, Select the charge item definitions](/media/billing/charge-item/add-charge-items-3.png)
+
+### 4. Set the quantity and the performer
+
+Complete each row.
 
 | Components | What it captures |
 | --- | --- |
-| Charge Item Definition | The pre-configured, priced product or service that the patient receives. |
-| Quantity | The number of units of the product or service. |
-| Performer | The person who performed the billed service. This field is optional. |
+| **Name** | The charge item definition of the row. |
+| **Quantity** | The number of units. Enter a whole number. |
+| **Performer** | The person who performed the service. This is optional. The list shows the members of the facility. |
 
-### 3. Set the quantity
+To remove a row from the account form, select its remove button.
 
-Set the quantity for each selected charge item definition.
+![Care screen for step 4, Set the quantity and the performer](/media/billing/charge-item/add-charge-items-4.png)
 
-### 4. Select the performer
+### 5. Add the charge items
 
-Select the performer for each charge item. Skip this field if you do not record a performer.
+Select **Add Items**, or press `Shift+Enter`.
 
-### 5. Submit the form
+Note: In the account form, **Add Items** is not available until you select at least one definition.
 
-Submit the form to create the charge items.
+Care adds all the rows together. If one row fails, Care adds none of them.
 
-Note: Press `i` on the appointment page or the account page to create an [invoice](../../../concepts/billing/invoice.mdx) from the charge items.
+![Care screen for step 5, Add the charge items](/media/billing/charge-item/add-charge-items-5.png)
+
+![Care screen for step 5, Add the charge items](/media/billing/charge-item/add-charge-items-6.png)
 
 ## Expected Outcome
 
-- Care creates one charge item for each selected charge item definition.
-- Each new charge item has the status Billable.
-- The charge items show on the Charge Items tab of the account.
-- If the patient had no active, open account, Care creates the account and adds the charge items to it.
+- Care adds one charge item for each row, with the status Billable.
+- Each charge item takes its title, description and price from its charge item definition.
+- From the account, Care shows **Charge Items added successfully**. The charge items show on the **Charge Items** tab.
+- To see the discounts, taxes, total and note of a charge item, expand its row.
+- From a service request, Care links the charge items to the service request and its encounter. It adds them to the patient's Active account with billing status Open.
+- The service request page shows each charge item as a card. You cannot edit or cancel a charge item from these cards. To edit or cancel it, use the account.
+- When the service request has Billable charge items, its charge items section shows **Create Invoice**.
+- Adding charge items does not update the **Total Billable** of the account at once. Care updates it when someone rebalances the account, or when an invoice or a payment of the account changes. See [Rebalance an account](../account/rebalance-account.mdx).
 
 ## Related
 
@@ -68,9 +114,14 @@ Concepts:
 
 - [Charge Item](../../../concepts/billing/charge-item.mdx)
 - [Account](../../../concepts/billing/account.mdx)
-- [Invoice](../../../concepts/billing/invoice.mdx)
+- [Charge Item Definition](../../../concepts/definitions/charge-item-definition.mdx)
+- [Service Request](../../../concepts/clinical/service-request.mdx)
 
 Flows:
 
+- [Add a package of charge items](./quick-add-charge-items.mdx)
+- [Add bed charges](./add-bed-charges.mdx)
 - [Edit a charge item](./edit-charge-item.mdx)
 - [Cancel a charge item](./cancel-charge-item.mdx)
+- [Create an invoice](../invoice/create-invoice.mdx)
+- [Rebalance an account](../account/rebalance-account.mdx)

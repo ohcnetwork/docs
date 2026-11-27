@@ -6,64 +6,83 @@ sidebar_position: 2
 
 ## Overview
 
-This flow describes how to open a [payment](../../../concepts/billing/payment-reconciliation.mdx) in Care and read its details. You can also print a receipt for the payment.
+This flow describes how to open a [payment](../../../concepts/billing/payment-reconciliation.mdx) in Care and read its details.
 
 ## Pre-requisites
 
 - You are a member of the facility.
-- Someone recorded the payment at your facility.
+- Someone recorded the payment in this facility.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Read Payment Reconciliation | Lets you open a payment and read its details. Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, and Pharmacist have this permission. |
+| Can Read Payment Reconciliation | Lets you open the payment. You need it through a role in any organization of the facility. Without it, Care shows "Payment Not Found". Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist have it by default. |
+| Can Read Invoice | Needed only if you start from the invoice page, or to open the invoice with **View Invoice**. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist have it by default. |
+| Can Read Account | Needed only if you start from the **Payments** tab of the account, or to open the account with **View Account**. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist have it by default. |
 
 ## Steps
 
-### 1. Open the payments list
+### 1. Open the payment
 
-Go to the facility. Select **Billing**. Select **Payments**. Care shows the list of payments for the facility.
+Start from one of these places:
 
-### 2. Open the payment
+- In the facility, select **Billing**. Select **Payments**. In the row of the payment, select **View**.
+- On the account page, select the **Payments** tab. In the row of the payment, select **View**.
+- On the invoice page, under "Payments Received Against This Invoice", select **View** for the payment.
 
-Click the payment in the list. Care opens the payment detail page.
+To filter the payments list, see [Find payments](./find-payments.mdx).
+
+![Care screen for step 1, Open the payment](/media/billing/payment-reconciliation/view-payment-1.png)
+
+### 2. Read the header
+
+The heading shows "Payment", or "Refund" for a credit note, and the Payment ID.
+
+Badges show the status, the outcome, the method and the type of the payment.
+
+![Care screen for step 2, Read the header](/media/billing/payment-reconciliation/view-payment-2.png)
 
 ### 3. Read the payment details
 
-The payment detail page shows these details.
+The page shows these sections.
 
 | Component | What it shows |
 | --- | --- |
-| Account | The account that the payment belongs to. |
-| Invoice | The invoice that the payment targets, if the payment targets an invoice. |
-| Amount | The amount of the payment. |
-| Method | The method of the payment. |
-| Type | The type of the payment. |
-| Issuer Type | The type of the party that issues the payment. |
-| Location | The location where the facility takes the payment. |
-| Reference Number | The reference number of the payment. |
-| Payment Date | The date of the payment. |
-| Note | The note for the payment. |
-| Status | The status of the payment. |
+| Patient Information | The Patient Name, Age and Sex. |
+| Payment Amount | The amount and the Payment Date. For a credit note, the label is Refund Amount. |
+| Payment Details | The Payment Method, Reconciliation Type, Kind and Issuer Type. It also shows the Reference Number and the Location, if the payment has them. |
+| Cash Transaction Details | Only for cash. The Amount Tendered and, for a payment, the Change Returned. |
+| Notes | The notes of the payment, if it has notes. |
+| Related Invoice | Only for a payment against an invoice. The invoice number, its status, the Invoice Amount, **View Invoice** and **Print Invoice**. |
+| Payment Timeline | "Payment Recorded" at the payment date. For a cancelled payment, also "Payment Cancelled". |
+| Created By and Last Modified By | Who recorded the payment and who changed it last, each with a date. |
 
-### 4. Print the receipt
+Note: The time next to "Payment Cancelled" is the current time, not the time of the cancellation.
 
-Select **Print Receipt**. Care creates a printable receipt for the payment.
+![Care screen for step 3, Read the payment details](/media/billing/payment-reconciliation/view-payment-3.png)
 
-Note: Press `p` to print the receipt.
+![Care screen for step 3, Read the payment details](/media/billing/payment-reconciliation/view-payment-4.png)
 
-### 5. Open the related invoice or account
+### 4. Open the invoice or the account
 
-Click the invoice link to open the related [invoice](../../../concepts/billing/invoice.mdx). Click the account link to open the related account.
+If the payment is against an invoice, select **View Invoice** to open the invoice. You can also press `v`.
 
-Note: Press `v` to view the invoice. Press `a` to view the account.
+To open the account, select **View Account**. You can also press `a`.
+
+To go back to the list, select **Back to Payments**.
+
+Note: To print the receipt, select **Print Receipt**. See [Print a payment receipt](./print-payment-receipt.mdx).
+
+![Care screen for step 4, Open the invoice or the account](/media/billing/payment-reconciliation/view-payment-5.png)
+
+![Care screen for step 4, Open the invoice or the account](/media/billing/payment-reconciliation/view-payment-6.png)
 
 ## Expected Outcome
 
 - Care shows the details of the payment.
-- Care creates a printable receipt when you select **Print Receipt**.
+- The page also shows **Mark as Cancelled** and **Mark as entered in error**. It hides them once the payment is Cancelled or Entered in Error. See [Cancel a payment](./cancel-payment.mdx).
 
 ## Related
 
@@ -74,6 +93,7 @@ Concepts:
 
 Flows:
 
-- [Record a payment](./record-payment.mdx)
-- [Cancel a payment or mark it entered in error](./cancel-payment.mdx)
-- [Move a payment to another account](./move-payment.mdx)
+- [Find payments](./find-payments.mdx)
+- [Print a payment receipt](./print-payment-receipt.mdx)
+- [Cancel a payment](./cancel-payment.mdx)
+- [Move payments to another account](./move-payment.mdx)

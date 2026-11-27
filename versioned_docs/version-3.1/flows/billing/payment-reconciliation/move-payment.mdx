@@ -2,51 +2,87 @@
 sidebar_position: 4
 ---
 
-# Move a payment to another account
+# Move payments to another account
 
 ## Overview
 
-This flow describes how to move one or more [payments](../../../concepts/billing/payment-reconciliation.mdx) from one account to a different account of the same patient. Use this flow when you record a payment against the wrong account.
+This flow describes how to move [payments](../../../concepts/billing/payment-reconciliation.mdx) from one [account](../../../concepts/billing/account.mdx) to one of the patient's other accounts with **Change Account**.
+
+[Transfer an amount to another account](./transfer-payment.mdx) does not move existing payments: it records two new payments for an amount that you type.
 
 ## Pre-requisites
 
-- You recorded the payments for the patient at your facility.
-- The payments are not tied to a specific invoice.
+- You are a member of the facility.
 - The status of each payment is Active or Draft.
-- The patient has another active account that receives the payments.
+- No payment that you move is recorded against an invoice.
+- The patient has another account in this facility.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Write Payment Reconciliation | Move payments from one account to another account of the same patient. Facility Admin, Admin, Staff, Doctor, Nurse, and Pharmacist have this permission. |
+| Can Write Payment Reconciliation | Lets you select payments and move them. Without it, the **Payments** tab shows no checkboxes. You need it through a role in any organization of the facility. Facility Admin, Staff, Doctor, Nurse and Pharmacist have it by default. |
+| Can Read Payment Reconciliation | Lets you see the payments on the **Payments** tab. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist have it by default. |
+| Can Read Account | Lets you open the account and see the patient's other accounts in the target account list. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist have it by default. |
+| Can Read Invoice | Lets you see the invoices on the **Invoices** tab, where the account page opens. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist have it by default. |
 
 ## Steps
 
-### 1. Start the transfer
+### 1. Open the Payments tab of the account
 
-Open the account that holds the payments. Open the menu on the account page. Select **Transfer Payment**.
+Open the account that holds the payments. See [View an account](../account/view-account.mdx).
 
-### 2. Select the payments to move
+Select the **Payments** tab, or press `Shift+3`.
 
-Select one or more payments that you want to move.
+![Care screen for step 1, Open the Payments tab of the account](/media/billing/payment-reconciliation/move-payment-1.png)
 
-Note: You can select only payments that are not tied to a specific invoice. The status of each payment must be Active or Draft.
+### 2. Select the payments
 
-### 3. Select the destination account
+Select the checkbox of each payment that you want to move.
 
-Select the account that receives the payments. The destination account must be an active account of the same patient.
+To select all the payments on this page that you can move, select the checkbox in the header.
 
-### 4. Confirm the move
+Note: A payment against an invoice, or a payment that is not Active or Draft, has a disabled checkbox. Hover over the checkbox to see the reason.
 
-Click **Change Account**.
+![Care screen for step 2, Select the payments](/media/billing/payment-reconciliation/move-payment-2.png)
+
+### 3. Open Change Account
+
+In the bar that shows the number of selected items, select **Change Account**.
+
+Note: To clear the selection, select **Clear Selection**.
+
+The form "Change Account" opens. It lists the selected payments.
+
+![Care screen for step 3, Open Change Account](/media/billing/payment-reconciliation/move-payment-3.png)
+
+### 4. Select the target account
+
+Under "Select target account", select the account that receives the payments.
+
+The list shows the patient's other accounts in this facility, of every status, each with its billing status.
+
+Note: If the patient has no other account, Care shows "No other accounts available".
+
+![Care screen for step 4, Select the target account](/media/billing/payment-reconciliation/move-payment-4.png)
+
+### 5. Move the payments
+
+Select **Change Account**.
+
+Note: If another change to the account is in progress, Care does not move the payments and shows an error.
+
+![Care screen for step 5, Move the payments](/media/billing/payment-reconciliation/move-payment-5.png)
+
+![Care screen for step 5, Move the payments](/media/billing/payment-reconciliation/move-payment-6.png)
 
 ## Expected Outcome
 
-- Care moves the selected payments to the destination account.
-- Care updates the balance of the source account.
-- Care updates the balance of the destination account.
+- Care shows "Payments moved to new account successfully".
+- The payments leave the **Payments** tab of this account and show on the target account.
+- Care calculates the totals of both accounts again.
+- Care moves all the selected payments, or none of them.
 
 ## Related
 
@@ -57,6 +93,6 @@ Concepts:
 
 Flows:
 
-- [Record a payment](./record-payment.mdx)
-- [View a payment](./view-payment.mdx)
-- [Cancel a payment or mark it entered in error](./cancel-payment.mdx)
+- [Transfer an amount to another account](./transfer-payment.mdx)
+- [Find payments](./find-payments.mdx)
+- [View an account](../account/view-account.mdx)
