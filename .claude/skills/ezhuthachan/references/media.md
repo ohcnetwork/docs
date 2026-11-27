@@ -139,7 +139,8 @@ Name it `<flow-slug>.demo.ts`. Start from `example.demo.ts`.
 - Do the preparation off camera: if the flow needs a record that another flow creates, make it before the recorded page opens, in a separate browser context or through the API.
 - Each flow creates what it changes. Do not rely on what another recording left behind.
 - Respect the data policy. Under "create allowed", name records so they are recognisably yours.
-- Use invented people, the same small cast in every recording. If `$EZ/personas.md` exists, use it. If not, propose a few clearly fictional names that suit the deployment's region, get the user's agreement, and save them there.
+- Use invented people, the same small cast in every recording. If `$EZ/personas.md` exists, use it. If not, propose a few invented names that suit the deployment's region, get the user's agreement, and save them there.
+- Invented does not mean marked. Every name on screen looks real and is easy for readers anywhere to read: the facility, the patients, the staff, and the usernames, which show in the sidebar (`arun.mathew`, not `ez-fa-root`). No "Demo" or "Test" anywhere, including fixture data such as a facility's or patient's address. Leave a phone number empty rather than invent one that may belong to someone. On 27 November 2026 the product team had a full set of Workspaces videos re-recorded because the facility and patient carried "Demo" markers.
 
 **Keep it watchable.** Aim for under a minute per flow; split a longer flow into two pages. Assert only what you need in order to wait for the screen to settle.
 
