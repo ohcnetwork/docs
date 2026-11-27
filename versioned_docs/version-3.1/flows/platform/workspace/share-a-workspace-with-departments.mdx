@@ -1,0 +1,121 @@
+---
+sidebar_position: 4
+---
+
+# Share a facility workspace with departments
+
+## Overview
+
+This flow describes how to choose the departments that can use a facility [workspace](../../../concepts/platform/workspace.mdx). Until you share the workspace, only people who hold Can Create/Update Workspaces in the facility's Administration can see it.
+
+<video src="/media/platform/workspace/share-a-workspace-with-departments.mp4" poster="/media/platform/workspace/share-a-workspace-with-departments.poster.png" controls width="720">
+  <track kind="captions" src="/media/platform/workspace/share-a-workspace-with-departments.vtt" srcLang="en" label="English" default />
+</video>
+
+## Pre-requisites
+
+- The workspace is a facility workspace. Care shows the departments with access only for a facility workspace.
+- Someone has created the facility workspace. Care shows the departments with access only after the workspace is created. See [Create a workspace](./create-a-workspace.mdx).
+- Someone has created the departments that need the workspace.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create/Update Workspaces | See the **Departments with access** section, change the departments, and save them. You need this permission through a role in the facility's Administration. By default, only the Facility Admin role has it in a facility. |
+| Can View Facility Organizations | See the departments of the facility in the department picker. If you hold it in Administration, the picker lists every department, including Administration. If you hold it only in another department, the picker lists every department except Administration. The picker always lists your own departments. By default, the Facility Admin, Administrator, Doctor, Nurse, Staff and Volunteer roles have it in a facility. |
+
+Note: If you hold Can Create/Update Workspaces only in another department, Care does not show **Departments with access**. Care shows no message.
+
+Note: The person who creates a facility gets the Facility Admin role in the Administration of that facility.
+
+## Steps
+
+### 1. Open the workspace
+
+From the facility sidebar, select **Settings**.
+
+In the settings sidebar, go to **Advanced**.
+
+Select **Workspaces**.
+
+The list shows **Active** workspaces. To find a **Draft** or **Archived** workspace, select the **Draft** or **Archived** tab. On a phone, select the status in the list that replaces the tabs.
+
+Select the name of the workspace, or select **Edit** in its row.
+
+Care opens the **Edit workspace** page.
+
+![The Workspaces list of City General Hospital with the facility workspace Evening rounds outlined](/media/platform/workspace/share-a-workspace-with-departments-1.png)
+
+### 2. Find the departments with access
+
+Select **General settings** to open the panel. When you edit a workspace, this panel is closed.
+
+Find the **Departments with access** section.
+
+Care does not show **Departments with access** in these cases:
+
+- The workspace is not a facility workspace.
+- You do not hold Can Create/Update Workspaces in the facility's Administration.
+
+If Care shows "Unable to load workspace access. Retry before changing assignments.", select **Try Again**.
+
+If no department has access yet, the section shows "No departments selected. Access is limited to administrators with workspace management permission."
+
+![The Departments with access section in General settings, outlined, reading No departments selected](/media/platform/workspace/share-a-workspace-with-departments-2.png)
+
+### 3. Select the departments
+
+Open the department picker, **Select Department**.
+
+Select each department that needs the workspace.
+
+To find a department under another department, expand the upper department.
+
+To find a department by its name, type the name in the picker.
+
+To stop sharing the workspace with a department, remove that department from the selection.
+
+Access goes to the departments that you select and to every department above them. A department under a selected department does not get access. To give it access, select that department too.
+
+![The department picker open, with General Medicine selected and outlined](/media/platform/workspace/share-a-workspace-with-departments-3.png)
+
+### 4. Save the access
+
+Select **Save access**.
+
+**Save access** is available only after you change the selection.
+
+Care shows "Workspace access saved".
+
+If Care shows "Unable to save workspace access. Your selection is still here. Please try again.", select **Save access** again.
+
+Note: **Save Changes** does not save the departments. The section shows "Access is saved separately from the configuration."
+
+Note: If you leave the page before you save the access, Care asks "You have unsaved changes. Leave without saving?"
+
+![General Medicine listed under Departments with access, with the Save access button outlined](/media/platform/workspace/share-a-workspace-with-departments-4.png)
+
+## Expected Outcome
+
+- Care saves the departments that you selected. The saved list replaces the earlier list.
+- If you save with no department selected, the workspace is not shared with any department.
+- People who hold Can Read Workspaces in a selected department, or in a department above it, can see the workspace. By default, the Facility Admin, Administrator, Doctor, Nurse, Pharmacist, Staff and Volunteer roles have it in a facility.
+- If the workspace has the status **Active**, these people can choose it in the workspace picker on their encounters. If it has the status **Draft** or **Archived**, the picker does not offer it.
+- If a person loses access to the workspace, the picker stops offering it. Care also stops using it for that person.
+- People who hold Can Create/Update Workspaces in the facility's Administration still see every facility workspace of the facility.
+
+## Related
+
+Concepts:
+
+- [Workspace](../../../concepts/platform/workspace.mdx)
+- [Department](../../../concepts/facility/department.mdx)
+
+Flows:
+
+- [Create a workspace](./create-a-workspace.mdx)
+- [Publish, hold back or archive a workspace](./publish-or-archive-a-workspace.mdx)
+- [Choose the workspace you use on encounters](./choose-your-encounter-workspace.mdx)
+- [Add users to a department](../../../flows/facility/department/add-users-to-department.mdx)

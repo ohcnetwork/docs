@@ -1,0 +1,144 @@
+---
+sidebar_position: 1
+---
+
+# Create a workspace
+
+## Overview
+
+This flow describes how to create a [workspace](../../../concepts/platform/workspace.mdx) in the settings of a facility in Care. You choose who owns the workspace: the whole facility, one department, or only you.
+
+<video src="/media/platform/workspace/create-a-workspace.mp4" poster="/media/platform/workspace/create-a-workspace.poster.png" controls width="720">
+  <track kind="captions" src="/media/platform/workspace/create-a-workspace.vtt" srcLang="en" label="English" default />
+</video>
+
+## Pre-requisites
+
+- You have a role in one of the facility's departments or teams. A role in Administration, the organization Care creates with every facility, also counts.
+- If you create a **Department workspace**, someone has created the owner department in the facility. See [Create a department](../../../flows/facility/department/create-department.mdx).
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create/Update Workspaces | For a **Facility workspace**: create the workspace. You need this permission through a role in the facility's Administration. A role in another department is not enough. By default, only the Facility Admin role has it in a facility. The person who creates a facility gets the Facility Admin role in its Administration. |
+| Can Create/Update Workspaces | For a **Department workspace**: create the workspace. You need this permission through a role in the owner department or in a department above it. A role only in Administration is not enough, because Administration is never above a department. If Administration is the owner department, a role in Administration is enough. By default, only the Facility Admin role has it in a facility. |
+| Can Create/Update Workspaces | For a **Personal workspace**: create the workspace. You need this permission through a role in any department or team of the facility, or in its Administration. By default, only the Facility Admin role has it in a facility. The Doctor and Nurse roles do not have it. |
+| Can View Facility Organizations | For a **Department workspace**: see the departments in **Owner department**. If you hold it in Administration, the list shows every department, including Administration. If you hold it only in another department, the list shows every department except Administration. The list always shows your own departments. By default, the Facility Admin, Administrator, Doctor, Nurse, Staff and Volunteer roles have it in a facility. |
+
+## Steps
+
+### 1. Open the workspace list
+
+Open the facility from the home page, or from the facility switcher in the header.
+
+In the facility sidebar, select **Settings**.
+
+In the settings sidebar, under **Advanced**, select **Workspaces**. Care shows the workspace list of the facility.
+
+### 2. Start a new workspace
+
+Select **Create workspace**. Care opens the **Create workspace** page, with **General settings** open.
+
+Note: Care shows **Create workspace** to everyone who opens the workspace list. Care checks your permission to create only when you save.
+
+![The Workspaces list of City General Hospital in the facility settings, with the Create workspace button outlined](/media/platform/workspace/create-a-workspace-1.png)
+
+### 3. Choose the ownership
+
+In **Workspace ownership**, select one option. You cannot change the ownership after you create the workspace.
+
+| Option | What it means |
+| --- | --- |
+| **Facility workspace** | A workspace that belongs to the facility. Care selects this option by default. You choose the departments that can use it after you create it. |
+| **Department workspace** | A workspace that one department of the facility owns. Care adds the **Owner department** field. |
+| **Personal workspace** | A workspace that only you can see and use. Saving it needs Can Create/Update Workspaces. |
+
+![The Workspace ownership list open on the Create workspace page, with Facility workspace outlined](/media/platform/workspace/create-a-workspace-2.png)
+
+### 4. Select the owner department
+
+If you selected **Facility workspace** or **Personal workspace**, skip this step.
+
+If you selected **Department workspace**, select the department in **Owner department**.
+
+Select a department where you have Can Create/Update Workspaces, or a department below it. Otherwise, Care refuses to save the workspace.
+
+If you save without a department, Care shows "Select the department that owns this workspace."
+
+If you change the ownership, Care clears the owner department.
+
+### 5. Enter the workspace details
+
+Complete the fields in **General settings**.
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the workspace. This field is required. Use 255 characters or fewer. |
+| Description | A short text that says when to use the workspace. This field is optional. |
+| Status | **Active**, **Draft** or **Archived**. A new workspace starts as **Active**. Care shows a hint below the field for the status that you select. |
+
+Note: An **Active** workspace is "Available on encounters to everyone with access." If you plan to design the workspace after you create it, select **Draft**.
+
+Change the status to **Active** when the design is ready. See [Publish, hold back or archive a workspace](./publish-or-archive-a-workspace.mdx).
+
+![General settings on the Create workspace page, with Ward round entered in Name and a description entered](/media/platform/workspace/create-a-workspace-3.png)
+
+### 6. Choose a starter for the design
+
+Under **Design**, Care shows **What would you like to design?**
+
+Select a starter to give the workspace a working design before you save.
+
+- **Standard encounter**: "The familiar overview plus every encounter tab, ready to adjust." Care marks this starter **Recommended**.
+- **Ward rounds**: "Vitals, diagnoses, and notes beside quick actions and the care team. Includes a medicines tab."
+- **Outpatient visit**: "A single-column visit screen with forms, vitals, and orders."
+- **Blank**: "One empty tab. Add sections from scratch."
+
+If you do not select a starter, Care saves the workspace with an empty design.
+
+On an encounter, an **Active** workspace with an empty design shows "Some parts of this workspace configuration are invalid. Valid pages and widgets are still shown." It also shows "This workspace has no visible pages."
+
+To change the tabs and sections, see [Set up the encounter screen with a workspace](./set-up-the-encounter-screen.mdx).
+
+![The design starters Standard encounter, Ward rounds, Outpatient visit and Blank, with Ward rounds outlined](/media/platform/workspace/create-a-workspace-4.png)
+
+### 7. Create the workspace
+
+Select **Create workspace** in the page header.
+
+If Care cannot save the workspace, it shows "Unable to save the workspace. Your changes are still here. Please try again."
+
+If Care also shows "You are not authorized to create a workspace", you lack the permission where it is needed. Check the Permissions section for your ownership.
+
+For example, a role only in Administration is not enough for a **Department workspace** of another department.
+
+![The Create workspace button in the page header, outlined](/media/platform/workspace/create-a-workspace-5.png)
+
+## Expected Outcome
+
+- Care shows the message "Workspace created".
+- Care opens the **Edit workspace** page of the new workspace. You can continue to design the workspace there.
+- If you created a **Facility workspace**, open **General settings**. The **Departments with access** section shows "No departments selected. Access is limited to administrators with workspace management permission." Choose the departments next. See [Share a facility workspace with departments](./share-a-workspace-with-departments.mdx).
+- If you created a **Department workspace**, people with Can Read Workspaces in the owner department, or above it, see it.
+- If you created a **Personal workspace**, only you can see it.
+
+![The Edit workspace page of Ward round with the message Workspace created](/media/platform/workspace/create-a-workspace-6.png)
+
+## Related
+
+Concepts:
+
+- [Workspace](../../../concepts/platform/workspace.mdx)
+- [Department](../../../concepts/facility/department.mdx)
+- [Roles and Permission](../../../concepts/access-governance/access-control.mdx)
+
+Flows:
+
+- [Set up the encounter screen with a workspace](./set-up-the-encounter-screen.mdx)
+- [Share a facility workspace with departments](./share-a-workspace-with-departments.mdx)
+- [Publish, hold back or archive a workspace](./publish-or-archive-a-workspace.mdx)
+- [Rename a workspace or change its description](./rename-a-workspace.mdx)
+- [Delete a workspace](./delete-a-workspace.mdx)
+- [Add users to a department](../../../flows/facility/department/add-users-to-department.mdx)

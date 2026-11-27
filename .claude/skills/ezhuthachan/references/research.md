@@ -75,6 +75,7 @@ Quote: "create_workspace": "Create workspace",
 - One claim per fact, written the way it could appear in a page.
 - `Source` is the repository, the short commit, the path and the line or line range.
 - `Quote` is the exact text at those lines, at most three lines. Print it to be sure the line numbers are right: `sed -n '1187p' care_fe/public/locale/en.json`.
+- Check every quote mechanically before a fact is used: `python3 -I <this skill>/assets/verify_facts.py "$S" "$S/facts.md"` must report 0 failing. Run it on each researcher's staged facts too. It proves the quote is at the lines; you still read whether the claim says only what the quote shows. In November 2026 a second review found seven facts whose claims said more than their verified quotes.
 - For a runtime fact, `Kind: runtime` and the source is the screenshot or response file you kept. For a human fact, `Kind: human` and the source is the person, the date, and the question number.
 
 A fact you cannot give a source for is not a fact. Turn it into a question.
@@ -133,7 +134,7 @@ A flow is one thing a user sets out to do, from where they start to the result: 
 
 1. List the screens of the module from the routes and the navigation.
 2. For each screen, list every action a user can take.
-3. Group the actions into user goals. A goal that needs several screens is still one flow. Two goals on one screen are two flows.
+3. Group the actions into user goals. A goal that needs several screens is still one flow. Two goals on one screen are two flows. But steps that only continue one goal stay in its flow, even when they open their own panel: building a design and then setting up each section of it is one goal. On 27 November 2026 the product team merged "Design what a workspace shows on encounters" and "Set what a section shows and when" into one flow, because a user does them in one sitting.
 4. For each flow note: where the user starts and how they get there, each step with the labels involved, what must already be true (a status, another record), the variants (the same goal reached from two places), and the result.
 5. Order the flows the way a user meets them: create first, then what depends on it.
 

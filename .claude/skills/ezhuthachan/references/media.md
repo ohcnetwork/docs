@@ -52,6 +52,15 @@ Before you start a service, install dependencies, or reset a database, tell the 
 
 Give a Docker stack its own Compose project name, for example `docker compose -p ez-<session id> -f docker-compose.yaml -f docker-compose.local.yaml up -d --build --wait`, run in `$S/src/care`. Without `-p`, Compose names the project after the folder, `care`, and would share containers and volumes with a stack the user runs from their own clone; a `teardown` would then delete their database. Use the same `-p` for every later command, including `exec`, `stop` and `down`. If the build stops with `DeadlineExceeded` while loading the base image's metadata, pull that image first (the `FROM` line of `docker/dev.Dockerfile`) and build again.
 
+Without Docker, Care runs natively; `CLAUDE.md` in the pinned `care` checkout documented how on 25 November 2026 (the README covers Docker only). What worked then, with the user's agreement for each step:
+
+- A venv inside the session's `care` checkout from its exact lock file: `PIPENV_VENV_IN_PROJECT=1 pipenv --python 3.13 sync --dev`.
+- The session's own database in the user's local Postgres (`CREATE DATABASE ez_<session>`), a separate Redis database index, and ports other than 9000 and 4000, so nothing collides with a stack the user runs. Read connection settings from the user's own `.env` at run time; do not copy them into a session file.
+- `migrate`, then `load_fixtures`. The fixture facility carries generated but real-looking contact details (street address, phone number). Replace them with obvious placeholders before recording; they appear on the facility settings page.
+- Frontend dependencies: when the user's `care_fe` clone has the same `package-lock.json` as the pin, `cp -cR <their clone>/node_modules <session care_fe>/` makes a copy-on-write clone on macOS in seconds and only reads their clone. Otherwise `npm ci`.
+- Record against a production build (`npm run build`, then `npx vite preview --port <port>`), not the dev server. The dev server shows a developer-tools badge in the corner of every screen.
+- In `.env.local`, `REACT_CARE_URL_MAP` must be valid JSON (`{}`); an empty value stops the frontend at start.
+
 One trap to check every time: the frontend decides which backend to call from its own configuration (`REACT_CARE_API_URL` in its env files, read in `care.config.ts`), and the default in the repository points at a shared hosted backend. A frontend started without changing that talks to the hosted backend, not to your local one. After signing in, confirm which backend the app is calling before you create anything.
 
 A second dependency sits outside the stack. Searches for coded values, such as diagnoses, medicines and the codes in a value set, go from the backend to a SNOMED terminology server, set by `SNOWSTORM_DEPLOYMENT_URL` (`config/settings/base.py` in `care`; read the default at your pin, which in November 2026 was a public server). When that server is down, those searches fail and every flow that uses one breaks, which looks like a product bug. Before you report one, or change a spec, check that it answers:
@@ -130,9 +139,10 @@ Name it `<flow-slug>.demo.ts`. Start from `example.demo.ts`.
 - Do the preparation off camera: if the flow needs a record that another flow creates, make it before the recorded page opens, in a separate browser context or through the API.
 - Each flow creates what it changes. Do not rely on what another recording left behind.
 - Respect the data policy. Under "create allowed", name records so they are recognisably yours.
-- Use invented people, the same small cast in every recording. If `$EZ/personas.md` exists, use it. If not, propose a few clearly fictional names that suit the deployment's region, get the user's agreement, and save them there.
+- Use invented people, the same small cast in every recording. If `$EZ/personas.md` exists, use it. If not, propose a few invented names that suit the deployment's region, get the user's agreement, and save them there.
+- Invented does not mean marked. Every name on screen looks real and is easy for readers anywhere to read: the facility, the patients, the staff, and the usernames, which show in the sidebar (`arun.mathew`, not `ez-fa-root`). No "Demo" or "Test" anywhere, including fixture data such as a facility's or patient's address. Leave a phone number empty rather than invent one that may belong to someone. On 27 November 2026 the product team had a full set of Workspaces videos re-recorded because the facility and patient carried "Demo" markers.
 
-**Keep it watchable.** Aim for under a minute per flow; split a longer flow into two pages. Assert only what you need in order to wait for the screen to settle.
+**Keep it watchable.** Record the essential path and leave optional steps out. Never split a flow into two pages to shorten its video: the user's goal sets where a flow ends ("Finding the flows" in `research.md`). The merged Workspaces design flow runs 2 min 19 s with narration (27 November 2026). Assert only what you need in order to wait for the screen to settle.
 
 ## Run and inspect
 
