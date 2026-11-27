@@ -23,7 +23,7 @@ This skill differs from those files in three places, each on the team's instruct
 - **Versions.** Those files say every version is identical and mirrored. Here a page goes only to the versions whose code has the module; see `publishing.md`.
 - **Permissions.** The Permissions table covers the whole path to the action, as `permissions.md` describes, not only the final permission.
 
-Where those files disagree with one another, follow the review checklist, because that is what the reviewer applies, and tell the user about the disagreement. One known case: the concept guide asks for permission slugs in backticks, while the checklist forbids slugs in concept and flow pages.
+Where those files disagree with one another, follow the review checklist, because that is what the reviewer applies, and tell the user about the disagreement. One known case: the concept guide asks for permission slugs in backticks, while the checklist forbids slugs in concept and flow pages. Another: `care-flow-doc/SKILL.md` asks for a `# How to <action>` H1 in one place and a plain sentence-case H1 matching the slug in another. Every flow page on the 3.1 site (192 of 192 in November 2026) uses the plain one, `# Close an encounter`; follow the site.
 
 ## Two kinds of page
 

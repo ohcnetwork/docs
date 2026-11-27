@@ -39,6 +39,7 @@ CHECK = os.path.join(HERE, "check")
 LEAD = 0.25   # silence before the voice, from the start of the caption
 GAP = 0.5     # silence after the voice, before the next caption may start
 MAX_CUE = 84  # characters in one subtitle: two lines of about 42
+PEAK_CAP = -1.5  # dB: a trimmed clip that peaks above this is turned down to it (check.py allows -1.0)
 PLAN = json.load(open(os.path.join(HERE, "plan.json"), encoding="utf-8"))
 FRAME = 1 / 30
 
@@ -96,6 +97,15 @@ def trimmed(slug, cue):
         sr = "silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.03"
         run(["ffmpeg", "-y", "-i", clip(slug, cue), "-af", f"{sr},areverse,{sr},areverse",
              "-ar", "48000", "-ac", "1", dst])
+        # Some clips come from the service with peaks above check.py's limit: turn those down to PEAK_CAP.
+        log = subprocess.run(["ffmpeg", "-nostdin", "-i", dst, "-af", "volumedetect", "-f", "null", "-"],
+                             capture_output=True, text=True).stderr
+        peak = float(re.search(r"max_volume: (-?[\d.]+) dB", log).group(1))
+        if peak > PEAK_CAP:
+            hot = dst + ".hot.wav"
+            os.replace(dst, hot)
+            run(["ffmpeg", "-y", "-i", hot, "-af", f"volume={PEAK_CAP - peak:.2f}dB", "-ar", "48000", "-ac", "1", dst])
+            os.remove(hot)
     return dst
 
 

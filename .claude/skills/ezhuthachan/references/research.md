@@ -153,6 +153,10 @@ Send one researcher to the backend and one to the frontend, in parallel. Give ea
 
 A researcher's report is a lead until you have checked it. Open the cited lines for every permission, role and label it reports before the fact goes into `facts.md`. Spot-check the rest.
 
+A small script that reads each fact's `Source` and checks that every line of its `Quote` appears at those lines in the checkout catches wrong line numbers and invented quotes in seconds; run it on every researcher's file before merging. Give each researcher its own range of fact numbers (E1-E499, E500-E999, ...) so parallel files never collide. Some tools refuse to let a subagent write a file whose name suggests a report of findings; ask researchers to return their suspected bugs as text, and write `report.md` yourself.
+
+After the recordings, read each flow's API log against its path. In November 2026 the recordings of eleven patient flows turned up a dozen calls the static trace had missed (area pickers, a duplicate-phone check on the edit form, the profile's own load), three of which added rows to Permissions tables.
+
 ## Before you leave research
 
 - Every fact in `facts.md` has a source you opened in this session, at the pinned commit.

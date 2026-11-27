@@ -62,6 +62,19 @@ curl -s -m 15 -o /dev/null -w '%{http_code}\n' "<SNOWSTORM_DEPLOYMENT_URL>/metad
 
 If it does not, record the other flows and come back to these later.
 
+Several sessions often run stacks on the same machine at once. Before you start one, claim its ports and its Redis index, and check that no other session holds them:
+
+```bash
+ls "$EZ/locks"                                   # ports-<backend>-<frontend>-redis-<n> files are other sessions' claims
+nc -z 127.0.0.1 <backend port> || nc -z 127.0.0.1 <frontend port> && echo busy
+redis-cli -n <index> dbsize                      # must be 0 for an index nobody uses
+echo "$ID" > "$EZ/locks/ports-<backend>-<frontend>-redis-<n>"
+```
+
+On 26 November 2026 two sessions picked the same ports and Redis index within minutes; one stack's fixture load then failed with `ObjectLocked`, because Care takes a lock in Redis while it syncs roles. Keep the claim file while the stack runs.
+
+Another session may be told to reuse your running stack instead of starting its own. It then creates its own users and records in your database, and they can show in your recordings. Note in `session.md` which sessions use your stack, and at wrap-up never stop a stack another session still uses: ask in that session, or leave it running and say so.
+
 ### One recording at a time per environment
 
 Two sessions recording against the same database spoil each other's data. Take a lock before recording and release it after:
@@ -131,6 +144,8 @@ Name it `<flow-slug>.demo.ts`. Start from `example.demo.ts`.
 - Each flow creates what it changes. Do not rely on what another recording left behind.
 - Respect the data policy. Under "create allowed", name records so they are recognisably yours.
 - Use invented people, the same small cast in every recording. If `$EZ/personas.md` exists, use it. If not, propose a few clearly fictional names that suit the deployment's region, get the user's agreement, and save them there.
+- `$EZ/personas.md` is shared, and other sessions rewrite it. When you set up the cast, copy the names you use into `session.md`, and brief recorders from that copy, so one session's videos do not mix two casts.
+- Care's fixtures leave the government organizations without a level type, so every area dropdown and every address row is labelled "State" or "Government". Before recording, set the type on the organizations your patients live in (in November 2026: the state `{"govt_org_type": "state", "govt_org_children_type": "district"}` and the district `{"govt_org_type": "district"}`, the values Care's own loader writes). Check the fixture facility's phone number too: a made-up number can belong to someone, so clear it.
 
 **Keep it watchable.** Aim for under a minute per flow; split a longer flow into two pages. Assert only what you need in order to wait for the screen to settle.
 
