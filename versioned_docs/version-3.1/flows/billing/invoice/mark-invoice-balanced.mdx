@@ -6,40 +6,79 @@ sidebar_position: 5
 
 ## Overview
 
-This flow describes how to mark an issued [invoice](../../../concepts/billing/invoice.mdx) as balanced in Care. Care checks the payments and credit notes recorded against the invoice, then closes it.
+This flow describes how to mark an issued [invoice](../../../concepts/billing/invoice.mdx) as balanced in Care, so that its Billed charge items become Paid. Care does not check that the invoice is paid in full, and any unpaid amount stays in the account's Amount Due.
 
 ## Pre-requisites
 
-- The invoice is issued. See [Issue an invoice](./issue-invoice.mdx).
-- You record the payments and credit notes for the invoice before you start. See [Payment Reconciliation](../../../concepts/billing/payment-reconciliation.mdx).
+- The invoice status is Issued.
+- If you want the invoice paid in full, its payments are already recorded. See [Record a payment for an invoice](../payment-reconciliation/record-payment.mdx).
+- If the invoice is locked, you have Can Manage Locked Invoice, so that you can open it.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Write Invoice | Lets you mark an invoice as balanced. Facility Admin, Admin, Staff, Doctor, Nurse, and Pharmacist have this permission. |
+| Can Write Invoice | Mark the invoice as balanced. Facility Admin, Staff, Doctor, Nurse and Pharmacist hold it. |
+| Can Read Invoice | Open the invoice. Care also checks it when you confirm. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it. |
+| Can Manage Locked Invoice | Only to open a locked invoice. Facility Admin holds it. |
+
+You hold each permission through a role in any organization of the facility. The roles named are the default roles.
 
 ## Steps
 
 ### 1. Open the invoice
 
-Open the invoice page for the invoice that you want to close. The action is available only while the invoice is Issued.
+Open the issued invoice. See [Find and open an invoice](./view-invoice.mdx).
 
-### 2. Mark the invoice as balanced
+![Care screen for step 1, Open the invoice](/media/billing/invoice/mark-invoice-balanced-1.png)
 
-Click **Mark as balanced**.
+### 2. Start the action
+
+Select **Mark as balanced**. Care shows this button only while the invoice is Issued.
 
 Note: Press `b` on the invoice page to mark the invoice as balanced.
 
-Note: This action is final. You cannot change the invoice after Care marks it as balanced.
+![Care screen for step 2, Start the action](/media/billing/invoice/mark-invoice-balanced-2.png)
+
+### 3. Check the amounts
+
+Care asks **Are you sure you want to mark this invoice as balanced?** and shows these amounts.
+
+| Amount | What it shows |
+| --- | --- |
+| **Invoice Total** | The total of the invoice. |
+| **Total Payments Received** | The total of the payments against the invoice. |
+| **Total Credit Notes** | The total of the credit notes against the invoice. Care shows it only when the invoice has credit notes. |
+| **Outstanding Balance** | The amount that is not paid. |
+
+If the invoice has an outstanding balance, Care shows a warning. The warning says that the unpaid amount moves to the account balance.
+
+![Care screen for step 3, Check the amounts](/media/billing/invoice/mark-invoice-balanced-3.png)
+
+### 4. Confirm
+
+Select **Confirm**. You can confirm even when the invoice has an outstanding balance.
+
+To stop, select **Cancel**.
+
+Note: There are other ways to mark an invoice as balanced.
+
+- When you record a payment from the invoice, Care can mark the invoice as balanced by itself. It does this when the payments minus the credit notes equal the invoice total. Care then shows **Invoice marked as balanced**.
+- After you record a payment, the payment form can show **Mark as balanced**. It shows the button when the invoice is still Issued and fully paid.
+- On a pharmacy dispense order, the banner shows **Mark as balanced** for an Issued invoice.
+
+![Care screen for step 4, Confirm](/media/billing/invoice/mark-invoice-balanced-4.png)
+
+![Care screen for step 4, Confirm](/media/billing/invoice/mark-invoice-balanced-5.png)
 
 ## Expected Outcome
 
-- Care checks the payments and credit notes recorded against the invoice.
-- The invoice status changes to Balanced.
-- The charge items with the status Billed change to Paid.
-- You cannot change the invoice after this point.
+- Care shows **Invoice updated successfully**.
+- The invoice status changes from Issued to Balanced.
+- The Billed charge items of the invoice change to Paid.
+- If an amount was unpaid, the invoice page shows that amount with the text "was unpaid and has been added to the account due."
+- The invoice cannot go back to Issued. You can still cancel it, or mark it Entered in Error. See [Cancel an invoice](./cancel-invoice.mdx).
 
 ## Related
 
@@ -51,4 +90,5 @@ Concepts:
 Flows:
 
 - [Issue an invoice](./issue-invoice.mdx)
-- [Cancel an invoice or mark it entered in error](./cancel-invoice.mdx)
+- [Record a payment for an invoice](../payment-reconciliation/record-payment.mdx)
+- [Cancel an invoice](./cancel-invoice.mdx)

@@ -6,57 +6,86 @@ sidebar_position: 1
 
 ## Overview
 
-This flow describes how to create an [account](../../../concepts/billing/account.mdx) for a patient at a facility. The account collects the charges and payments for that patient at that facility.
+<video src="/media/billing/account/create-account.mp4" poster="/media/billing/account/create-account.poster.png" controls width="720">
+  <track kind="captions" src="/media/billing/account/create-account.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to create an [account](../../../concepts/billing/account.mdx) for a patient at a facility. The account collects the charge items, invoices, and payments of that patient at that facility.
 
 ## Pre-requisites
 
 - The patient is registered in Care.
-- You are a member of the facility that bills the patient.
-- The patient has no active, open account at the facility. Care blocks a second active, open account for the same patient at the same facility.
+- You are a member of the facility.
+- You can open the patient's profile in the facility. See [View a patient's profile](../../clinical/patient/view-patient-profile.mdx).
+- If the new account is Active and Open, the patient has no other Active, Open account at the facility.
 - You have the permissions listed below.
 
-Note: Care creates a default account for you when you add the first [charge item](../../../concepts/billing/charge-item.mdx) for a patient with no active, open account. In that case, you do not need to create the account yourself.
+Note: Some actions add charge items without a chosen account, for example medication returns. If the patient then has no Active, Open account at the facility, Care creates one.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create Account | Create an account for a patient at a facility. Facility Admin and Admin hold this permission. |
+| Can Create Account | Shows **Create Account** and lets you save the new account. You must hold it in the facility. Facility Admin holds it by default. |
+| Can Read Account | Lets you see the patient's account list, where **Create Account** is. You must hold it in the facility. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist hold it by default. |
 
 ## Steps
 
-### 1. Open the account list
+### 1. Open the patient's accounts
 
-Start from the patient or from the facility.
+Open the patient's profile in the facility.
 
-- From the patient: open the patient profile. Select the **Accounts** tab.
-- From the facility: open the facility. Select **Billing**. Select **Accounts**.
+Select the **Accounts** tab. Care shows the accounts of the patient at this facility.
 
-### 2. Start the new account
+Note: The **Accounts** tab shows only when you open the patient inside a facility.
 
-Click **Create Account**. Care opens the account form.
+Note: The account list in **Billing** > **Accounts** has no **Create Account** button.
 
-### 3. Fill in the account details
+![Care screen for step 1, Open the patient's accounts](/media/billing/account/create-account-1.png)
 
-Complete the form fields.
+### 2. Open the account form
+
+Select **Create Account**. Care opens the **Create Account** form.
+
+Note: You can also start from the **Account** card of an encounter. See [Link an encounter to an account](./link-encounter-to-account.mdx).
+
+![Care screen for step 2, Open the account form](/media/billing/account/create-account-2.png)
+
+### 3. Enter the account details
 
 | Components | What it captures |
 | --- | --- |
-| Name | The name of the account. This field is mandatory. |
-| Description | More detail about the account. This field is optional. |
-| Status | The state of the account: Active, Inactive, On Hold, or Entered in Error. This field is mandatory. Keep the value Active for a new account. |
-| Billing Status | The billing state of the account: Open, Care Completed, Billing, Closed Bad Debt, Closed Voided, Closed Completed, or Closed Combined. This field is mandatory and starts at Open. Keep the value Open for a new account. |
+| **Name** | The name of the account. This field is required. If you leave it empty, Care shows **Name is required**. |
+| **Description** | More detail about the account. This field is optional. |
+| **Status** | The status of the account: Active, Inactive, Entered in Error, or On Hold. The form selects Active. |
+| **Billing Status** | Where the account is in billing: Open, Care Completed, or Billing. The form selects Open. |
+
+Note: Your deployment can add more fields to the form.
+
+Note: You do not enter the start date. Care sets it to the time when you create the account.
+
+Note: You cannot set the primary encounter on this form. You can set it later. See [Edit an account](./edit-account.mdx).
+
+![Care screen for step 3, Enter the account details](/media/billing/account/create-account-3.png)
 
 ### 4. Save the account
 
-Save the form. Care creates the account for the patient and the facility.
+Select **Create**.
+
+Note: **Create** stays disabled until you change a field in the form.
+
+If the new account is Active and Open, and the patient already has such an account, Care does not save the account. Care shows "Active account already exists for this patient".
+
+![Care screen for step 4, Save the account](/media/billing/account/create-account-4.png)
+
+![Care screen for step 4, Save the account](/media/billing/account/create-account-5.png)
 
 ## Expected Outcome
 
-- Care creates the account and shows it in the account list.
-- Care sets the service period start date to the current time.
-- Care links the account to the patient and the facility that you created it for. You cannot change this link later.
-- You can set the primary encounter afterwards, when you edit the account.
+- Care saves the account and closes the form. Care shows no success message.
+- The account shows in the patient's account list. The list shows Active accounts when it opens. To see an account with another status, change the **Account Status** filter.
+- The **Start date** of the account is the time when you created it.
+- The account belongs to the patient and the facility. You cannot change the patient or the facility later.
 
 ## Related
 
@@ -64,8 +93,11 @@ Concepts:
 
 - [Account](../../../concepts/billing/account.mdx)
 - [Charge Item](../../../concepts/billing/charge-item.mdx)
+- [Patient](../../../concepts/clinical/patient)
 
 Flows:
 
 - [View an account](./view-account.mdx)
 - [Edit an account](./edit-account.mdx)
+- [Link an encounter to an account](./link-encounter-to-account.mdx)
+- [Add charge items](../charge-item/add-charge-items.mdx)

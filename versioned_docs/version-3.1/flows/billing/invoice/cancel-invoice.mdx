@@ -2,54 +2,84 @@
 sidebar_position: 6
 ---
 
-# Cancel an invoice or mark it entered in error
+# Cancel an invoice
 
 ## Overview
 
-This flow describes how to cancel an [invoice](../../../concepts/billing/invoice.mdx) in Care, or how to mark it as Entered in Error.
+This flow describes how to cancel an [invoice](../../../concepts/billing/invoice.mdx) in Care, or mark it as Entered in Error. Both actions take the charge items off the invoice and make them Billable again.
 
 ## Pre-requisites
 
-- You open the page of the invoice that you want to cancel.
-- The invoice is not Balanced, Cancelled, or Entered in Error.
-- The invoice has no active payments recorded against it.
-- The invoice has no active credit notes recorded against it.
+- The invoice status is Draft, Issued or Balanced. Care does not offer these actions for an invoice that is already Cancelled or Entered in Error.
+- If the invoice has active payments or credit notes, you know how to handle them. Cancelling the invoice does not cancel them.
+- If the invoice is locked, you have Can Manage Locked Invoice, so that you can open it.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Write Invoice | Lets you cancel an invoice, or mark it as Entered in Error, soon after the invoice was created. Facility Admin, Admin, Staff, Doctor, Nurse, and Pharmacist hold this permission. |
-| Can Destroy Invoice | Lets you cancel an invoice, or mark it as Entered in Error, after the facility's free-cancel window has passed. Facility Admin and Admin hold this permission. |
+| Can Destroy Invoice | Cancel the invoice, or mark it Entered in Error. By default, you need this permission for every cancellation. Facility Admin holds it. |
+| Can Read Invoice | Open the invoice. Care also checks it when you confirm. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it. |
+| Can Manage Locked Invoice | Only to open a locked invoice. Facility Admin holds it. |
 
-Note: By default, the free-cancel window is effectively immediate. In most cases you need the Can Destroy Invoice permission.
+You hold each permission through a role in any organization of the facility. The roles named are the default roles.
+
+A deployment can set a period after an invoice is created. During that period, Can Write Invoice is enough to cancel the invoice. Facility Admin, Staff, Doctor, Nurse and Pharmacist hold Can Write Invoice. By default, the period is 0 minutes.
 
 ## Steps
 
-### 1. Open the dropdown menu
+### 1. Open the invoice
 
-Open the invoice page. Click the dropdown menu.
+Open the invoice. See [Find and open an invoice](./view-invoice.mdx).
 
-Note: The menu does not show these actions when the invoice is Balanced, Cancelled, or Entered in Error.
+![Care screen for step 1, Open the invoice](/media/billing/invoice/cancel-invoice-1.png)
 
-### 2. Choose a reason
+### 2. Open the menu
 
-Select **Mark as Cancelled** to cancel the invoice.
+Open the more-options (**⋮**) menu.
 
-Select **Mark as entered in error** when the invoice was raised by mistake.
+![Care screen for step 2, Open the menu](/media/billing/invoice/cancel-invoice-2.png)
 
-### 3. Confirm the action
+### 3. Choose the action
 
-Confirm the action.
+To cancel the invoice, select **Mark as Cancelled**.
 
-Note: Care blocks this action if the invoice has active payments or credit notes. Resolve the payments and the credit notes first.
+To mark the invoice Entered in Error, select **Mark as entered in error**.
+
+![Care screen for step 3, Choose the action](/media/billing/invoice/cancel-invoice-3.png)
+
+### 4. Read the warning about payments
+
+If the invoice has active payments or credit notes, Care shows a warning first. Its title is **Cancel Invoice with Active Payments** or **Mark as Entered in Error with Active Payments**.
+
+The warning lists the payments and credit notes. It says that Care does not cancel them with the invoice.
+
+To continue, select **Proceed**.
+
+To stop, select **Cancel**.
+
+![Care screen for step 4, Read the warning about payments](/media/billing/invoice/cancel-invoice-4.png)
+
+### 5. Confirm
+
+To cancel, Care asks **Are you sure you want to mark this invoice as cancelled?** To mark the invoice Entered in Error, Care asks **Are you sure you want to mark this invoice as entered in error?**
+
+Select **Confirm**.
+
+![Care screen for step 5, Confirm](/media/billing/invoice/cancel-invoice-5.png)
+
+![Care screen for step 5, Confirm](/media/billing/invoice/cancel-invoice-6.png)
 
 ## Expected Outcome
 
-- Care sets the invoice status to Cancelled or to Entered in Error.
-- Care reverts the [charge items](../../../concepts/billing/charge-item.mdx) on the invoice to Billable.
-- You can add the reverted charge items to a new invoice.
+- Care shows **Invoice cancelled successfully**.
+- The invoice status changes to Cancelled or to Entered in Error.
+- All charge items on the invoice change back to Billable. This includes the Paid items of a Balanced invoice. You can add them to a new invoice.
+- Payments and credit notes against the invoice stay active. To reverse them, see [Cancel a payment](../payment-reconciliation/cancel-payment.mdx) and [Record a credit note](../payment-reconciliation/record-credit-note.mdx).
+- The account totals no longer include the invoice.
+- The invoice cannot change to another status again.
+- By default, if you do not have Can Destroy Invoice, Care shows "Cannot cancel invoice" and **Failed to cancel invoice**. The invoice does not change.
 
 ## Related
 
@@ -57,8 +87,12 @@ Concepts:
 
 - [Invoice](../../../concepts/billing/invoice.mdx)
 - [Charge Item](../../../concepts/billing/charge-item.mdx)
+- [Payment Reconciliation](../../../concepts/billing/payment-reconciliation.mdx)
 
 Flows:
 
-- [Issue an invoice](./issue-invoice.mdx)
+- [Find and open an invoice](./view-invoice.mdx)
 - [Mark an invoice as balanced](./mark-invoice-balanced.mdx)
+- [Cancel a payment](../payment-reconciliation/cancel-payment.mdx)
+- [Record a credit note](../payment-reconciliation/record-credit-note.mdx)
+- [Create an invoice](./create-invoice.mdx)

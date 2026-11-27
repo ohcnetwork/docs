@@ -6,67 +6,92 @@ sidebar_position: 5
 
 ## Definition
 
-A **[payment reconciliation](https://build.fhir.org/paymentreconciliation.html)** in Care records a payment that a patient or an insurer makes against an account. You can also record a credit note, which returns money to the payer and subtracts the amount from the balance. A payment can target one specific invoice, or stay as a general credit on the account.
+A [payment](https://build.fhir.org/paymentreconciliation.html) in Care records an amount that a patient or an insurer pays on an account, or a refund, which Care records as a credit note. Every payment belongs to one account, and it can also be recorded against one invoice of that account.
+
+Care uses the payments of an account to calculate its Total Paid and its Amount Due. A payment does not need an invoice: an advance that you record on the account counts towards the Total Paid, but no invoice shows it.
 
 ## Key Attributes
 
 | Components | What it captures |
 | --- | --- |
-| Account | The account that the payment belongs to. Every payment needs an account. |
-| Target Invoice | The invoice that the payment settles. Leave it empty to record a general credit on the account. |
-| Payment Method | How the payer pays the money: Cash, Credit Card, Credit Account, Check, Direct Deposit, or Debit Card. |
-| Payment Type | The nature of the payment: Payment or Advance. |
-| Issuer Type | Who pays the money: Patient or Insurer. |
-| Location | The place where you collect the payment. |
-| Amount Paid | The money that the payer gives. For a credit note, this is the Refund Amount. |
-| Amount Received | The cash that you take from the payer. This applies only to cash payments. |
-| Reference Number | The transaction number or receipt number for the payment. |
-| Payment Date | The date of the payment. |
-| Note | Free text about the payment. |
+| Account | The account that the payment belongs to. Care fills it in from the account or the invoice where you start. |
+| Invoice | The invoice that the payment is recorded against. Care fills it in when you start from an invoice. A payment that you start from the account is recorded to the account only. |
+| Payment Method | How the money is paid: Cash, Direct Deposit, Credit Card, Debit Card, Check or Credit Account. Payment lists and filters can also show Credit Check, which the form does not offer. |
+| Payment Type | Payment or Advance in the payment form. A transfer between two accounts has the type Adjustment, which lists show as Incoming Transfer or Outgoing Transfer. |
+| Issuer Type | Who pays: Patient or Insurer. Care saves a credit note with the issuer Patient. |
+| Location | A location of the facility that is linked to the payment. The receipt shows it. |
+| Amount Paid | The amount of the payment. For a credit note, this is the Refund Amount. The amount is always more than 0. |
+| Amount Received | For cash payments only: the cash that the payer gives. Care calculates the change to return. |
+| Reference Number | For methods other than cash: a transaction ID, check number or other reference. This field is optional. |
+| Payment Date | The date and time of the payment. The form does not accept a date in the future. |
+| Notes | Free text about the payment. This field is optional. |
+| Status | Whether the payment counts towards the totals. See Status below. |
 
-### Required fields
+### Payments against an invoice
 
-Account, Payment Method, Payment Type, Amount Paid, and Payment Date are always required. Issuer Type is required for every payment except a credit note. Location is required only if your facility's configuration asks for it.
+When you record a payment from an invoice, the form sets the Payment Type to Payment and fills in the invoice total as the amount. When you record a payment from an account, the form sets the Payment Type to Advance. For a credit note, the form sets no Payment Type.
 
-Note: The Payment Date cannot be in the future.
+An invoice shows only the payments that are recorded against it. A payment without an invoice still counts towards the Total Paid of the account.
 
-### Cash payments
+When you record a payment against an issued invoice that is not a refund invoice, and its payments less its credit notes then equal the invoice total exactly, the form marks the invoice Balanced. This step needs Can Write Invoice. Without it, Care keeps the payment and the invoice stays Issued.
 
-For a cash payment, enter the Amount Received. The Amount Received must be equal to or more than the Amount Paid. Care does not show the Reference Number field for cash payments.
+If a payment against a Balanced invoice is cancelled later, the invoice keeps its status.
+
+### Credit notes
+
+A credit note records a refund. You record it from the account, or from a refund invoice that Care creates for returned items.
+
+Care subtracts credit notes from the account's Total Paid, so a credit note raises the account's Amount Due.
+
+Payment lists show a credit note as a negative amount. Its page has the heading Refund, and its receipt is a Refund Receipt.
+
+### Moving and transferring
+
+**Change Account**, on the **Payments** tab of an account, moves existing payments to another account. It moves only Active or Draft payments that are not recorded against an invoice.
+
+**Transfer Payment**, in the more-options (**⋮**) menu of an account, does not move existing payments. It records two new payments of the type Adjustment: an Outgoing Transfer, which is a credit note, on the account that the amount leaves, and an Incoming Transfer on the account that receives it.
+
+On both forms, the target is one of the patient's other accounts.
 
 ### Status
 
+You cannot edit or delete a payment after you record it. To take a payment out of the totals, mark it Cancelled or Entered in Error.
+
 | Status | Description |
 | --- | --- |
-| Active | The payment counts towards the account balance. |
-| Cancelled | Someone cancelled the payment. It no longer counts towards the balance. |
-| Draft | The payment is not complete. |
-| Entered in Error | Someone recorded the payment by mistake. |
-
-## Relationships
-
-- Every payment belongs to one account.
-- A payment can target one specific invoice. Without a target invoice, the payment stays as a general credit on the account.
-- A credit note subtracts its amount from the balance instead of adding to it.
-- You can move a payment from one account to another account. Both accounts must belong to the same patient.
+| Active | The payment is in effect. A payment that you record in Care starts as Active, with the outcome Complete, and counts towards the account's totals. |
+| Cancelled | Someone marked the payment as cancelled. It no longer counts towards the totals, and its page no longer shows the cancel actions. |
+| Entered in Error | Someone marked that the payment was recorded by mistake. It no longer counts towards the totals, and its page no longer shows the cancel actions. |
 
 ## Permissions
 
-Care checks these permissions at the facility level.
+Care checks these permissions in the facility. A role that holds the permission in any organization of the facility is enough.
 
 | Permission | What it allows | Roles |
 | --- | --- | --- |
-| Can Write Payment Reconciliation | Record a payment, update a payment, and move a payment to another account. | Facility Admin, Admin, Staff, Doctor, Nurse, Pharmacist |
-| Can Read Payment Reconciliation | View and list payments. | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-| Can Destroy Payment Reconciliation | Cancel a payment after the facility's free-cancel window ends. | Facility Admin, Admin |
+| Can Read Payment Reconciliation | List and open payments, and print receipts. Care also needs it to cancel a payment. | Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Write Payment Reconciliation | Record payments, advances, credit notes and transfers, and move payments with Change Account. | Facility Admin, Staff, Doctor, Nurse, Pharmacist |
+| Can Destroy Payment Reconciliation | Cancel a payment or mark it entered in error. | Facility Admin |
 
-Note: By default the free-cancel window ends immediately. You usually need the Can Destroy Payment Reconciliation permission to cancel a payment.
+By default, every cancellation needs Can Destroy Payment Reconciliation. A deployment can set a period after a payment is recorded, and within that period Can Write Payment Reconciliation is enough.
+
+To save a payment with a location, you also need Can List Facility Locations in an organization that the location is linked to.
+
+The roles in the table hold these permissions by default. The role lists can be changed.
+
+Except for the Change Account checkboxes, Care shows the payment buttons without a permission check. If you do not have the permission, Care shows an error when you save.
 
 ## Related
 
-- Flow: [Record a payment](../../flows/billing/payment-reconciliation/record-payment.mdx)
+- Flow: [Record a payment for an invoice](../../flows/billing/payment-reconciliation/record-payment.mdx)
+- Flow: [Record an advance payment](../../flows/billing/payment-reconciliation/record-advance-payment.mdx)
+- Flow: [Record a credit note](../../flows/billing/payment-reconciliation/record-credit-note.mdx)
+- Flow: [Find payments](../../flows/billing/payment-reconciliation/find-payments.mdx)
 - Flow: [View a payment](../../flows/billing/payment-reconciliation/view-payment.mdx)
-- Flow: [Cancel a payment or mark it entered in error](../../flows/billing/payment-reconciliation/cancel-payment.mdx)
-- Flow: [Move a payment to another account](../../flows/billing/payment-reconciliation/move-payment.mdx)
-- Concept: [Account](../../concepts/billing/account.mdx)
-- Concept: [Invoice](../../concepts/billing/invoice.mdx)
+- Flow: [Print a payment receipt](../../flows/billing/payment-reconciliation/print-payment-receipt.mdx)
+- Flow: [Cancel a payment](../../flows/billing/payment-reconciliation/cancel-payment.mdx)
+- Flow: [Move payments to another account](../../flows/billing/payment-reconciliation/move-payment.mdx)
+- Flow: [Transfer an amount to another account](../../flows/billing/payment-reconciliation/transfer-payment.mdx)
+- Concept: [Account](./account.mdx)
+- Concept: [Invoice](./invoice.mdx)
+- Reference: [Payment Reconciliation](../../references/billing/payment-reconciliation.mdx)

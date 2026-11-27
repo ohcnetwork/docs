@@ -1,0 +1,106 @@
+---
+sidebar_position: 6
+---
+
+# Add bed charges
+
+## Overview
+
+This flow describes how to add [charge items](../../../concepts/billing/charge-item.mdx) for a bed stay of the patient from the **Bed Charge Items** tab of the account. Care links these charge items to the bed stay and to the primary encounter of the account.
+
+## Pre-requisites
+
+- The account has a primary encounter, and the patient has bed stays in that encounter. Otherwise, the tab shows **No encounter associated** or **No locations**.
+- The account status is Active, and its billing status is not a closed status. Otherwise, Care does not show **Add Charge Items** on the bed stays.
+- The encounter is not Completed, Cancelled, Entered in error or Discontinued. Otherwise, Care still shows **Add Charge Items** on the bed stay, but it does not add the charge items. When you select **Add Items**, Care shows "Invalid service resource".
+- The facility has charge item definitions in a category for bed charge items. The picker shows only definitions from these categories. See [Charge Item Definition](../../../concepts/definitions/charge-item-definition.mdx).
+- If you record a performer, the performer is a member of the facility.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Charge Item | Lets you add the charge items when you select **Add Items**. Facility Admin, Staff, Doctor, Nurse and Pharmacist hold it by default. |
+| Can Read Account | Lets you open the account. The tab takes the primary encounter and its bed stays from the account. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it by default. |
+| Can Read Invoice | Lets you see the **Invoices** tab, which the account page opens first. You must hold it in the facility. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist hold it by default. |
+| Can Read Charge Item | Lets you see the charge items for bed stays of the account. The same eight roles hold it by default. |
+| Can Read Resource Category | Lets you browse the categories in the charge item definition picker. The same eight roles hold it by default. |
+| Can Read Charge Item Definition | Lets you see and select charge item definitions in the picker. The same eight roles hold it by default. |
+
+Care checks each permission through your role in any organization of the facility.
+
+## Steps
+
+### 1. Open the Bed Charge Items tab of the account
+
+In the facility sidebar, select **Billing**.
+
+Select **Accounts**. Open the account of the patient. See [View an account](../account/view-account.mdx).
+
+Select the **Bed Charge Items** tab, or press `Shift+5`.
+
+Note: On this tab, you can filter the charge items by status. The row menu has **Edit** and the cancel options, but no **Change Account**.
+
+![Care screen for step 1, Open the Bed Charge Items tab of the account](/media/billing/charge-item/add-bed-charges-1.png)
+
+### 2. Find the bed stay
+
+Find the bed stay that you want to charge for. Each bed stay shows the location, the status, the dates and the duration.
+
+![Care screen for step 2, Find the bed stay](/media/billing/charge-item/add-bed-charges-2.png)
+
+### 3. Open the Add Charge Items form
+
+On that bed stay, select **Add Charge Items**. Care opens the **Add Charge Items** form.
+
+![Care screen for step 3, Open the Add Charge Items form](/media/billing/charge-item/add-bed-charges-3.png)
+
+### 4. Select the charge item definitions
+
+In **Select Charge Item Definitions**, select one or more definitions. Care ignores a definition that is already in the list.
+
+![Care screen for step 4, Select the charge item definitions](/media/billing/charge-item/add-bed-charges-4.png)
+
+### 5. Set the quantity and the performer
+
+Complete each row.
+
+| Components | What it captures |
+| --- | --- |
+| **Name** | The charge item definition of the row. |
+| **Quantity** | The number of units. |
+| **Performer** | The person who performed the service. This is optional. The list shows the members of the facility. |
+
+![Care screen for step 5, Set the quantity and the performer](/media/billing/charge-item/add-bed-charges-5.png)
+
+### 6. Add the charge items
+
+Select **Add Items**.
+
+![Care screen for step 6, Add the charge items](/media/billing/charge-item/add-bed-charges-6.png)
+
+![Care screen for step 6, Add the charge items](/media/billing/charge-item/add-bed-charges-7.png)
+
+## Expected Outcome
+
+- Care adds one charge item for each row, with the status Billable.
+- Care links the charge items to the bed stay and to the encounter. The tab lists them under that bed stay.
+- Each charge item takes its title, description and price from its charge item definition.
+- Adding charge items does not update the **Total Billable** of the account at once. Care updates it when someone rebalances the account, or when an invoice or a payment of the account changes. See [Rebalance an account](../account/rebalance-account.mdx).
+
+## Related
+
+Concepts:
+
+- [Charge Item](../../../concepts/billing/charge-item.mdx)
+- [Account](../../../concepts/billing/account.mdx)
+- [Location](../../../concepts/facility/location.mdx)
+
+Flows:
+
+- [Add charge items](./add-charge-items.mdx)
+- [Edit a charge item](./edit-charge-item.mdx)
+- [Cancel a charge item](./cancel-charge-item.mdx)
+- [Assign an encounter location](../../clinical/encounter/assign-encounter-location.mdx)
+- [Link an encounter to an account](../account/link-encounter-to-account.mdx)

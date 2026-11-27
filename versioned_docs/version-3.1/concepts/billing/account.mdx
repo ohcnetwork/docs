@@ -6,89 +6,133 @@ sidebar_position: 1
 
 ## Definition
 
-An **[account](https://build.fhir.org/account.html)** in Care groups the charge items, invoices, and payments of one patient at one facility. Every charge item, invoice, and payment belongs to exactly one account. The account shows what the patient owes and what the patient paid. Care allows one active, open account for each patient at each facility at a time.
+An [account](https://build.fhir.org/account.html) in Care collects the charge items, invoices, and payments of one patient at one facility. The account shows what the patient owes and what the patient paid.
+
+A patient can have several accounts at a facility. Only one of them can be Active and Open at a time. When a charge item is added without a chosen account, Care adds it to that account.
 
 ## Key Attributes
 
 | Components | What it captures |
 | --- | --- |
-| Name | The name of the account. This field is required. |
+| Name | The name of the account. Care requires a name. |
 | Description | More detail about the account. This field is optional. |
-| Status | The current state of the account. This field is required. |
-| Billing Status | The current step of the account in the billing lifecycle. This field is required and starts as Open. |
-| Service Period | The start date and end date of the period that the account covers. Care sets the start to the time of creation. |
-| Primary Encounter | One recent encounter of the patient that the account covers. This field is optional. |
-| Tags | Labels that help you group and find accounts. This field is optional. |
-| Financial Summary | The Amount Due, Total Paid, Billed (Gross), and Total Billable values of the account. |
+| Status | The record status of the account: Active, Inactive, On Hold, or Entered in Error. |
+| Billing Status | Where the account is in billing: Open, Care Completed, Billing, or one of the four closed statuses. |
+| Period | The start date and the end date of the account. |
+| Primary Encounter | One encounter of the patient that is linked to the account. This field is optional. |
+| Tags | Labels that you add to the account. You can filter the account list by tags. |
+| Totals | Amount Due, Total Paid, Billed (Gross), and Total Billable. |
 
-### Service Period
+### Period
 
-Care sets the service period start to the time when you create the account. You cannot type the start date or the end date. Care shows both dates as read-only.
+Care sets the **Start date** when the account is created. You do not enter the start date or the end date.
+
+When you close the account, Care sets the **End date** to the closing time. While the account has no end date, the account page shows **Ongoing**.
 
 ### Primary Encounter
 
-You can set the primary encounter only when you edit the account. Care shows the recent encounters of the patient. An encounter is the primary encounter of one account only.
+The primary encounter links the account to one encounter of the same patient at the same facility. An encounter can be the primary encounter of one account only.
 
-### Financial Summary
+You set the primary encounter when you edit the account, or from the encounter with **Assign This Encounter**. The form that creates an account does not have this field.
 
-Care calculates the financial summary from the charge items, invoices, and payments of the account. The values are read-only.
+After you set a primary encounter, you can replace it with another encounter, but you cannot remove it.
 
-| Value | What it captures |
+The **Bed Charge Items** tab of the account needs a primary encounter.
+
+The **Account** card on an encounter shows the account whose primary encounter is that encounter. If there is no such account, the card shows the Active, Open account of the patient at the facility.
+
+### Tags
+
+You add and remove tags on the account page with **Add Tags** or **Manage Tags**, or in the **Tags** column of the account list. You can then filter the account list by tags.
+
+### Totals
+
+Care calculates four totals for each account and shows them on the account page.
+
+| Value | What it shows |
 | --- | --- |
-| Amount Due | The amount that the patient still owes on the account. |
-| Total Paid | The amount that the patient paid on the account. |
-| Billed (Gross) | The gross amount that the invoices of the account bill. |
-| Total Billable | The total amount that the account can bill. |
+| Amount Due | Billed (Gross) minus Total Paid. When the patient owes money, the screen shows the amount in red with **Pending from Patient**. Otherwise, it shows the amount in green with **Overpaid amount to be refunded**. A negative Amount Due means that the patient paid more than the total of the invoices. |
+| Total Paid | The payments received on the account, minus the credit notes. |
+| Billed (Gross) | The total of the invoices of the account. Draft, issued, and balanced invoices count. Cancelled invoices and invoices entered in error do not count. |
+| Total Billable | The total of the charge items of the account that have the status Billable. The screen describes it as **Total Pending Billable Charge Items**. |
+
+Care stores the totals. It calculates them again when one of these things happens:
+
+- Someone records, cancels, or moves a payment.
+- Someone creates, changes, or cancels an invoice, or adds items to it or removes items from it.
+- Someone moves charge items to another account.
+- Someone selects **Rebalance** on the account page.
+
+Adding, editing, or cancelling a charge item does not update the totals. **Total Billable** can show an old amount until one of the events above happens.
+
+The account page shows when Care last calculated the totals.
 
 ### Status
 
+The Status is the record status of the account. It is separate from the Billing Status.
+
+When an account is Active and does not have a closed Billing Status, the account page offers the billing actions. These are **Settle & Close**, **Create Invoice**, **Advance/Receipt**, **Record Credit Note**, and the buttons that add charge items.
+
 | Status | Description |
 | --- | --- |
-| Active | The account is in use. You can add charge items, invoices, and payments to it. |
-| Inactive | The account is no longer in use. |
-| On Hold | Work on the account stops for now. |
-| Entered in Error | Someone created the account by mistake. |
+| Active | The account list shows Active accounts when it opens. If the Billing Status is not closed, the account page offers the billing actions. |
+| Inactive | Care sets this status when you close the account. The account page does not offer the billing actions. |
+| On Hold | The account page does not offer the billing actions. |
+| Entered in Error | The account page does not offer the billing actions. |
 
-#### Billing Status
+Only one account of a patient at a facility can be Active and Open at a time. Care does not limit the other combinations.
 
-The account page shows the billing lifecycle as a stepper: Open, then Care Completed, then Billing, then Closed.
+You cannot delete an account.
+
+### Billing Status
+
+The Billing Status of an account shows where the account is in billing. The account page shows it as a stepper labelled **Billing Status**, with the steps Open, Care Completed, Billing, and Closed.
 
 | Billing Status | Description |
 | --- | --- |
-| Open | The account accepts new charges. |
-| Care Completed | The care for the patient ended. The facility did not bill the account yet. |
-| Billing | The facility prepares and sends the bills for the account. |
-| Closed Bad Debt | The facility closed the account because the patient did not pay. |
-| Closed Voided | The facility closed the account and cancelled it. |
-| Closed Completed | The facility closed the account after full payment. |
-| Closed Combined | The facility closed the account and combined it with another account. |
+| Open | The first step. The form that creates an account selects Open, and the accounts that Care creates are Open. An account that is Active and Open is the default account of the patient at the facility. |
+| Care Completed | The second step of the stepper. |
+| Billing | The third step of the stepper. |
+| Closed Bad Debt | A closed status. The screen describes it as "Organization has been unable to recover the amount and has decided not to pursue debt recovery." |
+| Closed Voided | A closed status. The screen describes it as "The account was not created in error, however the organization has decided not to charge any transactions for this account." |
+| Closed Completed | A closed status. The screen describes it as "Account is closed and all charges are processed and accounted for." |
+| Closed Combined | A closed status. The screen describes it as "This account has been combined with another account, and all charges have been migrated." |
 
-Note: Care has no delete action for an account. To close an account, change the status and the billing status. Care keeps the account.
+The four closed statuses share the Closed step of the stepper.
 
-## Relationships
+You move an account forward with the stepper. The stepper does not go back, but the edit form can set Open, Care Completed, or Billing.
 
-- The account belongs to one facility and one patient. You cannot change the patient after you create the account.
-- The account links to one encounter as the primary encounter.
-- Charge items, invoices, and payments each belong to one account.
-- If you add a charge item for a patient and select no account, Care uses the active, open account of that patient at that facility. If the patient has no such account, Care creates one.
+To close an account, use **Settle & Close** or the Closed step of the stepper. Closing also sets the Status to Inactive. The edit form does not offer the closed statuses.
+
+You can open a closed account again: edit the account, and set the Status to Active and the Billing Status to Open. Care refuses this if the patient already has another Active, Open account at the facility.
+
+When an account leaves Open, or when you close it, it is no longer the default account of the patient. The next charge item that is added without a chosen account goes to another Active, Open account of the patient. If there is none, Care creates a new account and names it with the patient's name and the date. When Care creates this new account, a new billing period starts.
 
 ## Permissions
 
-Care checks these permissions at the facility level.
+Care checks the account permissions in the organizations of the facility. The roles below hold the permissions by default.
 
 | Permission | What it allows | Roles |
 | --- | --- | --- |
-| Can Create Account | Create an account. | Facility Admin, Admin |
-| Can Update Account | Edit an account, advance the billing status, settle and close the account, rebalance the account, and manage tags. | Facility Admin, Admin |
-| Can Read Account | View and list accounts. | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Create Account | Create an account. | Facility Admin |
+| Can Read Account | See the account list, open an account, and see the account of an encounter. | Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Update Account | Edit an account, change its Billing Status, close it, rebalance it, add or remove its tags, link an encounter to it, and generate its reports. | Facility Admin |
+
+Account tasks can also need permissions from other parts of Care, such as Can Read Invoice for the **Invoices** tab. Each flow lists the permissions that it needs.
 
 ## Related
 
 - Flow: [Create an account](../../flows/billing/account/create-account.mdx)
 - Flow: [View an account](../../flows/billing/account/view-account.mdx)
 - Flow: [Edit an account](../../flows/billing/account/edit-account.mdx)
-- Flow: [Advance the billing status of an account](../../flows/billing/account/advance-account-billing-status.mdx)
+- Flow: [Advance the billing status](../../flows/billing/account/advance-account-billing-status.mdx)
 - Flow: [Settle and close an account](../../flows/billing/account/settle-and-close-account.mdx)
-- Concept: [Charge Item](../../concepts/billing/charge-item.mdx) - the items that the account bills.
-- Concept: [Invoice](../../concepts/billing/invoice.mdx) - the bill for one or more charge items of the account.
-- Concept: [Payment Reconciliation](../../concepts/billing/payment-reconciliation.mdx) - the payments and credit notes against the account or an invoice.
+- Flow: [Rebalance an account](../../flows/billing/account/rebalance-account.mdx)
+- Flow: [Add or remove account tags](../../flows/billing/account/manage-account-tags.mdx)
+- Flow: [Link an encounter to an account](../../flows/billing/account/link-encounter-to-account.mdx)
+- Flow: [Transfer an amount to another account](../../flows/billing/payment-reconciliation/transfer-payment.mdx)
+- Concept: [Charge Item](./charge-item.mdx)
+- Concept: [Invoice](./invoice.mdx)
+- Concept: [Payment Reconciliation](./payment-reconciliation.mdx)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Reference: [Account](../../references/billing/account.mdx)

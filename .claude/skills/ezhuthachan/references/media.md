@@ -54,6 +54,10 @@ Give a Docker stack its own Compose project name, for example `docker compose -p
 
 One trap to check every time: the frontend decides which backend to call from its own configuration (`REACT_CARE_API_URL` in its env files, read in `care.config.ts`), and the default in the repository points at a shared hosted backend. A frontend started without changing that talks to the hosted backend, not to your local one. After signing in, confirm which backend the app is calling before you create anything.
 
+Record against a production build of the frontend, not the dev server. The dev server (`npm run dev`) shows the TanStack router devtools button in the bottom-right corner of every screen, and it ends up in every screenshot and video. Build once at the pinned commit (`npm run build`, which reads the same env files) and serve the result with `npx vite preview --port 4000 --strictPort`. (27 November 2026.)
+
+The fixture data is not fit for camera as loaded. `load_fixtures` names the facility "FACILITY WITH PATIENTS", gives users and patients machine-made names, and gives the facility a made-up house address and phone number that look real and print on every receipt and invoice. Before recording, on a disposable stack, rename everything a viewer can see to authentic, globally understandable names (the facility, the staff accounts you sign in as, every patient that can appear in a list), and give patients and facilities obvious placeholder contacts: the 98765 4321x phone pattern and street-level addresses with no house number. Do it off camera with a short script in `$S/probes/`, and save the names in `$EZ/personas.md`. (User instruction, 27 November 2026.)
+
 A second dependency sits outside the stack. Searches for coded values, such as diagnoses, medicines and the codes in a value set, go from the backend to a SNOMED terminology server, set by `SNOWSTORM_DEPLOYMENT_URL` (`config/settings/base.py` in `care`; read the default at your pin, which in November 2026 was a public server). When that server is down, those searches fail and every flow that uses one breaks, which looks like a product bug. Before you report one, or change a spec, check that it answers:
 
 ```bash
@@ -130,7 +134,9 @@ Name it `<flow-slug>.demo.ts`. Start from `example.demo.ts`.
 - Do the preparation off camera: if the flow needs a record that another flow creates, make it before the recorded page opens, in a separate browser context or through the API.
 - Each flow creates what it changes. Do not rely on what another recording left behind.
 - Respect the data policy. Under "create allowed", name records so they are recognisably yours.
-- Use invented people, the same small cast in every recording. If `$EZ/personas.md` exists, use it. If not, propose a few clearly fictional names that suit the deployment's region, get the user's agreement, and save them there.
+- Use invented people, the same small cast in every recording. If `$EZ/personas.md` exists, use it. If not, propose a few clearly fictional names that are authentic and globally understandable, get the user's agreement, and save them there.
+- Give every recorded patient two patient tags. The patient header sizes the name column from the tags beside it: with no tag a name breaks onto one word per line, with one short tag it can break inside a word, and with two tags of about 25 characters together it stays on one line at 1440 px. Create facility patient tags off camera if the stack has none (on 27 November 2026 the fixtures had none).
+- Repeated runs fill lists with one patient's records, which looks fake in a list screenshot. Before the final pass, clear the cast's billing or clinical records off camera on a disposable stack, then record the flows that show a list first.
 
 **Keep it watchable.** Aim for under a minute per flow; split a longer flow into two pages. Assert only what you need in order to wait for the screen to settle.
 

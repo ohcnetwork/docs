@@ -1,0 +1,102 @@
+---
+sidebar_position: 7
+---
+
+# Find payments
+
+## Overview
+
+This flow describes how to find the [payments](../../../concepts/billing/payment-reconciliation.mdx) of a facility in Care, and how to filter and sort the list.
+
+## Pre-requisites
+
+- You are a member of the facility.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Read Payment Reconciliation | Lets you see the list of payments. You need it through a role in any organization of the facility. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist have it by default. |
+| Can List Facility Locations | Needed only for the Location filter. The filter lists the locations of the organizations where you have this permission. Facility Admin, Administrator, Staff, Doctor, Nurse and Pharmacist have it by default. |
+| Can Read Account | Needed only for the **Payments** tab of an account. Lets you open the account. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist have it by default. |
+| Can Read Invoice | Needed only for the payments list on an invoice page. Lets you open the invoice. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist have it by default. |
+
+## Steps
+
+### 1. Open the payments list
+
+In the facility, select **Billing**. Select **Payments**.
+
+The page "Payment Reconciliations" opens. It lists the payments of the facility.
+
+![Care screen for step 1, Open the payments list](/media/billing/payment-reconciliation/find-payments-1.png)
+
+### 2. Filter the list
+
+To see the payments that one person recorded, select the person in **Filter by User**.
+
+To add a filter, open the filter menu. Select one of these filters:
+
+| Filter | What it selects |
+| --- | --- |
+| Payment status | The status of the payment. |
+| Payment Type | Payment, Adjustment or Advance. A transfer between accounts has the type Adjustment. |
+| Payment Method | Cash, Credit Card, Credit Check, Credit Account, Check, Direct Deposit or Debit Card. |
+| Location | The location of the payment. |
+| Date | The date when the payment was entered in Care. This is not the Payment Date. |
+
+![Care screen for step 2, Filter the list](/media/billing/payment-reconciliation/find-payments-2.png)
+
+![Care screen for step 2, Filter the list](/media/billing/payment-reconciliation/find-payments-3.png)
+
+### 3. Sort the list
+
+Select **Sort By**.
+
+Select **Newest Payment First**, **Oldest Payment First**, **Newest Entry First** or **Oldest Entry First**.
+
+Note: The list uses **Newest Payment First** until you change it.
+
+![Care screen for step 3, Sort the list](/media/billing/payment-reconciliation/find-payments-4.png)
+
+### 4. Read the list
+
+The list has the columns Account, Date, Invoice, Type, Issuer Type, Method, Amount, Status and Actions.
+
+| Column | What it shows |
+| --- | --- |
+| Account | The account of the payment. The account name opens the account in a new browser tab. |
+| Invoice | The invoice number, if the payment is against an invoice. The number opens the invoice in a new browser tab. |
+| Type | Payment or Advance. A transfer between accounts shows as Incoming Transfer or Outgoing Transfer. |
+| Amount | The amount of the payment. A credit note shows as a negative amount. |
+| Status | Active, Cancelled, Draft or Entered in Error. |
+
+If no payment matches, the list shows "No payments".
+
+![Care screen for step 4, Read the list](/media/billing/payment-reconciliation/find-payments-5.png)
+
+### 5. Open a payment
+
+In the row of the payment, select **View**.
+
+![Care screen for step 5, Open a payment](/media/billing/payment-reconciliation/find-payments-6.png)
+
+## Expected Outcome
+
+- Care shows the payments of the facility that match your filters, in the order that you selected.
+- **View** opens the page of the payment. See [View a payment](./view-payment.mdx).
+- The **Payments** tab of an account shows the same list for that account, without the Account column.
+- The invoice page lists the payments against that invoice under "Payments Received Against This Invoice".
+
+## Related
+
+Concepts:
+
+- [Payment Reconciliation](../../../concepts/billing/payment-reconciliation.mdx)
+
+Flows:
+
+- [View a payment](./view-payment.mdx)
+- [Print a payment receipt](./print-payment-receipt.mdx)
+- [View an account](../account/view-account.mdx)

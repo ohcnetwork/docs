@@ -1,0 +1,109 @@
+---
+sidebar_position: 6
+---
+
+# Record a credit note
+
+## Overview
+
+This flow describes how to record a credit note, a [payment](../../../concepts/billing/payment-reconciliation.mdx) that records a refund, from an [account](../../../concepts/billing/account.mdx) or a refund [invoice](../../../concepts/billing/invoice.mdx). Care subtracts the credit note from the Total Paid of the account.
+
+## Pre-requisites
+
+- You are a member of the facility.
+- If you start from the account, the account has the status Active.
+- If you start from the account, its billing status is not closed. The closed statuses are Closed Bad Debt, Closed Voided, Closed Completed and Closed Combined.
+- If you start from an invoice, it is a refund invoice with the status Issued. Care creates refund invoices for returned items.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Write Payment Reconciliation | Lets you save the credit note. You need it through a role in any organization of the facility. Facility Admin, Staff, Doctor, Nurse and Pharmacist have it by default. |
+| Can List Facility Locations | Lets you see locations in the location picker and save the credit note with a location. You need it in an organization that the location is linked to. Facility Admin, Administrator, Staff, Doctor, Nurse and Pharmacist have it by default. |
+| Can Read Account | Needed if you start from the account. Lets you find and open the account. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist have it by default. |
+| Can Read Invoice | Lets you open the refund invoice, and see the **Invoices** tab, where the account page opens. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist have it by default. |
+| Can Manage Locked Invoice | Needed only for a locked invoice. Lets you open the locked invoice. Facility Admin has it by default. |
+
+Care shows **Record Credit Note** without a permission check. If you do not have Can Write Payment Reconciliation, Care shows an error when you save.
+
+## Steps
+
+### 1. Open the credit note form
+
+Start from one of these places:
+
+- On the account page, open the more-options (**⋮**) menu. Select **Record Credit Note**.
+- On the refund invoice, select **Record Credit Note**.
+
+To open the account, see [View an account](../account/view-account.mdx). To open the invoice, see [Find and open an invoice](../invoice/view-invoice.mdx).
+
+The form "Record Credit Note" opens.
+
+From a refund invoice, the form shows the Invoice Total and the Refund Given. From the account, it shows the Balance Due of the account.
+
+![Care screen for step 1, Open the credit note form](/media/billing/payment-reconciliation/record-credit-note-1.png)
+
+![Care screen for step 1, Open the credit note form](/media/billing/payment-reconciliation/record-credit-note-2.png)
+
+### 2. Enter the credit note details
+
+Complete these fields.
+
+| Components | What it captures |
+| --- | --- |
+| Payment Method | The method of the refund. Select Cash, Direct Deposit, Credit Card, Debit Card, Check or Credit Account. |
+| Payment Type | The form has no preselected type for a credit note. Select Payment or Advance. |
+| Location | A location of the facility. Select it in the location picker. Care fills in the location that you used last in this facility, on this browser. |
+| Refund Amount | The amount of the refund. From a refund invoice, Care fills in the invoice total. The amount must be more than 0. |
+| Reference Number | Only for methods other than Cash. Optional. A transaction ID, check number or other reference. |
+| Payment Date | The date and time of the refund. Care fills in the current time. It cannot be in the future. |
+| Notes | Optional. More information about the refund. |
+
+The form does not ask for an Issuer Type or an Amount Received. Care saves the issuer as Patient.
+
+Note: Your deployment decides if **Location** is required. By default, it is required.
+
+Note: Your deployment can preselect a **Payment Method**.
+
+![Care screen for step 2, Enter the credit note details](/media/billing/payment-reconciliation/record-credit-note-3.png)
+
+### 3. Save the credit note
+
+Select **Record Credit Note**.
+
+Note: Press `Shift+Enter` to save. To close the form without saving, select **Cancel** or press `Escape`.
+
+Note: **Record Credit Note** stays disabled until the amount is more than 0.
+
+Note: If Care shows "You do not have permission to given location", select another location. You need Can List Facility Locations in an organization of the location.
+
+Care shows "Credit Note Recorded Successfully!"
+
+![Care screen for step 3, Save the credit note](/media/billing/payment-reconciliation/record-credit-note-4.png)
+
+![Care screen for step 3, Save the credit note](/media/billing/payment-reconciliation/record-credit-note-5.png)
+
+## Expected Outcome
+
+- Care saves the credit note on the account. If you started from a refund invoice, Care also records it against that invoice.
+- Care subtracts the credit note from the Total Paid of the account at once. The Amount Due goes up.
+- Payment lists show the credit note as a negative amount.
+- If you started from a refund invoice, its page lists the credit note under "Credit Notes Issued Against This Invoice".
+- Care does not mark the refund invoice Balanced by itself.
+
+## Related
+
+Concepts:
+
+- [Payment Reconciliation](../../../concepts/billing/payment-reconciliation.mdx)
+- [Account](../../../concepts/billing/account.mdx)
+- [Invoice](../../../concepts/billing/invoice.mdx)
+
+Flows:
+
+- [Record a payment for an invoice](./record-payment.mdx)
+- [Record an advance payment](./record-advance-payment.mdx)
+- [Find payments](./find-payments.mdx)
+- [Mark an invoice as balanced](../invoice/mark-invoice-balanced.mdx)

@@ -6,45 +6,80 @@ sidebar_position: 3
 
 ## Overview
 
-This flow describes how to cancel a [charge item](../../../concepts/billing/charge-item.mdx) in Care. You give a reason for the cancellation when you change the status.
+This flow describes how to cancel a Billable [charge item](../../../concepts/billing/charge-item.mdx) in Care by marking it as Not Billable, Entered in Error or Aborted. You cannot undo a cancellation.
 
 ## Pre-requisites
 
-- Someone added the charge item, and its status is Billable.
-- If the charge item is attached to an invoice, that invoice is still a draft. You cannot cancel a charge item that is attached to an issued or balanced invoice. Cancel the [invoice](../../../concepts/billing/invoice.mdx) first.
+- Someone added the charge item, and its status is Billable. Care shows the cancel options only for Billable charge items.
+- If the charge item is on an invoice, its status is Billed or Paid. To make it Billable again, remove it from a draft invoice, or cancel the invoice. See [Change the items of a draft invoice](../invoice/edit-invoice-items.mdx) and [Cancel an invoice](../invoice/cancel-invoice.mdx).
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Cancel Charge Item | Lets you cancel a charge item. Facility Admin and Admin have this permission. |
+| Can Cancel Charge Item | Lets you cancel the charge item. Facility Admin holds it by default. |
+| Can Update Charge Item | Care checks it for every status change, before it checks Can Cancel Charge Item. Facility Admin holds it by default. |
+| Can Read Account | Lets you open the account. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it by default. |
+| Can Read Invoice | Lets you see the **Invoices** tab, which the account page opens first. You must hold it in the facility. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist hold it by default. |
+| Can Read Charge Item | Lets you see the charge items of the account. The same eight roles hold it by default. |
+
+Care checks each permission through your role in any organization of the facility.
+
+By default, every cancellation needs Can Cancel Charge Item. A deployment can set a period after a charge item is added. During that period, Can Update Charge Item is enough to cancel it.
+
+If you do not have these permissions, Care refuses the change.
 
 ## Steps
 
-### 1. Open the row menu
+### 1. Open the Charge Items tab of the account
 
-Find the charge item in the list. Open the row menu on the charge item's row.
+In the facility sidebar, select **Billing**.
 
-Note: The status options are available only while the charge item's status is Billable.
+Select **Accounts**. Open the account of the patient. See [View an account](../account/view-account.mdx).
 
-### 2. Choose a new status
+Select the **Charge Items** tab, or press `Shift+2`.
 
-Choose the status that gives the reason for the cancellation. Care shows these reasons:
+Note: For a charge item for a bed stay, you can also use the **Bed Charge Items** tab. The **Create Invoice** page of the account also has the same row menu.
 
-- Not Billable
-- Aborted
-- Entered in Error
+![Care screen for step 1, Open the Charge Items tab of the account](/media/billing/charge-item/cancel-charge-item-1.png)
 
-### 3. Confirm the change
+### 2. Open the row menu
 
-Confirm the change. Care applies the new status to the charge item.
+On the row of the charge item, open the more-options (**⋯**) menu.
+
+![Care screen for step 2, Open the row menu](/media/billing/charge-item/cancel-charge-item-2.png)
+
+### 3. Choose the new status
+
+Select one of these options:
+
+- **Mark as 'Not Billable'**
+- **Mark as 'Entered in Error'**
+- **Mark as 'Aborted'**
+
+Care opens the **Confirm Status Change** dialog. It warns that you cannot undo this action.
+
+![Care screen for step 3, Choose the new status](/media/billing/charge-item/cancel-charge-item-3.png)
+
+![Care screen for step 3, Choose the new status](/media/billing/charge-item/cancel-charge-item-4.png)
+
+### 4. Confirm the change
+
+Select the confirm button. It repeats the option that you chose, for example **Mark as 'Aborted'**.
+
+![Care screen for step 4, Confirm the change](/media/billing/charge-item/cancel-charge-item-5.png)
+
+![Care screen for step 4, Confirm the change](/media/billing/charge-item/cancel-charge-item-6.png)
 
 ## Expected Outcome
 
-- The charge item shows the new status.
-- If the charge item is attached to a draft invoice, Care removes it from that invoice.
-- Care updates the totals of that draft invoice.
+- Care shows **Charge Item updated successfully**. The charge item shows the new status.
+- Nobody can change the charge item after this.
+- The charge item cannot go on an invoice.
+- Cancelling a charge item does not update the **Total Billable** of the account at once. Care updates it when someone rebalances the account, or when an invoice or a payment of the account changes. See [Rebalance an account](../account/rebalance-account.mdx).
+- When an appointment, a medication dispense or a service request is cancelled, Care sets its charge items to Aborted.
+- If one of those charge items is on an invoice that is not a draft, Care refuses to cancel it: "Cannot cancel charge item in a non-draft invoice".
 
 ## Related
 
@@ -57,3 +92,5 @@ Flows:
 
 - [Add charge items](./add-charge-items.mdx)
 - [Edit a charge item](./edit-charge-item.mdx)
+- [Change the items of a draft invoice](../invoice/edit-invoice-items.mdx)
+- [Cancel an invoice](../invoice/cancel-invoice.mdx)

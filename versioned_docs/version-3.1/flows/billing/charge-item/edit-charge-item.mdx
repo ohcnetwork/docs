@@ -6,64 +6,97 @@ sidebar_position: 2
 
 ## Overview
 
-This flow describes how to change the details of a [charge item](../../../concepts/billing/charge-item.mdx) in Care. You can edit a charge item only while its status is Billable.
+This flow describes how to change the performer, unit price, quantity, discounts or note of a Billable [charge item](../../../concepts/billing/charge-item.mdx) from the account.
 
 ## Pre-requisites
 
-- Someone added the charge item, and you open it from an appointment, a service request, or an account.
-- The status of the charge item is Billable.
+- Someone added the charge item, and its status is Billable. For other statuses, Care disables **Edit**.
+- If the charge item is on a draft invoice, its status is Billed. Change it from the invoice. See [Change the items of a draft invoice](../invoice/edit-invoice-items.mdx).
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Update Charge Item | Lets you change the details of a charge item. Facility Admin and Admin roles have this permission. |
+| Can Update Charge Item | Lets you save the changes to the charge item. Facility Admin holds it by default. |
+| Can Read Account | Lets you open the account. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it by default. |
+| Can Read Invoice | Lets you see the **Invoices** tab, which the account page opens first. You must hold it in the facility. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist hold it by default. |
+| Can Read Charge Item | Lets you see the charge items of the account. The same eight roles hold it by default. |
+
+Care checks each permission through your role in any organization of the facility.
+
+If you do not have Can Update Charge Item, Care shows **Failed to update invoice** when you save.
 
 ## Steps
 
-### 1. Open the charge item
+### 1. Open the Charge Items tab of the account
 
-Go to the Charge Items tab of the appointment, the service request, or the account.
+In the facility sidebar, select **Billing**.
 
-Find the row of the charge item that you want to change.
+Select **Accounts**. Open the account of the patient. See [View an account](../account/view-account.mdx).
 
-### 2. Open the row menu
+Select the **Charge Items** tab, or press `Shift+2`.
 
-Open the row menu on the charge item's row.
+Note: For a charge item for a bed stay, you can also use the **Bed Charge Items** tab. Its row menu also has **Edit**.
 
-Select **Edit**.
+![Care screen for step 1, Open the Charge Items tab of the account](/media/billing/charge-item/edit-charge-item-1.png)
 
-Note: The Edit option shows only while the status of the charge item is Billable.
+### 2. Open the Edit Charge Item dialog
+
+On the row of the charge item, open the more-options (**⋯**) menu.
+
+Select **Edit**. Care opens the **Edit Charge Item** dialog.
+
+Note: The **Create Invoice** page of the account has the same row menu.
+
+![Care screen for step 2, Open the Edit Charge Item dialog](/media/billing/charge-item/edit-charge-item-2.png)
 
 ### 3. Change the details
 
 Change the fields that you want to update.
 
-| Component | What it captures |
+| Components | What it captures |
 | --- | --- |
-| Title | The name of the charge item. |
-| Quantity | The number of units of the charge item. |
-| Price components | The base price, the surcharges, the discounts, and the taxes of the charge item. |
-| Note | Extra information about the charge item. |
+| **Item** | The title of the charge item. You cannot change it. |
+| **Performer** | The person who performed the service. Select a person in **Select performer**. |
+| **Unit Price** | The base price of one unit. Enter 0 or more. |
+| **Quantity** | The number of units. Enter 1 or more. |
+| **Discounts** | The discounts on the charge item. Select **Add Discount**. Choose a discount in **Select Discount**. You can change the value and switch between an amount and a percentage. |
+| **Note** | A free-text note about the charge item. |
 
-### 4. Save the charge item
+Note: You can choose only the discounts that are set up for the facility and for the instance. If there are none, Care shows **No discounts**.
 
-Save your changes.
+Note: If **Can Edit Charge Item** is cleared on the charge item definition, Care disables **Unit Price**, **Quantity**, **Discounts** and **Note**. You can still change the **Performer**.
+
+![Care screen for step 3, Change the details](/media/billing/charge-item/edit-charge-item-3.png)
+
+### 4. Save the changes
+
+Select **Save**, or press `Shift+Enter`.
+
+![Care screen for step 4, Save the changes](/media/billing/charge-item/edit-charge-item-4.png)
+
+![Care screen for step 4, Save the changes](/media/billing/charge-item/edit-charge-item-5.png)
 
 ## Expected Outcome
 
-- Care updates the charge item with the new details.
-- The Charge Items tab shows the updated title, quantity, price components, and note.
+- Care shows **Invoice updated successfully**.
+- Care calculates the total of the charge item again. It refuses a total below zero.
+- Care builds the new price from the **Unit Price**, the definition's taxes and the discounts in the dialog. Surcharges and informational amounts, such as MRP, are not kept.
+- If **Can Edit Charge Item** is cleared on the charge item definition, Care keeps the old price and quantity.
+- If the save fails, Care shows **Failed to update invoice**.
+- Editing a charge item does not update the **Total Billable** of the account at once. Care updates it when someone rebalances the account, or when an invoice or a payment of the account changes. See [Rebalance an account](../account/rebalance-account.mdx).
 
 ## Related
 
 Concepts:
 
 - [Charge Item](../../../concepts/billing/charge-item.mdx)
+- [Charge Item Definition](../../../concepts/definitions/charge-item-definition.mdx)
 
 Flows:
 
 - [Add charge items](./add-charge-items.mdx)
 - [Cancel a charge item](./cancel-charge-item.mdx)
 - [Move charge items to another account](./move-charge-items.mdx)
+- [Change the items of a draft invoice](../invoice/edit-invoice-items.mdx)

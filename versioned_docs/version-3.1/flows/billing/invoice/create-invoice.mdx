@@ -6,57 +6,121 @@ sidebar_position: 1
 
 ## Overview
 
-This flow describes how to create an [invoice](../../../concepts/billing/invoice.mdx) for an account in Care. The new invoice starts in the Draft state.
+<video src="/media/billing/invoice/create-invoice.mp4" poster="/media/billing/invoice/create-invoice.poster.png" controls width="720">
+  <track kind="captions" src="/media/billing/invoice/create-invoice.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to create an [invoice](../../../concepts/billing/invoice.mdx) from the Billable charge items of an account. The new invoice is a draft, so you can change it before you issue it.
 
 ## Pre-requisites
 
-- You create the invoice for an account of the patient at your facility.
-- The account has Billable charge items, or you add new charge items from Charge Item Definitions on the invoice page.
-- If you start from an appointment, the patient has an appointment at the facility.
+- The account belongs to your facility.
+- If you start from the account, the account Status is Active and its Billing Status is not closed.
+- The account has Billable charge items that are on no other invoice. If it has none and you start from the account, you can add new charge items.
+- If you start from an appointment or a service request, at least one of its charge items is Billable.
+- If you start from an appointment or a service request, the patient has an Active account with Billing Status Open.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Write Invoice | Lets you create an invoice. Facility Admin, Admin, Staff, Doctor, Nurse, and Pharmacist have this permission. |
+| Can Write Invoice | Create the invoice when you save. Facility Admin, Staff, Doctor, Nurse and Pharmacist hold it. |
+| Can Read Account | Open the account and the invoice form. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it. |
+| Can Read Charge Item | See the Billable charge items in the invoice form. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it. |
+| Can Read Invoice | Open the new invoice after you save. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it. |
+| Can Create Charge Item | Only to add new charge items while you create the invoice. Facility Admin, Staff, Doctor, Nurse and Pharmacist hold it. |
+| Can Read Charge Item Definition | Only to find a definition in **Select charge item definition**. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it. |
+
+You hold each permission through a role in any organization of the facility. The roles named are the default roles.
+
+**Quick Add** and **Add Charge Items** need more permissions. See [Add a package of charge items](../charge-item/quick-add-charge-items.mdx) and [Add charge items](../charge-item/add-charge-items.mdx).
 
 ## Steps
 
 ### 1. Start the invoice
 
-Start the invoice from one of these places:
+Start from the account, or from an appointment or a service request.
 
-- Open the account and select the **Invoices** tab.
-- Open the appointment page. Care can pre-select the charge items of that appointment.
-- Open the account and select the **Charge Items** tab. Select the Billable items first.
+- From the account: select **Billing**. Select **Accounts**. Select **Go to account** on the row of the account. Select **Create Invoice** in the account header.
+- From an appointment or a service request: open it. In its charge items section, select **Create Invoice**.
 
-Note: Press `c` on the billing and invoice pages to create an invoice. Press `i` on an appointment page or an account page to create an invoice with the items pre-selected.
+From the account, Care opens the **Create Invoice** page with a **Draft** badge. From an appointment or a service request, Care opens a **Create Invoice** form. The form lists only the Billable charge items of that appointment or service request.
 
-### 2. Select the charge items
+Note: On a small screen, the button on the account is **Invoice**. If the account is not Active, or its Billing Status is closed, Care does not show the button.
 
-Select the Billable charge items of the account that you want to include.
+Note: Press `i` on the account page or the appointment page to start the invoice.
 
-You can also add new charge items on this page. Select the charge items from the Charge Item Definitions.
+For other ways to find the account, see [View an account](../account/view-account.mdx).
 
-### 3. Add the invoice details
+![Care screen for step 1, Start the invoice](/media/billing/invoice/create-invoice-1.png)
 
-Add the optional details for the invoice.
+![Care screen for step 1, Start the invoice](/media/billing/invoice/create-invoice-2.png)
+
+### 2. Choose the charge items
+
+Care lists the Billable charge items. All items are selected at the start.
+
+Clear each item that you do not want on the invoice.
+
+If the account has more items than the page shows, select **Load More**.
+
+Care shows the number of selected items and their **Invoice Total**. The total includes all applicable taxes.
+
+If there are no Billable charge items, Care shows **No Billable Items Found**.
+
+![Care screen for step 2, Choose the charge items](/media/billing/invoice/create-invoice-3.png)
+
+### 3. Add new charge items (optional)
+
+Do this step only if an item that you need is not on the account. You can add items only when you start from the account.
+
+- Select a definition in **Select charge item definition**. Enter the quantity. If necessary, select a performer.
+- Select **Quick Add** to add a package of charge items.
+- Select **Add Charge Items** to add items from charge item definitions.
+
+The new items show in the list, selected.
+
+Note: If the account has no Billable charge items, the **Select charge item definition** picker opens by itself.
+
+### 4. Add the invoice details (optional)
+
+Open the **Issue Date, Payment Terms & Note** section.
 
 | Components | What it captures |
 | --- | --- |
-| Payment Terms | The terms of payment for the invoice. |
+| Issue Date | The date of issue. You cannot select a date in the future. If you leave it empty, Care sets it when you issue the invoice. |
+| Payment Terms | The conditions for payment. Your deployment can fill in a default text. |
 | Note | More information about the invoice. |
-| Issue Date | The date of issue for the invoice. |
 
-### 4. Create the invoice
+![Care screen for step 4, Add the invoice details (optional)](/media/billing/invoice/create-invoice-4.png)
 
-Click **Create Invoice**.
+### 5. Create the invoice
+
+Select **Create Invoice**.
+
+The button is available only when at least one item is selected.
+
+If Care cannot create the invoice, it shows the reason. Some examples:
+
+| Message | What it means |
+| --- | --- |
+| "Charge item must be billable to add it to an invoice" | One of the selected items is no longer Billable. |
+| "Charge item already belongs to another invoice" | One of the selected items is on another invoice. |
+| "One or more charge items were not found in this account" | One of the selected items is not on this account. |
+| "Account is not associated with the facility" | The account belongs to another facility. |
+| "The resource you are trying to access is locked" | Someone else is changing the same account at that moment. Try again. |
+
+![Care screen for step 5, Create the invoice](/media/billing/invoice/create-invoice-5.png)
+
+![Care screen for step 5, Create the invoice](/media/billing/invoice/create-invoice-6.png)
 
 ## Expected Outcome
 
-- Care creates the invoice with the charge items that you selected.
-- The invoice is in the Draft state.
+- Care creates the invoice in Draft status and shows **Invoice Created Successfully**.
+- Care opens the new invoice.
+- The charge items on the invoice change from Billable to Billed.
+- The account totals include the new invoice.
 
 ## Related
 
@@ -68,6 +132,9 @@ Concepts:
 
 Flows:
 
-- [View an invoice](./view-invoice.mdx)
-- [Edit an invoice](./edit-invoice.mdx)
+- [Find and open an invoice](./view-invoice.mdx)
+- [Edit the details of a draft invoice](./edit-invoice.mdx)
+- [Change the items of a draft invoice](./edit-invoice-items.mdx)
 - [Issue an invoice](./issue-invoice.mdx)
+- [Add charge items](../charge-item/add-charge-items.mdx)
+- [Add a package of charge items](../charge-item/quick-add-charge-items.mdx)

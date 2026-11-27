@@ -2,69 +2,124 @@
 sidebar_position: 2
 ---
 
-# View an invoice
+# Find and open an invoice
 
 ## Overview
 
-This flow describes how to open an [invoice](../../../concepts/billing/invoice.mdx) in Care and read its details. You can also print a copy of the invoice.
+This flow describes how to find an [invoice](../../../concepts/billing/invoice.mdx) in Care and open its page. The invoice page shows the totals, the lines and the payments of the invoice, and the actions for its status.
 
 ## Pre-requisites
 
-- Someone created the invoice at your facility.
-- You are a member of the facility that holds the invoice.
-- If the invoice is locked, you have the permission to manage locked invoices. Without it, Care hides the totals of the invoice.
+- You are a member of an organization of the facility that holds the invoice.
+- If the invoice is locked, you have Can Manage Locked Invoice. Without it, the invoice does not open.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Read Invoice | Lets you open an invoice and read its details. Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, and Pharmacist have this permission. |
-| Can Manage Locked Invoice | Lets you read the full detail of a locked invoice, with its totals. Facility Admin and Admin have this permission. |
+| Can Read Invoice | List invoices and open an invoice. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it. |
+| Can Manage Locked Invoice | Only to open a locked invoice. Facility Admin holds it. |
+| Can Read Account | Only if you start from an account: open the account and its **Invoices** tab. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it. |
+| Can Read Charge Item | Only if you start from the **Charge Items** tab of an account: list the charge items. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it. |
+| Can Read Payment Reconciliation | Only if you start from a payment: open the payment. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it. |
+
+You hold each permission through a role in any organization of the facility. The roles named are the default roles.
+
+The pharmacy screens have their own permissions. See [Dispense a medication](../../medications/medication-dispense/dispense-medication.mdx).
 
 ## Steps
 
-### 1. Open the invoice
+### 1. Open the invoice list
 
-Use one of these entry points:
+Open the list of all invoices of the facility, or the invoices of one account.
 
-- Go to the facility. Select **Billing**. Select **Invoices**. Select the invoice from the list.
-- Open the account. Select the **Invoices** tab. Select the invoice from the list.
-- Scan the QR code of the invoice.
+- All invoices: select **Billing**. Select **Invoices**. Care opens **Invoice Management**.
+- One account: open the account. The account page opens on its **Invoices** tab.
 
-### 2. Read the invoice details
+For ways to find an account, see [View an account](../account/view-account.mdx).
 
-The invoice page shows the following information:
+![Care screen for step 1, Open the invoice list](/media/billing/invoice/view-invoice-1.png)
 
-| Section | What it shows |
+### 2. Find the invoice
+
+Enter the invoice number in **Search Invoices**.
+
+On **Invoice Management**, you can also use **Filter by Patient**. The **Invoices** tab of an account does not have it.
+
+To narrow the list, use the **Invoice Status**, **Created By** and **Invoice Date** filters.
+
+The list shows **Invoice Number**, **Invoice Date**, **Account**, **Status** and **Total** for each invoice. The account tab does not show the **Account** column.
+
+Note: **Invoice Date** is the date when someone created the invoice. It is not the **Issue Date** of the invoice.
+
+Note: For a locked invoice, the **Total** column shows a **Locked** badge instead of the amount. Every user sees the badge, also a Facility Admin.
+
+If no invoice matches, Care shows **No invoices**.
+
+![Care screen for step 2, Find the invoice](/media/billing/invoice/view-invoice-2.png)
+
+### 3. Open the invoice
+
+Select **See Invoice** on the row of the invoice.
+
+You can also open an invoice from these places:
+
+- The **Charge Items** tab of the account: select the invoice number on a charge item.
+- The page of a payment against the invoice: select **View Invoice**.
+- A pharmacy dispense order or a medication return: select **View Invoice**.
+
+Note: The QR code on a printed invoice holds the patient's ID. **Scan Invoice QR** does not open an invoice from that code.
+
+![Care screen for step 3, Open the invoice](/media/billing/invoice/view-invoice-3.png)
+
+### 4. Read the invoice
+
+The invoice page shows these parts.
+
+| Part of the page | What it shows |
 | --- | --- |
-| Patient and account summary | The patient and the account of the invoice. |
-| Totals | The total amounts of the invoice. |
-| Line items | The charge items that the invoice includes. |
-| Status | The current status of the invoice. |
+| Header | **Patient Name**, and the **Account** with its **Amount Due** and **Status**. The amount due and the status are those of the account, not of the invoice. |
+| **Invoice Summary** | The status of the invoice, **Total Amount**, **Total Payments Received** and **Balance Due**. |
+| Invoice heading | The invoice number and status, and a **Locked** badge when the invoice is locked. |
+| **Tax Invoice** | **Bill To** with the name, address, phone number and identifiers of the patient, the note, and the **Issue Date**. |
+| Lines | Each charge item with **Item**, **Performer**, **Unit Price**, **Qty**, **Discount**, one column for each tax, and **Total**. |
+| Totals | The base amounts, surcharges, discounts, **Net Amount**, taxes and **Total**. |
+| **Payments Received Against This Invoice** | The active payments with **Date and Time**, **Payment Method**, **Reference** and **Amount**, and **Total Received**. |
+| **Credit Notes Issued Against This Invoice** | The active credit notes and **Total Credit Notes**. |
+| **Payment Terms** | The payment terms, when the invoice has them. |
+| Footer | **Invoice Updated** and **Draft Invoice Created**, each with who and when. |
 
-Note: If the invoice is locked and you do not have the permission to manage locked invoices, Care hides the totals.
+A refund invoice shows **Total Credit Notes**, **Refunds Given Against This Invoice** and **Total Refunded** in place of the payment labels.
 
-### 3. Print the invoice
+If a Balanced invoice has an unpaid amount, the page shows that amount with the text "was unpaid and has been added to the account due."
 
-Select **Print Invoice**. Care produces a printable copy of the invoice.
+![Care screen for step 4, Read the invoice](/media/billing/invoice/view-invoice-4.png)
 
-Note: The invoice page supports keyboard shortcuts. Press `p` to print the invoice. Press `s` to go to the source. Press `v` to view the invoice.
+![Care screen for step 4, Read the invoice](/media/billing/invoice/view-invoice-5.png)
+
+![Care screen for step 4, Read the invoice](/media/billing/invoice/view-invoice-6.png)
 
 ## Expected Outcome
 
-- You see the patient and account summary, the totals, the line items, and the status of the invoice.
-- You have a printable copy of the invoice when you select **Print Invoice**.
+- The invoice page opens.
+- If the invoice does not open, the page shows **Invoice not found**, **Invoice may not exist** and **Back to invoices**. This happens, for example, when you do not have Can Read Invoice.
+- If the invoice is locked and you do not have Can Manage Locked Invoice, the page shows **Invoice not found**, **Invoice may not exist** and **Back to invoices**. Care also shows the error "Locked invoice permission denied."
+- From the invoice page, you can print the invoice. Depending on its status, you can also edit it, issue it, mark it as balanced, lock it or cancel it.
 
 ## Related
 
 Concepts:
 
 - [Invoice](../../../concepts/billing/invoice.mdx)
+- [Account](../../../concepts/billing/account.mdx)
 - [Payment Reconciliation](../../../concepts/billing/payment-reconciliation.mdx)
 
 Flows:
 
+- [Print invoices](./print-invoice.mdx)
 - [Create an invoice](./create-invoice.mdx)
-- [Edit an invoice](./edit-invoice.mdx)
+- [Issue an invoice](./issue-invoice.mdx)
 - [Lock or unlock an invoice](./lock-or-unlock-invoice.mdx)
+- [View an account](../account/view-account.mdx)
+- [View a payment](../payment-reconciliation/view-payment.mdx)

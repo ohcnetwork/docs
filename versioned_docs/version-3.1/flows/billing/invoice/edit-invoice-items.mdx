@@ -1,0 +1,149 @@
+---
+sidebar_position: 8
+---
+
+# Change the items of a draft invoice
+
+## Overview
+
+This flow describes how to add charge items to a draft [invoice](../../../concepts/billing/invoice.mdx), remove them, and change their price, quantity, discounts, performer or note. Adding and removing items needs a different permission from changing them.
+
+## Pre-requisites
+
+- The invoice status is Draft. Care shows the item controls only for a draft invoice.
+- If you add charge items, the account Status is Active and its Billing Status is not closed.
+- If you add charge items, they are Billable, on the account of the invoice, and on no other invoice.
+- If the invoice is locked, you have Can Manage Locked Invoice, so that you can open it.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Write Invoice | Add charge items to the invoice, and remove them. Facility Admin, Staff, Doctor, Nurse and Pharmacist hold it. |
+| Can Update Charge Item | Change the price, quantity, discounts, performer or note of the items. Facility Admin holds it. |
+| Can Read Invoice | Open the invoice. Care also checks it when you add or remove items. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it. |
+| Can Read Account | Only to add items: load the account in **Add Charge Items to Invoice**. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it. |
+| Can Read Charge Item | Only to add items: list the Billable charge items of the account. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it. |
+| Can Create Charge Item | Only for **Other Charge Items**: create new charge items on the account. Facility Admin, Staff, Doctor, Nurse and Pharmacist hold it. |
+| Can Read Charge Item Definition | Only for **Other Charge Items**: find charge item definitions. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it. |
+| Can Manage Locked Invoice | Only to open a locked invoice. Facility Admin holds it. |
+
+You hold each permission through a role in any organization of the facility. The roles named are the default roles.
+
+**Other Charge Items** opens the same **Add Charge Items** form as the account. For all the permissions of that form, see [Add charge items](../charge-item/add-charge-items.mdx).
+
+Care shows **Edit Items** on every draft invoice. If you do not have Can Update Charge Item, Care shows "Something went wrong...!" and **Failed to update invoice** when you save.
+
+## Steps
+
+### 1. Open the invoice
+
+Open the draft invoice. See [Find and open an invoice](./view-invoice.mdx).
+
+Do only the steps that you need.
+
+![Care screen for step 1, Open the invoice](/media/billing/invoice/edit-invoice-items-1.png)
+
+### 2. Add charge items from the account
+
+Select **Add Charge Item**.
+
+Note: Press `a` on the invoice page to add charge items.
+
+Care opens **Add Charge Items to Invoice**. The form lists the Billable charge items of the account, and all of them are selected.
+
+To find an item, use **Search Charge Items**.
+
+Clear each item that you do not want to add.
+
+Select **Add Selected Items**.
+
+![Care screen for step 2, Add charge items from the account](/media/billing/invoice/edit-invoice-items-2.png)
+
+![Care screen for step 2, Add charge items from the account](/media/billing/invoice/edit-invoice-items-3.png)
+
+![Care screen for step 2, Add charge items from the account](/media/billing/invoice/edit-invoice-items-4.png)
+
+### 3. Create new charge items (optional)
+
+Do this step only if the item is not on the account yet.
+
+In **Add Charge Items to Invoice**, select **Other Charge Items**.
+
+Note: Press `o` in the form to open **Other Charge Items**.
+
+Care opens **Add Charge Items**. Add the items from charge item definitions, as [Add charge items](../charge-item/add-charge-items.mdx) describes.
+
+Care creates the new items on the account. Add them to the invoice as in step 2.
+
+### 4. Remove a charge item
+
+Select the remove icon on the line of the item.
+
+Care shows **Remove Charge Item** and asks **Are you sure you want to remove this charge item from the invoice?**
+
+Select **Remove**.
+
+![Care screen for step 4, Remove a charge item](/media/billing/invoice/edit-invoice-items-5.png)
+
+![Care screen for step 4, Remove a charge item](/media/billing/invoice/edit-invoice-items-6.png)
+
+### 5. Change the items
+
+To change all lines, select **Edit Items**. To change one line, select the edit icon on that line.
+
+Note: Press `e` on the invoice page to open **Edit Items**.
+
+Care opens **Edit Invoice Items**.
+
+| Components | What it captures |
+| --- | --- |
+| Performer | The performer of the item. Select a facility user in **Select performer**. With more than one line, **Apply to All** uses this performer on every line. |
+| Unit Price | The price of one unit. It must be 0 or more. |
+| Quantity | The number of units. It must be 1 or more. |
+| Discounts | The discounts on the item. Select **Add Discount**. Select a discount in **Select Discount**. You can choose only discounts that are set up for the facility or the deployment. You can change the amount, or change it from an amount to a percentage. |
+| Note | A note about the item. |
+
+With more than one line, **Apply to All** in the **Discounts** column applies a discount to every line. The column also has **Clear all**.
+
+You cannot change the name or the taxes of an item here.
+
+If the definition of a line does not allow edits, you can change only the performer of that line. The definition setting is **Can Edit Charge Item**.
+
+When you save, the form builds a new price for each line. It uses the unit price, the definition's taxes and the discounts. Other price components, such as surcharges, are not kept.
+
+If the definition of a line does not allow edits, Care keeps the old price and quantity of that line.
+
+Select **Save**.
+
+![Care screen for step 5, Change the items](/media/billing/invoice/edit-invoice-items-7.png)
+
+![Care screen for step 5, Change the items](/media/billing/invoice/edit-invoice-items-8.png)
+
+![Care screen for step 5, Change the items](/media/billing/invoice/edit-invoice-items-9.png)
+
+## Expected Outcome
+
+- After you add items, the items are on the invoice, and their status changes from Billable to Billed.
+- After you remove an item, Care shows **Charge item removed successfully**. The item goes back to Billable.
+- After you change items, Care shows **Invoice updated successfully** and recalculates the invoice.
+- The invoice lines show the current charge items.
+- Changes with **Edit Items** do not update the account totals at once. Care updates them when someone rebalances the account, or when an invoice or a payment of the account changes. See [Rebalance an account](../account/rebalance-account.mdx).
+
+## Related
+
+Concepts:
+
+- [Invoice](../../../concepts/billing/invoice.mdx)
+- [Charge Item](../../../concepts/billing/charge-item.mdx)
+- [Charge Item Definition](../../../concepts/definitions/charge-item-definition.mdx)
+
+Flows:
+
+- [Edit the details of a draft invoice](./edit-invoice.mdx)
+- [Find and open an invoice](./view-invoice.mdx)
+- [Issue an invoice](./issue-invoice.mdx)
+- [Add charge items](../charge-item/add-charge-items.mdx)
+- [Edit a charge item](../charge-item/edit-charge-item.mdx)
+- [Rebalance an account](../account/rebalance-account.mdx)

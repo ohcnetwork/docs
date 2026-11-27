@@ -6,65 +6,104 @@ sidebar_position: 5
 
 ## Overview
 
-This flow describes how to settle an [account](../../../concepts/billing/account.mdx) in Care and close it with a reason.
+<video src="/media/billing/account/settle-and-close-account.mp4" poster="/media/billing/account/settle-and-close-account.poster.png" controls width="720">
+  <track kind="captions" src="/media/billing/account/settle-and-close-account.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to close an [account](../../../concepts/billing/account.mdx) with a closing reason. Closing sets the Status of the account to Inactive and sets its end date.
 
 ## Pre-requisites
 
-- Someone created the account, and you open its account page.
+- You can open the account page. See [View an account](./view-account.mdx).
+- The account has the Status Active.
+- The account does not have a closed Billing Status.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Update Account | Lets you settle and close an account. Facility Admin and Admin have this permission. |
+| Can Update Account | Lets you close the account. You must hold it in the facility. Facility Admin holds it by default. |
+| Can Read Account | Lets you open the account page. You must hold it in the facility. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist hold it by default. |
+| Can Read Invoice | Lets you see the **Invoices** tab, which the account page opens first. You must hold it in the facility. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist hold it by default. |
+| Can Read Charge Item | Lets Care check the account for Billable charge items and warn you about them. You must hold it in the facility. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist hold it by default. |
+
+If you do not have Can Update Account, Care shows "You are not authorized to update accounts" when you select **Close Account**.
 
 ## Steps
 
-### 1. Start the action
+### 1. Open the account
 
-Open the account page.
+Open the account page. See [View an account](./view-account.mdx).
 
-Click **Settle & Close**.
+### 2. Open the Close Account dialog
 
-Note: Press `s` on the account page to start the same action.
+Use one of these controls:
 
-### 2. Choose a closing reason
+- On a large screen, select **Settle & Close**.
+- On a smaller screen, open the more-options (**⋮**) menu. Then select **Settle & Close**.
+- In the **Billing Status** stepper, select **Closed**. The stepper works only if you have Can Update Account.
 
-Select one of these reasons:
+Note: On a large screen, you can also press `s`.
 
-| Reason | What it means |
+Care opens the **Close Account** dialog.
+
+![Care screen for step 2, Open the Close Account dialog](/media/billing/account/settle-and-close-account-1.png)
+
+### 3. Select the closing reason
+
+Care selects a reason for you. If the Amount Due is zero, Care selects Closed Completed. Otherwise, Care selects Closed Bad Debt.
+
+Keep the reason, or select another one. Care shows a help text for the selected reason.
+
+| Reason | Help text on the screen |
 | --- | --- |
-| Closed Bad Debt | You close the account because the balance is not collectable. |
-| Closed Voided | You close the account because it is void. |
-| Closed Completed | You close the account because all billing is complete. |
-| Closed Combined | You close the account because it is combined with another account. |
+| Closed Bad Debt | "Organization has been unable to recover the amount and has decided not to pursue debt recovery." |
+| Closed Voided | "The account was not created in error, however the organization has decided not to charge any transactions for this account." |
+| Closed Completed | "Account is closed and all charges are processed and accounted for." |
+| Closed Combined | "This account has been combined with another account, and all charges have been migrated." |
 
-### 3. Review the warnings
+![Care screen for step 3, Select the closing reason](/media/billing/account/settle-and-close-account-2.png)
 
-If the account has a negative balance, Care shows a warning before you continue.
+### 4. Read the warnings
 
-If the account still has charge items that wait for billing, Care shows a warning before you continue.
+Care can show two warnings in the dialog. The warnings do not stop you from closing the account.
 
-Read each warning.
+- If the patient still owes money, that is, the Amount Due is more than zero, Care shows "This account has a negative balance, closing this account will mark it as inactive."
+- If the account has Billable charge items, Care shows "This account has pending charge items. Consider reconciling them before closing the account."
 
-### 4. Confirm the closure
+![Care screen for step 4, Read the warnings](/media/billing/account/settle-and-close-account-3.png)
 
-Confirm the action.
+![Care screen for step 4, Read the warnings](/media/billing/account/settle-and-close-account-4.png)
+
+### 5. Close the account
+
+Select **Close Account**. Care saves the change at once.
+
+![Care screen for step 5, Close the account](/media/billing/account/settle-and-close-account-5.png)
+
+![Care screen for step 5, Close the account](/media/billing/account/settle-and-close-account-6.png)
 
 ## Expected Outcome
 
-- Care sets the account status to Inactive.
-- Care sets the billing status to the closing reason that you choose.
+- Care shows **Account closed successfully**.
+- The account has the Status Inactive and the Billing Status that you selected.
+- The **End date** of the account is the time when you closed it.
+- The account list shows Active accounts when it opens, so it no longer shows this account. To see the account, change the **Account Status** filter.
+- The account page no longer shows **Settle & Close**, **Create Invoice**, **Advance/Receipt**, or the more-options (**⋮**) menu.
+- The next charge item that is added without a chosen account goes to another Active, Open account of the patient. If there is none, Care creates a new account. When Care creates this new account, a new billing period starts.
+- To open the account again, see [Edit an account](./edit-account.mdx).
 
 ## Related
 
 Concepts:
 
 - [Account](../../../concepts/billing/account.mdx)
+- [Charge Item](../../../concepts/billing/charge-item.mdx)
 
 Flows:
 
 - [View an account](./view-account.mdx)
+- [Advance the billing status](./advance-account-billing-status.mdx)
 - [Edit an account](./edit-account.mdx)
-- [Advance the billing status of an account](./advance-account-billing-status.mdx)
+- [Transfer an amount to another account](../payment-reconciliation/transfer-payment.mdx)

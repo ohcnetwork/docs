@@ -6,41 +6,61 @@ sidebar_position: 7
 
 ## Overview
 
-This flow describes how to lock or unlock an [invoice](../../../concepts/billing/invoice.mdx) in Care. A lock prevents further changes to the invoice. A lock also hides the invoice totals from anyone without the Can Manage Locked Invoice permission.
+This flow describes how to lock or unlock an [invoice](../../../concepts/billing/invoice.mdx) in Care. A lock limits who can open the invoice and hides its total in lists, but it does not stop changes to the invoice.
 
 ## Pre-requisites
 
-- Someone created the invoice, and you open the page of that invoice.
+- The invoice status is Draft, Issued or Balanced. Care does not offer these actions for a Cancelled or Entered in Error invoice.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Manage Locked Invoice | Lets you lock an invoice, unlock an invoice, and view the full detail of a locked invoice. Facility Admin and Admin have this permission. |
+| Can Manage Locked Invoice | Lock and unlock the invoice, and open it while it is locked. Facility Admin holds it. |
+| Can Read Invoice | Open the invoice. Care also checks it when you lock or unlock the invoice. Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it. |
+
+You hold each permission through a role in any organization of the facility. The roles named are the default roles.
+
+Care shows **Lock Invoice** to every user who can open the invoice. If you do not have Can Manage Locked Invoice, Care shows "Locked invoice permission denied." and **Failed to lock invoice**.
 
 ## Steps
 
-### 1. Open the invoice page
+### 1. Open the invoice
 
-Open the invoice that you want to lock or unlock.
+Open the invoice. See [Find and open an invoice](./view-invoice.mdx).
 
-Note: A locked invoice hides its full detail. To see the full detail, you need the Can Manage Locked Invoice permission.
+![Care screen for step 1, Open the invoice](/media/billing/invoice/lock-or-unlock-invoice-1.png)
 
-### 2. Open the dropdown menu
+### 2. Open the menu
 
-Click the dropdown menu on the invoice page.
+Open the more-options (**⋮**) menu.
+
+![Care screen for step 2, Open the menu](/media/billing/invoice/lock-or-unlock-invoice-2.png)
 
 ### 3. Lock or unlock the invoice
 
-Select **Lock Invoice** to lock the invoice. If the invoice is locked, select **Unlock Invoice** to unlock it.
+To lock the invoice, select **Lock Invoice**.
+
+To unlock a locked invoice, select **Unlock Invoice**.
+
+Care applies the change at once. Care does not ask you to confirm.
+
+![Care screen for step 3, Lock or unlock the invoice](/media/billing/invoice/lock-or-unlock-invoice-3.png)
+
+![Care screen for step 3, Lock or unlock the invoice](/media/billing/invoice/lock-or-unlock-invoice-4.png)
+
+![Care screen for step 3, Lock or unlock the invoice](/media/billing/invoice/lock-or-unlock-invoice-5.png)
 
 ## Expected Outcome
 
-- Care locks or unlocks the invoice.
-- A locked invoice accepts no more changes.
-- Care hides the totals of a locked invoice from users without the Can Manage Locked Invoice permission.
-- Care keeps a history of who locked or unlocked the invoice, and when.
+- Care shows **Invoice locked successfully** or **Invoice unlocked successfully**.
+- A locked invoice shows a **Locked** badge in its heading.
+- In the **Invoices** tab of the account and in **Billing** > **Invoices**, the **Total** column of a locked invoice shows a **Locked** badge instead of the amount. Every user sees the badge, also a Facility Admin.
+- Users without Can Manage Locked Invoice cannot open a locked invoice. For them, the invoice page shows **Invoice not found**, **Invoice may not exist** and **Back to invoices**. Care also shows the error "Locked invoice permission denied."
+- The lock does not change the status of the invoice. A locked invoice can still be edited, issued, marked as balanced or cancelled.
+- Care records who locked or unlocked the invoice, and when. No screen shows this record.
+- Care does not print the charge items of an account while one of them is on a locked invoice. This also applies to users with Can Manage Locked Invoice. See [Print charge items](../charge-item/print-charge-items.mdx).
 
 ## Related
 
@@ -50,5 +70,6 @@ Concepts:
 
 Flows:
 
-- [View an invoice](./view-invoice.mdx)
-- [Mark an invoice as balanced](./mark-invoice-balanced.mdx)
+- [Find and open an invoice](./view-invoice.mdx)
+- [Print invoices](./print-invoice.mdx)
+- [Print charge items](../charge-item/print-charge-items.mdx)
