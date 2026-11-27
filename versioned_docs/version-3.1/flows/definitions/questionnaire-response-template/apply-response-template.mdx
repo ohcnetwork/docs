@@ -6,54 +6,77 @@ sidebar_position: 2
 
 ## Overview
 
-This flow describes how to fill a questionnaire with a saved [response template](../../../concepts/definitions/questionnaire-response-template.mdx). A template adds its medications and its service requests to the form.
+<video src="/media/definitions/questionnaire-response-template/apply-response-template.mp4" poster="/media/definitions/questionnaire-response-template/apply-response-template.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/questionnaire-response-template/apply-response-template.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to fill in a questionnaire with a saved [questionnaire response template](../../../concepts/definitions/questionnaire-response-template.mdx). Care adds the medications or the service requests of the template to the question, and you can change them before you submit.
 
 ## Pre-requisites
 
-- You fill a questionnaire for a patient in a facility.
-- You can see at least one response template. See [Create a response template](./create-response-template.mdx).
-- You have the permission listed below.
+- You fill in a questionnaire for a patient's encounter in the facility.
+- The questionnaire has a Medication Request question or a Service Request question.
+- You can see at least one template with items for this questionnaire. See [Create a response template](./create-response-template.mdx).
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Read Questionnaire Response Templates | Lets you see the templates and apply them to the form. |
+| No template permission | You need no template permission to see the templates or to apply them. Care checks none. |
 
 ## Steps
 
-### 1. Open the template list
+### 1. Open the template panel
 
-Select **Templates** in the medications question or the service request question. Care opens the **Response Templates** panel.
+In the Medication Request question or the Service Request question, select **Templates**. Care opens the **Response Templates** panel.
+
+![Step 1, Open the template panel: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire-response-template/apply-response-template-1.png)
 
 ### 2. Find the template
 
-Enter a name in **Search templates**. The list shows the templates that you created. It also shows the templates that other users share with you or with your departments.
+Enter a name in **Search templates**. The list shows the templates of this questionnaire, in this facility, that you can see.
 
-### 3. Look at the content of the template
+A Medication Request question lists the templates that hold medications. A Service Request question lists the templates that hold service requests.
 
-Select the template to open it. Care shows the medications and the service requests in the template.
+![Step 2, Find the template: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire-response-template/apply-response-template-2.png)
+
+### 3. Look at the items in the template
+
+Select the template to expand it. Care lists its medications or its service requests. A template with no items does not expand.
+
+![Step 3, Look at the items in the template: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire-response-template/apply-response-template-3.png)
 
 ### 4. Apply the template
 
-Select **Apply**. Care adds all the items of the template to the form. Care then closes the panel.
+Select **Apply**. Care adds all the items of the template to the end of the list in the question. Care then closes the panel.
 
-To add one item only, select that medication or that service request in the open template.
+When you apply a template, Care loads the details of each medication and each service request in it. If Care cannot load a service request, Care leaves that item out and shows a warning. If Care can load no service request, Care shows **Failed to apply template**.
 
-### 5. Change the values
+**Apply** is not available for a template with no items.
 
-Change the dose, the schedule, or the other details for this patient. Do this before you submit the questionnaire.
+To add one item only, select that item in the expanded template. Care adds only that item.
+
+![Step 4, Apply the template: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire-response-template/apply-response-template-4.png)
+
+### 5. Review the added items
+
+Check each added item for this patient. Change or remove the items as necessary before you submit the questionnaire.
+
+For a medication template, Care opens the first added medication for you.
+
+![Step 5, Review the added items: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire-response-template/apply-response-template-5.png)
 
 ## Expected Outcome
 
-- Care adds the items of the template to the current questionnaire.
-- You can change every value before you submit the questionnaire.
+- Care adds the items of the template to the question and shows how many items it applied.
+- Applying a template saves nothing by itself. You can still change every added item before you submit the questionnaire.
 
 ## Related
 
 Concepts:
 
 - [Questionnaire Response Template](../../../concepts/definitions/questionnaire-response-template.mdx)
+- [Questionnaire](../../../concepts/definitions/questionnaire.mdx)
 
 Flows:
 

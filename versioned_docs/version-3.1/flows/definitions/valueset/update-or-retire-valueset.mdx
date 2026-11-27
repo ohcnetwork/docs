@@ -6,60 +6,121 @@ sidebar_position: 4
 
 ## Overview
 
-This flow describes how to change the details of a [valueset](../../../concepts/definitions/valueset.mdx) in Care. It also describes how to retire a valueset that you no longer use.
+<video src="/media/definitions/valueset/update-or-retire-valueset.mp4" poster="/media/definitions/valueset/update-or-retire-valueset.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/valueset/update-or-retire-valueset.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to change a facility [valueset](../../../concepts/definitions/valueset.mdx) in Care. It also describes how to retire a valueset that your facility no longer uses.
 
 ## Pre-requisites
 
-- You are a Care superuser.
-- The valueset is already in Care.
+- The valueset is on the **This facility** tab of the **ValueSets** page.
+- The valueset is shared with your department, or with one of its sub-departments. See [Share a valueset with departments](./share-valueset-with-departments.mdx).
 - You have the permissions listed below.
+
+Note: You cannot change a valueset on the **Shared catalogue** tab from facility settings. To change one for your facility, see [Customize a shared valueset](./customize-shared-valueset.mdx).
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| None (Care superuser only) | Lets you update or retire a valueset. |
+| Can Create/Update ValueSets | Lets you see **Edit**, change the valueset, and save it. You must hold it in the facility's root organization (**Administration**). Without it there, Care shows **View** and opens the valueset read only. By default, the Facility Admin role holds it. |
+| Can Read ValueSets | Lets you find the valueset in the list and open it. You must hold it in a department that the valueset is shared with, or in a parent department of one. Holding it in the root organization alone is not enough, unless the valueset is shared with the root organization (**Administration**). By default, the Facility Admin, Administrator, Doctor, Nurse, Staff, Pharmacist and Volunteer roles hold it. |
+| Can View Facility Organizations | Lets you see the departments in the **Select Department** list. If you hold it in the root organization, the list shows every department, including the root organization. If you hold it only in a department, the list leaves out the root organization. By default, the Facility Admin, Administrator, Doctor, Nurse, Staff and Volunteer roles hold it. |
 
 ## Steps
 
-### 1. Open the valueset
+### 1. Open the valueset list
 
-1. Open the Admin sidebar.
-2. Select **Valuesets**.
-3. Select the status tab of the valueset. Care shows the **Active** tab first.
-4. To find the valueset by name, enter the name in the **Search ValueSets** box.
-5. Select **Edit** on the row of the valueset.
+In the facility sidebar, select **Settings**.
 
-Note: Care marks some valuesets as system-defined. These valuesets come with Care, and other parts of Care depend on them. Care shows **View** in place of **Edit** on these rows. Do not change a system-defined valueset.
+In the settings sidebar, under **Forms**, select **ValueSets**.
 
-### 2. Change the valueset details
+Care opens the **ValueSets** page on the **This facility** tab.
 
-Change any of these fields:
+![Step 1, Open the valueset list (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/valueset/update-or-retire-valueset-1.png)
+
+![Step 1, Open the valueset list (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/valueset/update-or-retire-valueset-2.png)
+
+### 2. Find the valueset
+
+To find the valueset by name, type in **Search ValueSets**.
+
+The list shows **Active** valuesets. To find a valueset with another status, change **Status**.
+
+Each row shows the name and slug, the status, and the description of a valueset.
+
+![Step 2, Find the valueset: the screen at this step, with the control for the step outlined](/media/definitions/valueset/update-or-retire-valueset-3.png)
+
+### 3. Open the valueset
+
+On the row of the valueset, select **Edit**.
+
+Care opens the **Edit ValueSet** page.
+
+If the row shows **View** in place of **Edit**, you do not hold Can Create/Update ValueSets in the root organization.
+
+**View** opens the **Preview ValueSet** page with a **Read only** badge and the note **You do not have permission to edit this value set**.
+
+![Step 3, Open the valueset: the screen at this step, with the control for the step outlined](/media/definitions/valueset/update-or-retire-valueset-4.png)
+
+### 4. Change the details
+
+Change the fields that you want to change.
 
 | Components | What it captures |
 | --- | --- |
-| Name | The name of the valueset. |
-| Slug | The short identifier that Care uses in links. |
-| Description | The purpose of the valueset. |
-| Status | The current stage of the valueset. |
-| Include rules | The rules that add codes to the valueset. |
-| Exclude rules | The rules that remove codes from the valueset. |
+| **Name** | The name of the valueset. This field is required. |
+| **Slug** | The slug of the valueset. You cannot change it after the valueset is created. |
+| **Status** | The stage of the valueset: **Active**, **Draft**, **Retired**, or **Unknown**. This field is required. |
+| **Description** | More information about the valueset. This field is optional. |
+| **Departments with access** | The departments whose members can see and use the valueset. Care saves a change to this field at once. See [Share a valueset with departments](./share-valueset-with-departments.mdx). |
+| **Use parent rules** | Whether Care adds the rules of the parent valueset to the rules on this page. |
+| **Include rules** and **Exclude rules** | The rules that add codes to the valueset and remove codes from it. See [Build include and exclude rules](./build-include-and-exclude-rules.mdx). |
 
-Select **Save ValueSet**. To leave the page without a change, select **Cancel**.
+To check the codes before you save, see [Preview a valueset](./preview-valueset.mdx).
 
-### 3. Retire the valueset
+![Step 4, Change the details: the screen at this step, with the control for the step outlined](/media/definitions/valueset/update-or-retire-valueset-5.png)
 
-Do this step only when you no longer use the valueset.
+### 5. Save the changes
 
-1. Set **Status** to **Retired**.
-2. Select **Save ValueSet**.
+Select **Save**.
 
-Note: Care has no delete action for a valueset. Retire the valueset instead.
+The button stays inactive until you change a field.
+
+If a field has an error, Care lists it under **Review these fields before saving**.
+
+To leave without saving, select the back arrow next to the page title.
+
+If you have unsaved changes, Care asks **You have unsaved changes. Leave without saving?**
+
+![Step 5, Save the changes (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/valueset/update-or-retire-valueset-6.png)
+
+![Step 5, Save the changes (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/valueset/update-or-retire-valueset-7.png)
+
+### 6. Retire the valueset
+
+Do this step only when your facility no longer uses the valueset.
+
+If you saved changes in step 5, Care is back on the **ValueSets** page. Open the valueset again: on its row, select **Edit**.
+
+1. In **Status**, select **Retired**.
+2. Select **Save**.
+
+Note: The pages have no delete action for a valueset. Retire the valueset instead.
+
+To use a retired valueset again, set its **Status** back to **Active** and save it.
+
+![Step 6, Retire the valueset (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/valueset/update-or-retire-valueset-8.png)
+
+![Step 6, Retire the valueset (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/valueset/update-or-retire-valueset-9.png)
 
 ## Expected Outcome
 
-- Care saves your changes to the valueset.
-- If you set the status to Retired, Care shows the valueset as retired.
+- Care shows **ValueSet updated successfully** and returns to the **ValueSets** page.
+- If you retired the valueset, the list shows it only when **Status** is set to **Retired**.
+- If you retired a **Facility customization**, fields that find their valueset by this slug stop using it. They go back to the shared valueset, or to another Active facility valueset with that slug.
+- A questionnaire question with this valueset in **Select a value set** still searches its codes after you retire it.
 
 ## Related
 
@@ -70,4 +131,7 @@ Concepts:
 Flows:
 
 - [Create a valueset](./create-valueset.mdx)
+- [Customize a shared valueset](./customize-shared-valueset.mdx)
+- [Share a valueset with departments](./share-valueset-with-departments.mdx)
 - [Build include and exclude rules](./build-include-and-exclude-rules.mdx)
+- [Preview a valueset](./preview-valueset.mdx)

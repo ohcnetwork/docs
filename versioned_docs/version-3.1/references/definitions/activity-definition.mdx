@@ -4,77 +4,94 @@ sidebar_position: 6
 
 # Activity Definition
 
-An `ActivityDefinition` is a FHIR-aligned, facility-scoped template for a clinical activity. It stores the defaults needed to spin up a downstream resource — currently a [Service Request](../clinical/service-request.mdx) — and you "apply" it against an encounter, which merges those defaults with the encounter context to produce the live resource.
+Technical reference for the `ActivityDefinition` module in Care EMR. For what an activity definition is, see the [Activity Definition](../../concepts/definitions/activity-definition.mdx) concept.
+
+An `ActivityDefinition` is a facility-scoped template for a clinical activity. Applying it to an encounter creates a [Service Request](../clinical/service-request.mdx), and a charge item for each linked [Charge Item Definition](./charge-item-definition.mdx).
 
 **Source:**
+
 - Model: [`care/emr/models/activity_definition.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/activity_definition.py)
 - Resource specs: [`spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/activity_definition/spec.py) · [`valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/activity_definition/valueset.py) · [`service_request.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/activity_definition/service_request.py)
+- Viewset: [`activity_definition.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/activity_definition.py)
+- Authorization: [`activity_definition.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/authorization/activity_definition.py) · permissions [`activity_definition.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/permissions/activity_definition.py)
 
-The Django model is just storage. Several fields are opaque `JSONField`s or integer `ArrayField`s whose real structure lives in the Pydantic resource specs — the API layer that defines the enums, JSON shapes, validation rules, and the split between read and write schemas. Neither layer is complete on its own; read them together.
+The Django model stores the data. Several fields are JSON fields or integer arrays whose real shape is defined by the Pydantic resource specs: the enums, the value set bindings, the validation and the read and write schemas. Read the two layers together.
 
 ## Models
 
 | Model | Purpose |
 | --- | --- |
-| `ActivityDefinition` | Versioned, facility-scoped template describing a clinical activity and the defaults used to create the resources it produces |
+| `ActivityDefinition` | Facility-scoped template for a clinical activity, holding the defaults used to create the service request it produces |
 
-`ActivityDefinition` extends `SlugBaseModel`, which adds a facility-scoped `slug` on top of `EMRBaseModel`. From `EMRBaseModel` it inherits `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and the `history`/`meta` JSON fields. See [Base model](../foundation/base-model.mdx).
+`ActivityDefinition` extends `SlugBaseModel`, which extends `EMRBaseModel`. From these it inherits `external_id`, `created_date`, `modified_date`, `deleted` (soft delete), `created_by`, `updated_by`, `history` and `meta`. See [Base model](../foundation/base-model.mdx).
 
 ## `ActivityDefinition` fields
 
-Each field lists its storage type (Django model) and, where the spec constrains it, the API shape or values the Pydantic specs enforce.
+Each field lists its storage type (Django model) and, where a spec constrains it, the API shape.
 
 ### Identity & versioning
 
 | Field | Storage type | API shape / notes |
 | --- | --- | --- |
-| `facility` | `FK → facility.Facility` (PROTECT) | Owning facility. Spec-`__exclude__`d — set server-side and never accepted in the payload. |
-| `slug` | `CharField(255)` | Facility-scoped identifier. On write you supply it as `slug_value` (`SlugType`); `perform_extra_deserialization` assigns it to `obj.slug`. On read it comes back as `slug` plus a parsed `slug_config` dict. |
-| `version` | `IntegerField` | Default `1`. Read-only in specs (`version: int \| None`), serialized on list and retrieve. Drives the append-only version chain. |
-| `latest` | `BooleanField` | Default `True`. Marks the current version within a slug's chain. Server-maintained, not exposed in the specs. |
-| `derived_from_uri` | `TextField` | Nullable. URI this definition was derived from. Optional in specs (`str \| None = None`). |
+| `facility` | `FK → facility.Facility` (PROTECT) | Excluded from the specs. Set on create from the facility in the URL |
+| `slug` | `CharField(255)` | Written as `slug_value` (`SlugType`, 5–50 characters). Stored as `f-<facility external id>-<slug_value>`. Unique in the facility, compared case-insensitively. Read back as `slug` plus a parsed `slug_config`. The API looks records up by `slug` |
+| `version` | `IntegerField` | Default `1`. Read-only (`version: int \| None` on read). No code changes it |
+| `latest` | `BooleanField` | Default `True`. Not in any spec. No code changes it |
+| `derived_from_uri` | `TextField`, nullable | Optional (`str \| None = None`) |
+
+`version` and `latest` do not form a version chain. No code increments `version` or changes `latest`, and an update changes the record in place. Earlier states are not kept as separate records.
 
 ### Descriptive metadata
 
 | Field | Storage type | API shape / notes |
 | --- | --- | --- |
-| `title` | `CharField(1024)` | Required (`str`). Human-friendly name. |
-| `status` | `CharField(255)` | Required enum — `ActivityDefinitionStatusOptions` (`draft` / `active` / `retired` / `unknown`). |
-| `classification` | `CharField(100)` | Required enum — `ActivityDefinitionCategoryOptions` (`laboratory` / `imaging` / `counselling` / `surgical_procedure` / `education`). |
-| `kind` | `CharField(100)` | Required enum — `ActivityDefinitionKindOptions` (only `service_request`). Determines the resource produced on apply. |
-| `description` | `TextField` | Optional in specs; default `""`. |
-| `usage` | `TextField` | Optional in specs; default `""`. |
+| `title` | `CharField(1024)` | Required `str` |
+| `status` | `CharField(255)` | Required enum `ActivityDefinitionStatusOptions` |
+| `classification` | `CharField(100)` | Required enum `ActivityDefinitionCategoryOptions`. Labelled "Category" in the UI |
+| `kind` | `CharField(100)` | Required enum `ActivityDefinitionKindOptions` (only `service_request`) |
+| `description` | `TextField` | Optional in the specs, default `""`. The UI form requires it |
+| `usage` | `TextField` | Optional in the specs, default `""`. The UI form requires it |
 
 ### Coded clinical attributes (JSON)
 
-These are `JSONField`s. The spec binds each to a value set via `ValueSetBoundCoding[<slug>]`, which validates the submitted code against that value set. Every coding is shaped `{ system?: str, version?: str, code: str (required), display?: str }` with `extra="forbid"`, so unknown keys are rejected.
+These are `JSONField`s. The spec binds each one to a value set with `ValueSetBoundCoding[<slug>]`, which checks the submitted code against that value set. A code outside the value set fails with "Code does not exist in the valueset".
+
+Each coding is `Coding`: `code` is required, `system`, `version` and `display` are optional, and extra keys are refused.
 
 | Field | Storage type | API shape / notes |
 | --- | --- | --- |
-| `code` | `JSONField` (nullable) | Required `Coding` bound to value set `activity-definition-procedure-code` (SNOMED CT, `concept is-a 71388002` "Procedure"). Nullable in the DB but rejected on write if absent. |
-| `body_site` | `JSONField` (nullable) | Optional `Coding \| None = None` bound to value set `system-body-site-observation` (SNOMED CT body sites). |
-| `diagnostic_report_codes` | `JSONField` (nullable) | `list[Coding]`, default `[]`. Each `Coding` bound to value set `system-observation` (LOINC). |
+| `code` | `JSONField`, nullable | Required `Coding` bound to `activity-definition-procedure-code` |
+| `body_site` | `JSONField`, nullable | Optional `Coding` (default `None`) bound to `system-body-site-observation` |
+| `diagnostic_report_codes` | `JSONField`, nullable | `list[Coding]`, default `[]`, each bound to `system-observation` |
 
 ### Requirement & linkage arrays
 
-These store integer primary keys, not Django FK relations — `ArrayField(IntegerField, default=list)`. The specs never expose those raw PKs: writes reference targets by external slug or UUID, and retrieves expand them back into serialized objects.
+These fields store integer primary keys in `ArrayField(IntegerField)` with an empty-list default, not foreign keys. Writes reference the targets by slug or UUID, and the viewset converts them to ids on save. Retrieve expands them into objects and skips any id that no longer resolves.
 
 | Field | Storage type | Write shape | Read (retrieve) shape |
 | --- | --- | --- | --- |
-| `specimen_requirements` | `ArrayField[int]` | `list[ExtendedSlugType]` | `list[dict]` — serialized [Specimen Definitions](../definitions/specimen-definition.mdx) (`SpecimenDefinitionReadSpec`) |
-| `observation_result_requirements` | `ArrayField[int]` | `list[ExtendedSlugType]` | `list[dict]` — serialized [Observation Definitions](../definitions/observation-definition.mdx) (`ObservationDefinitionReadSpec`) |
-| `locations` | `ArrayField[int]` | `list[UUID4]` | `list[dict]` — serialized [Locations](../facility/location.mdx) (`FacilityLocationListSpec`) |
-| `charge_item_definitions` | `ArrayField[int]` | `list[ExtendedSlugType]` | `list[dict]` — serialized [Charge Item Definitions](../definitions/charge-item-definition.mdx) (`ChargeItemDefinitionReadSpec`) |
-| `tags` | `ArrayField[int]` | not written via spec | `list[dict]` — rendered via `SingleFacilityTagManager().render_tags(obj)` |
+| `specimen_requirements` | `ArrayField[int]` | `list[ExtendedSlugType]` | `list[dict]`, serialized [Specimen Definitions](./specimen-definition.mdx) |
+| `observation_result_requirements` | `ArrayField[int]` | `list[ExtendedSlugType]` | `list[dict]`, serialized [Observation Definitions](./observation-definition.mdx) |
+| `charge_item_definitions` | `ArrayField[int]` | `list[ExtendedSlugType]` | `list[dict]`, serialized [Charge Item Definitions](./charge-item-definition.mdx) |
+| `locations` | `ArrayField[int]` | `list[UUID4]` | `list[dict]`, serialized [Locations](../facility/location.mdx) |
 
-> `ExtendedSlugType`: 7–88 chars, URL-safe, must start with `f-` or `i-`. `SlugType` (used for `slug_value`): 5–50 chars, URL-safe. The stored integer arrays carry no referential integrity — nothing stops you storing an ID whose target is later deleted, and retrieve serialization silently skips any ID that no longer resolves.
+Every linked specimen definition, observation definition, charge item definition and location must belong to the same facility. Otherwise the save fails with `<Type> with slug <slug> not found` or `Location with id <id> not found`. The status of a linked definition is not checked.
+
+`ExtendedSlugType` is 7–89 characters and must start with `f-` or `i-`. `SlugType` is 5–50 characters.
+
+### Tags
+
+| Field | Storage type | API shape / notes |
+| --- | --- | --- |
+| `tags` | `ArrayField[int]` | Set with a `tags` list in the create body, or with `set_tags` and `remove_tags`. Read as rendered tag objects |
+| `tags_data` | `JSONField` | Default `{}`. Holds an expiry per applied tag, keyed by tag id. A rendered tag with expiry data carries `expiry`, and `expired: true` once the expiry has passed. Not in any spec |
 
 ### Service relationships
 
 | Field | Storage type | API shape / notes |
 | --- | --- | --- |
-| `healthcare_service` | `FK → emr.HealthcareService` (PROTECT) | Nullable; default `None`. Write: `UUID4 \| None`, resolved by `external_id` in `perform_extra_deserialization`. Retrieve: serialized via `HealthcareServiceReadSpec`. See [Healthcare Service](../facility/healthcare-service.mdx). |
-| `category` | `FK → emr.ResourceCategory` (CASCADE) | Nullable. Write: `ExtendedSlugType \| None`, resolved by `slug`. Read: serialized via `ResourceCategoryReadSpec`. Deleting the [Resource Category](../platform/resource-category.mdx) cascades to the definition. |
+| `healthcare_service` | `FK → emr.HealthcareService` (PROTECT), nullable | Write: `UUID4 \| None`, a required key. Must be in the same facility ("Healthcare Service must be from the same facility"). Retrieve: serialized [Healthcare Service](../facility/healthcare-service.mdx) |
+| `category` | `FK → emr.ResourceCategory` (PROTECT), nullable | Write: `ExtendedSlugType \| None`, a required key. Must be a resource category of the same facility (404 otherwise). The backend does not check the category's resource type, or that it has no children. Read: serialized [Resource Category](../platform/resource-category.mdx). A category that a definition uses cannot be deleted |
 
 ## Enum values
 
@@ -91,71 +108,114 @@ These store integer primary keys, not Django FK relations — `ArrayField(Intege
 
 | Value | Notes |
 | --- | --- |
-| `service_request` | Only supported kind; applying the definition produces a [Service Request](../clinical/service-request.mdx) |
+| `service_request` | Only kind. Applying the definition produces a [Service Request](../clinical/service-request.mdx) |
 
 ### `ActivityDefinitionCategoryOptions` (`classification`)
 
-| Value |
-| --- |
-| `laboratory` |
-| `imaging` |
-| `counselling` |
-| `surgical_procedure` |
-| `education` |
+| Value | UI label |
+| --- | --- |
+| `laboratory` | Laboratory |
+| `imaging` | Imaging |
+| `counselling` | Counselling |
+| `surgical_procedure` | Procedure |
+| `education` | Education |
 
 ## Bound value sets
 
 | Field | Value set slug | Source system / filter |
 | --- | --- | --- |
-| `code` | `activity-definition-procedure-code` | SNOMED CT, `concept is-a 71388002` (Procedure) |
-| `body_site` | `system-body-site-observation` | SNOMED CT body-site concepts |
+| `code` | `activity-definition-procedure-code` | SNOMED CT, `concept is-a 71388002` |
+| `body_site` | `system-body-site-observation` | SNOMED CT: a list of body-site concepts, plus every concept under 442083009 |
 | `diagnostic_report_codes[]` | `system-observation` | LOINC (`http://loinc.org`) |
+
+The frontend body-site pickers search `system-body-site` (SNOMED CT, `concept is-a 91723000`). In a runtime check of 12 searches, all 238 codes that the picker offered were accepted by `system-body-site-observation`.
 
 ## Resource specs (API schema)
 
-All specs extend `EMRResource` (see [Base model](../foundation/base-model.mdx)), which provides `serialize` (DB → Pydantic) and `de_serialize` (Pydantic → DB) plus the `perform_extra_serialization` / `perform_extra_deserialization` hooks. Here `__model__ = ActivityDefinition` and `__exclude__ = ["facility"]`.
+All specs extend `EMRResource`, with `__model__ = ActivityDefinition` and `__exclude__ = ["facility"]`.
 
 | Spec class | Role | Notes |
 | --- | --- | --- |
-| `BaseActivityDefinitionSpec` | shared base | `id`, `title`, `derived_from_uri`, `status`, `description`, `usage`, `classification`, `kind`, `code`, `body_site`, `diagnostic_report_codes`. |
-| `ActivityDefinitionWriteSpec` | write · create + update | Adds `locations` (`list[UUID4]`), `specimen_requirements` / `observation_result_requirements` / `charge_item_definitions` (`list[ExtendedSlugType]`), `healthcare_service` (`UUID4 \| None`), `category` (`ExtendedSlugType \| None`), `slug_value` (`SlugType`). |
-| `ActivityDefinitionReadSpec` | read · list | Base fields plus `version`, `tags`, `category` (serialized dict), `slug`, `slug_config`. |
-| `ActivityDefinitionRetrieveSpec` | read · detail | Extends `ReadSpec`; expands `specimen_requirements`, `observation_result_requirements`, `locations`, `healthcare_service`, `charge_item_definitions` from ID arrays into fully serialized nested objects. |
-
-### Server-side behaviour
-
-- **`ActivityDefinitionWriteSpec.perform_extra_deserialization`** (write path):
-  - Resolves `healthcare_service` by `external_id`, or clears it to `None` when absent.
-  - Resolves `category` by `slug`, only when provided.
-  - Assigns `obj.slug = self.slug_value`.
-- **`ActivityDefinitionReadSpec.perform_extra_serialization`** (read path): sets `id = external_id`, renders `tags`, serializes `category` (when present) via `ResourceCategoryReadSpec`, and parses `slug_config = obj.parse_slug(obj.slug)`.
-- **`ActivityDefinitionRetrieveSpec.perform_extra_serialization`**: calls the parent, then resolves each ID array (`specimen_requirements`, `observation_result_requirements`, `locations`, `charge_item_definitions`) against its model — dropping IDs that no longer exist — and serializes `healthcare_service`.
-- The base `de_serialize` writes only model-mapped fields with `exclude_defaults=True`, so any unset optional field falls back to its model default.
+| `BaseActivityDefinitionSpec` | shared base | `id`, `title`, `derived_from_uri`, `status`, `description`, `usage`, `classification`, `kind`, `code`, `body_site`, `diagnostic_report_codes` |
+| `ActivityDefinitionWriteSpec` | write · create and update | Adds `locations`, `specimen_requirements`, `observation_result_requirements`, `healthcare_service`, `charge_item_definitions`, `category` and `slug_value`. Every added key is required (no defaults); `healthcare_service` and `category` may be `null` |
+| `ActivityDefinitionReadSpec` | read · list | Base fields plus `version`, `tags`, `category` (object), `slug_config` and `slug` |
+| `ActivityDefinitionRetrieveSpec` | read · detail | Extends the read spec. Expands `specimen_requirements`, `observation_result_requirements`, `locations`, `healthcare_service` and `charge_item_definitions` into objects, and skips ids that no longer resolve |
 
 ## Methods & save behaviour
 
-- **Apply → Service Request** ([`service_request.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/activity_definition/service_request.py)): `convert_ad_to_sr(activity_definition, encounter)` builds a draft [`ServiceRequest`](../clinical/service-request.mdx). It carries over `title`, `category`, `code`, `body_site`, `locations`, and `healthcare_service`, and binds `patient`/`encounter` from the encounter. The new request starts at `status=draft`, `intent=proposal`, `priority=routine`, `do_not_perform=False`.
-- **Charge items on apply**: `apply_ad_charge_definitions(activity_definition, encounter, service_request)` loads every linked [Charge Item Definition](../definitions/charge-item-definition.mdx) and, for each, instantiates a Charge Item (via `apply_charge_item_definition`), tags it to the service request (`service_resource = service_request`, `service_resource_id = external_id`), copies the creator, and sets `performer_actor` to the request's `requester` when one is set.
-- `version` and `latest` form an append-only chain per `slug`: query `latest=True` for the current definition; superseded versions stay readable so existing references don't break.
+- **Create.** Sets `facility` from the URL and stores the prefixed slug. Converts the linked slugs and location ids to internal ids (same facility only), checks the healthcare service's facility, saves, and then applies a `tags` list from the request body.
+- **Update.** Runs the same conversions and checks, and changes the record in place.
+- **Apply → Service Request** ([`service_request.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/activity_definition/service_request.py)). `convert_ad_to_sr` builds a service request with the definition's `title`, `category`, `code`, `body_site`, `locations` and `healthcare_service`, status `draft`, intent `proposal` and priority `routine`.
+- **Category on apply.** `convert_ad_to_sr` sets the service request's `category` from the definition's resource-category foreign key, but `ServiceRequest.category` holds a classification value. The `service_request` fields of the request body then replace the defaults. The frontend sends the definition's `classification` as `category`, with status `active` and intent `order`.
+- **Charge items on apply.** `apply_ad_charge_definitions` creates a charge item for every linked charge item definition, whatever its status, and links it to the service request. The performer is the requester when one is set. Each charge item starts `billable`.
+- **Negative totals.** A charge item with a negative total fails with "Total price is less than 0". This path does not allow negative charge items, so ordering a definition linked to a charge item definition with a negative base price fails, and nothing is saved.
+- **No status check on apply.** `apply_activity_definition` finds the definition by slug and facility and does not check its status. Only the frontend picker filters to `active`.
 
 ## API integration notes
 
-- Payload field names follow the Pydantic specs, not the Django model. Send `slug` as `slug_value`. Reference `specimen_requirements`, `observation_result_requirements`, `charge_item_definitions`, and `category` by external slug (`ExtendedSlugType`, `f-`/`i-` prefixed); reference `locations` and `healthcare_service` by UUID.
-- `code` is required and must validate against the `activity-definition-procedure-code` value set. `body_site` and each entry of `diagnostic_report_codes` validate against their bound value sets.
-- Apply instantiates the target `kind` (only `service_request` today) by merging stored defaults with the encounter, and instantiates any linked `charge_item_definitions` in the same pass.
-- The requirement and linkage fields are plain integer ID arrays. Retrieve serialization resolves them to nested objects and skips any ID that no longer resolves, so a response can omit a requirement you stored.
+### Endpoints
+
+The base path is `/api/v1/facility/{facility_id}/activity_definition/`. Records are looked up by `slug`.
+
+| Method and path | Action | Notes |
+| --- | --- | --- |
+| `GET /` | list | Filters below |
+| `POST /` | create | `ActivityDefinitionWriteSpec` |
+| `GET /{slug}/` | retrieve | `ActivityDefinitionRetrieveSpec` |
+| `PUT /{slug}/` | update | `ActivityDefinitionWriteSpec` |
+| `POST /{slug}/set_tags/`, `POST /{slug}/remove_tags/` | tags | Update check, plus "Can Apply Tag Config to Resources" for each tag. Each tag must be configured for activity definitions |
+| `POST /upsert/` | bulk create or update | `datapoints`, 1 to 100 by default. A datapoint with `id` updates the record with that slug, one without creates a record. Any failure rolls back every change and returns 400 with one result per datapoint |
+| `GET /favorite_lists/`, `POST /{slug}/add_favorite/`, `POST /{slug}/remove_favorite/` | favorites | At most 50 entries per list by default |
+
+There is no `DELETE`. To retire a definition, update it with `status` set to `retired`.
+
+To apply a definition, call `POST /api/v1/facility/{facility_id}/service_request/apply_activity_definition/` with `activity_definition` (slug), `encounter` (UUID, in the same facility) and `service_request` (`ServiceRequestUpdateSpec`). Care links the new service request to the definition, and saves it and its charge items in one transaction.
+
+### List filters
+
+| Parameter | Behaviour |
+| --- | --- |
+| `status` | Exact match, case-insensitive |
+| `title` | Trigram similarity |
+| `classification` | Classification value |
+| `kind` | Kind value |
+| `category` | Slug of a resource category of the facility. Returns the definitions in that category |
+| `include_children` | With `category` and `true`, returns only the definitions in the category's descendant categories, not those in the category itself (`parent_cache` holds only ancestors) |
+| `ordering` | `created_date` or `modified_date` |
+
+### Authorization
+
+- List, retrieve, and the record lookup for update, tags and favorites need `can_read_activity_definition` ("Can Read Activity Definition") in any organization of the facility.
+- Create and update need `can_write_activity_definition` ("Can Create Activity Definition on Facility") in the facility's root organization. Without it, the request fails with 403 "Access Denied to Activity Definition", also for a user who holds the permission in another organization of the facility.
+- By default, Facility Admin holds the write permission. Facility Admin, Administrator, Staff, Doctor, Nurse and Volunteer hold the read permission.
+- Applying a definition needs "Can Write Service Request on Facility" for the new service request, in an organization of the encounter, of its current location, or of the service request's locations.
+
+### Validation errors
+
+| Message | Cause |
+| --- | --- |
+| "Activity Definition with this slug already exists." | Another definition in the facility has the slug (compared case-insensitively) |
+| 404 on `category` | `category` is not a resource category of the facility |
+| `Specimen Definition with slug <slug> not found` | A linked specimen definition is not in the facility. Observation and charge item definitions give the same message with their type |
+| `Location with id <id> not found` | A linked location is not in the facility |
+| "Healthcare Service must be from the same facility" | The healthcare service belongs to another facility |
+| "Code does not exist in the valueset" | A coded field holds a code outside its bound value set |
 
 ## Related
 
+- Concept: [Activity Definition](../../concepts/definitions/activity-definition.mdx)
 - Reference: [Service Request](../clinical/service-request.mdx)
-- Reference: [Specimen Definition](../definitions/specimen-definition.mdx)
-- Reference: [Observation Definition](../definitions/observation-definition.mdx)
-- Reference: [Charge Item Definition](../definitions/charge-item-definition.mdx)
+- Reference: [Specimen Definition](./specimen-definition.mdx)
+- Reference: [Observation Definition](./observation-definition.mdx)
+- Reference: [Charge Item Definition](./charge-item-definition.mdx)
 - Reference: [Healthcare Service](../facility/healthcare-service.mdx)
 - Reference: [Location](../facility/location.mdx)
 - Reference: [Resource Category](../platform/resource-category.mdx)
+- Reference: [Tag Config](../platform/tag-config.mdx)
+- Reference: [Favorites](../platform/favorites.mdx)
 - Reference: [Base model](../foundation/base-model.mdx)
 - Source: [`activity_definition.py` (model)](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/activity_definition.py)
 - Source: [`spec.py` (resource specs)](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/activity_definition/spec.py)
 - Source: [`valueset.py` (procedure-code value set)](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/activity_definition/valueset.py)
 - Source: [`service_request.py` (apply logic)](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/activity_definition/service_request.py)
+- Source: [`activity_definition.py` (viewset)](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/activity_definition.py)

@@ -4,22 +4,26 @@ sidebar_position: 7
 
 # Charge Item Definition
 
-A charge item definition is a facility's pricing template for a billable resource: it answers "how much does resource X cost". It binds the resource to a set of price components — base rate, surcharges, discounts, and taxes — that get evaluated when a [charge item](../billing/charge-item.mdx) is generated during data entry. You touch it when defining or revising the prices a facility charges.
+Technical reference for the `ChargeItemDefinition` module in Care EMR. For the plain-language view, see the [Charge Item Definition concept](../../concepts/definitions/charge-item-definition.mdx).
 
-The resource spans two layers. The Django model (`care/emr/models/charge_item_definition.py`) is storage: `price_components` and `discount_configuration` are opaque `JSONField`s with no structure of their own. The Pydantic specs (`care/emr/resources/charge_item_definition/`) are the API: they define the `status` enum, give those JSON fields a real shape via `MonetaryComponent` and `DiscountConfiguration`, enforce validation, and split the read and write schemas. See [Resource specs (API schema)](#resource-specs-api-schema).
+A charge item definition is a facility's pricing template for a billable service or item. Its price components are evaluated when a [charge item](../billing/charge-item.mdx) is created from it: from an activity definition, a product dispense, a schedule booking, or a direct apply call.
+
+The resource spans two layers. The Django model is storage: `price_components` and `discount_configuration` are opaque `JSONField`s. The Pydantic specs are the API: they define the `status` enum, shape those JSON fields with `MonetaryComponent` and `DiscountConfiguration`, validate them, and split the read and write schemas. See [Resource specs (API schema)](#resource-specs-api-schema).
 
 **Source:**
 - Model: [`care/emr/models/charge_item_definition.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/charge_item_definition.py)
 - Resource spec: [`care/emr/resources/charge_item_definition/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/charge_item_definition/spec.py)
 - Shared spec: [`care/emr/resources/common/monetary_component.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/monetary_component.py)
+- Viewset: [`care/emr/api/viewsets/charge_item_definition.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/charge_item_definition.py)
+- Apply logic: [`care/emr/resources/charge_item/apply_charge_item_definition.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/charge_item/apply_charge_item_definition.py)
 
 ## Models
 
 | Model | Purpose |
 | --- | --- |
-| `ChargeItemDefinition` | Facility-scoped pricing template defining the price components applied to a billable resource |
+| `ChargeItemDefinition` | Facility-scoped pricing template that holds the price components applied to a billable resource |
 
-`ChargeItemDefinition` extends [`SlugBaseModel`](../foundation/base-model.mdx), the slug-aware Care EMR base, which itself extends `EMRBaseModel`. From that chain it inherits `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and the `history`/`meta` JSON fields, then adds facility-scoped slug helpers (see [Methods & save behaviour](#methods--save-behaviour)).
+`ChargeItemDefinition` extends [`SlugBaseModel`](../foundation/base-model.mdx) (`FACILITY_SCOPED = True`), which extends `EMRBaseModel`. From that chain it inherits `external_id`, audit fields, soft delete, and the `history`/`meta` JSON fields, and gets the slug helpers listed in [Methods & save behaviour](#methods--save-behaviour).
 
 ## `ChargeItemDefinition` fields
 
@@ -27,41 +31,44 @@ The resource spans two layers. The Django model (`care/emr/models/charge_item_de
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `facility` | `FK → facility.Facility` | yes | `PROTECT` — the owning facility cannot be deleted while definitions reference it |
-| `version` | `IntegerField` | — | Default `1`. Revision number; the spec surfaces it read-only |
-| `status` | `CharField(255)` | yes | Lifecycle status, constrained by `ChargeItemDefinitionStatusOptions` (`draft`, `active`, `retired`). See [Status values](#status-values) |
-| `title` | `CharField(255)` | yes | Human-readable name |
-| `slug` | `CharField(255)` | yes | Stored slug. The client sends `slug_value`; the server prefixes it (see [slug behaviour](#methods--save-behaviour)) |
-| `derived_from_uri` | `TextField` | no | Nullable, default `None`. URI of the upstream definition this was derived from |
+| `facility` | `FK → facility.Facility` | yes | `PROTECT`. Set by the viewset on create |
+| `version` | `IntegerField` | — | Default `1`. Read-only in the spec. No code increments it; an update changes the record in place |
+| `status` | `CharField(255)` | yes | Constrained by `ChargeItemDefinitionStatusOptions`. See [Status values](#status-values) |
+| `title` | `CharField(255)` | yes | Display name |
+| `slug` | `CharField(255)` | yes | Stored as `f-<facility external id>-<slug_value>`. The client sends `slug_value` |
+| `derived_from_uri` | `TextField` | no | Nullable. URI of the source this definition derives from |
 
 ### Descriptive
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `description` | `TextField` | no | Nullable, default `None`. Natural-language description |
-| `purpose` | `TextField` | no | Nullable, default `None`. Why the definition exists |
+| `description` | `TextField` | no | Nullable |
+| `purpose` | `TextField` | no | Nullable |
 
 ### Pricing & rules
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `price_components` | `JSONField` | yes | Default `[]`. List of `MonetaryComponent` — see [Price components shape](#price-components-shape) |
-| `discount_configuration` | `JSONField` | no | Nullable, default `None`. Shaped as `DiscountConfiguration` — see [Discount configuration shape](#discount-configuration-shape) |
-| `can_edit_charge_item` | `BooleanField` | yes | Default `True`. Whether a charge item generated from this definition stays editable after creation |
-| `category` | `FK → emr.ResourceCategory` | no | `CASCADE`, nullable. On write supplied as an `ExtendedSlugType` slug and resolved server-side |
-| `tags` | `ArrayField[int]` | — | Default `[]`. Tag IDs on write; rendered to objects on read |
+| `price_components` | `JSONField` | yes | Default `[]`. A list of `MonetaryComponent`. See [Price components shape](#price-components-shape) |
+| `discount_configuration` | `JSONField` | key required, value nullable | Default `None`. Shaped as `DiscountConfiguration`. See [Discount configuration shape](#discount-configuration-shape) |
+| `can_edit_charge_item` | `BooleanField` | yes | Default `True`. Controls whether a charge item created from this definition keeps its price on update. See [Methods & save behaviour](#methods--save-behaviour) |
+| `category` | `FK → emr.ResourceCategory` | no | `PROTECT`, nullable. Supplied on write as an `ExtendedSlugType` slug |
+| `tags` | `ArrayField[int]` | — | Default `[]`. Not in the write spec; written by `set_tags`/`remove_tags` or a `tags` list on create, rendered to objects on read |
+| `tags_data` | `JSONField` | — | Default `{}`. Per-tag data keyed by tag id, such as `expiry`. Rendered tags carry `expiry`, and `expired: true` once it has passed |
 
 ## Enum values
 
 ### Status values
 
-`ChargeItemDefinitionStatusOptions` (`spec.py`) constrains `status`. The model `CharField` is unconstrained at the DB level, so the spec is the source of truth.
+`ChargeItemDefinitionStatusOptions` (`spec.py`) constrains `status`. The model `CharField` is not constrained at the database level.
 
 | Value | Meaning |
 | --- | --- |
-| `draft` | Not yet active; excluded from live billing |
-| `active` | In use; only these should drive new charge items |
-| `retired` | Withdrawn; excluded from live billing |
+| `draft` | Not ready for use. The frontend definition pickers list only `active` |
+| `active` | In use |
+| `retired` | Withdrawn. The frontend **Delete** action sets this status |
+
+The backend does not check `status` when it applies a definition. A `draft` or `retired` definition still produces charge items wherever it is linked.
 
 ### Monetary component type values
 
@@ -69,11 +76,11 @@ The resource spans two layers. The Django model (`care/emr/models/charge_item_de
 
 | Value | Meaning |
 | --- | --- |
-| `base` | The base rate. Exactly one allowed; must carry an `amount`; may not have `conditions` or a `factor` |
-| `surcharge` | An additive charge layered on the base |
-| `discount` | A reduction layered on the base |
-| `tax` | A tax component |
-| `informational` | Non-priced informational component |
+| `base` | The unit price. Must carry an `amount`; may not have `conditions` |
+| `surcharge` | Added to the base before discounts |
+| `discount` | Subtracted after surcharges, subject to the discount configuration |
+| `tax` | Calculated on the price after discounts |
+| `informational` | Not counted in the total. The frontend stores MRP and Purchase Price as informational components |
 
 ### Discount applicability values
 
@@ -81,8 +88,8 @@ The resource spans two layers. The Django model (`care/emr/models/charge_item_de
 
 | Value | Meaning |
 | --- | --- |
-| `total_asc` | Apply discounts in ascending order of total |
-| `total_desc` | Apply discounts in descending order of total |
+| `total_asc` | Sort applicable discounts by amount, smallest first, before `max_applicable` is applied |
+| `total_desc` | Sort applicable discounts by amount, largest first, before `max_applicable` is applied |
 
 ## JSON field shapes
 
@@ -92,29 +99,31 @@ The resource spans two layers. The Django model (`care/emr/models/charge_item_de
 
 ```text
 MonetaryComponent {
-  monetary_component_type : MonetaryComponentType   # required; see enum above
-  code                    : Coding | null           # billing code (system/version/code/display); code required if present
-  factor                  : Decimal | null          # max_digits=20, decimal_places=6
-  amount                  : Decimal | null          # max_digits=20, decimal_places=6
-  tax_included_amount     : Decimal | null          # max_digits=20, decimal_places=6; base-only
-  global_component        : bool                     # default false
+  monetary_component_type : MonetaryComponentType          # required
+  code                    : Coding | null                  # system, version, code (required), display
+  factor                  : Decimal | null                 # max_digits=20, decimal_places=6; a percentage
+  amount                  : Decimal | null                 # max_digits=20, decimal_places=6; per unit
+  tax_included_amount     : Decimal | null                 # max_digits=20, decimal_places=6; base only
+  global_component        : bool                           # default false
   conditions              : list[EvaluatorConditionSpec]   # default []
 }
 ```
 
-`Coding` (`common/coding.py`, `extra="forbid"`): `{ system: str|null, version: str|null, code: str (required), display: str|null }`.
+`Coding` forbids extra keys: `system`, `version` and `display` are optional strings, and `code` is a required string.
 
-`EvaluatorConditionSpec` (`common/condition_evaluator.py`): `{ metric: str, operation: str, value: dict|str }`. `metric` is validated against `EvaluatorMetricsRegistry`, and that metric's evaluator validates `operation` and `value`.
+`EvaluatorConditionSpec` is `metric`, `operation` and `value` (an object or a string). The metric must be registered, otherwise validation fails with "Invalid metric"; the metric's evaluator validates `operation` and `value`. The registered metrics are Patient Age, Patient Gender, Patient Tag, Encounter Tag and Encounter Class.
 
 Each `MonetaryComponent` is checked against these rules:
 
 | Rule | Detail |
 | --- | --- |
-| `tax_included_amount` base-only | Allowed only when `monetary_component_type == base` |
-| base no conditions | A `base` component must have no `conditions` |
-| base requires amount | A `base` component must have an `amount` |
-| amount xor factor | `amount` and `factor` cannot both be present |
-| amount or factor required | One of `amount`/`factor` must be present — except when `global_component` is true and a `code` is set |
+| `tax_included_amount` base only | Allowed only when `monetary_component_type` is `base` |
+| Base has no conditions | A `base` component must have no `conditions` |
+| Base needs an amount | A `base` component must have an `amount` |
+| Amount or factor, not both | `amount` and `factor` cannot both be set |
+| Amount or factor required | One of `amount` or `factor` must be set, except when `global_component` is true and a `code` is set |
+
+The write spec types `price_components` as a plain `list[MonetaryComponent]`, so it does not apply the "Only one base component is allowed" rule. That rule runs when a charge item is costed, because `sync_charge_item_costs` validates the components as `MonetaryComponents`.
 
 ### Discount configuration shape
 
@@ -122,85 +131,147 @@ Each `MonetaryComponent` is checked against these rules:
 
 ```text
 DiscountConfiguration {
-  max_applicable      : int                     # required; >= 0
+  max_applicable      : int                     # required; >= 0; 0 applies no discounts
   applicability_order : DiscountApplicability   # required; total_asc | total_desc
 }
 ```
 
+The frontend form and the retire action always send `discount_configuration: null`. A configuration set through the API is cleared on the next save from the screens.
+
+## Related models
+
+`ChargeItemDefinition` references two models by foreign key:
+
+```text
+facility  → FK facility.Facility (PROTECT)
+category  → FK emr.ResourceCategory (PROTECT, nullable)
+```
+
+- A facility cannot be deleted while definitions reference it.
+- A [resource category](../platform/resource-category.mdx) cannot be deleted while a charge item definition uses it or while it has children.
+
+Other models point to a charge item definition: activity definitions (`charge_item_definitions`), products, and schedules (consultation and re-visit charge).
+
 ## Resource specs (API schema)
 
-The API never serializes the Django model directly. It routes through Pydantic specs built on `EMRResource` (`resources/base.py`), which provide `serialize` (DB → API) and `de_serialize` (API → DB).
+The API routes through Pydantic specs built on `EMRResource`, which provide `serialize` (database to API) and `de_serialize` (API to database).
 
 | Spec class | Role | Exposes / behaviour |
 | --- | --- | --- |
-| `ChargeItemDefinitionSpec` | shared base | `id`, `status`, `title`, `derived_from_uri`, `description`, `purpose`, `price_components`, `can_edit_charge_item`, `discount_configuration`. `__exclude__ = []` |
-| `ChargeItemDefinitionWriteSpec` | write · create + update | Adds `slug_value: SlugType` and `category: ExtendedSlugType | null`. Validates `price_components`; deserialization side effects below |
-| `ChargeItemDefinitionReadSpec` | read · list + detail | Adds read-only `version`, `category: dict`, `slug_config: dict`, `tags: list[dict]`, `slug: str`, `created_by`, `updated_by`, `created_date`, `updated_date` |
+| `ChargeItemDefinitionSpec` | shared base | `id`, `status`, `title`, `derived_from_uri`, `description`, `purpose`, `price_components`, `can_edit_charge_item`, `discount_configuration` |
+| `ChargeItemDefinitionWriteSpec` | write · create + update | Adds `slug_value: SlugType` and an optional `category: ExtendedSlugType` (default `None`). Validates `price_components` |
+| `ChargeItemDefinitionReadSpec` | read · list + detail | Adds read-only `version`, `category` (object), `slug_config`, `tags`, `slug`, `created_by`, `updated_by`, `created_date`, `updated_date` |
 
-These specs reuse several nested specs: `MonetaryComponent` (price component), `DiscountConfiguration` (discount rules), `Coding` (component code), and `EvaluatorConditionSpec` (component conditions).
+Required keys on write: `status`, `title`, `price_components`, `can_edit_charge_item`, `discount_configuration` (may be `null`) and `slug_value`.
 
 ### Write-spec validation & side effects
 
-- **Duplicate (code, type) check** (`check_components_with_duplicate_codes` field validator): no two `price_components` may share the same `(code.code, monetary_component_type)` pair. Only components that carry a `code` are checked.
-- **`perform_extra_deserialization`** (`ChargeItemDefinitionWriteSpec`):
-  - When `category` (slug) is supplied, resolves it via `ResourceCategory.objects.get(slug=category)` and sets `obj.category`.
-  - Sets `obj.slug = self.slug_value` (the unprefixed value; the model's slug helpers prefix it — see below).
+- **Duplicate code check:** no two `price_components` may share the same `(code.code, monetary_component_type)` pair: "Same codes for the same component type are not allowed". Only components with a `code` are checked.
+- **`perform_extra_deserialization`:** when `category` is supplied, it sets `obj.category` from the category slug, and it sets `obj.slug` to the plain `slug_value`. The viewset adds the facility prefix.
 
 ### Read-spec serialization
 
-- **`perform_extra_serialization`** (`ChargeItemDefinitionReadSpec`):
-  - `id` ← `obj.external_id`.
-  - `category` ← `ResourceCategoryReadSpec.serialize(obj.category)` when set.
-  - `slug_config` ← `obj.parse_slug(obj.slug)` (decomposes the stored slug into `{facility, slug_value}` or `{slug_value}`).
-  - `tags` ← `SingleFacilityTagManager().render_tags(obj)`.
-  - `created_by` / `updated_by` ← serialized via `serialize_audit_users`.
+- `id` comes from `obj.external_id`.
+- `category` is `ResourceCategoryReadSpec.serialize(obj.category)` when set.
+- `slug_config` is `obj.parse_slug(obj.slug)`.
+- `tags` come from `SingleFacilityTagManager().render_tags(obj)`.
+- `created_by` and `updated_by` are serialized audit users.
 
 ### Slug type constraints
 
 | Type | Constraints |
 | --- | --- |
-| `SlugType` (`slug_value`) | `min_length=5`, `max_length=50`; pattern `^[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]$` (URL-safe; alphanumeric start/end) |
-| `ExtendedSlugType` (`category`) | `min_length=7`, `max_length=88`; same pattern, and must start with `f-` or `i-` |
-
-## Related models
-
-`ChargeItemDefinition` references two other models by foreign key:
-
-```text
-facility  → FK facility.Facility (PROTECT)
-category  → FK emr.ResourceCategory (CASCADE, nullable)
-```
-
-- `facility` is protected: a facility cannot be deleted while definitions reference it.
-- `category` cascades: deleting the [resource category](../platform/resource-category.mdx) removes the link.
+| `SlugType` (`slug_value`) | 5 to 50 characters; letters, digits, `_` and `-`; starts and ends with a letter or digit |
+| `ExtendedSlugType` (`category`) | 7 to 89 characters; same pattern; must start with `f-` or `i-` |
 
 ## Methods & save behaviour
 
-`ChargeItemDefinition` overrides nothing of its own; slug behaviour comes from `SlugBaseModel` (`FACILITY_SCOPED = True`):
+`ChargeItemDefinition` defines no methods of its own. The slug helpers come from `SlugBaseModel`, which defines no `save()`:
 
 | Method | Behaviour |
 | --- | --- |
-| `calculate_slug()` | Returns `f-{facility.external_id}-{slug}` when facility-scoped with a facility, otherwise `i-{slug}` |
-| `calculate_slug_from_facility(facility_external_id, slug)` | Classmethod — builds a facility-scoped slug string |
-| `calculate_slug_from_instance(slug)` | Classmethod — builds an instance-scoped slug string |
-| `parse_slug(slug)` | Splits a stored slug back into `{facility, slug_value}` (facility-scoped, `f-` prefix) or `{slug_value}` (instance-scoped, `i-` prefix); validates the embedded facility UUID; raises on length `<= 2` or an unknown prefix |
+| `calculate_slug()` | Returns `f-<facility external id>-<slug>` when facility-scoped with a facility, otherwise `i-<slug>` |
+| `calculate_slug_from_facility(facility_external_id, slug)` | Classmethod. Builds a facility-scoped slug |
+| `calculate_slug_from_instance(slug)` | Classmethod. Builds an instance-scoped slug |
+| `parse_slug(slug)` | Splits a stored slug into `facility` and `slug_value` (`f-` prefix) or `slug_value` (`i-` prefix); validates the facility UUID; raises "Invalid slug" for length 2 or less or another prefix |
 
-Because slugs are namespaced by the owning facility's `external_id`, the same `slug_value` (for example `consultation-fee`) can coexist across facilities without colliding.
+The viewset's `perform_create` and `perform_update` set the stored slug with `calculate_slug_from_facility`. The same `slug_value` can exist in different facilities.
+
+### Applying a definition
+
+`apply_charge_item_definition` creates a charge item from a definition:
+
+1. The category's `calculated_monetary_components` are merged with the definition's `price_components`, keyed by code system + code. The definition's component wins on the same code; components without a code are all kept.
+2. Each component with `global_component: true` is replaced by the facility's discount monetary component with the same code, when the facility has one.
+3. Components whose `conditions` fail are left out.
+4. The charge item starts as `billable`. Its discount configuration is the definition's, else the facility's.
+5. `sync_charge_item_costs` computes the total: base × quantity, plus surcharges, minus discounts (limited by the discount configuration), plus taxes on the price after discounts. Informational components are not counted.
+6. A negative total fails with "Total price is less than 0", unless negatives are allowed.
+
+Negatives are allowed only on `charge_item/apply_charge_item_defs/` for a user who holds "Can Create Negative Charge Item" in any organization of the facility. The activity definition path applies without that flag, so an order of an activity definition linked to a negative-priced definition fails and nothing is saved.
+
+### Charge items from a non-editable definition
+
+When `can_edit_charge_item` is `false`, an update to a charge item created from the definition keeps the old unit price components, total price components, total price and quantity, without an error.
 
 ## API integration notes
 
-- The structure is FHIR-aligned (`ChargeItemDefinition`), and `price_components` mirror the FHIR `MonetaryComponent` shape.
-- Field names diverge between write and read: the client sends `slug_value`, not `slug`, and `category` is a slug string on write but an object on read. `slug_config`, `tags`, `category`, and audit users are computed server-side and appear only on read.
-- The spec enum-gates `status` (`draft`/`active`/`retired`); only `active` definitions should drive new charge items.
-- `can_edit_charge_item` controls whether a *derived* charge item is mutable, not the definition itself.
+- The client sends `slug_value`, not `slug`. `category` is a slug string on write and an object on read. `slug_config`, `tags`, `category` and the audit users appear only on read.
+- `can_edit_charge_item` controls derived charge items, not the definition itself.
+- The frontend always clears `discount_configuration`, so charge items fall back to the facility's discount configuration.
+
+### Endpoints
+
+The viewset is registered under the facility at `/api/v1/facility/{facility_id}/charge_item_definition/`. Lookup is by `slug`. It has no destroy endpoint: retire with an update that sets `status` to `retired`.
+
+| Endpoint | Method | Notes |
+| --- | --- | --- |
+| `/` | GET | List. Filters below; ordering on `created_date`, `modified_date` |
+| `/` | POST | Create |
+| `/{slug}/` | GET | Retrieve |
+| `/{slug}/` | PUT | Update |
+| `/upsert/` | POST | Batch create or update from `datapoints` |
+| `/{slug}/set_tags/`, `/{slug}/remove_tags/` | POST | Add or remove tags |
+| `/favorite_lists/` | GET | The user's favourite lists |
+| `/{slug}/add_favorite/`, `/{slug}/remove_favorite/` | POST | Add to or remove from a favourite list |
+
+### List filters
+
+| Filter | Behaviour |
+| --- | --- |
+| `status` | Exact, case-insensitive |
+| `title` | Trigram similarity above 0.1, ordered by similarity |
+| `category` | Category slug in the same facility. Without `include_children`, returns the definitions in that category |
+| `include_children` | With `category` and `true`, returns only the definitions in descendant categories (`category__parent_cache__overlap`). The category's own definitions are not returned, because a category's `parent_cache` holds only its ancestors |
+| `can_edit_charge_item` | Boolean |
+| tags | Facility tag filter (`SingleFacilityTagFilter`) |
+
+### Validation errors
+
+- Slug already used in the facility (case-insensitive): "Charge Item Definition with this slug already exists."
+- Unknown category slug in the facility: 404.
+- Duplicate code and type in `price_components`: "Same codes for the same component type are not allowed".
+
+### Authorization
+
+| Action | Check | Permission | Held where |
+| --- | --- | --- | --- |
+| List, retrieve, `add_favorite`, `remove_favorite` | `can_list_facility_charge_item_definition` (in the queryset) | Can Read Charge Item Definition | Any organization of the facility |
+| Create, update, each `upsert` datapoint | `can_write_facility_charge_item_definition` | Can Create Charge Item Definition on Facility | The facility's root organization |
+| `set_tags`, `remove_tags` | Update check, plus per tag `can_apply_tag_config` | Can Create Charge Item Definition on Facility; Can Apply Tag Config to Resources | Root organization; the tag's managing organization or its parents, else any facility organization |
+
+Failures return 403 "Access Denied to Charge Item Definition". "Can Set Charge Item Definition on Facility" gates only linking a definition to a schedule.
 
 ## Related
 
 - Source: [charge_item_definition.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/charge_item_definition.py)
 - Spec: [charge_item_definition/spec.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/charge_item_definition/spec.py)
 - Spec: [common/monetary_component.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/monetary_component.py)
+- Concept: [Charge Item Definition](../../concepts/definitions/charge-item-definition.mdx)
 - Reference: [Charge Item](../billing/charge-item.mdx)
 - Reference: [Invoice](../billing/invoice.mdx)
 - Reference: [Account](../billing/account.mdx)
 - Reference: [Resource Category](../platform/resource-category.mdx)
+- Reference: [Tag Config](../platform/tag-config.mdx)
+- Reference: [Favorites](../platform/favorites.mdx)
 - Reference: [Base Model](../foundation/base-model.mdx)

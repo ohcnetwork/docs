@@ -6,69 +6,125 @@ sidebar_position: 1
 
 ## Overview
 
-This flow describes how to create an [observation definition](../../../concepts/definitions/observation-definition.mdx) for a facility in Care. An observation definition sets the template for a test or measurement.
+<video src="/media/definitions/observation-definition/create-observation-definition.mp4" poster="/media/definitions/observation-definition/create-observation-definition.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/observation-definition/create-observation-definition.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to create an [observation definition](../../../concepts/definitions/observation-definition.mdx) for your facility in Care. An observation definition is the template that staff use to record the results of one test.
 
 ## Pre-requisites
 
-- You are a member of the facility.
-- You have the permission listed below.
+- You sign in to Care with a staff account.
+- You belong to a department of the facility.
+- You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create Observation Definition on Facility | Lets you create a new observation definition for your facility. |
+| Can Create Observation Definition on Facility | Lets you save the new observation definition. You must hold it in the facility's root organization (**Administration**). A role in a department is not enough: Care shows "Access Denied to Observation Definition". By default, the Facility Admin role holds this permission. |
+| Can Read Observation Definition | Lets you open the **Observation Definitions** list. Hold it in the root organization or in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Read Tag Config | Needed only if you add an **Encounter Tags** condition to an interpretation rule. Lets you pick the tags. Hold it in the root organization or in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
 
 ## Steps
 
 ### 1. Open the observation definitions list
 
-Go to your facility. Click **Settings**. Click **Observation Definitions**.
+In the facility sidebar, select **Settings**.
+
+In the settings sidebar, under **Clinical**, select **Observation Definitions**.
+
+Care shows the Active observation definitions of your facility.
+
+![Step 1, Open the observation definitions list (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/create-observation-definition-1.png)
+
+![Step 1, Open the observation definitions list (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/create-observation-definition-2.png)
 
 ### 2. Start a new observation definition
 
-Click **Add Definition**. Care opens the Create Observation Definition form.
+Select **Add Definition**.
+
+Care opens the **Create Observation Definition** form.
+
+![Step 2, Start a new observation definition: the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/create-observation-definition-3.png)
 
 ### 3. Fill in the basic information
 
-Complete the fields in the **Basic Information** section.
+In the **Basic Information** section, complete these fields.
 
 | Components | What it captures |
 | --- | --- |
-| Title | The name of the test or measurement. Required. |
-| Slug | A short unique name that Care uses in links. Care builds the slug from the title, and you can edit it. Use 5 to 25 letters, numbers, underscores, or hyphens. Required. |
-| Description | Extra detail about the test. Required. |
-| Status | Draft, Active, Retired, or Unknown. Care selects Active. Required. |
-| Category | Social History, Vital Signs, Imaging, Laboratory, Procedure, Survey, Exam, Therapy, or Activity. Required. |
-| Data Type | The kind of value that a result holds, for example a number, a yes or no answer, or a date. Required. |
-| LOINC Code | The standard code of the test. Search for the code, then select it. Required. |
+| **Title** | The name of the test, for example Fasting Blood Glucose. This field is required. |
+| **Slug** | A short name for the test, unique in your facility. Care fills it from the title as you type, and you can change it. Use 5 to 50 lowercase letters, numbers, hyphens or underscores. Start and end with a letter or a number. This field is required. |
+| **Description** | What the test measures. This field is required. |
+| **Status** | Draft, Active, Retired or Unknown. Care selects Active. This field is required. |
+| **Category** | The kind of service that the test belongs to, such as Laboratory or Vital Signs. This field is required. |
+| **Data Type** | The kind of value that a result holds: Boolean, Decimal, Integer, DateTime, Time, String or Quantity. This field is required. |
+| **LOINC Code** | The LOINC code of the test. Type in the search box, then select the code. This field is required. |
 
-### 4. Fill in the additional details
+![Step 3, Fill in the basic information: the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/create-observation-definition-4.png)
 
-Complete the fields in the **Additional Details** section. These fields are optional.
+### 4. Add interpretation rules
+
+This step is optional. If you do not add rules, the section shows **No interpretations configured**.
+
+In the **Observation Interpretation** section, add the rules that Care uses to interpret each result. For the steps, see [Set up observation interpretation](./set-up-qualified-ranges.mdx).
+
+If you add components in step 6, you can add rules to each component instead. You cannot add rules to both the definition and its components.
+
+![Step 4, Add interpretation rules: the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/create-observation-definition-5.png)
+
+### 5. Fill in the additional details
+
+The **Additional Details** section is optional.
 
 | Components | What it captures |
 | --- | --- |
-| Body Site | The body part that the test applies to. |
-| Method | The technique that staff use to do the test. |
-| Unit | The unit of measure for the result. |
+| **Body Site** | The part of the body that the test examines. |
+| **Method** | The technique that staff use for the test. |
+| **Unit** | The unit of measure for the result. |
 
-### 5. Add components for a multi-part test
+![Step 5, Fill in the additional details: the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/create-observation-definition-6.png)
 
-If the test has more than one part, for example blood pressure, go to the **Components** section. Click **Add your first component**. Add one component for each part of the test. Click **Add component** for each further part.
+### 6. Add components for a test with more than one value
 
-Each component holds its own Code, Data Type, and Unit.
+If the test gives only one value, go to step 7.
 
-### 6. Save the observation definition
+In the **Components** section, select **Add your first component**.
 
-Click **Create**.
+To add each further component, select **Add component**.
 
-Note: To leave the form without a new observation definition, click **Cancel**.
+For each component, complete these fields.
+
+| Components | What it captures |
+| --- | --- |
+| **Code** | The LOINC code of this value. Type in the search box, then select the code. This field is required. |
+| **Data Type** | The kind of value. Care selects Quantity. |
+| **Unit** | The unit of measure for this value. This field is optional. |
+
+Each component also has its own **Observation Interpretation** section.
+
+![Step 6, Add components for a test with more than one value: the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/create-observation-definition-7.png)
+
+### 7. Save the observation definition
+
+Select **Create**.
+
+To leave the form without a new observation definition, select **Cancel**.
+
+If another observation definition of your facility has the same slug, Care does not save the definition. Change the slug, then select **Create** again.
+
+If two ranges of a rule overlap, Care does not save the definition. Change the ranges, then select **Create** again.
+
+![Step 7, Save the observation definition (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/create-observation-definition-8.png)
+
+![Step 7, Save the observation definition (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/create-observation-definition-9.png)
 
 ## Expected Outcome
 
-- Care creates the observation definition for your facility.
-- The new observation definition shows in the observation definitions list.
+- Care shows **Observation definition created successfully** and opens the observation definitions list.
+- The list shows only Active definitions at first. If you gave the definition another status, select that status in the **Status** filter to see it.
+- If the status is Active, activity definitions and diagnostic reports of your facility offer the new definition.
 
 ## Related
 
@@ -78,5 +134,6 @@ Concepts:
 
 Flows:
 
-- [Set up qualified ranges](./set-up-qualified-ranges.mdx)
+- [Set up observation interpretation](./set-up-qualified-ranges.mdx)
 - [Update or retire an observation definition](./update-or-retire-observation-definition.mdx)
+- [Link requirements to an activity definition](../activity-definition/link-requirements-to-activity-definition.mdx)

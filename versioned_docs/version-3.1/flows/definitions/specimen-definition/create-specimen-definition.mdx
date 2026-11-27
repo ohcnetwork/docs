@@ -6,31 +6,42 @@ sidebar_position: 1
 
 ## Overview
 
-This flow describes how to create a new [specimen definition](../../../concepts/definitions/specimen-definition.mdx) for your facility in Care.
+<video src="/media/definitions/specimen-definition/create-specimen-definition.mp4" poster="/media/definitions/specimen-definition/create-specimen-definition.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/specimen-definition/create-specimen-definition.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to create a [specimen definition](../../../concepts/definitions/specimen-definition.mdx) for your facility. The definition records what staff collect, how they collect it, and how the laboratory keeps the specimen.
 
 ## Pre-requisites
 
-- You are a member of the facility.
+- You belong to a department of the facility.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Read Specimen Definition | Lets you open the specimen definitions list of the facility. |
-| Can Create Specimen Definition on Facility | Lets you create a new specimen definition for your facility. |
+| Can Create Specimen Definition on Facility | Lets you save the new specimen definition. You must hold it in the facility's root organization (**Administration**); the same permission in another department is not enough. By default, the **Facility Admin** role holds this permission. |
+| Can Read Specimen Definition | Lets you open the specimen definitions list, where you start the form. You can hold it in any department of the facility. By default, the **Facility Admin**, **Administrator**, **Staff**, **Doctor**, **Nurse**, **Volunteer** and **Pharmacist** roles hold this permission. |
 
 ## Steps
 
 ### 1. Open the specimen definitions list
 
-1. Go to your facility.
-2. Select **Settings**.
-3. Select **Specimen Definitions**.
+1. In the facility sidebar, select **Settings**.
+2. In the settings sidebar, under **Clinical**, select **Specimen Definitions**.
+
+Care shows the Active specimen definitions of the facility.
+
+![Step 1, Open the specimen definitions list: the screen at this step, with the control for the step outlined](/media/definitions/specimen-definition/create-specimen-definition-1.png)
 
 ### 2. Start a new definition
 
-Click **Add Definition**.
+Select **Add Definition**. Care opens the **Create Specimen Definition** form.
+
+Note: You can also open this form from the activity definition form. Select **Select Specimen Requirements**. Then select **Create New**. After you save, Care adds the new definition to the list but does not select it. Select it yourself.
+
+![Step 2, Start a new definition: the screen at this step, with the control for the step outlined](/media/definitions/specimen-definition/create-specimen-definition-2.png)
 
 ### 3. Fill in the basic information
 
@@ -38,11 +49,13 @@ Complete the fields under **Basic Information**.
 
 | Components | What it captures |
 | --- | --- |
-| Title | The name of the specimen definition. Required. |
-| Slug | A short identifier that is unique in the facility. Care makes a slug from the title, and you can edit it. Use 5 to 25 characters. Use letters, numbers, underscores, and hyphens only. Required. |
-| Status | Draft, Active, or Retired. Care selects Active. Required. |
-| Derived From URI | The web address of the definition that this specimen definition is based on. Enter a complete web address. Optional. |
-| Description | Extra detail about the specimen definition. Required. |
+| Title | The name of the specimen definition, for example "Fasting Blood Sample". Required. |
+| Slug | A short identifier that is unique in the facility. Care fills it in from the title, and you can change it. Use 5 to 50 letters, numbers, hyphens or underscores. Start and end with a letter or a number. Required. |
+| Status | Draft, Active or Retired. Care selects Active. The activity definition form offers only Active definitions. Required. |
+| Derived From URI | The web address of a definition that this one is based on. Enter a complete web address. Optional. |
+| Description | An explanation of the specimen definition. Required. |
+
+![Step 3, Fill in the basic information: the screen at this step, with the control for the step outlined](/media/definitions/specimen-definition/create-specimen-definition-3.png)
 
 ### 4. Add the specimen details
 
@@ -50,47 +63,72 @@ Complete the fields under **Specimen Details**.
 
 | Components | What it captures |
 | --- | --- |
-| Type Collected | The type of specimen to collect. Search for the type in the list. Required. |
-| Collection | The method that staff use to collect the specimen. Search for the method in the list. Optional. |
-| Patient Preparation | The instructions for the patient before collection. Click **Add** for each instruction. Optional. |
+| Type Collected | The kind of specimen to collect. Search for it in the list. Required. |
+| Collection | The collection procedure, for example finger-prick sampling. Search for it in the list. Optional. |
+| Expected Quantity | The amount to collect. Enter a whole number of 1 or more. Select a unit: milligram, gram, milliliter, drop or microgram. Optional. |
+| Collection Method | The method of collection. Search for it in the list. Optional. |
+| Body Site | The part of the body where staff collect the specimen. Search for it in the list. Optional. |
+| Patient Preparation | What the patient does before collection. Select **Add** for each item. Search for the item in the new row. Optional. |
+
+Care uses these fields when staff collect a specimen for a service request. It fills in the Expected Quantity, Collection Method and Body Site.
+
+- To clear Collection, Collection Method or Body Site, select the x next to the value.
+- If the Expected Quantity is not a whole number of 1 or more, Care shows **Please enter a valid quantity**.
+- If you enter an Expected Quantity without a unit, Care shows **This field is required**.
+- If you add the same patient preparation two times, Care shows **This patient preparation has already been added**.
+
+![Step 4, Add the specimen details: the screen at this step, with the control for the step outlined](/media/definitions/specimen-definition/create-specimen-definition-4.png)
 
 ### 5. Add the type tested information
 
-Complete the fields under **Type Tested Information**. All fields in this section are optional.
+Complete the fields under **Type Tested Information**. Care fills in Is Derived, Single Use and Preference. The other fields are optional.
 
 | Components | What it captures |
 | --- | --- |
-| Is Derived | A switch that records if the tested specimen comes from another specimen. Care sets the switch to off. |
-| Single Use | A switch that records if the laboratory uses the specimen one time only. Care sets the switch to off. |
-| Preference | Preferred or Alternate. Care selects Preferred. |
-| Retention time | The time that the laboratory keeps the specimen. Enter a number and select a unit. |
-| Requirement | The requirements for the delivery and the special handling of the specimen. |
+| Is Derived | A switch that records if the tested specimen is derived from another specimen. Care sets it to off. |
+| Single Use | A switch that records if the specimen is for single use only. Care sets it to off. |
+| Preference | **Preferred** or **Alternate**. Care selects Preferred. |
+| Retention time | How long the laboratory keeps the specimen. Enter a whole number. Select hours or days. |
+| Requirement | Any requirements for the specimen, as text. |
 
-Complete the fields under **Container Information** to describe the container.
+Complete the fields under **Container Information** to describe the container. All these fields are optional.
 
 | Components | What it captures |
 | --- | --- |
-| Description | Extra detail about the container. |
-| Cap | The cap type of the container. Search for the cap type in the list. |
-| Capacity | The volume of the container. Enter a number and select a unit. |
-| Minimum Volume | The smallest usable volume. Select the **Quantity** tab to enter a number and a unit. Select the **Text** tab to enter a description. |
-| Preparation | The steps to prepare the container before collection. |
+| Description | A description of the container. |
+| Cap | The cap of the container. Search for it in the list. |
+| Capacity | The volume of the container. Enter a whole number. Select a unit. |
+| Minimum Volume | The minimum volume of the specimen. Use the **Quantity** tab for a whole number and a unit. Use the **Text** tab for a description. A value on one tab clears the other tab. |
+| Preparation | How to prepare the container, as text. |
+
+![Step 5, Add the type tested information: the screen at this step, with the control for the step outlined](/media/definitions/specimen-definition/create-specimen-definition-5.png)
 
 ### 6. Save the definition
 
-Click **Save**. To leave the form without saving, click **Cancel**.
+Select **Save**. To leave the form without saving, select **Cancel**.
+
+- If another specimen definition in the facility uses the same slug, Care does not save. Change the slug and select **Save** again.
+- If you do not hold the create permission in the root organization, Care shows "Access Denied to Specimen Definition".
+
+![Step 6, Save the definition (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/specimen-definition/create-specimen-definition-6.png)
+
+![Step 6, Save the definition (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/specimen-definition/create-specimen-definition-7.png)
 
 ## Expected Outcome
 
-- Care shows the message "Specimen definition created".
-- Care opens the specimen definitions list. The list shows the definitions with the Status Active.
+- Care shows **Specimen definition created**.
+- Care opens the specimen definitions list. The list shows Active definitions by default.
+- If you saved the definition as Draft or Retired, select that status in the **Status** filter to see it.
 
 ## Related
 
 Concepts:
 
 - [Specimen Definition](../../../concepts/definitions/specimen-definition.mdx)
+- [Activity Definition](../../../concepts/definitions/activity-definition.mdx)
 
 Flows:
 
 - [Update or retire a specimen definition](./update-or-retire-specimen-definition.mdx)
+- [Link requirements to an activity definition](../activity-definition/link-requirements-to-activity-definition.mdx)
+- [Collect a specimen](../../clinical/specimen/collect-a-specimen.mdx)

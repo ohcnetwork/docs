@@ -6,69 +6,97 @@ sidebar_position: 3
 
 ## Overview
 
-This flow describes how to change or remove a [questionnaire response template](../../../concepts/definitions/questionnaire-response-template.mdx) in Care.
+<video src="/media/definitions/questionnaire-response-template/update-or-delete-response-template.mp4" poster="/media/definitions/questionnaire-response-template/update-or-delete-response-template.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/questionnaire-response-template/update-or-delete-response-template.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to change or delete a [questionnaire response template](../../../concepts/definitions/questionnaire-response-template.mdx). Anyone who can see a template and holds the permission below can change or delete it, not only the person who created it.
 
 ## Pre-requisites
 
-- You fill a questionnaire for a patient in a facility.
-- You can see the template. You created it, or another user shares it with you or with your department.
+- You fill in a questionnaire for a patient's encounter in the facility.
+- The questionnaire has a Medication Request question or a Service Request question.
+- You can see the template. This is true in these cases:
+  - You created the template.
+  - The template is shared with a department in which you hold a role.
+  - You were the last person to add an item to the template.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Read Questionnaire Response Templates | Lets you see the list of templates. |
-| Can Create/Update Questionnaire Response Templates | Lets you change or delete a response template. |
+| Can Create/Update Questionnaire Response Templates | Lets you save changes to a template or delete it. You can hold it in any department of the template's facility. You do not need to be the person who created the template. By default, the Doctor, Nurse, Staff, Pharmacist, Administrator, Facility Admin and Volunteer roles hold this permission. |
+| Can View Facility Organizations | Lets you see the departments of the facility in **Select Department** on the **Edit Template** form. You can hold it in any department of the facility. If you hold it only outside the facility's root organization (**Administration**), the list leaves out the root organization. By default, the Doctor, Nurse, Staff, Administrator, Facility Admin and Volunteer roles hold this permission. |
+
+Care shows the edit icon and the delete icon on every template in the list. If you do not hold Can Create/Update Questionnaire Response Templates, Care refuses the change.
 
 ## Steps
 
-### 1. Open the template list
+### 1. Open the template panel
 
-Select **Templates** in the medications question or the service request question. Care opens the **Response Templates** panel.
+In the Medication Request question or the Service Request question, select **Templates**. Care opens the **Response Templates** panel.
+
+![Step 1, Open the template panel: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire-response-template/update-or-delete-response-template-1.png)
 
 ### 2. Find the template
 
 Enter a name in **Search templates**. Find the template that you want to change.
 
+![Step 2, Find the template: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire-response-template/update-or-delete-response-template-2.png)
+
 ### 3. Open the template for editing
 
-Select the edit icon on the template. Care shows the **Edit Template** form.
+Select the edit icon on the template. Care opens the **Edit Template** form.
+
+![Step 3, Open the template for editing: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire-response-template/update-or-delete-response-template-3.png)
 
 ### 4. Change the template
 
-Change these parts of the template:
-
-| Component | What it captures |
+| Components | What it captures |
 | --- | --- |
-| Template Name | The name that identifies the template. |
-| Description | More detail about the content that the template fills in. |
-| Select Department | The departments that you share the template with. |
-| Medications | The medications that the template adds to the form. |
-| Service Requests | The service requests that the template adds to the form. |
+| Medications to include | The medications in the template. To remove one, select the cross icon next to it. |
+| Activity definitions to include | The service requests in the template. To remove one, select the cross icon next to it. |
+| Template Name | The name that identifies the template. Required. |
+| Description (Optional) | A short description of what the template fills in. |
+| Select Department | The departments that the template is shared with. Leave it empty to keep the template personal. |
 
-Select the cross icon on an item to remove that item from the template.
+The form cannot add items. To add an item, use **Add to template** on a medication or a service request in the question. That action removes the department sharing of the template. See [Create a response template](./create-response-template.mdx).
+
+![Step 4, Change the template: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire-response-template/update-or-delete-response-template-4.png)
 
 ### 5. Save the changes
 
-Select **Save Changes**. Care updates the template. Select **Cancel** to go back to the list.
+Select **Save Changes**. Care shows **Template updated successfully** and returns to the list.
+
+To go back without saving, select **Cancel**.
+
+![Step 5, Save the changes: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire-response-template/update-or-delete-response-template-5.png)
 
 ### 6. Delete the template
 
-Select the delete icon on the template. Care shows the **Delete Template** dialog. Select **Delete** to confirm.
+To delete a template, select the delete icon on the template in the list. Care opens the **Delete Template** dialog.
 
-Note: A delete is permanent. A response template has no retired state and no archived state.
+Select **Delete** to confirm. Care shows **Template deleted successfully**.
+
+Note: The dialog warns that you cannot undo this action. A template has no status, so you cannot retire it instead.
+
+![Step 6, Delete the template (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/questionnaire-response-template/update-or-delete-response-template-6.png)
+
+![Step 6, Delete the template (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/questionnaire-response-template/update-or-delete-response-template-7.png)
 
 ## Expected Outcome
 
 - Care saves your changes to the template.
-- Care removes the template from the list when you delete it.
+- If you removed a department, its members no longer see the template through that department.
+- When you delete the template, it no longer shows in the panel for you or for anyone else.
 
 ## Related
 
 Concepts:
 
 - [Questionnaire Response Template](../../../concepts/definitions/questionnaire-response-template.mdx)
+- [Questionnaire](../../../concepts/definitions/questionnaire.mdx)
 
 Flows:
 

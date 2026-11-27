@@ -6,76 +6,165 @@ sidebar_position: 1
 
 ## Overview
 
-This flow describes how to create a [charge item definition](../../../concepts/definitions/charge-item-definition.mdx) in Care. A charge item definition is a priced template for a service or an item.
+<video src="/media/definitions/charge-item-definition/create-charge-item-definition.mp4" poster="/media/definitions/charge-item-definition/create-charge-item-definition.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/charge-item-definition/create-charge-item-definition.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to create a [charge item definition](../../../concepts/definitions/charge-item-definition.mdx) in Care. A charge item definition is the reusable price of a service or item that your facility bills, with its taxes and discounts.
 
 ## Pre-requisites
 
-- You are a member of the facility.
-- A category for charge item definitions is set up in the facility. You select this category in the form.
+- You are a member of a department of the facility.
+- Your facility has a charge item definition category with no subcategories. If it does not, [add a category](../resource-category/manage-definition-categories.mdx) first.
+- If you want to add taxes, your deployment has tax components.
+- If you want to add discounts, your facility or your deployment has discount components.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Read Charge Item Definition | Lets you open the charge item definitions of your facility. |
-| Can Create Charge Item Definition on Facility | Lets you create a new charge item definition for your facility. |
+| Can Create Charge Item Definition on Facility | Lets you save the new definition. You must hold it in the facility's root organization (**Administration**). By default, the Facility Admin role holds it. |
+| Can Read Charge Item Definition | Lets you open a category and see its charge item definitions. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Read Resource Category | Lets you browse the categories and use the Category picker in the form. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Read Tag Config | Needed only for a discount condition on a patient tag or an encounter tag. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+
+Note: Care shows **Add Definition** to every user who can open the category. If you do not hold Can Create Charge Item Definition on Facility in the root organization, Care refuses to save the definition.
 
 ## Steps
 
 ### 1. Open the charge item definitions
 
-Go to the facility.
+In the facility sidebar, select **Settings**.
 
-Click **Settings**.
+In the settings sidebar, under **Billing**, select **Charge Item Definitions**.
 
-Click **Charge Item Definitions**.
+![Step 1, Open the charge item definitions: the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/create-charge-item-definition-1.png)
 
-### 2. Select the category
+### 2. Open the category
 
-Open the category for the new definition.
+Open the categories until you reach a category that has no subcategories.
 
-Click **Add Definition**.
+Note: To find a category by name, type in the **Search** box.
 
-### 3. Fill in the definition details
+Select **Add Definition**. Care shows this button only in a category that has no subcategories.
 
-Complete the components in the form.
+Care opens the **Create Charge Item Definition** page.
+
+![Step 2, Open the category (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/create-charge-item-definition-2.png)
+
+![Step 2, Open the category (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/create-charge-item-definition-3.png)
+
+### 3. Enter the basic details
+
+Complete these components at the top of the form.
 
 | Components | What it captures |
 | --- | --- |
-| Title | The name of the priced item or service. This field is required. |
-| Slug | A short identifier for the definition. Care suggests the slug from the title. The slug must have 5 to 25 characters. This field is required. |
-| Category | The category that holds this definition. Care fills in the category that you opened in step 2. This field is required. |
-| Status | Draft, Active, or Retired. Care sets Active by default. |
+| Title | The name of the service or item. This field is required. |
+| Slug | A short name for the web address of the definition. Care fills it from the title. Use 5 to 50 lowercase letters, numbers, "-" or "_", and start and end with a letter or number. This field is required. |
+| Category | The category that holds the definition. Care fills in the category that you opened. You can select only a category without subcategories. This field is required. |
+| Status | Draft, Active or Retired. Care sets Active by default. |
+
+Note: The slug must be unique in the facility.
+
+![Step 3, Enter the basic details: the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/create-charge-item-definition-4.png)
+
+### 4. Enter the additional details
+
+Under **Additional Details**, complete these components.
+
+| Components | What it captures |
+| --- | --- |
 | Description | Extra detail about the definition. This field is optional. |
-| Purpose | The reason to use this pricing template. This field is optional. |
-| Derived From URI | The web address of the source of this template. This field is optional. |
-| Can Edit Charge Item | Select this checkbox to let staff change the price on a charge item that comes from this template. Care selects it by default. |
-| Base Price | The standard price. This field is required. Enter a negative price for an invoice-level discount. |
-| MRP | The maximum retail price. This field is optional. |
-| Purchase Price | The price that your facility pays. This field is optional. |
-| Taxes | One or more taxes that apply to the price. This field is optional. |
-| Discounts | One or more discounts that apply to the price. Each discount has its own conditions. This field is optional. |
+| Purpose | The reason to use this definition. This field is optional. |
+| Derived From URI | The web address of the source of this definition. It must start with http:// or https://. This field is optional. |
+| Can Edit Charge Item | Keep this box selected to let staff change the price and quantity of a charge item that comes from this definition. Care selects it by default. |
 
-Note: Your facility settings decide which taxes and discounts you can select.
+![Step 4, Enter the additional details: the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/create-charge-item-definition-5.png)
 
-### 4. Save the definition
+### 5. Enter the prices
 
-Click **Create**.
+Under **Pricing Components**, complete these components.
 
-Note: Press Shift+Enter to submit the form. Press Escape to cancel.
+| Components | What it captures |
+| --- | --- |
+| Base Price | The standard price of one unit. This field is required. For an invoice-level discount, enter a negative value. |
+| MRP | The maximum retail price. Care keeps it for information. It does not change the total. This field is optional. |
+| Purchase Price | The price that your facility pays. Care keeps it for information. It does not change the total. This field is optional. |
+
+Note: If the base price is negative, clinicians cannot order a service from an activity definition that uses this definition.
+
+![Step 5, Enter the prices: the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/create-charge-item-definition-6.png)
+
+### 6. Add taxes
+
+Under **Taxes**, select **Add tax**. Care shows the tax components of your deployment.
+
+If a tax code has more than one rate, Care shows a button for each rate. Select one rate.
+
+If a tax has only one rate, Care shows a check box. Select the check box.
+
+Note: With the default deployment settings, CGST, SGST and IGST each have three rates, and only GST @ 0 has a check box.
+
+Select **Done**.
+
+![Step 6, Add taxes: the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/create-charge-item-definition-7.png)
+
+### 7. Add discounts
+
+Under **Discounts**, select **Add Discount**. Care shows the discount components of your facility and of your deployment.
+
+Select the check box of each discount that applies.
+
+If a discount code has more than one rate, select one rate.
+
+Select **Done**. Care lists each selected discount with a switch.
+
+For each discount, set the switch:
+
+| Switch | What it does |
+| --- | --- |
+| **Use facility global value** | When Care creates a charge item, it uses the facility's current value for this discount. Care sets this by default. |
+| **Override with local value** | The definition keeps its own value for this discount. You can add conditions, and Care applies the discount only when the patient or the encounter meets them. |
+
+Note: Conditions can use the age, gender or tags of the patient, and the tags or class of the encounter.
+
+Note: If you switch a discount back to **Use facility global value**, Care removes its conditions.
+
+Note: Taxes have no conditions.
+
+![Step 7, Add discounts (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/create-charge-item-definition-8.png)
+
+![Step 7, Add discounts (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/create-charge-item-definition-9.png)
+
+### 8. Save the definition
+
+Check the base price in the **Price Summary**.
+
+Select **Create**.
+
+![Step 8, Save the definition (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/create-charge-item-definition-10.png)
+
+![Step 8, Save the definition (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/create-charge-item-definition-11.png)
 
 ## Expected Outcome
 
-- Care confirms that it created the definition.
-- Care takes you back to the category list.
+- Care shows the message **Charge item definition created successfully**.
+- Care opens the category that holds the definition.
+- The list in the category shows Active definitions by default. If you saved the definition as Draft or Retired, change the **Status** filter to see it.
+- While the definition is Active, staff can link it to an activity definition.
 
 ## Related
 
 Concepts:
 
 - [Charge Item Definition](../../../concepts/definitions/charge-item-definition.mdx)
+- [Charge Item](../../../concepts/billing/charge-item.mdx)
 
 Flows:
 
 - [Update or retire a charge item definition](./update-or-retire-charge-item-definition.mdx)
+- [Set taxes and discounts for a charge item category](./set-category-taxes-and-discounts.mdx)
+- [Add or edit a definition category](../resource-category/manage-definition-categories.mdx)
+- [Link requirements to an activity definition](../activity-definition/link-requirements-to-activity-definition.mdx)

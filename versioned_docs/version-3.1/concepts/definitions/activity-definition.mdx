@@ -6,45 +6,83 @@ sidebar_position: 6
 
 ## Definition
 
-An **[activity definition](https://build.fhir.org/activitydefinition.html)** in Care is a reusable template for a service, a procedure, or a test that clinicians order. A common example is a "CBC Test". The template holds the details that a clinician otherwise types each time. When a clinician orders from the template, Care creates a [Service Request](../../concepts/clinical/service-request.mdx).
+An **[activity definition](https://build.fhir.org/activitydefinition.html)** in Care is a reusable template for a service that your facility offers, such as a laboratory test, an imaging study or a procedure. Each facility keeps its own activity definitions in its settings. When a clinician orders a service from an activity definition, Care creates a [service request](../clinical/service-request.mdx) for the patient from the details in the template.
+
+For example, a facility can keep an activity definition named "Complete Blood Count" that already lists the blood sample to collect, the results to record and the charge to bill.
 
 ## Key Attributes
 
 | Components | What it captures |
 | --- | --- |
-| Title | The name of the template that staff see when they order the service. Required. |
-| Status | The stage of the template in its lifecycle. Required. |
-| Category | The type of the service: Laboratory, Imaging, Surgical Procedure, Counselling, or Education. Required. |
-| Kind | The type of order that Care creates from the template. Required. The value is always "Service Request". |
-| Code | The standard medical code for the service or the procedure. Required. |
-| Body Site | The part of the body for the service or the procedure. Optional. |
-| Resource Category | The catalogue category of your facility that holds this template. Required. |
-| Healthcare Service | The healthcare service that provides this activity. Optional. |
-| Locations | The locations where staff can do this activity. Optional. |
-| Diagnostic Report Codes | The codes for the diagnostic reports that come from this activity. Optional. |
-| Requirements | The Specimen Definitions, the Observation Definitions, and the Charge Item Definitions that this template needs. |
+| Title | The name that clinicians see when they order the service. Required. |
+| Slug | A short name that Care uses in links. Care makes it from the Title. It has 5 to 50 characters and must be unique in the facility. |
+| Description | What the service is. Required. |
+| Usage | When to use the service. Required. |
+| Status | Draft, Active, Retired or Unknown. A new activity definition starts as Active. |
+| Category | The type of service: Laboratory, Imaging, Procedure, Counselling or Education. Required. |
+| Resource Category | The facility category that holds the activity definition. |
+| Kind | The kind of order that Care creates. The only kind is Service Request. |
+| Derived From URI | The web address of a source that the activity definition is based on. Optional. |
+| Code | The standard medical code for the service, from a list of procedure codes. Required. |
+| Body Site | The part of the body that the service is for. Optional. |
+| Specimen Requirements | The samples to collect, as specimen definitions. |
+| Observation Requirements | The results to record, as observation definitions. |
+| Charge Item Definitions | The charges to bill when a clinician orders the service. |
+| Healthcare Service | The healthcare service that provides the service. Optional. |
+| Locations | The locations where staff do the service. |
+| Diagnostic Report Codes | The codes of the reports that the service produces. |
 
 ### Category and Resource Category
 
-Category and Resource Category are two different fields on the same form.
+The form has two fields with similar names. They hold different things.
 
-- **Category** holds the type of the service. Care gives you a fixed list of choices: Laboratory, Imaging, Surgical Procedure, Counselling, and Education. Care copies this value to the service request when a clinician orders the service.
-- **Resource Category** holds the catalogue category of your facility. Your facility makes these categories and names them, for example "Blood Tests".
+- **Category** is the type of service, chosen from a fixed list. When a clinician orders the service, Care copies it to the service request.
+- **Resource Category** is a folder that your facility makes to organize its activity definitions, for example "Blood Tests". A category can hold subcategories.
 
-The Activity Definitions page shows the Resource Categories first. Open a Resource Category to see the templates in it.
+An activity definition can go only in a category that has no subcategories. **Add Activity Definition** shows only in such a category, and the **Resource Category** field accepts only such a category. To add or change categories, see [Add or edit a definition category](../../flows/definitions/resource-category/manage-definition-categories.mdx).
+
+Outside such a category, the search box on the **Activity Definitions** page finds categories by name. It also finds Active activity definitions by title, across the whole facility.
 
 ### Requirements
 
-Requirements connect a template to the items that the service needs. Add a Specimen Definition for each sample that staff collect. Add an Observation Definition for each result that staff record. Add a Charge Item Definition for each charge that applies to the service.
+Requirements connect an activity definition to the other definitions that the service needs.
+
+- **Specimen Requirements** and **Observation Requirements** list only the active specimen definitions and observation definitions of your facility. Care links only definitions that belong to the same facility. You can add the same specimen definition more than once.
+- **Charge Item Definitions** lists only active charge item definitions. When a clinician orders the service, Care creates a charge item for each linked charge item definition, whatever its status. A charge item definition that was retired after you linked it still creates a charge.
+- The **Healthcare Service** and the **Locations** must belong to your facility. When a clinician orders the service, Care copies them to the service request.
 
 ### Status
 
 | Status | Description |
 | --- | --- |
-| Draft | The template is in preparation. Staff cannot use it to order a service. |
-| Active | The template is ready. Staff can use it to order a service. |
-| Retired | The template is no longer in use. |
-| Unknown | The stage of the template is not known. |
+| Draft | The activity definition is in preparation. The order form does not offer it. |
+| Active | The activity definition is ready for use. The order form offers it. |
+| Retired | The facility no longer uses the activity definition. The order form does not offer it. |
+| Unknown | The status is not known. The order form does not offer it. |
+
+The list in each category shows only Active activity definitions until you change the **Status** filter.
+
+To retire an activity definition, use the **Delete** button on its page. Care does not remove the activity definition: it sets the status to Retired.
+
+You can make a retired activity definition active again. Open it, select **Edit** and set **Status** back to Active.
+
+## Permissions
+
+Care checks these permissions through your roles in the departments of the facility. A permission that changes activity definitions must be held in the facility's root organization (**Administration**).
+
+| Permission | Access |
+| --- | --- |
+| Can Read Activity Definition | Lets you see and open the activity definitions of the facility, and pick them in the order form. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse and Volunteer roles hold this permission. |
+| Can Create Activity Definition on Facility | Lets you create, edit and retire activity definitions. You must hold it in the root organization. By default, the Facility Admin role holds this permission. |
+| Can Read Resource Category | Lets you browse the categories on the **Activity Definitions** page and in the pickers. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can Create Resource Category on Facility | Lets you add and edit categories. You must hold it in the root organization. By default, the Facility Admin role holds this permission. |
+| Can Write Service Request on Facility | Lets you order a service from an activity definition. You must hold it in a department of the encounter, of the encounter's current location, or of a location on the service request. By default, the Facility Admin, Doctor and Nurse roles hold this permission. |
+
+If you hold your role only in a department other than the root organization, Care refuses to create or change activity definitions. This is true even for the Facility Admin role.
+
+Care shows **Edit** and **Delete** to everyone who can open an activity definition. If you do not hold Can Create Activity Definition on Facility in the root organization, Care refuses the change.
+
+The form also lists specimen definitions, observation definitions, charge item definitions, healthcare services and locations. Each list needs its own read permission. The flows below list them.
 
 ## Related
 
@@ -52,7 +90,9 @@ Requirements connect a template to the items that the service needs. Add a Speci
 - Flow: [Link requirements to an activity definition](../../flows/definitions/activity-definition/link-requirements-to-activity-definition.mdx)
 - Flow: [Update or retire an activity definition](../../flows/definitions/activity-definition/update-or-retire-activity-definition.mdx)
 - Flow: [Use an activity definition to order a service](../../flows/definitions/activity-definition/use-activity-definition-to-order-a-service.mdx)
-- Concept: [Specimen Definition](../../concepts/definitions/specimen-definition.mdx)
-- Concept: [Observation Definition](../../concepts/definitions/observation-definition.mdx)
-- Concept: [Charge Item Definition](../../concepts/definitions/charge-item-definition.mdx)
-- Concept: [Service Request](../../concepts/clinical/service-request.mdx)
+- Flow: [Add or edit a definition category](../../flows/definitions/resource-category/manage-definition-categories.mdx)
+- Concept: [Specimen Definition](./specimen-definition.mdx)
+- Concept: [Observation Definition](./observation-definition.mdx)
+- Concept: [Charge Item Definition](./charge-item-definition.mdx)
+- Concept: [Service Request](../clinical/service-request.mdx)
+- Reference: [Activity Definition](../../references/definitions/activity-definition.mdx)

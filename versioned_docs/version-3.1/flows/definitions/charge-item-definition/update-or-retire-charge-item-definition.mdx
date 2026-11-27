@@ -6,72 +6,137 @@ sidebar_position: 2
 
 ## Overview
 
-This flow describes how to change the details of a [charge item definition](../../../concepts/definitions/charge-item-definition.mdx) in Care. It also describes how to retire a charge item definition that your facility no longer uses.
+<video src="/media/definitions/charge-item-definition/update-or-retire-charge-item-definition.mp4" poster="/media/definitions/charge-item-definition/update-or-retire-charge-item-definition.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/charge-item-definition/update-or-retire-charge-item-definition.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to change a [charge item definition](../../../concepts/definitions/charge-item-definition.mdx) in Care, add tags to it, or retire it when your facility no longer uses it.
 
 ## Pre-requisites
 
-- You are a member of the facility.
-- The charge item definition is created in the facility.
+- You are a member of a department of the facility.
+- Your facility has the charge item definition that you want to change.
 - If you want to retire the definition, its status is not Retired.
+- If you want to add tags, your facility has a tag whose resource is Charge Item Definition. See [Create a tag](../../platform/tagging/create-a-tag.mdx).
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Read Charge Item Definition | Lets you open the charge item definitions of your facility. |
-| Can Create Charge Item Definition on Facility | Lets you update or retire a charge item definition. |
+| Can Create Charge Item Definition on Facility | Lets you save changes, retire the definition, and add or remove its tags. You must hold it in the facility's root organization (**Administration**). By default, the Facility Admin role holds it. |
+| Can Read Charge Item Definition | Lets you list and open the charge item definitions. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Read Resource Category | Lets you browse the categories and use the Category picker in the form. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Apply Tag Config to Resources | Needed only to add or remove tags. You must hold it in the organization that manages the tag, or in one above it. If the tag has no managing organization, any department of the facility counts. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold it. |
+| Can Read Tag Config | Needed to see the tags that you can add, and for a discount condition on a tag. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+
+Note: Care shows **Edit**, **Delete** and **Add Tags** to every user who can open the definition. If you do not hold Can Create Charge Item Definition on Facility in the root organization, Care refuses the change.
 
 ## Steps
 
 ### 1. Open the charge item definition
 
-Go to the facility.
+In the facility sidebar, select **Settings**.
 
-Click **Settings**.
+In the settings sidebar, under **Billing**, select **Charge Item Definitions**.
 
-Click **Charge Item Definitions**.
+Open the categories until you reach the category that holds the definition.
 
-Open the category that holds the definition.
+The list shows Active definitions by default. To find a Draft or Retired definition, change the **Status** filter.
 
-Open the charge item definition that you want to change.
+To find a definition by its title, type in the **Search definitions** box.
+
+Note: At the top level, and in a category that has subcategories, the **Search** box finds active definitions in all categories.
+
+In the row of the definition, select **View** to open its page.
+
+![Step 1, Open the charge item definition: the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/update-or-retire-charge-item-definition-1.png)
 
 ### 2. Update the details
 
-Click **Edit**.
+On the page of the definition, select **Edit**. You can also select **Edit** in the row of the definition.
 
-Change the details of the charge item definition.
+Care opens the **Update Charge Item Definition** page. It has the same components as the create form.
 
-Click **Update**.
+Change the details. See [Create a charge item definition](./create-charge-item-definition.mdx) for each component.
 
-Note: The **Update** button stays disabled until you change a detail.
+Note: Care does not change the slug when you change the title.
 
-Note: Press Shift+Enter to submit the form. Press Escape to cancel.
+Note: To use a retired definition again, set **Status** to Active.
 
-### 3. Retire the charge item definition
+Select **Update**.
 
-Do this step only if you want to stop the use of the charge item definition.
+Note: **Update** stays disabled until you change a component.
 
-Click **Delete**. Care shows this button only while the status of the definition is not Retired.
+![Step 2, Update the details (1 of 3): the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/update-or-retire-charge-item-definition-2.png)
+
+![Step 2, Update the details (2 of 3): the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/update-or-retire-charge-item-definition-3.png)
+
+![Step 2, Update the details (3 of 3): the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/update-or-retire-charge-item-definition-4.png)
+
+### 3. Add or remove tags
+
+On the page of the definition, select **Add Tags**.
+
+Note: If the definition already has tags, Care shows the tags in place of **Add Tags**. Select the tags to open the same list.
+
+To find a tag, type in the **Search tags...** box.
+
+Select a tag to add it. Select a selected tag again to remove it.
+
+If the tag lets you change its expiry, choose the expiry before Care applies the tag.
+
+Note: Care saves each change at once and shows **Tags updated successfully**.
+
+Note: A definition can have only one tag from the same parent tag. If you select a second one, Care replaces the first.
+
+Note: On a phone, the tags open in a drawer named **Manage Tags**.
+
+![Step 3, Add or remove tags (1 of 4): the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/update-or-retire-charge-item-definition-5.png)
+
+![Step 3, Add or remove tags (2 of 4): the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/update-or-retire-charge-item-definition-6.png)
+
+![Step 3, Add or remove tags (3 of 4): the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/update-or-retire-charge-item-definition-7.png)
+
+![Step 3, Add or remove tags (4 of 4): the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/update-or-retire-charge-item-definition-8.png)
+
+### 4. Retire the charge item definition
+
+Do this step only if your facility no longer uses the definition.
+
+On the page of the definition, select **Delete**. Care shows this button only while the status is not Retired.
 
 Care opens the **Delete charge item definition** dialog.
 
-Click **Confirm**.
+Select **Confirm**.
 
-Note: Care does not remove the charge item definition. Care sets its Status to Retired.
+Note: Care does not remove the definition. Care sets its status to Retired.
+
+Caution: Retiring does not unlink the definition. Activity definitions, products and schedules that already use it keep it, and Care still creates charge items from it.
+
+![Step 4, Retire the charge item definition (1 of 3): the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/update-or-retire-charge-item-definition-9.png)
+
+![Step 4, Retire the charge item definition (2 of 3): the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/update-or-retire-charge-item-definition-10.png)
+
+![Step 4, Retire the charge item definition (3 of 3): the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/update-or-retire-charge-item-definition-11.png)
 
 ## Expected Outcome
 
-- Care saves your changes to the charge item definition.
-- After you click **Confirm**, Care sets the Status of the charge item definition to Retired.
-- Care shows a message that confirms the change.
+- After **Update**, Care shows **Charge item definition updated successfully** and opens the category of the definition.
+- After a tag change, Care shows **Tags updated successfully**.
+- After **Confirm**, Care sets the status to Retired, shows **Definition deleted successfully** and opens the category of the definition.
+- A retired definition no longer shows in the default list of its category. Select Retired in the **Status** filter to see it.
 
 ## Related
 
 Concepts:
 
 - [Charge Item Definition](../../../concepts/definitions/charge-item-definition.mdx)
+- [Tag](../../../concepts/platform/tagging.mdx)
 
 Flows:
 
 - [Create a charge item definition](./create-charge-item-definition.mdx)
+- [Set taxes and discounts for a charge item category](./set-category-taxes-and-discounts.mdx)
+- [Create a tag](../../platform/tagging/create-a-tag.mdx)
+- [View tags](../../platform/tagging/view-tags.mdx)

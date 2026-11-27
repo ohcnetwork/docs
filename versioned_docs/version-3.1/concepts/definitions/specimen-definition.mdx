@@ -6,37 +6,70 @@ sidebar_position: 5
 
 ## Definition
 
-A **[specimen definition](https://build.fhir.org/specimendefinition.html)** in Care is a reusable template for one type of specimen, for example a blood draw. It describes how staff collect the specimen and how they handle it after collection. Each specimen definition belongs to one facility. Care does not share a specimen definition across facilities. Staff create an actual [Specimen](../../concepts/clinical/specimen.mdx) from a specimen definition.
+A **[specimen definition](https://build.fhir.org/specimendefinition.html)** in Care is a reusable template for one kind of specimen in a facility. It records what staff collect, how the patient prepares, how staff collect the specimen, and how the laboratory keeps it for testing. Only the facility that owns a specimen definition can use it.
+
+An [activity definition](../definitions/activity-definition.mdx) lists the specimens that its service needs under **Specimen Requirements**. When staff collect a specimen for a service request, Care creates the [specimen](../clinical/specimen.mdx) from a specimen definition.
 
 ## Key Attributes
 
 | Components | What it captures |
 | --- | --- |
 | Title | The name of the specimen definition. This field is required. |
-| Slug | A short identifier that is unique in the facility. This field is required. |
-| Description | An explanation of the purpose of the specimen definition. This field is required. |
-| Status | The current state of the specimen definition. This field is required. |
-| Derived From URI | The web address of the definition that this specimen definition is based on. This field is optional. |
-| Type Collected | The kind of specimen to collect, for example blood or urine. This field is required. |
-| Patient Preparation | The instructions that the patient follows before collection, for example fasting. This field is optional. |
-| Collection | The preferred collection method, for example a finger-prick. This field is optional. |
-| Type Tested | The container and handling requirements for the specimen. This field is optional. |
+| Slug | A short identifier that is unique in the facility. It has 5 to 50 characters. This field is required. |
+| Description | An explanation of the specimen definition. This field is required. |
+| Status | Draft, Active or Retired. This field is required. |
+| Derived From URI | The web address of a definition that this one is based on. This field is optional. |
+| Type Collected | The kind of specimen that staff collect. This field is required. |
+| Patient Preparation | What the patient does before collection. A definition can have more than one item. This field is optional. |
+| Collection | How staff collect the specimen: the collection procedure, the expected quantity, the method and the body site. This field is optional. |
+| Type Tested | How the laboratory keeps and tests the specimen, including its container. This field is optional. |
+
+### Collection
+
+Collection is a template with four parts, and each part is optional. Staff choose the procedure, method and body site from lists.
+
+| Components | What it captures |
+| --- | --- |
+| Collection | The collection procedure, for example finger-prick sampling or timed urine collection. |
+| Expected Quantity | The amount to collect: a whole number of 1 or more, and a unit (milligram, gram, milliliter, drop or microgram). |
+| Collection Method | The method of collection. In this version, its list offers the same procedures as Collection. |
+| Body Site | The part of the body where staff collect the specimen. |
+
+When staff collect a specimen for a service request, Care fills in the collection method, the body site and the expected quantity from the specimen definition. The new specimen also takes its specimen type from Type Collected and keeps a link to the definition.
+
+Before Care 3.1, Collection held only the procedure. After the upgrade, Care keeps each earlier value as the Collection part of the template.
 
 ### Type Tested
 
-Type Tested holds the requirements that keep the specimen usable after collection. It records the preference, the container details, the retention time, and the handling requirements. It also records if the tested specimen comes from another specimen, and if the laboratory uses the specimen one time only.
+Type Tested describes the specimen that the laboratory tests. It records if the specimen is derived from another specimen, if it is for single use, and if it is the preferred or an alternate specimen. It also records how long the laboratory keeps the specimen, any requirements, and the container: its description, cap, capacity, minimum volume and preparation.
 
 ### Status
 
 | Status | Description |
 | --- | --- |
-| Draft | Staff prepare the specimen definition. It is not ready for use. |
-| Active | Staff can use the specimen definition. The specimen definitions list shows Active definitions by default. |
-| Retired | Staff no longer use the specimen definition. Care keeps the record. |
+| Draft | The specimen definition is in preparation. The activity definition form does not offer it. |
+| Active | The specimen definition is ready for use. The activity definition form offers only Active specimen definitions, and the specimen definitions list shows Active definitions by default. |
+| Retired | The facility no longer uses the specimen definition. The **Delete** button sets this status: Care keeps the record, and you can edit it back to Active. |
+
+## Permissions
+
+You manage specimen definitions in the facility **Settings**, under **Clinical**. Care shows these screens and their buttons to every member of the facility. It checks the permissions below when you open the list or a definition, and when you save a change. It shows an error when a permission is missing.
+
+| Permission | Access |
+| --- | --- |
+| Can Create Specimen Definition on Facility | Lets you create, update and retire specimen definitions. You must hold it in the facility's root organization (**Administration**); the same permission in another department is not enough. By default, the **Facility Admin** role holds this permission. |
+| Can Read Specimen Definition | Lets you open the specimen definitions list and the details of a definition, and choose specimen definitions in an activity definition. You also need it to update or retire a definition. You can hold it in any department of the facility. By default, the **Facility Admin**, **Administrator**, **Staff**, **Doctor**, **Nurse**, **Volunteer** and **Pharmacist** roles hold this permission. |
+
+These are the default roles. Your deployment can also have custom roles that hold these permissions.
 
 ## Related
 
 - Flow: [Create a specimen definition](../../flows/definitions/specimen-definition/create-specimen-definition.mdx)
 - Flow: [Update or retire a specimen definition](../../flows/definitions/specimen-definition/update-or-retire-specimen-definition.mdx)
-- Concept: [Activity Definition](../../concepts/definitions/activity-definition.mdx)
-- Concept: [Specimen](../../concepts/clinical/specimen.mdx)
+- Flow: [Link requirements to an activity definition](../../flows/definitions/activity-definition/link-requirements-to-activity-definition.mdx)
+- Flow: [Collect a specimen](../../flows/clinical/specimen/collect-a-specimen.mdx)
+- Concept: [Activity Definition](../definitions/activity-definition.mdx)
+- Concept: [Specimen](../clinical/specimen.mdx)
+- Concept: [Service Request](../clinical/service-request.mdx)
+- Concept: [Facility Organization](../access-governance/facility-organization.mdx)
+- Reference: [Specimen Definition](../../references/definitions/specimen-definition.mdx)

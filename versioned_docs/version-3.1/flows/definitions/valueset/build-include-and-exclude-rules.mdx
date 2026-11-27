@@ -6,64 +6,130 @@ sidebar_position: 2
 
 ## Overview
 
-This flow describes how to build the include and exclude rules of a [valueset](../../../concepts/definitions/valueset.mdx) in Care. The rules decide which codes the valueset contains.
+<video src="/media/definitions/valueset/build-include-and-exclude-rules.mp4" poster="/media/definitions/valueset/build-include-and-exclude-rules.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/valueset/build-include-and-exclude-rules.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to build the include and exclude rules of a facility [valueset](../../../concepts/definitions/valueset.mdx) in Care. The rules decide which codes the valueset contains.
 
 ## Pre-requisites
 
-- You create a new valueset, or you change an existing valueset. See [Create a valueset](./create-valueset.mdx).
+- You are on the **Create ValueSet** page or the **Edit ValueSet** page of a facility valueset. See [Create a valueset](./create-valueset.mdx) or [Update or retire a valueset](./update-or-retire-valueset.mdx).
+- If you change an existing valueset, it is shared with your department or a sub-department of it.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| None (Care superuser only) | Lets you change a valueset's rules. |
+| Can Create/Update ValueSets | Lets you change the rules and save the valueset. You must hold it in the facility's root organization (**Administration**). Without it there, the rules are read only. By default, the Facility Admin role holds it. |
+| Can Read ValueSets | If you change an existing valueset, lets you open it. You must hold it in a department that the valueset is shared with, or in a parent department of one. Holding it in the root organization alone is not enough, unless the valueset is shared with the root organization (**Administration**). By default, the Facility Admin, Administrator, Doctor, Nurse, Staff, Pharmacist and Volunteer roles hold it. |
 
 ## Steps
 
-### 1. Open the rule panels
+### 1. Find the rules
 
-The valueset form has two panels: **Include rules** and **Exclude rules**. A rule in **Include rules** adds codes to the valueset. A rule in **Exclude rules** removes codes that match an include rule.
+On the page, find the **Definition** section.
 
-### 2. Add a rule
+The section has **Include rules** and **Exclude rules**, each with the number of rules in it.
 
-Select **Add Rule** in the panel that you want to change.
+A rule in **Include rules** adds codes to the valueset. A rule in **Exclude rules** removes matching codes from the included codes. If a code matches both, Care leaves it out.
 
-### 3. Select the code system
+![Step 1, Find the rules: the screen at this step, with the control for the step outlined](/media/definitions/valueset/build-include-and-exclude-rules-1.png)
 
-On the new rule, select a **System** from the list. Examples of a system are LOINC, SNOMED, and UCUM.
+### 2. Choose whether to use the parent rules
 
-In the **Version** box, enter the version of that system. This field is optional.
+Do this step only if the valueset has a parent valueset.
 
-### 4. Add exact codes
+Set the **Use parent rules** switch.
 
-Do these steps to put single codes in the rule:
+If the switch is on, Care combines the rules of the parent valueset with the rules on this page.
 
-1. Select **Add Concept** in the **Concepts** area. Care adds a row with a **Code** box and a display box.
+If the switch is off, Care uses only the rules on this page and ignores the parent rules.
+
+Note: The **Edit ValueSet** page shows **Use parent rules** also for a valueset with no parent. For such a valueset, the switch has no effect.
+
+![Step 2, Choose whether to use the parent rules: the screen at this step, with the control for the step outlined](/media/definitions/valueset/build-include-and-exclude-rules-2.png)
+
+### 3. Add a rule
+
+Select **Add Rule** next to **Include rules** or **Exclude rules**.
+
+Care adds a rule card, for example "Include rule 1", and opens it.
+
+The card shows a summary line with the terminology system, the number of concepts, and the number of filters.
+
+![Step 3, Add a rule: the screen at this step, with the control for the step outlined](/media/definitions/valueset/build-include-and-exclude-rules-3.png)
+
+### 4. Select the terminology system
+
+In **System**, select LOINC, SNOMED, or UCUM. A new rule starts with LOINC.
+
+If you need a specific version of the terminology system, enter it in **Version**. This field is optional.
+
+An include rule with no concepts and no filters takes every code in its terminology system. An exclude rule like this removes every code in its terminology system. Care shows a warning on such a rule.
+
+If you change **System** later, Care clears the verified names of the concepts in the rule. Verify the codes again.
+
+![Step 4, Select the terminology system: the screen at this step, with the control for the step outlined](/media/definitions/valueset/build-include-and-exclude-rules-4.png)
+
+### 5. Add exact codes
+
+Use concepts or filters in a rule, not both. To use both, add a separate rule.
+
+1. Under **Concepts**, select **Add Concept**. Care adds a row with a **Code** box and a name box that shows **Unverified**.
 2. Enter the code in the **Code** box.
-3. Select the verify button next to the code. Care looks up the code and fills in the display name.
+3. Select **Verify**.
 
-The display box shows **Unverified** until Care finds the code. After a successful lookup, Care shows the message "Code verified successfully".
+Care fills in the name of the concept and shows **Code verified successfully**. The button changes to **Code Verified**.
 
-### 5. Add a filter
+If Care cannot find the code, it shows **We couldn't verify this code. Check the code and terminology system, then try again.**
 
-A filter selects a group of codes with one condition. For example, a filter selects all codes that are a type of X.
+If you change a code after you verify it, Care clears its name. Verify the code again.
 
-Do these steps to add a filter:
+Verify every concept before you save. If a concept is not verified, Care shows **Verify this code before saving.**
 
-1. Select **Add Filter** in the **Filters** area. Care adds a row with a **Property** box, an **Operator** box, and a **Value** box.
-2. Enter the property.
-3. Enter the operator.
-4. Enter the value.
+![Step 5, Add exact codes: the screen at this step, with the control for the step outlined](/media/definitions/valueset/build-include-and-exclude-rules-5.png)
 
-### 6. Delete a rule
+### 6. Add filters
 
-To remove a rule, select the trash icon at the top of that rule. To remove one concept or one filter, select the trash icon on that row.
+A filter matches a group of codes by a property of the terminology system.
+
+1. In the rule card, open **Advanced: filter by properties**.
+2. Select **Add Filter**. Care adds a row with **Property**, **Operator**, and **Value** boxes.
+3. Enter the property.
+4. Enter the operator.
+5. Enter the value.
+
+All three boxes are required.
+
+Care accepts only these operators: `=`, `is-a`, `descendent-of`, `is-not-a`, `regex`, `in`, `not-in`, `generalizes`, `child-of`, `descendent-leaf`, and `exists`. If you enter another operator, Care does not save the valueset.
+
+![Step 6, Add filters: the screen at this step, with the control for the step outlined](/media/definitions/valueset/build-include-and-exclude-rules-6.png)
+
+### 7. Remove a rule, a concept, or a filter
+
+To remove a rule, select the trash button on its card. Care shows **Rule removed** and an **Undo** button.
+
+To bring back the rule, select **Undo**.
+
+To remove one concept or one filter, select the trash button on its row.
+
+![Step 7, Remove a rule, a concept, or a filter: the screen at this step, with the control for the step outlined](/media/definitions/valueset/build-include-and-exclude-rules-7.png)
+
+### 8. Save the valueset
+
+Select **Save**.
+
+If a rule has an error, its card shows **Needs attention**. Care lists the errors under **Review these fields before saving**.
+
+![Step 8, Save the valueset: the screen at this step, with the control for the step outlined](/media/definitions/valueset/build-include-and-exclude-rules-8.png)
 
 ## Expected Outcome
 
 - The valueset contains the include rules and the exclude rules that you built.
 - The valueset gives the codes that match an include rule, minus the codes that match an exclude rule.
+- If the valueset has a parent and **Use parent rules** is on, Care also uses the parent rules.
 
 ## Related
 
@@ -74,4 +140,6 @@ Concepts:
 Flows:
 
 - [Create a valueset](./create-valueset.mdx)
-- [Preview a valueset before saving](./preview-valueset.mdx)
+- [Customize a shared valueset](./customize-shared-valueset.mdx)
+- [Preview a valueset](./preview-valueset.mdx)
+- [Update or retire a valueset](./update-or-retire-valueset.mdx)

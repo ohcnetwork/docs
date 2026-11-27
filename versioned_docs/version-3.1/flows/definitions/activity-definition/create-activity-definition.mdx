@@ -6,74 +6,130 @@ sidebar_position: 1
 
 ## Overview
 
-This flow describes how to create an [activity definition](../../../concepts/definitions/activity-definition.mdx) for your facility in Care. An activity definition is a template for a service that your facility gives.
+<video src="/media/definitions/activity-definition/create-activity-definition.mp4" poster="/media/definitions/activity-definition/create-activity-definition.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/activity-definition/create-activity-definition.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to create an [activity definition](../../../concepts/definitions/activity-definition.mdx) for your facility. An activity definition is a template that clinicians use to order a service for a patient.
 
 ## Pre-requisites
 
-- You are a member of the facility.
-- You have the permission listed below.
+- The facility has an activity definition category with no subcategories. To add one, see [Add or edit a definition category](../resource-category/manage-definition-categories.mdx).
+- If you link specimen definitions, observation definitions or charge item definitions, they are Active and belong to your facility.
+- You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create Activity Definition on Facility | Create and change activity definitions for the facility. Facility Admin and Admin roles hold this permission. |
+| Can Create Activity Definition on Facility | Lets you save the new activity definition. You must hold it in the facility's root organization (**Administration**). By default, the Facility Admin role holds this permission. |
+| Can Read Activity Definition | Lets you see the activity definitions in a category. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse and Volunteer roles hold this permission. |
+| Can Read Resource Category | Lets you see the categories, choose the **Resource Category**, and browse the categories in **Select Charge Item Definitions**. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can Read Specimen Definition | Lets you see the specimen definitions in **Select Specimen Requirements**. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can Read Observation Definition | Lets you see the observation definitions in **Select Observation Requirements**. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can Read Charge Item Definition | Lets you see the charge item definitions in **Select Charge Item Definitions**. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can Read Healthcare Service | Lets you choose the **Healthcare Service**. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can List Facility Locations | Lets you choose the **Locations**. Care lists only the locations of the departments where you hold it. If you hold it in the root organization, Care lists every location of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse and Pharmacist roles hold this permission. |
+
+By default, the Facility Admin role in the root organization holds every permission in this table.
 
 ## Steps
 
-### 1. Open the activity definitions list
+### 1. Open the activity definitions
 
-1. Open your facility.
-2. Select **Settings**.
-3. Select **Activity Definitions**.
+1. In the facility sidebar, select **Settings**.
+2. In the **Clinical** group, select **Activity Definitions**.
 
-Care shows the resource categories of the facility. To make a new category, select **Add Category**.
+Care opens the **Activity Definition** page. It shows the activity definition categories of the facility.
 
-### 2. Start a new activity definition
+![Step 1, Open the activity definitions (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/create-activity-definition-1.png)
 
-1. Open the resource category for the new template.
-2. Select **Add Activity Definition**.
+![Step 1, Open the activity definitions (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/create-activity-definition-2.png)
 
-Care opens the form and sets Resource Category to the category that you open.
+### 2. Open a category
 
-### 3. Fill in the details
+1. Select the category for the new activity definition.
+2. If the category has subcategories, select a subcategory. Continue until you open a category with no subcategories.
 
-Complete the fields in the form.
+If the category that you need does not exist, add it first. See [Add or edit a definition category](../resource-category/manage-definition-categories.mdx).
+
+![Step 2, Open a category: the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/create-activity-definition-3.png)
+
+### 3. Start the activity definition
+
+Select **Add Activity Definition**.
+
+Care opens the form **Create Activity Definition**. Care sets **Resource Category** to the category that you opened.
+
+Note: Care shows **Add Activity Definition** only in a category with no subcategories.
+
+![Step 3, Start the activity definition (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/create-activity-definition-4.png)
+
+![Step 3, Start the activity definition (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/create-activity-definition-5.png)
+
+### 4. Fill in the basic information
+
+In **Basic Information**, complete the fields.
 
 | Components | What it captures |
 | --- | --- |
-| Title | The name of the template, for example "CBC Test". Required. |
-| Slug | A short code that Care uses in links. Required. Care makes the Slug from the Title. The Slug must have 5 to 25 characters. |
-| Description | Extra detail about the template. Required. |
-| Usage | Notes on when to use this template. Required. |
-| Status | Draft, Active, Retired, or Unknown. The default value is Active. |
-| Category | The type of the service: Laboratory, Imaging, Surgical Procedure, Counselling, or Education. Required. |
-| Resource Category | The catalogue category of your facility for this template. Required. This field is not the same as Category. |
-| Kind | Always Service Request. |
-| Derived From URI | The web address of the source that this template comes from. Optional. |
-| Code | The standard medical code for the procedure. Search for the code in the list. Required. |
-| Body Site | The body part that this template applies to. Optional. |
-| Diagnostic Report Codes | The codes for the diagnostic reports that this activity gives. Optional. |
-| Healthcare Service | The facility service that does this activity. Optional. |
-| Locations | The facility locations where staff do this activity. Optional. |
+| Title | The name of the service, for example "Complete Blood Count". Required. |
+| Slug | A short name that Care uses in links. Care makes it from the Title. Use 5 to 50 letters, numbers, hyphens or underscores. Start and end with a letter or a number. Required. |
+| Description | What the service is. Required. |
+| Usage | When to use the service. Required. |
+| Status | Draft, Active, Retired or Unknown. The default is Active. The order form offers only Active activity definitions. |
+| Category | The type of service: Laboratory, Imaging, Procedure, Counselling or Education. Required. |
+| Resource Category | The category that holds the activity definition. Care fills it in. You can choose only a category with no subcategories. |
+| Kind | The kind of order that Care creates. The only option is Service Request, and it is selected for you. |
+| Derived From URI | The web address of a source that the activity definition is based on. Optional. |
+| Code | The procedure code of the service. Type in the field to search the activity codes. Required. |
 
-Note: Category and Resource Category are two different fields. Category holds the type of the service. Resource Category holds the catalogue category of your facility.
+Note: **Category** and **Resource Category** are different fields. **Category** is the type of service. **Resource Category** is the folder of your facility that holds the activity definition.
 
-### 4. Add the requirements
+![Step 4, Fill in the basic information: the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/create-activity-definition-6.png)
 
-Add the requirements for the activity definition. You can add the requirements before you save the form.
+### 5. Add a body site
+
+This step is optional.
+
+In **Additional Details**, select the body site in **Body Site**.
+
+### 6. Add the requirements
+
+In **Requirements**, link the specimen definitions, observation definitions and charge item definitions. Then choose the **Healthcare Service** and the **Locations**.
 
 For the steps, see [Link requirements to an activity definition](./link-requirements-to-activity-definition.mdx).
 
-### 5. Save the activity definition
+### 7. Add diagnostic report codes
+
+This step is optional.
+
+1. In **Diagnostic Report**, search for a code in **Diagnostic Report Codes**.
+2. Select the code.
+3. Repeat for each report code.
+
+Care does not add the same code twice. To remove a code, use the remove button next to it.
+
+### 8. Save the activity definition
 
 Select **Create**.
 
+If Care shows "Activity Definition with this slug already exists.", change the **Slug**. Then select **Create** again.
+
+If Care shows "Access Denied to Activity Definition", you do not hold Can Create Activity Definition on Facility in the root organization. A role held only in another department is not enough.
+
+![Step 8, Save the activity definition (1 of 3): the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/create-activity-definition-7.png)
+
+![Step 8, Save the activity definition (2 of 3): the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/create-activity-definition-8.png)
+
+![Step 8, Save the activity definition (3 of 3): the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/create-activity-definition-9.png)
+
 ## Expected Outcome
 
-- Care shows the message "Activity definition created successfully".
-- Care opens the activity definitions list again.
-- The new activity definition shows in the resource category that you selected.
+- Care shows the message **Activity definition created successfully**.
+- Care opens the top level of the activity definitions page.
+- The new activity definition shows in its category. If its status is not Active, change the **Status** filter to see it.
+- If its status is Active, clinicians can pick it when they order a service.
 
 ## Related
 
@@ -83,5 +139,7 @@ Concepts:
 
 Flows:
 
+- [Add or edit a definition category](../resource-category/manage-definition-categories.mdx)
 - [Link requirements to an activity definition](./link-requirements-to-activity-definition.mdx)
 - [Update or retire an activity definition](./update-or-retire-activity-definition.mdx)
+- [Use an activity definition to order a service](./use-activity-definition-to-order-a-service.mdx)

@@ -6,67 +6,108 @@ sidebar_position: 1
 
 ## Overview
 
-This flow describes how to create a [questionnaire response template](../../../concepts/definitions/questionnaire-response-template.mdx). You create the template from the medications or the service requests that you enter on a questionnaire.
+<video src="/media/definitions/questionnaire-response-template/create-response-template.mp4" poster="/media/definitions/questionnaire-response-template/create-response-template.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/questionnaire-response-template/create-response-template.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to save the medications or the service requests of a questionnaire as a [questionnaire response template](../../../concepts/definitions/questionnaire-response-template.mdx). You can save all the items of a question at once, or add one item at a time.
 
 ## Pre-requisites
 
-- You fill a questionnaire for a patient in a facility.
-- You enter at least one medication or one service request on the questionnaire.
+- You fill in a questionnaire for a patient's encounter in the facility.
+- The questionnaire has a Medication Request question or a Service Request question.
+- You added at least one medication or service request to that question.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create/Update Questionnaire Response Templates | Lets you create a response template. |
-| Can Read Questionnaire Response Templates | Lets you see the list of templates. |
+| Can Create/Update Questionnaire Response Templates | Lets you save a new template and add an item to a template. You can hold it in any department of the facility. By default, the Doctor, Nurse, Staff, Pharmacist, Administrator, Facility Admin and Volunteer roles hold this permission. |
+| Can View Facility Organizations | Lets you see the departments of the facility in **Select Department**, so that you can share the template. You can hold it in any department of the facility. If you hold it only outside the facility's root organization (**Administration**), the list leaves out the root organization. By default, the Doctor, Nurse, Staff, Administrator, Facility Admin and Volunteer roles hold this permission. |
+
+Care checks no permission to show the list of templates.
 
 ## Steps
 
-Care gives you two ways to create a template. Use the first way to save all the items on the form. Use the second way to save one item.
+### 1. Open the template panel
 
-### 1. Save all the current items as a template
+In the Medication Request question or the Service Request question, select **Templates**. Care opens the **Response Templates** panel.
 
-Enter the medications or the service requests on the questionnaire. Select **Templates** in the question. Care opens the **Response Templates** panel.
+![Step 1, Open the template panel: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire-response-template/create-response-template-1.png)
 
-Select **Save Current**. Care shows a **Preview** of the items that it saves.
+### 2. Save the current items
 
-### 2. Remove the items that you do not want
+Select **Save Current**. The button shows the number of items in the question. It shows only when the question has at least one item.
 
-Select the cross icon on an item to remove it from the preview. The other items stay in the template.
+The panel title changes to **Save as Template**. Under **Preview**, Care shows the items that it saves.
 
-### 3. Name the template
+![Step 2, Save the current items: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire-response-template/create-response-template-2.png)
 
-Enter a **Template Name**. Care asks for this name. Enter a **Description**. The description is optional.
+### 3. Remove the items that you do not want
 
-### 4. Share the template with departments
+To leave an item out of the template, select the cross icon next to it. The other items stay in the template.
 
-Use **Select Department** to select the departments that you share the template with. This step is optional. The template stays personal when you select no department.
+![Step 3, Remove the items that you do not want: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire-response-template/create-response-template-3.png)
+
+### 4. Fill in the template details
+
+| Components | What it captures |
+| --- | --- |
+| Template Name | A name that identifies the template. Required. If you leave it empty, Care shows **Name is required**. |
+| Description (Optional) | A short description of what the template fills in. |
+| Select Department | The departments to share the template with. Leave it empty to keep the template personal. |
+
+![Step 4, Fill in the template details: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire-response-template/create-response-template-4.png)
 
 ### 5. Create the template
 
-Select **Create Template**. Care saves the template and shows it in the list.
+Select **Create Template**. Care shows **Template created successfully** and returns to the list of templates.
+
+To go back without saving, select **Cancel**.
+
+:::caution
+
+If the questions of this questionnaire were changed after it was first saved, Care cannot create a new template for it. Adding the first questions to a new questionnaire counts as a change. Care shows **Failed to create template** and saves nothing. The same problem stops **Create New Template** in step 6.
+
+:::
+
+![Step 5, Create the template: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire-response-template/create-response-template-5.png)
 
 ### 6. Add one item to a template instead
 
-To save one item only, select the actions menu on the medication row or the service request row. Select **Add to template**.
+To save one item only, open the actions menu of the medication or the service request in the question. Select **Add to template**.
 
-Select **Create New Template** to start a new template with the item. Enter a **Template Name**. Select the departments. Select **Create Template**.
+To start a new template with the item, select **Create New Template**. Enter a **Template Name**. If you want to share the template, select departments in **Select Department**. Select **Create Template**.
 
-To put the item in a template that you already have, search the list and select the template. Care adds the item to that template.
+To add the item to an existing template, look under **or add to existing template**. Enter a name in **Search templates** to find the template. Select the template. Care adds the item at once.
+
+:::caution
+
+When you add an item to an existing template, Care removes all department sharing from that template. Only you and the person who created the template can then see it. To share it again, edit the template and select the departments. See [Update or delete a response template](./update-or-delete-response-template.mdx).
+
+:::
+
+![Step 6, Add one item to a template instead (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/questionnaire-response-template/create-response-template-6.png)
+
+![Step 6, Add one item to a template instead (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/questionnaire-response-template/create-response-template-7.png)
 
 ## Expected Outcome
 
-- Care creates the response template with the items that you selected.
-- The template is in the **Response Templates** panel for later questionnaires.
-- The staff in the departments that you selected also see the template.
+- Care saves the template with the items that you kept.
+- The template shows in the **Response Templates** panel of this questionnaire, in this facility, in questions of the same kind.
+- If you selected departments, the members of those departments also see the template. The members of their sub-departments do not see it.
+- If you selected no department, only you see the template.
+- When you use **Add to template**, Care confirms that it added the item to the template, or that it created the template with the item.
 
 ## Related
 
 Concepts:
 
 - [Questionnaire Response Template](../../../concepts/definitions/questionnaire-response-template.mdx)
+- [Questionnaire](../../../concepts/definitions/questionnaire.mdx)
 
 Flows:
 
 - [Apply a response template](./apply-response-template.mdx)
+- [Update or delete a response template](./update-or-delete-response-template.mdx)

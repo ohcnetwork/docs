@@ -6,51 +6,74 @@ sidebar_position: 4
 
 ## Overview
 
-This flow describes how to copy a saved [questionnaire](../../../concepts/definitions/questionnaire.mdx) in Care. Care creates a new questionnaire with the same questions and layout.
+<video src="/media/definitions/questionnaire/clone-questionnaire.mp4" poster="/media/definitions/questionnaire/clone-questionnaire.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/questionnaire/clone-questionnaire.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to copy a [questionnaire](../../../concepts/definitions/questionnaire.mdx) in your facility. Care creates a new draft questionnaire with the same questions.
 
 ## Pre-requisites
 
-- The questionnaire is saved in Care, and you open it to make a copy.
+- The questionnaire is saved in your facility, and you can open it.
+- You are a member of a department of the facility, so the facility sidebar shows **Settings**.
+- If the questionnaire has actions, you are allowed to use each of its actions. The copy keeps them.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create/Update Questionnaires | Lets you create the copy in each organization that you select. |
+| Can Create/Update Questionnaires | Shows **Clone Questionnaire** and lets you create the copy. You must hold it in the facility's root organization (**Administration**). By default, the Facility Admin role holds it. |
+| Can Read Questionnaires | Lets you open the questionnaire, and the copy after Care creates it. For the original, you must hold it in the root organization, in a department that the questionnaire is shared with, or in a department above one. For the copy, you must hold it in the root organization, because the copy is not shared with any department yet. By default, the Facility Admin, Administrator, Doctor, Nurse, Staff, Pharmacist and Volunteer roles hold it. |
 
 ## Steps
 
-### 1. Start the clone
+### 1. Open the questionnaire
 
-In the **Properties** panel, click **Clone Questionnaire**. Care opens a panel.
+In the facility sidebar, select **Settings**. In the settings sidebar, under **Forms**, select **Questionnaires**.
 
-Note: The **Clone Questionnaire** button shows only for a saved questionnaire.
+The list shows **Active** questionnaires. If the questionnaire has another status, select the **Draft** or **Retired** tab. Select the questionnaire in the list.
 
-### 2. Set the slug
+![Step 1, Open the questionnaire: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/clone-questionnaire-1.png)
 
-The **Slug** field holds the slug of the original questionnaire and the suffix "-copy". Keep this value, or enter a different slug.
+### 2. Start the clone
 
-### 3. Select the organizations
+On the questionnaire page, select **Clone Questionnaire**. Care opens the **Clone Questionnaire** dialog.
 
-Under **Add organizations**, click **Select Organizations**.
+Note: You can also select **Clone Questionnaire** in **Form Settings** in the question editor.
 
-Enter the name of an organization. Click the organization in the list. Care adds a badge under **Selected Organizations**.
+![Step 2, Start the clone: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/clone-questionnaire-2.png)
 
-Select at least one organization. The **Clone** button stays inactive until you select an organization.
+### 3. Check the title and the slug
 
-Note: To close the panel without a copy, click **Cancel**.
+Care fills in both fields from the original questionnaire. Keep the values, or change them.
+
+| Components | What it captures |
+| --- | --- |
+| **Title** | The name of the copy. Care fills in the original title, followed by "(Copy)". |
+| **Slug** | A short name that identifies the copy in your facility. Care fills in the original slug, followed by "-copy". |
+
+The slug must have 5 to 50 characters. Use only letters, numbers, hyphens and underscores. Start and end with a letter or a number.
+
+The slug must not match the slug of another questionnaire in your facility. Care ignores capital letters in this check.
+
+![Step 3, Check the title and the slug: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/clone-questionnaire-3.png)
 
 ### 4. Create the copy
 
-Click **Clone**. Care creates the new questionnaire.
+Select **Clone Questionnaire**.
+
+Note: To close the dialog without a copy, select **Cancel**.
+
+![Step 4, Create the copy: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/clone-questionnaire-4.png)
 
 ## Expected Outcome
 
-- Care creates a new questionnaire with the same questions and layout as the original.
-- The new questionnaire has the title of the original questionnaire and the suffix "(Clone)".
-- The new questionnaire starts in Draft status.
-- Care opens the new questionnaire so that you can change it.
+- Care shows "Questionnaire cloned successfully" and opens the copy.
+- The copy is a **Draft** in your facility. It has the same subject type, description and questions as the original.
+- The copy starts at version v1, with no past versions.
+- The copy is not shared with any department. Until you share it, only people who hold Can Read Questionnaires in the root organization can see it.
+- People can fill in the copy only after you set its status to **Active**.
 
 ## Related
 
@@ -61,3 +84,7 @@ Concepts:
 Flows:
 
 - [Create a questionnaire](./create-questionnaire.mdx)
+- [Add and edit questions](./add-and-edit-questions.mdx)
+- [Share a questionnaire with departments](./manage-questionnaire-organizations.mdx)
+- [Update or retire a questionnaire](./update-or-retire-questionnaire.mdx)
+- [Import a questionnaire](./import-questionnaire.mdx)

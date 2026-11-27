@@ -1,0 +1,148 @@
+---
+sidebar_position: 6
+---
+
+# Customize a shared valueset
+
+## Overview
+
+<video src="/media/definitions/valueset/customize-shared-valueset.mp4" poster="/media/definitions/valueset/customize-shared-valueset.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/valueset/customize-shared-valueset.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to customize a shared [valueset](../../../concepts/definitions/valueset.mdx) for your facility. A facility customization takes the slug of the shared valueset. In your facility, it then takes the place of the shared valueset in the fields that find their valueset by that slug. The shared valueset stays unchanged.
+
+Note: A new facility valueset stays hidden from everyone in the facility, including you, until it is shared with a department. After that, members of the departments that it is shared with can see and use it. Members of their parent departments can too. These members need the Can Read ValueSets permission. A role in the facility's root organization does not show it to you. This is true even with Can Create/Update ValueSets, unless the valueset is shared with the root organization (**Administration**).
+
+## Pre-requisites
+
+- You are a member of a department of the facility.
+- Your facility has no other valueset with the slug of the shared valueset, such as an earlier customization of it.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create/Update ValueSets | Lets you see **Customize** and save the facility customization. You must hold it in the root organization. By default, the Facility Admin role holds this permission. |
+
+You need no other permission to open the **ValueSets** page, see the **Shared catalogue**, or preview a valueset.
+
+## Steps
+
+### 1. Open the Shared catalogue
+
+In the facility sidebar, select **Settings**.
+
+In the settings sidebar, under **Forms**, select **ValueSets**.
+
+Select the **Shared catalogue** tab.
+
+Care lists the shared valuesets that are Active. To see other statuses, change **Status**.
+
+To find a valueset by name, type in **Search ValueSets**.
+
+To see the codes of a shared valueset before you customize it, select **Preview** on its row.
+
+![Step 1, Open the Shared catalogue (1 of 3): the screen at this step, with the control for the step outlined](/media/definitions/valueset/customize-shared-valueset-1.png)
+
+![Step 1, Open the Shared catalogue (2 of 3): the screen at this step, with the control for the step outlined](/media/definitions/valueset/customize-shared-valueset-2.png)
+
+![Step 1, Open the Shared catalogue (3 of 3): the screen at this step, with the control for the step outlined](/media/definitions/valueset/customize-shared-valueset-3.png)
+
+### 2. Start the customization
+
+On the row of the shared valueset, select **Customize**.
+
+Care opens the **Create ValueSet** page.
+
+The shared valueset is already selected in **Parent value set**, and **Facility customization** is selected.
+
+You can also start from **Create ValueSet** on the **This facility** tab. Select a shared valueset in **Parent value set**, then select **Facility customization**.
+
+**Facility customization** is available only when the parent is a shared valueset.
+
+Care shows a note under the choice. The customization applies to fields that find their valueset by this slug, not to fields that are pinned to one valueset. A user's own saved choice can come first.
+
+![Step 2, Start the customization (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/valueset/customize-shared-valueset-4.png)
+
+![Step 2, Start the customization (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/valueset/customize-shared-valueset-5.png)
+
+### 3. Enter the basic information
+
+Under **Basic Information**, complete the fields.
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the customization. This field is required. Care does not copy the name of the shared valueset. |
+| Slug | The slug of the shared valueset. Care shows **Taken from the parent value set**, and you cannot change it. |
+| Status | The stage of the customization. This field is required. Care selects **Active**. |
+| Description | Text that explains the purpose of the customization. This field is optional. |
+
+Only an Active customization takes the place of the shared valueset. If you select **Draft**, fields keep the shared valueset.
+
+![Step 3, Enter the basic information: the screen at this step, with the control for the step outlined](/media/definitions/valueset/customize-shared-valueset-6.png)
+
+### 4. Change the rules
+
+Under **Definition**, **Use parent rules** is on. The customization uses the rules of the shared valueset together with the rules that you add.
+
+To add codes, add include rules.
+
+To remove codes, add exclude rules. Exclude rules remove matching codes from the included codes.
+
+To replace the rules of the shared valueset, turn off **Use parent rules**. The customization then uses only the rules that you add.
+
+For the full procedure, see [Build include and exclude rules](./build-include-and-exclude-rules.mdx).
+
+![Step 4, Change the rules: the screen at this step, with the control for the step outlined](/media/definitions/valueset/customize-shared-valueset-7.png)
+
+### 5. Preview the codes
+
+This step is optional.
+
+Select **Preview** to see the codes that match the rules.
+
+If **Use parent rules** is on, the preview shows only the rules that you added here, not the rules of the shared valueset.
+
+For the full procedure, see [Preview a valueset](./preview-valueset.mdx).
+
+![Step 5, Preview the codes: the screen at this step, with the control for the step outlined](/media/definitions/valueset/customize-shared-valueset-8.png)
+
+### 6. Save the customization
+
+Select **Save**.
+
+**Save** is available only after you change a field.
+
+If a field needs a correction, Care lists it under **Review these fields before saving**.
+
+To leave without saving, select the back arrow next to the page title. If you have unsaved changes, Care asks you to confirm.
+
+![Step 6, Save the customization: the screen at this step, with the control for the step outlined](/media/definitions/valueset/customize-shared-valueset-9.png)
+
+## Expected Outcome
+
+- Care saves the customization for your facility with the slug of the shared valueset.
+- The shared valueset stays unchanged in the **Shared catalogue**.
+- Care shows **ValueSet created successfully** and then **Not Found**.
+- Care then shows an empty **Create ValueSet** form, with **No changes to save** and **Save** not available. The form shows no parent and **Separate value set**.
+- The **Not Found** message and the empty form appear because the new customization is hidden. It stays hidden until it is shared with a department. Your customization is saved.
+- The customization does not appear on the **This facility** tab until it is shared with a department.
+- After it is shared, members of those departments get the customization in fields that find their valueset by this slug. Members of their parent departments get it too.
+- These members need Can Read ValueSets. Other users keep the shared valueset.
+- A user who chose a valueset with **Change** in a coded field keeps that choice.
+
+## Related
+
+Concepts:
+
+- [Valueset](../../../concepts/definitions/valueset.mdx)
+
+Flows:
+
+- [Share a valueset with departments](./share-valueset-with-departments.mdx)
+- [Create a valueset](./create-valueset.mdx)
+- [Build include and exclude rules](./build-include-and-exclude-rules.mdx)
+- [Preview a valueset](./preview-valueset.mdx)
+- [Update or retire a valueset](./update-or-retire-valueset.mdx)

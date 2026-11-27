@@ -1,0 +1,93 @@
+---
+sidebar_position: 7
+---
+
+# Update or retire a questionnaire
+
+## Overview
+
+<video src="/media/definitions/questionnaire/update-or-retire-questionnaire.mp4" poster="/media/definitions/questionnaire/update-or-retire-questionnaire.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/questionnaire/update-or-retire-questionnaire.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to change the title, slug, description, or status of a [questionnaire](../../../concepts/definitions/questionnaire.mdx) in your facility. It also describes how to retire a questionnaire, so that staff can no longer fill it in.
+
+## Pre-requisites
+
+- The questionnaire is saved in your facility. See [Create a questionnaire](./create-questionnaire.mdx).
+- You are a member of a department of the facility, so the facility sidebar shows **Settings**.
+- If the questionnaire has actions, you are allowed to use each of its actions.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create/Update Questionnaires | Lets you change the fields on the questionnaire page, and shows **Save Questionnaire**. You must hold it in the facility's root organization (**Administration**). By default, the Facility Admin role holds it. |
+| Can Read Questionnaires | Lets you see the questionnaire list and open the questionnaire. You must hold it in the root organization, in a department that the questionnaire is shared with, or in a department above one. By default, the Facility Admin, Administrator, Doctor, Nurse, Staff, Pharmacist and Volunteer roles hold it. |
+
+## Steps
+
+### 1. Open the questionnaire
+
+In the facility sidebar, select **Settings**. In the settings sidebar, under **Forms**, select **Questionnaires**.
+
+The list shows **Active** questionnaires. If the questionnaire has another status, select the **Draft** or **Retired** tab. To find a questionnaire by its title, type in **Search questionnaires**.
+
+Select the questionnaire, or select **See Details**. Care opens the questionnaire page.
+
+![Step 1, Open the questionnaire: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/update-or-retire-questionnaire-1.png)
+
+### 2. Change the details
+
+Under **Basic Information**, change the **Title**, the **Slug**, or the **Description**.
+
+The slug must have 5 to 50 characters. Use only letters, numbers, hyphens and underscores, and start and end with a letter or a number.
+
+The slug must not match the slug of another questionnaire in your facility. Care ignores capital letters in this check.
+
+Note: You cannot change the **Subject Type**. Care shows it as a fixed value.
+
+![Step 2, Change the details: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/update-or-retire-questionnaire-2.png)
+
+### 3. Retire the questionnaire
+
+Follow this step only when staff must stop using the questionnaire.
+
+In the **Questionnaire Properties** panel, under **Status**, select Retired.
+
+Note: The questionnaire screens have no action to delete a questionnaire. To use a retired questionnaire again, select Active under **Status**, and save.
+
+![Step 3, Retire the questionnaire: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/update-or-retire-questionnaire-3.png)
+
+### 4. Save your changes
+
+Select **Save Questionnaire** at the top of the page.
+
+Note: **Save Questionnaire** stays inactive until you change a field.
+
+Note: To leave without saving, select **Cancel**. If you have unsaved changes, Care asks you to confirm.
+
+Note: The question editor, which opens from **Edit Questions**, shows the same fields under **Form Settings**. If you change them there, save with **Save Changes**.
+
+![Step 4, Save your changes: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/update-or-retire-questionnaire-4.png)
+
+## Expected Outcome
+
+- Care shows the message "Questionnaire updated successfully".
+- The version number stays the same, because the questions did not change.
+- A retired questionnaire shows under the **Retired** tab of the list.
+- Staff cannot select a retired questionnaire when they fill in a questionnaire, and Care does not accept new answers to it.
+
+## Related
+
+Concepts:
+
+- [Questionnaire](../../../concepts/definitions/questionnaire.mdx)
+
+Flows:
+
+- [Create a questionnaire](./create-questionnaire.mdx)
+- [Add and edit questions](./add-and-edit-questions.mdx)
+- [Share a questionnaire with departments](./manage-questionnaire-organizations.mdx)
+- [View earlier versions of a questionnaire](./view-questionnaire-versions.mdx)

@@ -6,53 +6,92 @@ sidebar_position: 3
 
 ## Overview
 
-This flow describes how to change the details of an [activity definition](../../../concepts/definitions/activity-definition.mdx) in Care. It also describes how to retire an activity definition that the facility no longer uses.
+<video src="/media/definitions/activity-definition/update-or-retire-activity-definition.mp4" poster="/media/definitions/activity-definition/update-or-retire-activity-definition.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/activity-definition/update-or-retire-activity-definition.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to change an [activity definition](../../../concepts/definitions/activity-definition.mdx), and how to retire one that the facility no longer uses. It also describes how to make a retired activity definition active again.
 
 ## Pre-requisites
 
-- The facility has an activity definition that you want to change.
+- Your facility has the activity definition that you want to change.
 - If you retire the activity definition, its status is not Retired.
-- You have the permission listed below.
+- You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create Activity Definition on Facility | Create and change activity definitions for the facility. Facility Admin and Admin roles hold this permission. |
+| Can Create Activity Definition on Facility | Lets you save your changes, retire the activity definition, or make it active again. You must hold it in the facility's root organization (**Administration**). By default, the Facility Admin role holds this permission. |
+| Can Read Activity Definition | Lets you see the activity definitions in a category and open one. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse and Volunteer roles hold this permission. |
+| Can Read Resource Category | Lets you browse the categories on the activity definitions page. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+
+If you change the requirements, you also need the read permissions listed in [Link requirements to an activity definition](./link-requirements-to-activity-definition.mdx).
+
+Care shows **Edit** and **Delete** to everyone who can open the activity definition. If you do not hold Can Create Activity Definition on Facility in the root organization, Care refuses the change.
 
 ## Steps
 
 ### 1. Open the activity definition
 
-1. Open your facility.
-2. Select **Settings**.
-3. Select **Activity Definitions**.
-4. Open the resource category that holds the activity definition.
+1. In the facility sidebar, select **Settings**.
+2. In the **Clinical** group, select **Activity Definitions**.
+3. Open the category that holds the activity definition. If it has subcategories, open them until you see the list of activity definitions.
+4. If the activity definition is not Active, change the **Status** filter. The list shows only Active activity definitions until you change it.
 5. Select **View** on the activity definition.
+
+To find an Active activity definition faster, type its title in the search box at the top level of the page.
+
+![Step 1, Open the activity definition: the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/update-or-retire-activity-definition-1.png)
 
 ### 2. Update the details
 
-1. Select **Edit**.
-2. Change the details of the activity definition.
+1. Select **Edit**. You can also select **Edit** on its row in the list.
+2. Change the fields that you need. For the fields, see [Create an activity definition](./create-activity-definition.mdx).
 3. Select **Save**.
 
-Care shows the message "Activity definition updated successfully".
+Care does not change the **Slug** when you change the **Title**. You can still edit the **Slug**.
+
+![Step 2, Update the details (1 of 3): the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/update-or-retire-activity-definition-2.png)
+
+![Step 2, Update the details (2 of 3): the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/update-or-retire-activity-definition-3.png)
+
+![Step 2, Update the details (3 of 3): the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/update-or-retire-activity-definition-4.png)
 
 ### 3. Retire the activity definition
 
 Do this step only when the facility no longer uses the activity definition.
 
-1. Select **Delete** on the activity definition page. Care shows this button only when the status is not Retired.
-2. Care opens the dialog "Delete Activity Definition". The dialog asks you to confirm the action.
-3. Select **Confirm**.
+Care has no Retire button. The **Delete** button retires the activity definition: it sets the status to Retired and keeps the activity definition in Care.
 
-Note: Care does not remove the activity definition. Care sets the status to Retired.
+1. On the activity definition page, select **Delete**. Care shows this button only when the status is not Retired.
+2. In the dialog **Delete Activity Definition**, select **Confirm**.
+
+![Step 3, Retire the activity definition (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/update-or-retire-activity-definition-5.png)
+
+![Step 3, Retire the activity definition (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/update-or-retire-activity-definition-6.png)
+
+### 4. Make a retired activity definition active again
+
+Do this step only when the facility needs the activity definition again.
+
+1. In the category, set the **Status** filter to Retired.
+2. Select **Edit** on the activity definition.
+3. Set **Status** to Active.
+4. Select **Save**.
+
+![Step 4, Make a retired activity definition active again (1 of 3): the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/update-or-retire-activity-definition-7.png)
+
+![Step 4, Make a retired activity definition active again (2 of 3): the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/update-or-retire-activity-definition-8.png)
+
+![Step 4, Make a retired activity definition active again (3 of 3): the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/update-or-retire-activity-definition-9.png)
 
 ## Expected Outcome
 
-- Care saves your changes to the activity definition.
-- If you retire the activity definition, Care sets its status to Retired.
-- A retired activity definition stays in Care for reference. Clinicians cannot order it.
+- After you save your changes, Care shows **Activity definition updated successfully** and opens the activity definition page.
+- After you retire the activity definition, Care shows **Definition deleted successfully** and opens the top level of the activity definitions page.
+- A retired activity definition stays in Care with the status Retired. The order form does not offer it.
+- An activity definition that you set back to Active shows in the order form again.
 
 ## Related
 
@@ -63,3 +102,5 @@ Concepts:
 Flows:
 
 - [Create an activity definition](./create-activity-definition.mdx)
+- [Link requirements to an activity definition](./link-requirements-to-activity-definition.mdx)
+- [Use an activity definition to order a service](./use-activity-definition-to-order-a-service.mdx)

@@ -1,0 +1,140 @@
+---
+sidebar_position: 1
+---
+
+# Add or edit a definition category
+
+## Overview
+
+<video src="/media/definitions/resource-category/manage-definition-categories.mp4" poster="/media/definitions/resource-category/manage-definition-categories.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/resource-category/manage-definition-categories.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to add or edit a category for [activity definitions](../../../concepts/definitions/activity-definition.mdx), [charge item definitions](../../../concepts/definitions/charge-item-definition.mdx) or [Product Knowledge](../../../concepts/definitions/product-knowledge.mdx). Categories group these records like folders, and each record sits in a category.
+
+The three lists use the same category screens. Each list shows only its own categories.
+
+## Pre-requisites
+
+- You are a member of a department of the facility.
+- If you add a subcategory, the parent category holds no Active records.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Resource Category on Facility | Lets you add and edit categories. You must hold it in the facility's root organization (**Administration**). By default, the Facility Admin role holds it. |
+| Can Read Resource Category | Lets you see the categories. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Read Activity Definition | Needed for activity definition categories. Lets you see the activity definitions in a category, which Care opens after you save it. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse and Volunteer roles hold it. |
+| Can Read Charge Item Definition | Needed for charge item definition categories. Lets you see the charge item definitions in a category, which Care opens after you save it. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Read Product Knowledge | Needed for Product Knowledge categories. Lets you see the Product Knowledge records in a category, which Care opens after you save it. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+
+Note: Care shows **Add Category** when you hold Can Create Resource Category on Facility in any department of the facility. If you hold it only in a department other than the root organization, Care refuses to save the category.
+
+Note: Care shows the edit control of a category to every user who can see the categories. Without the permission in the root organization, Care refuses the change.
+
+## Steps
+
+### 1. Open the list for the type of record
+
+In the facility sidebar, select **Settings**.
+
+In the settings sidebar, select the list for the type of record:
+
+| Type of record | Where to select |
+| --- | --- |
+| Activity definitions | **Clinical** > **Activity Definitions** |
+| Charge item definitions | **Billing** > **Charge Item Definitions** |
+| Product Knowledge | **Inventory** > **Product Knowledge** |
+
+Care shows the top-level categories.
+
+![Step 1, Open the list for the type of record: the screen at this step, with the control for the step outlined](/media/definitions/resource-category/manage-definition-categories-1.png)
+
+### 2. Go to the level of the new category
+
+To add a top-level category, stay at the top level.
+
+To add a subcategory, open the parent category.
+
+Note: A category that holds Active records offers no **Add Category**.
+
+![Step 2, Go to the level of the new category: the screen at this step, with the control for the step outlined](/media/definitions/resource-category/manage-definition-categories-2.png)
+
+### 3. Add the category
+
+Note: For activity definitions, if **Add Category** is not shown in an empty category, change the **Status** filter. The button then appears.
+
+Select **Add Category**. Care opens the **Create Category** sheet.
+
+Complete these components.
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the category. This field is required. |
+| Slug | A short name for the web address of the category. Care fills it from the name. It must have 5 to 50 characters and be unique in the facility. |
+| Description | More detail about the category. This field is optional. |
+| Resource Sub Type | Where Care offers the records of this category. Care sets **Other** by default. |
+
+For activity definitions and Product Knowledge, the only sub type is **Other**.
+
+For charge item definitions, open **Location** to select the bed charges sub type. Open **Schedule** to select **Practitioner**, **Location** or **Healthcare Service**.
+
+Note: The sub type limits two pickers. The bed charges picker on an account offers only categories with the bed charges sub type. The picker that adds charge items to an encounter offers only categories with the sub type **Other**.
+
+Select **Create Category**.
+
+![Step 3, Add the category (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/resource-category/manage-definition-categories-3.png)
+
+![Step 3, Add the category (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/resource-category/manage-definition-categories-4.png)
+
+### 4. Edit a category
+
+Go to the level that shows the category as a card. If it is a subcategory, open its parent category first.
+
+On the card of the category, select the menu button with three dots.
+
+For activity definitions and Product Knowledge, Care opens the **Edit Category** sheet.
+
+For charge item definitions, select **Edit** in the menu. Care opens the **Edit Category** sheet.
+
+Change the name, slug, description or sub type.
+
+Note: You cannot move a category to another parent.
+
+Select **Update Category**.
+
+Note: For charge item definitions, the menu also has **Set Monetary Components**. See [Set taxes and discounts for a charge item category](../charge-item-definition/set-category-taxes-and-discounts.mdx).
+
+![Step 4, Edit a category (1 of 3): the screen at this step, with the control for the step outlined](/media/definitions/resource-category/manage-definition-categories-5.png)
+
+![Step 4, Edit a category (2 of 3): the screen at this step, with the control for the step outlined](/media/definitions/resource-category/manage-definition-categories-6.png)
+
+![Step 4, Edit a category (3 of 3): the screen at this step, with the control for the step outlined](/media/definitions/resource-category/manage-definition-categories-7.png)
+
+## Expected Outcome
+
+- After **Create Category**, Care shows **Category created successfully** and opens the new category.
+- After **Update Category**, Care shows **Category updated successfully** and opens the category.
+- In a category without subcategories, Care shows the button that adds a record: **Add Activity Definition**, **Add Definition** or **Add Product Knowledge**.
+- You cannot delete a category from the screens.
+
+## Related
+
+Concepts:
+
+- [Activity Definition](../../../concepts/definitions/activity-definition.mdx)
+- [Charge Item Definition](../../../concepts/definitions/charge-item-definition.mdx)
+- [Product Knowledge](../../../concepts/definitions/product-knowledge.mdx)
+
+Flows:
+
+- [Create an activity definition](../activity-definition/create-activity-definition.mdx)
+- [Create a charge item definition](../charge-item-definition/create-charge-item-definition.mdx)
+- [Create product knowledge](../../supply/product/add-product-to-catalog.mdx)
+- [Set taxes and discounts for a charge item category](../charge-item-definition/set-category-taxes-and-discounts.mdx)
+
+Reference:
+
+- [Resource Category](../../../references/platform/resource-category.mdx)

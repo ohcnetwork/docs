@@ -6,80 +6,105 @@ sidebar_position: 4
 
 ## Definition
 
-An **[observation definition](https://build.fhir.org/observationdefinition.html)** in Care is a reusable template for one laboratory test or clinical test. The template records what the test measures and the type of value that a result holds. It also records the rules that Care uses to flag a result as normal or abnormal. Your facility creates each observation definition one time. Staff then use the template for every result of that test.
+An **[observation definition](https://build.fhir.org/observationdefinition.html)** in Care is a reusable template for one laboratory test or clinical measurement. It records what the test measures, the kind of value that a result holds, and the unit of that value. It can also hold the rules that Care uses to interpret each result, for example as Normal or High. Your facility creates the template one time, and staff use it each time they record a result of that test.
+
+An observation definition is not a result, and it holds no patient data. The results that staff record on a diagnostic report link to the definition, and Care uses its rules to interpret them.
 
 ## Key Attributes
 
 | Components | What it captures |
 | --- | --- |
-| Title | The name of the test that staff see in Care. This attribute is required. |
-| Slug | A short unique name for the test. Care builds the slug from the title, and you can change it. This attribute is required. |
-| Description | A short explanation of what the test measures. This attribute is required. |
-| Status | The stage of the template, from first draft to retirement. This attribute is required. Care selects Active for a new template. |
-| Category | The type of service that the test belongs to, such as Laboratory or Vital Signs. This attribute is required. |
-| LOINC Code | The standard LOINC code of the test. This attribute is required. |
+| Title | The name of the test. This attribute is required. |
+| Slug | A short name for the test that is unique in the facility. On the create form, Care fills it from the title, and you can change it. It has 5 to 50 letters, numbers, hyphens or underscores, and starts and ends with a letter or a number. This attribute is required. |
+| Description | What the test measures. This attribute is required. |
+| Status | The stage of the definition, from draft to retired. A new definition starts as Active. This attribute is required. |
+| Category | The kind of service that the test belongs to, such as Laboratory or Vital Signs. This attribute is required. |
+| LOINC Code | The LOINC code of the test. This attribute is required. |
 | Data Type | The kind of value that a result holds, for example a number or a yes or no answer. This attribute is required. |
-| Unit | The unit of measure for the result, for example millimoles per litre. This attribute is optional. |
+| Unit | The unit of measure for the result. This attribute is optional. |
 | Body Site | The part of the body that the test examines. This attribute is optional. |
-| Method | The technique that staff use to do the test. This attribute is optional. |
-| Components | The separate parts of a test that gives more than one value. This attribute is optional. |
-| Observation Interpretation | The rules that Care uses to flag each result. This attribute is optional. |
+| Method | The technique that staff use for the test. This attribute is optional. |
+| Components | The separate values of a test that gives more than one value. This attribute is optional. |
+| Observation Interpretation | The rules that Care uses to interpret each result. This attribute is optional. |
 
 ### Category
 
-An observation definition has one category. Care has these categories:
-
-- Social History
-- Vital Signs
-- Imaging
-- Laboratory
-- Procedure
-- Survey
-- Exam
-- Therapy
-- Activity
+An observation definition has one category. Care has nine categories: Social History, Vital Signs, Imaging, Laboratory, Procedure, Survey, Exam, Therapy and Activity.
 
 ### Data Type
 
-The data type sets the kind of value that staff can record. Care has these data types:
-
-- Boolean
-- Decimal
-- Integer
-- DateTime
-- Time
-- String
-- Quantity
+The data type sets the kind of value that staff can record. The form offers seven data types: Boolean, Decimal, Integer, DateTime, Time, String and Quantity.
 
 ### Components
 
-Some tests give more than one value. Blood pressure is an example, because it gives a systolic value and a diastolic value. For a test of this type, add one component for each value. Each component has its own code, data type, unit, and interpretation rules.
+Some tests give more than one value. Blood pressure is an example, because it gives a systolic value and a diastolic value. For a test of this kind, add one component for each value. Each component has its own code, data type, unit and interpretation rules.
+
+Care interprets each component value with the rules of the component that has the same code.
 
 ### Observation Interpretation
 
-Observation Interpretation holds the qualified ranges of the test. Each rule has a title, conditions, value ranges, and an optional fallback. Care checks the rules in the order that you add them. Care skips a rule when the conditions do not match the patient or the encounter.
+Observation Interpretation holds the interpretation rules of the test. Each rule has an optional title, optional conditions, one or more ranges and an optional fallback. Each range has a display text, such as Normal or High, and a minimum, a maximum or both.
 
-For a rule that matches, Care flags the result with the interpretation of the range that holds the value. If no range holds the value, Care uses the fallback of that rule. If that rule has no fallback, Care checks the next rule. For more detail, see [Set up qualified ranges](../../flows/definitions/observation-definition/set-up-qualified-ranges.mdx).
+Care checks the rules in the order of the list, and uses only the first rule whose conditions all match the patient and the encounter. A rule with no conditions matches every result.
 
-Note: You can add interpretation rules to the observation definition, or to its components. You cannot add rules to both.
+In that rule, Care gives the result the display text of the range that holds the value. A range includes both its minimum and its maximum, so a value of exactly 10 is inside a range from 0 to 10. If two ranges share an end value, the value goes to the range that is first in the list.
 
-### Scope
+If no range of that rule holds the value, Care uses the fallback of that rule. If the rule has no fallback, the result gets no interpretation, and Care does not try a later rule. So put the rules with conditions first, and a rule without conditions last.
 
-An observation definition can belong to one facility. Staff at that facility can then use the template. A Care superuser can also share an observation definition with every facility.
+The fallback has no text of its own. When it is turned on, it marks a value that no range holds for highlighting.
+
+A condition checks the patient or the encounter. The form offers four kinds of condition:
+
+- **Patient Age**: the age is in a range, or equal to a value, in years, months or days.
+- **Patient Gender**: the gender is equal to a value.
+- **Encounter Class**: the encounter class is equal to a value.
+- **Encounter Tags**: the encounter has one of the selected tags.
+
+You can add rules to the observation definition or to its components. The form does not let you add rules to both.
+
+Care works out the interpretation when staff save results on a diagnostic report, and stores it with each result. If you change the rules later, a result that is already saved keeps its interpretation until staff save that result again.
+
+For the steps, see [Set up observation interpretation](../../flows/definitions/observation-definition/set-up-qualified-ranges.mdx).
+
+### Where it is used
+
+An observation definition belongs to the facility where you create it, and only that facility can use it:
+
+- An activity definition can list it as an observation requirement.
+- Staff pick it when they record results on a diagnostic report.
+
+In both places, Care offers only the Active observation definitions of the facility.
 
 ### Status
 
 | Status | Description |
 | --- | --- |
-| Draft | You still prepare the template. |
-| Active | Staff can use the template for results. |
-| Retired | The template is out of use. Care keeps it for the results that already use it. |
-| Unknown | The stage of the template is not known. |
+| Draft | The definition is in preparation. Activity definitions and diagnostic reports do not offer it. |
+| Active | The definition is ready for use. Activity definitions and diagnostic reports offer it. |
+| Retired | The definition is out of use, and activity definitions and diagnostic reports no longer offer it. Activity definitions that already use it keep it. |
+| Unknown | The stage of the definition is not known. Activity definitions and diagnostic reports do not offer it. |
+
+To retire a definition, staff select **Delete** on its page. The button does not delete the definition: it sets the status to Retired. You can edit a definition in any status, so you can set a retired definition back to Active.
+
+## Permissions
+
+Care checks these permissions when it loads or saves observation definitions. The screens do not hide a button because of your permissions. If you do not have the permission for an action, Care refuses it and shows a message.
+
+| Permission | Access |
+| --- | --- |
+| Can Create Observation Definition on Facility | Create, edit and retire the observation definitions of a facility. You must hold it in the facility's root organization (**Administration**). A role in a department is not enough. By default, the Facility Admin role holds this permission. |
+| Can Read Observation Definition | See the list of observation definitions and open one. Hold it in the root organization or in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+
+Your deployment can add other roles, so these are the roles that hold each permission by default.
 
 ## Related
 
 - Flow: [Create an observation definition](../../flows/definitions/observation-definition/create-observation-definition.mdx)
-- Flow: [Set up qualified ranges](../../flows/definitions/observation-definition/set-up-qualified-ranges.mdx)
+- Flow: [Set up observation interpretation](../../flows/definitions/observation-definition/set-up-qualified-ranges.mdx)
 - Flow: [Update or retire an observation definition](../../flows/definitions/observation-definition/update-or-retire-observation-definition.mdx)
-- Concept: [Activity Definition](../../concepts/definitions/activity-definition.mdx)
-- Concept: [Diagnostic Report](../../concepts/clinical/diagnostic-report.mdx)
+- Flow: [Link requirements to an activity definition](../../flows/definitions/activity-definition/link-requirements-to-activity-definition.mdx)
+- Concept: [Activity Definition](../definitions/activity-definition.mdx)
+- Concept: [Diagnostic Report](../clinical/diagnostic-report.mdx)
+- Concept: [Observation](../clinical/observation.mdx)
+- Concept: [Facility Organization](../access-governance/facility-organization.mdx)
+- Reference: [Observation Definition](../../references/definitions/observation-definition.mdx)

@@ -6,35 +6,63 @@ sidebar_position: 2
 
 ## Definition
 
-A **questionnaire response template** is a saved set of medications and service requests. You apply the template when you fill a questionnaire. The template prevents the entry of the same orders for each patient. You can change every value that the template fills in.
+A questionnaire response template is a saved set of medications or service requests. You apply it while you fill in a questionnaire for a patient's encounter, and Care adds its items to the form in one step. You can change or remove each added item before you submit the questionnaire.
 
-Note: A questionnaire response template is a convenience feature of Care. No FHIR R5 resource applies to it.
+Templates have no page in facility settings. You work with them inside a Medication Request question or a Service Request question: from the **Templates** button of the question, and from **Add to template** on one of its items.
 
 ## Key Attributes
 
 | Components | What it captures |
 | --- | --- |
-| Template Name | The name that identifies the template. Care asks for this name. |
-| Description | More detail about the content that the template fills in. This detail is optional. |
-| Medications | The medications that the template adds to the form. |
-| Service Requests | The service requests that the template adds to the form. |
-| Questionnaire | The questionnaire that the template belongs to. Care sets this link for you. |
-| Facility | The facility that you work in when you create the template. Care sets this link for you. |
-| Select Department | The departments that you share the template with. |
+| Template Name | The name that identifies the template in the list. Required. |
+| Description | A short description of what the template fills in. Optional. |
+| Medications | The medications that the template adds to a Medication Request question. Each medication refers to a Product Knowledge record. |
+| Activity Definitions | The service requests that the template adds to a Service Request question. Each service request is based on an activity definition. |
+| Questionnaire | The questionnaire that the template belongs to. Care sets it from the questionnaire that you fill in. You cannot change it later. |
+| Facility | The facility where you create the template. Care sets it. You cannot change it later. |
+| Select Department | The departments that the template is shared with. If you select no department, the template stays personal. |
+
+### Where a template appears
+
+The **Response Templates** panel shows the templates of the current facility that were saved for the questionnaire you fill in. Care matches them by the slug of the questionnaire. A questionnaire with the same slug, such as one shared across the whole Care instance, shows the same templates in that facility.
+
+The panel also filters by the kind of question. A Medication Request question lists only the templates that hold medications. A Service Request question lists only the templates that hold service requests.
+
+In the panel, the service requests of a template show under **Activity Definitions**. In the save and edit forms, the two lists are **Medications to include** and **Activity definitions to include**.
 
 ### Who can see a template
 
-You always see the templates that you create. You also see a template in these two conditions:
+You see a template in the panel in these cases:
 
-- Another person shares the template with you.
-- Another person shares the template with a department that you are a member of.
+- You created it.
+- It is shared with a department in which you hold a role. Any role counts.
+- You were the last person to add an item to it with **Add to template**.
 
-Note: The template stays personal when you select no department.
+A role in a sub-department is not enough. You must hold a role in the shared department itself.
+
+The screens cannot share a template with one person. To share a template, select departments in **Select Department**.
+
+Note: When someone adds an item to an existing template with **Add to template**, Care removes the department sharing of that template. To share it again, select the departments in the **Edit Template** form.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create/Update Questionnaire Response Templates | Lets you create templates, add items to them, and change or delete any template that you can see. You do not need to be the person who created the template. You can hold it in any department of the template's facility. By default, the Doctor, Nurse, Staff, Pharmacist, Administrator, Facility Admin and Volunteer roles hold this permission. |
+| Can View Facility Organizations | Lets you see the departments of the facility in **Select Department**, so that you can share a template. You can hold it in any department of the facility. If you hold it only outside the facility's root organization (**Administration**), the list leaves out the root organization. By default, the Doctor, Nurse, Staff, Administrator, Facility Admin and Volunteer roles hold this permission. |
+
+Care checks no template permission when you see or apply a template.
+
+By default, a Pharmacist can save templates but cannot see the department list. A Pharmacist's new templates therefore stay personal.
 
 ## Related
 
 - Flow: [Create a response template](../../flows/definitions/questionnaire-response-template/create-response-template.mdx)
 - Flow: [Apply a response template](../../flows/definitions/questionnaire-response-template/apply-response-template.mdx)
 - Flow: [Update or delete a response template](../../flows/definitions/questionnaire-response-template/update-or-delete-response-template.mdx)
-- Concept: [Questionnaire](../../concepts/definitions/questionnaire.mdx)
-- Concept: [Questionnaire Response](../../concepts/clinical/questionnaire-response.mdx)
+- Concept: [Questionnaire](./questionnaire.mdx)
+- Concept: [Questionnaire Response](../clinical/questionnaire-response.mdx)
+- Concept: [Product Knowledge](./product-knowledge.mdx)
+- Concept: [Activity Definition](./activity-definition.mdx)
+- Concept: [Department](../facility/department.mdx)
+- Reference: [Questionnaire Response Template](../../references/definitions/questionnaire-response-template.mdx)
