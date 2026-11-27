@@ -75,6 +75,7 @@ Quote: "create_workspace": "Create workspace",
 - One claim per fact, written the way it could appear in a page.
 - `Source` is the repository, the short commit, the path and the line or line range.
 - `Quote` is the exact text at those lines, at most three lines. Print it to be sure the line numbers are right: `sed -n '1187p' care_fe/public/locale/en.json`.
+- Check every quote mechanically before a fact is used: `python3 -I <this skill>/assets/verify_facts.py "$S" "$S/facts.md"` must report 0 failing. Run it on each researcher's staged facts too. It proves the quote is at the lines; you still read whether the claim says only what the quote shows. In November 2026 a second review found seven facts whose claims said more than their verified quotes.
 - For a runtime fact, `Kind: runtime` and the source is the screenshot or response file you kept. For a human fact, `Kind: human` and the source is the person, the date, and the question number.
 
 A fact you cannot give a source for is not a fact. Turn it into a question.

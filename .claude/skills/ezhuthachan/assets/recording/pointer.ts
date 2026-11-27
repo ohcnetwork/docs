@@ -113,12 +113,9 @@ export class Pointer {
     const offscreen = await target.evaluate((el) => {
       const r = el.getBoundingClientRect();
       const margin = 32;
-      return (
-        r.top < margin ||
-        r.bottom > window.innerHeight - margin ||
-        r.left < margin ||
-        r.right > window.innerWidth - margin
-      );
+      // Only the vertical position decides. Controls in a right-anchored side sheet sit inside the
+      // right margin, and scrolling them into view horizontally shifts the whole sheet in the video.
+      return r.top < margin || r.bottom > window.innerHeight - margin;
     });
     if (!offscreen) return;
 
@@ -126,7 +123,7 @@ export class Pointer {
       el.scrollIntoView({
         behavior: "smooth",
         block: "center",
-        inline: "center",
+        inline: "nearest",
       }),
     );
 
