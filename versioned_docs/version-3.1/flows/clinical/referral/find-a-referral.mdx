@@ -1,0 +1,189 @@
+---
+sidebar_position: 5
+---
+
+# Find a referral
+
+## Overview
+
+<video src="/media/clinical/referral/find-a-referral.mp4" poster="/media/clinical/referral/find-a-referral.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/referral/find-a-referral.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to find a [referral](../../../concepts/clinical/referral.mdx) in a referral list and open it.
+
+At the receiving end, a facility, a department or an organization has a list of the referrals sent to it. At the sending end, the patient's page and the encounter each have a list of their referrals.
+
+## Pre-requisites
+
+- A referral was sent to your facility, department or organization. Or it was sent for a patient or encounter that you can open.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Read Referrals | Lets you see a referral list and open a referral. Where you need it depends on the list, as described below. By default, the Admin, Administrator, Doctor, Facility Admin, Nurse, Staff, Manager and Member roles have this permission. |
+| Can view clinical data about patients | Needed only for the referrals widget on the encounter's overview. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles have this permission. |
+
+Where you need Can Read Referrals:
+
+- For the list of referrals sent to the facility itself, through a role in the facility's root department, Administration.
+- For a department's list, through a role in that department or a department above it. A role only in the Administration department does not count for a department.
+- For an organization's list, through a role in that organization or an organization above it.
+- For the encounter's list, through a role in a department of the encounter or a department above it, or in the Administration department.
+- For the patient's list, through a role on the patient.
+- To open a referral, at the sending end or at the receiving end.
+
+A role on the patient comes from the organizations of the patient's open encounters and their current locations. It also comes from the patient's own organizations, or from a direct link to the patient.
+
+Being an assignee of a referral does not by itself let you open it. You need Can Read Referrals at one of its ends.
+
+## Steps
+
+### 1. Open a referral list
+
+Open the list that you need.
+
+#### At a facility
+
+In the sidebar, under **Services**, select **Referrals**.
+
+![Referrals under Services in the facility sidebar](/media/clinical/referral/find-a-referral-sidebar.png)
+
+The sidebar shows **Referrals** if you have Can Read Referrals in the facility. A role in any of its departments or teams is enough.
+
+The **Referrals** page shows the referrals addressed directly to the facility.
+
+If your role is only in a department, the page first shows "You do not have access to these referrals". Choose your department in **Filter** to see its referrals.
+
+![The message You do not have access to these referrals on the facility's Referrals page](/media/clinical/referral/find-a-referral-2.png)
+
+To see the referrals of a department, select **Filter**, then **Department**, and choose the department. Care lists the departments under **Available Departments**.
+
+![The Department filter with its list of available departments](/media/clinical/referral/find-a-referral-6.png)
+
+A department's list shows only the referrals sent to that department. It does not include referrals sent to the departments or teams under it.
+
+#### At an organization
+
+On the home page, open the **Governance** or **Responsibilities** tab.
+
+Select the organization.
+
+Open the **Referrals** tab. The tab is shown only if you have Can Read Referrals in that organization.
+
+The **Incoming referrals** page shows the referrals sent to the referral availabilities of the organization.
+
+Without permission, the page shows "You do not have access to these referrals".
+
+#### For a patient
+
+On the patient's page, open the **Referrals** tab.
+
+The tab lists all the referrals of the patient.
+
+#### For an encounter
+
+On the encounter, open the **Referrals** tab.
+
+The tab lists the referrals of this encounter.
+
+On the encounter's overview, the referrals widget shows the 5 newest referrals, unless the widget is set to another number.
+
+The widget is shown only if you have Can Read Referrals on the encounter and Can view clinical data about patients.
+
+To see all of them, select **View all referrals**. Care opens the encounter's **Referrals** tab.
+
+The encounter's workspace can hide the **Referrals** tab. Then **View all referrals** is not shown.
+
+You can have Can Create Referrals but not Can Read Referrals. Then the patient's and the encounter's **Referrals** tabs show only **New Referral**.
+
+### 2. Filter the list
+
+Select **Filter**.
+
+On the facility's **Referrals** page, **Filter** is at the top left of the list. Its menu lists **Department**, **Status** and **Assigned to me**. Other lists have no **Department** filter.
+
+![The Filter menu with Department, Status and Assigned to me](/media/clinical/referral/find-a-referral-4.png)
+
+Choose one or more filters. Care shows the filter that you choose next to **Filter**. To remove the filters, select **Clear all**.
+
+| Filter | What it shows |
+| --- | --- |
+| **Status** | Referrals with the status that you choose: **Pending**, **In progress**, **Completed**, **Cancelled** or **Rejected**. |
+| **Assigned to me** | With **Yes**, only the referrals that you are assigned to. |
+| **Department** | The referrals sent to one department. Only on the facility's **Referrals** page. |
+
+Care keeps your filters in the page address.
+
+If no referral matches, Care shows "No referrals match these filters. Try another status or clear the filters." To remove the filters, select **Clear filters**.
+
+### 3. Read the list
+
+The list shows the newest referrals first, 15 on each page.
+
+![A department's referral list with the Referral, Patient, Status, Assigned to and Created Date columns](/media/clinical/referral/find-a-referral-7.png)
+
+| Column | What it shows |
+| --- | --- |
+| **Referral** | The title of the referral, with the name of the referral availability under it. |
+| **Patient** | The patient. Only in the lists of a facility, a department or an organization. |
+| **Status** | The status of the referral. |
+| **Assigned to** | The assignees, or **Unassigned** if there are none. |
+| **Created Date** | The date when the referral was created. |
+
+If the list is empty, it shows "No referrals found".
+
+### 4. Open the referral
+
+Select the title of the referral.
+
+Care opens the referral on its own page, without the sidebar.
+
+![A referral page opened from the list](/media/clinical/referral/find-a-referral-8.png)
+
+To go back, select **Back** at the top left.
+
+To copy the address of the referral, select the ... button at the right of the patient's name bar, then select **Copy link**.
+
+If Care shows "Referral details are restricted", you do not have permission to open this referral. Contact your facility administrator for access.
+
+If Care shows "Referral not found", check the link.
+
+## Expected Outcome
+
+The referral page opens. It shows:
+
+- The patient, and the **Originating encounter** when the referral came from an encounter.
+- The **Referral letter** header, followed by a short code.
+- A progress line from **Pending** through **In progress** to **Completed**. It is not shown for a cancelled or rejected referral.
+- **Assigned to**, with the assignees.
+- **Reason and clinical context**, when the referral has a note.
+- **Request**, with the answers to the request forms, and **Shared records**.
+- **Responses**.
+- **Referral details**, with **Created By**, **Created Date**, **Last Updated** and **Referral reference**.
+- The **Discussion** of the referral, in the side panel.
+
+If you cannot see the patient's chart, the page shows "Additional patient details are not available with your current access."
+
+## Related
+
+Concepts:
+
+- [Referral](../../../concepts/clinical/referral.mdx)
+- [Facility](../../../concepts/facility/facility.mdx)
+- [Department](../../../concepts/facility/department.mdx)
+- [Facility organization](../../../concepts/access-governance/facility-organization.mdx)
+- [Organization](../../../concepts/access-governance/organization.mdx)
+- [Responsibility](../../../concepts/access-governance/responsibility.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+- [Patient](../../../concepts/clinical/patient)
+
+Flows:
+
+- [Send a referral](./send-a-referral.mdx)
+- [Share records with a referral](./share-records-with-a-referral.mdx)
+- [Start a referral and assign the team](./start-and-assign-a-referral.mdx)
+- [Respond to a referral](./respond-to-a-referral.mdx)
+- [Change a referral's status](./change-a-referral-status.mdx)

@@ -38,10 +38,10 @@ If a page already exists at the target path, you are replacing it. Read the old 
 
 ## Copy the pages
 
-Remove the evidence markers as you copy. They are working notes, not content.
+Remove the evidence markers as you copy. They are working notes, not content. Fact ids can carry other letters than E, for example when parallel researchers number their own facts (B for backend, F for frontend, R for runtime), so the pattern accepts any capital letter.
 
 ```bash
-sed -E 's/ ?\[\[(none|E[0-9]+(, ?E[0-9]+)*)\]\]//g' "$S/drafts/<slug>.mdx" > "$S/src/docs/versioned_docs/version-<v>/flows/<domain>/<module>/<slug>.mdx"
+sed -E 's/ ?\[\[(none|[A-Z][0-9]+(, ?[A-Z][0-9]+)*)\]\]//g' "$S/drafts/<slug>.mdx" > "$S/src/docs/versioned_docs/version-<v>/flows/<domain>/<module>/<slug>.mdx"
 mkdir -p "$S/src/docs/static/media/<domain>/<module>"
 cp "$S/media/out/<slug>".mp4 "$S/media/out/<slug>".poster.png "$S/media/out/<slug>".vtt "$S/media/out/<slug>"-*.png "$S/src/docs/static/media/<domain>/<module>/"
 grep -rn '\[\[' "$S/src/docs/versioned_docs/version-<v>/flows/<domain>/<module>/"   # must print nothing

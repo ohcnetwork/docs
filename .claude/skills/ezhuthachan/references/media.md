@@ -203,6 +203,16 @@ If a step cannot be performed as written, the page is wrong or the instance runs
 3. If the instance differs from the pin, tell the user.
 4. If one flow fails, carry on with the others and report the failure.
 
+## Keep the data clean on camera
+
+What the Referral session learned on 27 November 2026:
+
+- **Addresses are invented down to the town.** An invented street in a real town, or a real PIN code, can still point at someone's house, and the product team asked for names that are "random and not real". This holds for patients and facilities, and for fixture details the screen shows: the facility's description and map coordinates appear on its General settings page.
+- **Dry runs leave records behind.** A run that saves records leaves them in every list the final take shows. The first Referral takes showed 22 near-identical referrals on one encounter. Create only what each flow needs, avoid dry runs that save records, record in an order where earlier flows' records belong in later lists, and clear what is left over before the final takes.
+- **Fixture accounts show up in pickers.** The fixture superuser is a member of the second fixture facility and appears as "Admin User" in member pickers. Remove that membership before recording.
+- **Care refuses dots in usernames.** The API accepts only letters, digits, "-" and "_". A username such as `arun.mathew` can only be set by renaming the user in the database, and Care's lookup by username then returns 404 for that user. Never open such a user's profile page on camera.
+- **Uploads need file storage.** A native stack without a storage bucket fails every upload. Either give it one, or record the other steps and say in the pull request which steps were verified from code only.
+
 ## Use the API log
 
 Take each `<slug>.api.json` back to the permission path of that flow, as "Confirming at runtime" in `permissions.md` describes. This is where missed gates are caught. If the user agreed to proof runs, do them now.

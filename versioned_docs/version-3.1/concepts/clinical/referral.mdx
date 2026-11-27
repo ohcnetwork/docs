@@ -1,0 +1,204 @@
+---
+sidebar_position: 13
+---
+
+# Referral
+
+## Definition
+
+A **Referral** in Care is a request about one patient, which staff send from an encounter or from the patient's page to a referral availability.
+
+A facility, a department or an organization publishes a referral availability to receive referrals.
+
+A referral is not a visit. At a receiving facility or department, staff can start the visit from the referral, unless the referral came from an encounter in that facility.
+
+## Key Attributes
+
+| Components | What it captures |
+| --- | --- |
+| Patient | The [patient](../clinical/patient) the referral is about. A referral always belongs to one patient, and you cannot change the patient later. |
+| Originating encounter | The [encounter](./encounter.mdx) the referral was sent from. A referral sent from the patient's page has no encounter. You cannot change the encounter later. |
+| Referral availability | The service that receives the referral. You choose it in the **Referral unit** list when you send the referral, and you cannot change it later. |
+| Referral title | A short reason for the referral, up to 255 characters. Care fills in the name of the referral unit, and you can change it. |
+| Note | Optional clinical context for the receiving team. The referral page shows it under **Reason and clinical context**. |
+| Status | Where the referral stands. See Status below. |
+| Assigned to | The clinicians responsible for the referral, each with a role. |
+| Request | The answers to a request form, given when the referral is sent, and any request information added later. |
+| Shared records | Records of the same patient that are shared with the referral, and files uploaded to the referral. |
+| Responses | The answers to the response forms of the referral availability. |
+| Discussion | Messages between the people who work on the referral. |
+
+Note: You cannot delete a referral.
+
+To change the **Referral title** or the **Note**, use **Edit referral**. See [Edit a referral's title or note](../../flows/clinical/referral/edit-a-referral.mdx).
+
+### Originating encounter
+
+Staff send a referral from one of three places. See [Send a referral](../../flows/clinical/referral/send-a-referral.mdx).
+
+- **New Referral** on the encounter's **Referrals** tab. The tab offers it whatever the status of the encounter.
+- The **New Referral** quick action on the encounter overview. Care offers it only on an active encounter.
+- **New Referral** on the **Referrals** tab of the patient's page. The referral then has no originating encounter.
+
+When you send the referral, it starts as Pending.
+
+### Referral availability
+
+A referral availability tells senders what a [facility](../facility/facility.mdx), a [department](../facility/department.mdx) or an [organization](../access-governance/organization.mdx) accepts, which forms they fill in, and who receives the work.
+
+You set it up on the facility's **Referral availability** settings page, or on the organization's **Referral availability** tab. See [Set up referral availability](../../flows/clinical/referral/set-up-referral-availability.mdx).
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name that senders see in the **Referral unit** list and in the referral lists. The name is required and holds up to 255 characters. |
+| Description | An optional description of the service. |
+| Referral type | **Consultation** or **Lab**. Senders see the type as a badge in the **Referral unit** list. You set it only when you add the availability. |
+| Status | **Draft**, **Active** or **Inactive**. When you add an availability, **Status** is **Draft** by default. |
+| Accept referrals from other facilities | Whether everyone with Can Create Referrals can find the availability and send to it. The switch is off by default. The list in settings shows **Public destination** or **Restricted destination**. |
+| Referral forms | The request forms that senders fill in, and the response forms that capture the receiving team's findings. |
+| Default care team | The people who become the assignees of each new referral. |
+
+Only an **Active** availability appears in the **Referral unit** list and accepts new referrals. Care asks for an active request form before it saves an availability as **Active**.
+
+People who manage the availability still see it in settings when it is **Draft** or **Inactive**.
+
+When you delete an availability, it is no longer available for new referrals. Existing referrals are kept. See [Change or remove referral availability](../../flows/clinical/referral/change-referral-availability.mdx).
+
+The **Referral unit** list shows only **Active** availabilities. It is not limited to your own facility or organizations.
+
+- A public availability, with **Accept referrals from other facilities** on, appears for every signed-in user. Anyone with Can Create Referrals at the sending end can send to it.
+- A restricted availability appears only for some people. They hold Can Manage Referral Availabilities, Can Read Referral Availabilities or Can Submit to Private Referral Availabilities at its receiving end.
+- To send to a restricted availability, a person needs Can Submit to Private Referral Availabilities at its receiving end. The person also needs Can Create Referrals at the sending end. The other two permissions do not let a person send to it.
+
+A facility, a department and an organization each have a list of the referrals sent to them. Each list shows only the referrals sent to that exact place. For example, the facility's list does not include the referrals sent to its departments. See [Find a referral](../../flows/clinical/referral/find-a-referral.mdx).
+
+### Request and Responses
+
+Referral forms are [questionnaires](../definitions/questionnaire.mdx) with the subject type **Referral**. Only active questionnaires in their latest version, with that subject type, can be added to a referral availability. Each one can be added only once.
+
+A request form captures the referral details. A response form captures the receiving team's findings.
+
+A referral starts with the answers to a request form. If a referral availability has no active request form, senders cannot send a referral to it.
+
+Later, **Add request information** adds the answers to another request form. **Respond**, or **Add response** after the first response, fills in a response form. People who can update the referral, at either end, can do both. See [Respond to a referral](../../flows/clinical/referral/respond-to-a-referral.mdx).
+
+You fill in referral forms only through a referral. Their answers do not create clinical records for the patient. Each saved response keeps a copy of the form as it was when someone answered it.
+
+A saved form response cannot be deleted. **Mark entered in error** keeps the response and its original answers, and shows the response with the **Entered in Error** badge. See [Mark a referral form as entered in error](../../flows/clinical/referral/mark-a-referral-form-entered-in-error.mdx).
+
+### Assigned to
+
+Care copies the default care team of the referral availability to each new referral, where it appears under **Assigned to**.
+
+Anyone who can update the referral, at either end, can change the assignees with **Manage assignees**. Each assignee is an active user with a role. **Find team members in** can search your own facilities or **All accessible users**. See [Start a referral and assign the team](../../flows/clinical/referral/start-and-assign-a-referral.mdx).
+
+Being an assignee of a referral does not by itself let you open it. You need Can Read Referrals at one of its ends.
+
+### Shared records
+
+**Add record** offers these record types: **Diagnosis**, **Response**, **Diagnostic report**, **File**, **Specimen** and **Related referral**. **Upload file** adds a new file to the referral itself. See [Share records with a referral](../../flows/clinical/referral/share-records-with-a-referral.mdx).
+
+For a file, **Files from** chooses where the file comes from: **Patient record**, **Patient encounter**, **Consent**, **Diagnostic report**, **Service request** or **This referral**. See [Files](./files.mdx).
+
+A shared record must belong to the referral's patient. You cannot share the same record twice with one referral.
+
+**Share as** places a record in **Source records** or **Supporting records** in the request, or in **Response records** when you respond.
+
+To share a record, you must be allowed to read that record. A file uploaded to the referral itself needs no separate check.
+
+Everyone who can read the referral can open a shared record, even without access to the patient or encounter that the record comes from.
+
+Removing a shared record removes it from the referral only. The original clinical record or file is kept.
+
+### Appointment and visit
+
+The **Appointment and visit** section of the referral page lets the receiving end start the patient's visit. See [Book the referred patient's visit](../../flows/clinical/referral/book-a-visit-for-a-referral.mdx).
+
+- **Start Consultation** opens the form to start an encounter at the receiving facility, for a walk-in visit.
+- **Book appointment** opens the patient's appointments at the receiving facility, with the booking already open. After the booking, Care links the appointment to the referral as a response record. See [Appointment Booking](../scheduling/booking.mdx).
+
+These buttons appear only in some cases. For example, the referral must be Pending or In progress, and a referral to an organization never has them. The flow lists every condition.
+
+An encounter that you open from the referral shows a **Referral review** panel with **View referral**. While the referral is Pending or In progress, the panel also offers **Respond** to people who can update the referral.
+
+### Discussion
+
+The first message starts the discussion of the referral. Everyone who can read the referral can read its messages. People who can update the referral can post messages. See [Discuss a referral](../../flows/clinical/referral/discuss-a-referral.mdx).
+
+You can edit only your own messages, and Care keeps the earlier text in the message history. Messages cannot be deleted.
+
+The discussion belongs to the referral. It does not appear among the patient's [notes](./notes.mdx).
+
+### Status
+
+| Status | Description |
+| --- | --- |
+| Pending | A new referral starts as Pending. **Mark as pending** sets this status again. |
+| In progress | **Start referral** sets this status on a Pending referral. **Reopen referral** sets it on a Completed, Cancelled or Rejected referral. |
+| Completed | **Complete referral** sets this status after a confirmation. The confirmation asks you to make sure the outcome was shared with the referring team. **Save response and complete** also sets it, while the referral is Pending or In progress. |
+| Cancelled | **Cancel referral** sets this status. |
+| Rejected | **Reject referral** sets this status. |
+
+The referral page shows a progress line from Pending through In progress to Completed. The line is hidden for a Cancelled or Rejected referral.
+
+Care does not set an order of statuses. Anyone who can update the referral, at the sending end or at the receiving end, can change it from any status to any other status.
+
+For people who can update the referral, the actions menu lists every status except the current one: **Mark as pending**, **Start referral** or **Reopen referral**, **Complete referral**, **Cancel referral** and **Reject referral**. See [Change a referral's status](../../flows/clinical/referral/change-a-referral-status.mdx).
+
+A Completed, Cancelled or Rejected referral stays open to changes. People who can update it can still share records, add form responses, post messages and change the assignees.
+
+**Save response and complete**, **Start Consultation** and **Book appointment** appear only while the referral is Pending or In progress.
+
+## Permissions
+
+Care checks two things: the permission that your role holds, and where you hold that role. Other roles can be created, so the roles below are the defaults.
+
+Can Read Referrals and Can Update Referrals count at either end of the referral. You need the permission at the sending end or at the receiving end, not at both.
+
+- At the sending end, if the referral came from an encounter: you need the permission through a role in a department of the encounter or a department above it, or in the facility's root department, Administration. A role in the department of the encounter's current location also counts.
+- At the sending end, if the referral was sent from the patient's page: you need the permission through a role on the patient.
+- At the receiving end, if a facility published the referral availability: you need the permission through a role in the facility's root department, Administration.
+- At the receiving end, if a department published it: you need the permission through a role in that department or a department above it. A role only in the Administration department does not count for a department.
+- At the receiving end, if an organization published it: you need the permission through a role in that organization or an organization above it.
+
+A role on the patient comes from the organizations of the patient's open encounters and their current locations. It also comes from the patient's own organizations, or from a direct link to the patient. A completed, cancelled, discontinued or entered-in-error encounter gives no role on the patient.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Manage Referral Availabilities | Add, change and delete referral availability. See every availability of that place in settings, also when it is **Draft** or **Inactive**. See restricted, active availabilities in the **Referral unit** list. Hold it at the receiving end. | Admin, Administrator, Facility Admin, Manager |
+| Can Read Referral Availabilities | See a restricted, active availability and its forms. This permission does not let you send a referral to it. Hold it at the receiving end. | Admin, Administrator, Doctor, Facility Admin, Nurse, Staff, Manager, Member |
+| Can Submit to Private Referral Availabilities | See a restricted, active availability, and send referrals to it. Hold it at the receiving end. | Admin, Administrator, Doctor, Facility Admin, Nurse, Staff, Manager, Member |
+| Can Create Referrals | Send a referral. Hold it at the sending end. You must also be allowed to send to the referral availability. | Admin, Administrator, Doctor, Facility Admin, Nurse, Staff, Manager, Member |
+| Can Read Referrals | Open a referral, and see its request, shared records, files, responses and discussion. List the referrals of a facility, department or organization at the receiving end. List the referrals of an encounter or patient at the sending end. Hold it at either end. | Admin, Administrator, Doctor, Facility Admin, Nurse, Staff, Manager, Member |
+| Can Update Referrals | Change the title, note, status and assignees. Share, upload and remove records. Add request information and responses. Mark forms as entered in error. Post in the discussion. Hold it at either end. | Admin, Administrator, Doctor, Facility Admin, Nurse, Staff, Manager, Member |
+
+Note: The Volunteer and Pharmacist roles hold none of these permissions by default.
+
+Note: To add a form to a referral availability, you also need permission to read that form. For a facility form, this is Can Read Questionnaires in one of the facility organizations that the form belongs to.
+
+Note: To share a record, you also need permission to read that record. For example, a diagnosis needs Can view clinical data about patients through a role on the patient. When the diagnosis belongs to an encounter, Can Read encounter related clinical data on that encounter also works.
+
+Note: To start the visit, you also need a permission in the receiving facility. **Start Consultation** needs Can Create encounter, held by default by Admin, Doctor, Nurse and Facility Admin. **Book appointment** needs Can update bookings on Object, held by default by Admin, Staff, Facility Admin, Doctor and Nurse.
+
+Note: **Referrals** in the facility sidebar appears if you hold Can Read Referrals in the facility or in any of its departments. The page first lists the referrals sent to the facility itself, which needs the permission in the Administration department. If you hold it only in a department, select **Filter**, then select that department under **Department**.
+
+Note: The **Referral availability** settings page works the same way. If you manage referral availability only for a department, select **Filter**, then select that department under **Department**.
+
+## Related
+
+- Flow: [Set up referral availability](../../flows/clinical/referral/set-up-referral-availability.mdx)
+- Flow: [Change or remove referral availability](../../flows/clinical/referral/change-referral-availability.mdx)
+- Flow: [Send a referral](../../flows/clinical/referral/send-a-referral.mdx)
+- Flow: [Share records with a referral](../../flows/clinical/referral/share-records-with-a-referral.mdx)
+- Flow: [Find a referral](../../flows/clinical/referral/find-a-referral.mdx)
+- Flow: [Start a referral and assign the team](../../flows/clinical/referral/start-and-assign-a-referral.mdx)
+- Flow: [Book the referred patient's visit](../../flows/clinical/referral/book-a-visit-for-a-referral.mdx)
+- Flow: [Respond to a referral](../../flows/clinical/referral/respond-to-a-referral.mdx)
+- Flow: [Change a referral's status](../../flows/clinical/referral/change-a-referral-status.mdx)
+- Flow: [Edit a referral's title or note](../../flows/clinical/referral/edit-a-referral.mdx)
+- Flow: [Discuss a referral](../../flows/clinical/referral/discuss-a-referral.mdx)
+- Flow: [Mark a referral form as entered in error](../../flows/clinical/referral/mark-a-referral-form-entered-in-error.mdx)
+- Concept: [Patient](../clinical/patient)
+- Concept: [Encounter](./encounter.mdx)
+- Concept: [Questionnaire](../definitions/questionnaire.mdx)
+- Concept: [Roles and Permission](../access-governance/access-control.mdx)

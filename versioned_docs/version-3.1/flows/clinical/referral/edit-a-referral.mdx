@@ -1,0 +1,92 @@
+---
+sidebar_position: 10
+---
+
+# Edit a referral's title or note
+
+## Overview
+
+<video src="/media/clinical/referral/edit-a-referral.mp4" poster="/media/clinical/referral/edit-a-referral.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/referral/edit-a-referral.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to change the title or the note of a [referral](../../../concepts/clinical/referral.mdx).
+
+## Pre-requisites
+
+- You can open the referral. [Find a referral](./find-a-referral.mdx) describes how.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Update Referrals | Lets you change the title and the note of the referral. By default, the Admin, Administrator, Doctor, Facility Admin, Nurse, Staff, Manager and Member roles have this permission. |
+| Can Read Referrals | Lets you open the referral. By default, the same roles have this permission. |
+
+Note: You need each permission at one end of the referral, the sending end or the receiving end.
+
+- At the sending end, if the referral came from an encounter: you need the permission through a role in a department of the encounter or a department above it, or in the facility's root department, Administration. A role in the department of the encounter's current location also counts.
+- At the sending end, if the referral was sent from the patient's page: you need the permission through a role on the patient.
+- At the receiving end, if a facility published the referral availability: you need the permission through a role in the facility's root department, Administration.
+- At the receiving end, if a department published it: you need the permission through a role in that department or a department above it. A role only in the Administration department does not count for a department.
+- At the receiving end, if an organization published it: you need the permission through a role in that organization or an organization above it.
+
+A role on the patient comes from the organizations of the patient's open encounters and their current locations, from the patient's own organizations, or from a direct link to the patient.
+
+## Steps
+
+### 1. Open the referral
+
+Open the referral page. [Find a referral](./find-a-referral.mdx) describes how.
+
+### 2. Open the Edit referral dialog
+
+Select the ... button at the right end of the bar with the patient's name. While the referral is Pending, it is to the right of the green **Start referral** button. Screen readers announce it as **Referral actions**.
+
+![The referral's actions menu open from the ... button, with Edit referral at the top](/media/clinical/referral/edit-a-referral-actions-button.png)
+
+Select **Edit referral**. It is the first item of the menu.
+
+Care opens the **Edit referral** dialog with the text "Update the referral title and clinical context."
+
+![The Edit referral dialog with Referral title, Note and the Save Changes button](/media/clinical/referral/edit-a-referral-3.png)
+
+If you cannot update the referral, the menu does not show **Edit referral**.
+
+### 3. Change the title or the note
+
+| Components | What it captures |
+| --- | --- |
+| **Referral title** | The title of the referral. Required. Up to 255 characters. |
+| **Note** | Free text about the referral. The referral page shows it under **Reason and clinical context**. |
+
+### 4. Save the changes
+
+Select **Save Changes** at the bottom right of the dialog.
+
+**Save Changes** stays disabled until you change a field. It also stays disabled while **Referral title** is empty.
+
+Care saves only the fields that you changed.
+
+Care closes the dialog and shows the message "Referral updated".
+
+![The message Referral updated and the changed note under Reason and clinical context](/media/clinical/referral/edit-a-referral-result.png)
+
+## Expected Outcome
+
+- The referral has the new title or note.
+- Referral lists show the new title.
+- The referral page shows the note under **Reason and clinical context**. If the note is empty, the page does not show this section.
+
+## Related
+
+Concepts:
+
+- [Referral](../../../concepts/clinical/referral.mdx)
+
+Flows:
+
+- [Find a referral](./find-a-referral.mdx)
+- [Send a referral](./send-a-referral.mdx)
+- [Change a referral's status](./change-a-referral-status.mdx)

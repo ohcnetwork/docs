@@ -1,0 +1,145 @@
+---
+sidebar_position: 6
+---
+
+# Start a referral and assign the team
+
+## Overview
+
+<video src="/media/clinical/referral/start-and-assign-a-referral.mp4" poster="/media/clinical/referral/start-and-assign-a-referral.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/referral/start-and-assign-a-referral.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to start work on a [referral](../../../concepts/clinical/referral.mdx) and choose the people assigned to it. When you start a referral, its status changes from Pending to In progress.
+
+When a referral arrives, Care has already assigned the default care team of the referral availability to it. You can keep that team or change it.
+
+## Pre-requisites
+
+- A referral was sent, and you can open its page.
+- If you want to start the referral, its status is Pending.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Update Referrals | Lets you see **Start referral** and **Manage assignees**, and save the new status and the assignees. By default, the Admin, Administrator, Doctor, Facility Admin, Nurse, Staff, Manager and Member roles have this permission. |
+| Can Read Referrals | Lets you open the referral page. By default, the same roles have this permission. |
+
+Note: You need each permission at one end of the referral, the sending end or the receiving end.
+
+- Sending end, referral from an encounter: you need the permission through a role in a department of the encounter or a department above it, or in the facility's root department, Administration. A role in the department of the encounter's current location also counts.
+- Sending end, referral sent from the patient's page: you need the permission through a role on the patient.
+- Receiving end, referral availability of a facility: you need the permission through a role in the facility's root department, Administration.
+- Receiving end, referral availability of a department: you need the permission through a role in that department or a department above it. A role only in the Administration department does not count for a department.
+- Receiving end, referral availability of an organization: you need the permission through a role in that organization or an organization above it.
+
+A role on the patient comes from the organizations of the patient's open encounters and their current locations, from the patient's own organizations, or from a direct link to the patient.
+
+## Steps
+
+### 1. Open the referral
+
+Open the referral page. To find it, see [Find a referral](./find-a-referral.mdx).
+
+### 2. Start the referral
+
+If the status is Pending, select **Start referral**. It is the green button with a play icon at the top right, next to the ... button.
+
+![The Start referral button at the right of the patient's name bar](/media/clinical/referral/start-and-assign-a-referral-2.png)
+
+Care changes the status to In progress. Care does not ask you to confirm.
+
+Care shows the message "Referral updated". The **Start referral** button is no longer shown.
+
+![The message Referral updated and the referral with the status In progress](/media/clinical/referral/start-and-assign-a-referral-toast.png)
+
+If another person changed the status after you opened the page, Care does not save. Care shows the message "The referral status changed. Review its latest status and try again."
+
+Note: While the referral is Pending, each person who can update it sees **Start referral**. This includes people at the sending end and at the receiving end.
+
+To set another status, see [Change a referral's status](./change-a-referral-status.mdx).
+
+### 3. Open the assignees dialog
+
+In the **Assigned to** section, select **Manage assignees**. It is at the right of the section.
+
+![The Manage assignees button at the right of the Assigned to section](/media/clinical/referral/start-and-assign-a-referral-4.png)
+
+Care opens the **Manage assignees** dialog. The dialog reads "Choose the clinicians responsible for this referral and their roles."
+
+The dialog lists the current assignees. Each one has an X button that removes the person.
+
+![The Manage assignees dialog with Find team members in, Select Member, Select Role and the current assignees](/media/clinical/referral/start-and-assign-a-referral-5.png)
+
+### 4. Choose where to find people
+
+Open **Find team members in**.
+
+Select one of your facilities, or select **All accessible users**.
+
+![The Find team members in list with the user's facilities and All accessible users](/media/clinical/referral/start-and-assign-a-referral-7.png)
+
+If you select a facility, **Select Member** lists the users of that facility.
+
+If you select **All accessible users**, **Select Member** is not limited to one facility.
+
+Note: The dialog starts on the first of your own facilities. Make sure that it shows the facility of the people that you want.
+
+Note: Care shows **Find team members in** only if you belong to a facility.
+
+### 5. Add a person
+
+Select the person in **Select Member**. To find the person, type the name in the search box of the list.
+
+![A name typed in the Select Member search and the matching user](/media/clinical/referral/start-and-assign-a-referral-8.png)
+
+Select the role of the person in **Select Role**. Care lists practitioner roles. To find a role, type its name.
+
+![Roles found by a search in Select Role](/media/clinical/referral/start-and-assign-a-referral-role.png)
+
+Select **Add**, to the right of **Select Role**. The button stays disabled until you select a person and a role.
+
+![A member and a role chosen, with the Add button](/media/clinical/referral/start-and-assign-a-referral-10.png)
+
+Care lists the person and the role below the other assignees.
+
+If the person is already in the list, Care shows the message "Member already added".
+
+Each person must be an active user in Care.
+
+To add more people, do this step again for each person.
+
+Note: Being an assignee of a referral does not by itself let a person open it. The person needs Can Read Referrals at one of its ends.
+
+### 6. Save the assignees
+
+Select **Save Changes** at the bottom right of the dialog. The button stays disabled until you change the list.
+
+![The new assignee in the list and the Save Changes button](/media/clinical/referral/start-and-assign-a-referral-11.png)
+
+Care closes the dialog and shows the message "Referral updated". **Assigned to** shows each person with the role.
+
+![The Assigned to section listing the assignees with their roles](/media/clinical/referral/start-and-assign-a-referral-assigned.png)
+
+## Expected Outcome
+
+- If you started the referral, its status is In progress.
+- The **Assigned to** section of the referral page shows the people that you assigned.
+- Referral lists show the assignees in the **Assigned to** column. A referral with no assignees shows "Unassigned".
+- In a referral list, the **Assigned to me** filter shows the referrals that are assigned to you.
+
+## Related
+
+Concepts:
+
+- [Referral](../../../concepts/clinical/referral.mdx)
+
+Flows:
+
+- [Find a referral](./find-a-referral.mdx)
+- [Set up referral availability](./set-up-referral-availability.mdx)
+- [Change a referral's status](./change-a-referral-status.mdx)
+- [Book the referred patient's visit](./book-a-visit-for-a-referral.mdx)
+- [Respond to a referral](./respond-to-a-referral.mdx)
