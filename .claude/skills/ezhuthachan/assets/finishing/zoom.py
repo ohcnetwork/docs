@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 """Frame a 2x recording (capture.ts) and zoom in where the work happens.
 
-The app sits in a rounded window with a soft shadow over a gradient, 1920x1304, as frame.py does,
-but everything is composed at 2x (3840x2608), so a zoom of up to 2x still shows sharp text. The
-window is the viewport the recording logged, at most 1760x1144 CSS px; 1600x1000 fills it best. Zoom
+The app sits in a rounded window with a soft shadow, 1920x1304, as frame.py does, but everything is
+composed at 2x (3840x2608), so a zoom of up to 2x still shows sharp text. The background (THEMES) is
+the deck slide's own grey by default, so on the slide only the window and its shadow show. The
+window is the viewport the recording logged, scaled to leave PAD px around it; 1600x1000 shows at
+1822x1140. Zoom
 shots come from the input log that capture.ts wrote: a run of clicks, typing or a resting cursor
 zooms in (about 1.8x) around them, pans when the work moves, and eases back out after a pause.
 Single clicks that only navigate stay at full view.
 
 Usage: zoom.py <retimed.mp4> <events.json> <plan.json> <out.mp4> [--zoom 1.6] [--plain] [--plan-only]
-       [--skip N ...]  leave out the Nth zoom shot (1-based, as printed)
+       [--theme slide|white|care|blue] [--skip N ...]  leave out the Nth zoom shot (1-based, as printed)
 """
 import argparse
 import json
@@ -22,9 +24,34 @@ FPS = 30
 K = 2                                 # composition scale (the capture is 2x)
 W, H = 1920, 1304                     # output
 WIN_W, WIN_H = 1600, 1000             # app window, CSS px; main() takes it from the events log
-X0, Y0 = (W - WIN_W) // 2, (H - WIN_H) // 2
-RADIUS = 14
-COLORS = ("0x1e40af", "0x0ea5e9", "0x6ee7b7")
+PAD = 48                              # px of background beside the window on its tighter side
+CORNER = 28                           # corner radius, px in the 1920x1304 frame (user, 27 Nov 2026)
+# Backgrounds: three colours and an ffmpeg gradients type, or "flat" for c0 alone. Points are
+# shares of the frame: (x0, y0) is where c0 sits, (x1, y1) where c2 is reached.
+THEMES = {
+    # The deck slides' grey (#f2f2f2 in Canva, November 2026): the video blends into the slide.
+    "slide": dict(colors=("0xf2f2f2",) * 3, type="flat", points=(0, 0, 1, 1)),
+    "white": dict(colors=("0xffffff",) * 3, type="flat", points=(0, 0, 1, 1)),
+    # Care UI's emerald (950, 900 and a light between 700 and 800), lit from the top left: it matches the
+    # Care logo on the slides and sets the white app off against the light slide.
+    "care": dict(colors=("0x00694d", "0x004f3b", "0x002c22"), type="radial", points=(0.3, 0.08, 1.0, 1.0)),
+    # Deep, muted blues, like the wallpapers behind the deck's original desktop recordings.
+    "blue": dict(colors=("0x1b2c5e", "0x2c4f8e", "0x4d72ad"), type="linear", points=(0, 0, 1.0, 1.0)),
+}
+THEME = "slide"
+# Offset, blur and strength, px at 1x. The shadow fades out well inside PAD: a flat background must
+# not show where the video's edge cuts it.
+SHADOW = (10, 20, 0.22)
+
+
+def fit(win_w, win_h):
+    """The window's scale and shown size (even px) and top-left corner in the frame."""
+    s = min((W - 2 * PAD) / win_w, (H - 2 * PAD) / win_h)
+    dw, dh = int(win_w * s) // 2 * 2, int(win_h * s) // 2 * 2
+    return s, dw, dh, (W - dw) // 2, (H - dh) // 2
+
+
+S, DW, DH, X0, Y0 = fit(WIN_W, WIN_H)
 
 GAP = 1.4        # s; interactions closer than this belong to one shot
 MAX_SPAN = 4.0   # s; a longer group is cut at its longest pause
@@ -36,7 +63,7 @@ ZOOM_OUT = 0.8   # s
 HOLD = 1.1       # s; stays zoomed this long after the last interaction
 PAN = 0.6        # s
 HOVER = 0.7      # s (source time); a cursor resting this long counts as an interaction
-MARGIN = 36      # px of wallpaper allowed inside a zoomed view
+MARGIN = 36      # px of background allowed inside a zoomed view
 MAJOR = 0.3      # share of pixels that change when the screen is replaced (page, dialog, loading)
 CENTRE = 0.25    # how far a zoomed view leans towards the middle of the window, for context
 
@@ -77,7 +104,7 @@ def points(log, to_out):
     navs = [e["t"] for e in ev if e["kind"] == "nav"]
     out = []
     for i, e in enumerate(ev):
-        x, y = e["x"] + X0, e["y"] + Y0
+        x, y = e["x"] * S + X0, e["y"] * S + Y0
         t = to_out(e["t"])
         if e["kind"] == "nav":
             out.append((t, 0, 0, "nav"))
@@ -130,8 +157,8 @@ def shots(pts, end, majors=()):
 
 def clamp_center(cx, cy, z):
     vw, vh = W / z, H / z
-    lo_x, hi_x = X0 - MARGIN + vw / 2, X0 + WIN_W + MARGIN - vw / 2
-    lo_y, hi_y = Y0 - MARGIN + vh / 2, Y0 + WIN_H + MARGIN - vh / 2
+    lo_x, hi_x = X0 - MARGIN + vw / 2, X0 + DW + MARGIN - vw / 2
+    lo_y, hi_y = Y0 - MARGIN + vh / 2, Y0 + DH + MARGIN - vh / 2
     cx = min(max(cx, lo_x), hi_x) if lo_x <= hi_x else W / 2
     cy = min(max(cy, lo_y), hi_y) if lo_y <= hi_y else H / 2
     return cx, cy
@@ -153,8 +180,8 @@ def views(group, z):
     res = []
     for v in out:
         xs, ys = [q[1] for q in v], [q[2] for q in v]
-        cx = (min(xs) + max(xs)) / 2 * (1 - CENTRE) + (X0 + WIN_W / 2) * CENTRE
-        cy = (min(ys) + max(ys)) / 2 * (1 - CENTRE) + (Y0 + WIN_H / 2) * CENTRE
+        cx = (min(xs) + max(xs)) / 2 * (1 - CENTRE) + (X0 + DW / 2) * CENTRE
+        cy = (min(ys) + max(ys)) / 2 * (1 - CENTRE) + (Y0 + DH / 2) * CENTRE
         res.append((v[0][0], v[-1][0], clamp_center(cx, cy, z)))
     return res
 
@@ -212,7 +239,7 @@ DEADZONE = 0.35  # share of the zoomed view around its middle in which the curso
 def cursor_track(log, to_out):
     """The cursor position over output time: (s, x, y) in composition px at 1x."""
     ev = sorted((e for e in log["events"] if e["kind"] in ("move", "down")), key=lambda e: e["t"])
-    track = [(max(0.0, to_out(e["t"])) if e["t"] >= 0 else 0.0, e["x"] + X0, e["y"] + Y0) for e in ev]
+    track = [(max(0.0, to_out(e["t"])) if e["t"] >= 0 else 0.0, e["x"] * S + X0, e["y"] * S + Y0) for e in ev]
     return track or [(0.0, W / 2, H / 2)]
 
 
@@ -243,7 +270,7 @@ def trajectory(kf, track, z_max, end):
     follows the cursor with a dead zone and a spring, so it moves smoothly but never loses it."""
     n = max(1, int(round(end * FPS)))
     dt = 1 / FPS
-    mid_x, mid_y = X0 + WIN_W / 2, Y0 + WIN_H / 2
+    mid_x, mid_y = X0 + DW / 2, Y0 + DH / 2
     anchor = list(cursor_at(track, 0))
     cam, vel = anchor[:], [0.0, 0.0]
     dz_w, dz_h = W / z_max * DEADZONE / 2, H / z_max * DEADZONE / 2
@@ -287,26 +314,33 @@ def lookup(values, fmt):
 
 
 def assets():
-    d = os.path.join(HERE, f"frame-assets-2x-{WIN_W}x{WIN_H}")
+    r = CORNER * K
+    d = os.path.join(HERE, f"frame-assets-2x-{DW}x{DH}-r{r:.2f}-{THEME}")
     os.makedirs(d, exist_ok=True)
     mask, shadow, bg = (os.path.join(d, n) for n in ("mask.png", "shadow.png", "bg.png"))
-    ww, wh, r = WIN_W * K, WIN_H * K, RADIUS * K
+    ww, wh = DW * K, DH * K
+    off, blur, alpha = SHADOW
     cw, ch, x, y = W * K, H * K, X0 * K, Y0 * K
     if not os.path.exists(mask):
         e = f"255*clip({r}+0.5-hypot(X-clip(X,{r},W-1-{r}),Y-clip(Y,{r},H-1-{r})),0,1)"
         run(["-f", "lavfi", "-i", f"color=white:s={ww}x{wh}", "-vf", f"format=gray,geq=lum='{e}'", "-frames:v", "1", mask])
     if not os.path.exists(shadow):
         run(["-i", mask, "-filter_complex",
-             f"[0:v]format=gray,pad={cw}:{ch}:{x}:{y + 18 * K}:black,gblur=sigma={30 * K},lut=y=val*0.42[a];"
+             f"[0:v]format=gray,pad={cw}:{ch}:{x}:{y + off * K}:black,gblur=sigma={blur * K},lut=y=val*{alpha}[a];"
              f"color=black:s={cw}x{ch},format=rgba[c];[c][a]alphamerge", "-frames:v", "1", shadow])
     if not os.path.exists(bg):
-        c0, c1, c2 = COLORS
-        run(["-f", "lavfi", "-i", f"gradients=s={cw}x{ch}:c0={c0}:c1={c1}:c2={c2}:nb_colors=3:x0=0:y0=0:x1={cw}:y1={ch}:speed=0:type=linear",
-             "-frames:v", "1", bg])
+        th = THEMES[THEME]
+        c0, c1, c2 = th["colors"]
+        x0, y0, x1, y1 = (round(v * (cw if i % 2 == 0 else ch)) for i, v in enumerate(th["points"]))
+        src = (f"color=c={c0}:s={cw}x{ch}" if th["type"] == "flat" else
+               f"gradients=s={cw}x{ch}:c0={c0}:c1={c1}:c2={c2}:nb_colors=3:x0={x0}:y0={y0}:x1={x1}:y1={y1}"
+               f":speed=0:type={th['type']}")
+        run(["-f", "lavfi", "-i", src, "-frames:v", "1", "-pix_fmt", "rgb24", bg])
     return mask, shadow, bg
 
 
 def main():
+    global WIN_W, WIN_H, S, DW, DH, X0, Y0, THEME
     ap = argparse.ArgumentParser()
     ap.add_argument("src")
     ap.add_argument("events")
@@ -316,16 +350,15 @@ def main():
     ap.add_argument("--skip", type=int, nargs="*", default=[])
     ap.add_argument("--plan-only", action="store_true")
     ap.add_argument("--plain", action="store_true", help="frame only, no zoom")
+    ap.add_argument("--theme", choices=sorted(THEMES), default=THEME, help="background")
     a = ap.parse_args()
 
-    global WIN_W, WIN_H, X0, Y0
+    THEME = a.theme
     end = duration(a.src)
     log = json.load(open(a.events))
     vp = log.get("viewport") or {}
     WIN_W, WIN_H = int(vp.get("width", WIN_W)), int(vp.get("height", WIN_H))
-    if WIN_W > W - 160 or WIN_H > H - 160:
-        sys.exit(f"The window is {WIN_W}x{WIN_H}; record with a viewport of at most {W - 160}x{H - 160}.")
-    X0, Y0 = (W - WIN_W) // 2, (H - WIN_H) // 2
+    S, DW, DH, X0, Y0 = fit(WIN_W, WIN_H)
     to_out = timeline(json.load(open(a.plan)))
     plan = json.load(open(a.plan))
     majors = [to_out(k / plan["fps"] * 1000) for k, f in enumerate(plan.get("frac", [])) if f > MAJOR]
@@ -351,9 +384,12 @@ def main():
     zy = lookup([v[2] for v in traj], "%.1f")
     graph = (
         # A 1x recording (some screens, such as a PDF viewer, need one) is scaled up to the 2x window.
-        f"[1:v]format=gray[m];[0:v]scale={WIN_W * K}:{WIN_H * K}:flags=lanczos,format=rgba[v];[v][m]alphamerge[win];"
-        f"[3:v]format=rgba[b];[b][2:v]overlay=0:0[bs];[bs][win]overlay={X0 * K}:{Y0 * K}:shortest=1,format=yuv444p,"
-        f"zoompan=z='{zz}':x='{zx}':y='{zy}':d=1:s={W}x{H}:fps={FPS},format=yuv420p"
+        f"[1:v]format=gray[m];[0:v]scale={DW * K}:{DH * K}:flags=lanczos,format=rgba[v];[v][m]alphamerge[win];"
+        # BT.709, tagged below, so players show the background as exactly the slide's colour.
+        f"[3:v]format=rgba[b];[b][2:v]overlay=0:0[bs];[bs][win]overlay={X0 * K}:{Y0 * K}:shortest=1,"
+        f"scale=out_color_matrix=bt709:out_range=tv,format=yuv444p,"
+        f"zoompan=z='{zz}':x='{zx}':y='{zy}':d=1:s={W}x{H}:fps={FPS},format=yuv420p,"
+        f"setparams=range=tv:color_primaries=bt709:color_trc=bt709:colorspace=bt709"
     )
     script = a.dst + ".filter.txt"
     with open(script, "w") as f:
@@ -364,6 +400,7 @@ def main():
     run(["-i", a.src, *loop, "-i", mask, *loop, "-i", shadow, *loop, "-i", bg,
          "-/filter_complex", script, "-t", f"{end:.3f}",
          "-c:v", "libx264", "-profile:v", "high", "-pix_fmt", "yuv420p", "-crf", "18", "-preset", "slow", "-r", str(FPS),
+         "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", "-color_range", "tv",
          "-movflags", "+faststart", "-an", a.dst])
     os.remove(script)
     print(f"{a.dst}: {duration(a.dst):.1f} s")

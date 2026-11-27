@@ -173,10 +173,10 @@ cd "$S/media"
 ```
 
 - `retime.py` speeds the recording up. Movement plays 1.8 times faster, a stretch where nothing changes is cut to 0.8 seconds, and the last screen holds 1.5 seconds. Pass `--speed`, `--still` or `--end` after a second colon: `out/x.mp4:x:--speed 1.5`.
-- `zoom.py` puts the app in a rounded window over a gradient, 1920 by 1304. It zooms in where the clicks, the typing and a resting cursor are, follows the cursor, and zooms back out when the screen is replaced. `--plan-only` prints the zoom shots, `--skip N` leaves out a shot that looks wrong, and `--plain` frames without zooming. A 1600 by 1000 window fits the frame best; it takes any window up to 1760 by 1144.
-- `frame.py` frames a 1x video, and scales a phone recording (taller than wide) to 884 by 1920 without a frame.
+- `zoom.py` puts the app in a rounded window with a light shadow, 1920 by 1304, over the deck slide's own grey (#f2f2f2), so on a slide only the window and its shadow show. Any window is scaled to leave 48 px around it; 1600 by 1000 shows at 1822 by 1140. `--theme` picks another background: `white` for a white slide, or the wallpapers `care` (Care UI's emerald) and `blue`. It zooms in where the clicks, the typing and a resting cursor are, follows the cursor, and zooms back out when the screen is replaced. `--plan-only` prints the zoom shots, `--skip N` leaves out a shot that looks wrong, and `--plain` frames without zooming.
+- `frame.py` frames a 1x video the same way (it takes the look from `zoom.py`, so copy both), and scales a phone recording (taller than wide) to 884 by 1920 without a frame.
 
-`finish.sh` writes `final-zoom/<name>.mp4` and `final-plain/<name>.mp4`, and a contact sheet, `out/fast/<name>-sheet.png`. Deliver both versions; people choose between them. A phone recording gets only the plain one. Look at the sheet and at a few full frames before you call a video done: it opens on a settled screen, shows no error toast or spinner, and each result stays on screen for about a second.
+`finish.sh` writes `final-zoom/<name>.mp4` and `final-plain/<name>.mp4`, and a contact sheet, `out/fast/<name>-sheet.png`. `MODE=plain` renders only the plain one, as deck videos need now. A phone recording gets only the plain one. Look at the sheet and at a few full frames before you call a video done: it opens on a settled screen, shows no error toast or spinner, and each result stays on screen for about a second.
 
 If you change these scripts, three ffmpeg traps:
 
@@ -237,16 +237,16 @@ Set each recorded flow to `recorded` in `plan.md`, and release the environment l
 
 ## Videos for the deck
 
-When the session's job is videos for the deck at deck.ohc.network, the same kit records them. The user set these rules on 24 and 25 November 2026; follow all of them:
+When the session's job is videos for the deck at deck.ohc.network, the same kit records them. The user set these rules between 24 and 27 November 2026; follow all of them:
 
 - **What to make.** The deck's existing videos, remade on the current Care screens (ask which slides; in November 2026 they were slide 16 onward of the Canva deck), and one video for each main new feature of the release when asked. Each tells one small story that shows what a feature is for, to hospital decision makers. When the user asks for a comparison, show the variants first: for workspaces, two or three different workspaces before the work in one of them.
 - **Data that looks real.** Realistic invented names for people, patients and everything created on camera; no real hospital or person, and never "Test" or "Demo".
 - **Silent.** No voice and no captions, unless the user asks for them (`narration.md`).
 - **Sped up like the originals.** About 15 to 30 seconds after the speed-up; the raw recording is usually 1.5 to 2.5 times longer. `retime.py` does this.
 - **Sharp.** Record with `EZ_CAPTURE=1` and a 1600 by 1000 viewport (set `viewport` in `playwright.config.ts`).
-- **Framed like the originals.** The app in a rounded window with a soft shadow over a gradient, 1920 by 1304.
-- **Two versions of every video**, kept apart: `final-plain/` without zoom and `final-zoom/` with the zoom that goes in and out like the originals and follows the cursor. `finish.sh` makes both. A phone video (a phone-sized viewport, 442 by 960 worked, with `isMobile: true`) gets only the plain version, a plain screen recording like the deck's original.
-- **Plain first.** Deliver the plain versions first, then the zoom versions, and send each video as soon as it is ready, with where the file is. The user takes the files straight from the output folders.
+- **On the slide's grey.** The app in a window with rounded corners (28 px, `CORNER` in `zoom.py`) and a light shadow, as large as the frame allows, over the slide's own background colour, 1920 by 1304: no coloured border or wallpaper. The slides were #f2f2f2 in November 2026; check the slide in Canva before rendering (sample a screenshot), and use `--theme white` for a white slide. The shadow must fade out inside the frame, or the video's edge shows on the slide. `zoom.py` does all this by default. Coloured wallpapers (a blue-to-mint gradient, Care emerald, muted blue) were tried and set aside on 27 November.
+- **Plain only.** No zoom version unless the user asks for one again: render with `MODE=plain` into `final-plain/`. A phone video (a phone-sized viewport, 442 by 960 worked, with `isMobile: true`) is a plain screen recording with no frame, like the deck's original.
+- **Show one first.** When the look changes, render one video and show it, with a mock-up of it in its slide, before rendering the rest. Then send each video as soon as it is ready, with where the file is. The user takes the files straight from the output folders. A re-render reuses the sped-up file and plan (`RETIME=0`), so the timing stays as approved; keep the previous files in a dated folder.
 - **File names.** The feature name only, in lower case, such as `bed-management.mp4`: no product, version or slide prefix such as `care31-` or `slide-22-`. A file that is not finished starts with `in-progress-`.
 - **Clean frames.** Each video opens on a settled screen and shows no error, spinner or flash. Cut a flash that only the recording caught (a code or a message that appears for a moment) from the raw recording before finishing, and shift the times in `<slug>.events.json` by the length removed.
 - **Real roles.** A facility administrator for facility settings, a doctor or nurse for clinical work. Never the superuser.
