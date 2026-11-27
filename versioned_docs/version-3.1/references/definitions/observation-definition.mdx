@@ -4,23 +4,29 @@ sidebar_position: 4
 
 # Observation Definition
 
-An `ObservationDefinition` is master data describing *how* a particular observation is captured — its code, permitted data type, unit, method, body site, and (interpretation) reference ranges. You create one when you need a measurement collected consistently across forms; questionnaires reference it so the same observation (blood pressure, say) is recorded the same way everywhere, whether instance-wide or within a single facility. One observation code can back several definitions. The model loosely follows the [FHIR ObservationDefinition](https://build.fhir.org/observationdefinition.html) resource.
+Technical reference for the `ObservationDefinition` module in Care EMR. For the plain-language view, see the [Observation Definition concept](../../concepts/definitions/observation-definition.mdx).
 
-The Django model is only storage: `code`, `body_site`, `method`, `permitted_unit`, `component`, and `qualified_ranges` are opaque `JSONField`s. The shape you write against — enums, value-set bindings, read/write contracts — lives in the Pydantic resource specs (`care/emr/resources/observation_definition/spec.py`), built on the `EMRResource` base.
+An `ObservationDefinition` is master data, usually facility-scoped, that describes how one observation is captured: its code, data type, unit, method, body site, components and interpretation rules (qualified ranges). Activity definitions and diagnostic reports of the same facility use it, and each `Observation` recorded from it links back to it.
+
+The Django model is storage only: `code`, `body_site`, `method`, `permitted_unit`, `component` and `qualified_ranges` are `JSONField`s. Their shape, the enums, the value-set bindings and the read and write contracts live in the Pydantic resource specs, built on `EMRResource`.
 
 **Source:**
 
 - Model: [`care/emr/models/observation_definition.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/observation_definition.py)
 - Resource spec: [`care/emr/resources/observation_definition/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/observation_definition/spec.py)
+- Viewset: [`care/emr/api/viewsets/observation_definition.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/observation_definition.py)
+- Authorization: [`care/security/authorization/observation_definition.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/authorization/observation_definition.py)
+- Permissions: [`care/security/permissions/observation_definition.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/permissions/observation_definition.py)
+- Interpretation evaluator: [`care/utils/evaluators/interpretation_evaluator.py`](https://github.com/ohcnetwork/care/blob/develop/care/utils/evaluators/interpretation_evaluator.py)
 - Helper: [`care/emr/resources/observation_definition/observation.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/observation_definition/observation.py)
 
 ## Models
 
 | Model | Purpose |
 | --- | --- |
-| `ObservationDefinition` | Master-data definition of how an observation is coded, typed, and measured |
+| `ObservationDefinition` | Master-data definition of how an observation is coded, typed, measured and interpreted |
 
-`ObservationDefinition` extends [`SlugBaseModel`](../foundation/base-model.mdx), which adds facility-scoped slug helpers on top of `EMRBaseModel`. From `EMRBaseModel` it inherits `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and the `history`/`meta` JSON fields.
+`ObservationDefinition` extends [`SlugBaseModel`](../foundation/base-model.mdx), which sets `FACILITY_SCOPED = True` and adds the slug helpers. `SlugBaseModel` extends `EMRBaseModel`, which adds `history`, `meta`, `created_by` and `updated_by`. The shared `BaseModel` underneath adds `external_id`, `created_date`, `modified_date` and the soft-delete flag `deleted`.
 
 ## `ObservationDefinition` fields
 
@@ -28,37 +34,37 @@ The Django model is only storage: `code`, `body_site`, `method`, `permitted_unit
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `facility` | `FK → Facility` (PROTECT) | Nullable, `default=None`. Set means the definition is scoped to that facility; `null` means instance-wide. Excluded from the base spec (`__exclude__ = ["facility"]`) and set server-side from the `facility` UUID on create |
-| `version` | `IntegerField` | Defaults to `1`. Read-only — appears in `...ReadSpec` only, never accepted on write |
-| `slug` | `CharField(255)` | Set server-side from `slug_value`, then namespaced. See [slug behaviour](#slug-behaviour) |
-| `title` | `CharField(1024)` | Required. Display name shown when authoring questionnaires; not the observation `code` |
-| `status` | `CharField(255)` | Required. Lifecycle code from `ObservationStatusChoices` — see [Status values](#status-values). Definitions move to `retired` rather than being destroyed |
-| `description` | `TextField` | Required. Natural-language (markdown) description |
-| `derived_from_uri` | `TextField` | External URI this definition was derived from. Optional (`str \| None`, default `None`) |
+| `facility` | `FK → Facility` (PROTECT) | Nullable, `default=None`. Set: the definition belongs to that facility. `null`: instance-wide. Excluded from the base spec (`__exclude__ = ["facility"]`); the create spec resolves it from the `facility` UUID; update cannot change it |
+| `version` | `IntegerField` | Default `1`. Read-only: only `ObservationDefinitionReadSpec` has it |
+| `slug` | `CharField(255)` | Set from `slug_value`, then namespaced by the viewset. See [Slug behaviour](#slug-behaviour) |
+| `title` | `CharField(1024)` | Required. Display name of the definition |
+| `status` | `CharField(255)` | Required. `ObservationStatusChoices`; see [Status values](#status-values). There is no delete endpoint: retire by setting `retired` |
+| `description` | `TextField` | Required |
+| `derived_from_uri` | `TextField` (not nullable) | Optional in the spec (`str \| None`, default `None`). The facility form has no field for it |
 
 ### Coding & measurement
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `category` | `CharField(255)` | Nullable in the model, but **required** in the API as `ObservationCategoryChoices` — see [Category values](#category-values) |
-| `code` | `JSONField` | Required. What is being observed: a `Coding` bound to the `system-observation` value set (LOINC) — see [Coding shape](#coding-shape) |
-| `permitted_data_type` | `CharField(100)` | Required. `QuestionType` enum (questionnaire data types) — see [Permitted data type values](#permitted-data-type-values). `group`, `display`, and `url` are rejected |
-| `body_site` | `JSONField` | Nullable. `Coding` bound to the `system-body-site-observation` value set (SNOMED CT) |
-| `method` | `JSONField` | Nullable. `Coding` bound to the `system-collection-method` value set (SNOMED CT) |
-| `permitted_unit` | `JSONField` | Nullable. `Coding` bound to the `system-ucum-units` value set (UCUM). Care does not convert between units when displaying data |
+| `category` | `CharField(255)` | Nullable in the model; required in the API as `ObservationCategoryChoices`. See [Category values](#category-values) |
+| `code` | `JSONField` | Required. `Coding` bound to `system-observation` (LOINC). See [Coding shape](#coding-shape) |
+| `permitted_data_type` | `CharField(100)` | Required. `QuestionType`; see [Permitted data type values](#permitted-data-type-values). `group`, `display` and `url` are rejected |
+| `body_site` | `JSONField` | Nullable. `Coding` bound to `system-body-site-observation` (SNOMED CT) |
+| `method` | `JSONField` | Nullable. `Coding` bound to `system-collection-method` (SNOMED CT) |
+| `permitted_unit` | `JSONField` | Nullable. `Coding` bound to `system-ucum-units` (UCUM) |
 
 ### Components & ranges
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `component` | `JSONField` | Nullable. `list[ObservationDefinitionComponentSpec] \| None`. Several measured values under one definition (systolic + diastolic, for example), each with its own `code`, `permitted_data_type`, `permitted_unit`, and `qualified_ranges` — see [ObservationDefinitionComponentSpec](#observationdefinitioncomponentspec) |
-| `qualified_ranges` | `JSONField` | Model default `list`. **Required** in the API as `list[QualifiedRangeSpec]`, though it may be empty. Condition-dependent reference ranges / interpretations — see [QualifiedRangeSpec](#qualifiedrangespec) |
+| `component` | `JSONField` | Nullable. `list[ObservationDefinitionComponentSpec] \| None`. Several values under one definition (systolic and diastolic, for example), each with its own `code`, `permitted_data_type`, `permitted_unit` and `qualified_ranges`. See [ObservationDefinitionComponentSpec](#observationdefinitioncomponentspec) |
+| `qualified_ranges` | `JSONField` | Model default `list`. Required in the API as `list[QualifiedRangeSpec]`; may be empty. The interpretation rules. See [QualifiedRangeSpec](#qualifiedrangespec) |
 
 ## Enum values
 
 ### Status values
 
-`ObservationStatusChoices` — bound to the `status` field.
+`ObservationStatusChoices`, bound to `status`.
 
 | Value |
 | --- |
@@ -69,7 +75,7 @@ The Django model is only storage: `code`, `body_site`, `method`, `permitted_unit
 
 ### Category values
 
-`ObservationCategoryChoices` — bound to the `category` field.
+`ObservationCategoryChoices`, bound to `category`.
 
 | Value |
 | --- |
@@ -85,7 +91,7 @@ The Django model is only storage: `code`, `body_site`, `method`, `permitted_unit
 
 ### Permitted data type values
 
-`QuestionType` (from `questionnaire/spec.py`) — bound to `permitted_data_type` on both the definition and each component. `validate_question_type` rejects `group`, `display`, and `url` with "Cannot create a definition with this type".
+`QuestionType` (from `questionnaire/spec.py`), bound to `permitted_data_type` on the definition and on each component. `validate_question_type` rejects `group`, `display` and `url` with "Cannot create a definition with this type". The facility form offers seven of the allowed values: `boolean`, `decimal`, `integer`, `dateTime`, `time`, `string` and `quantity`.
 
 | Value | Allowed for a definition |
 | --- | --- |
@@ -108,27 +114,27 @@ The Django model is only storage: `code`, `body_site`, `method`, `permitted_unit
 
 ### Coding shape
 
-The coded fields (`code`, `body_site`, `method`, `permitted_unit`) store a `Coding` object. The spec binds each to a value set via `ValueSetBoundCoding[<slug>]`, so the submitted `code` is validated against that value set on write.
+The coded fields (`code`, `body_site`, `method`, `permitted_unit`) store a `Coding` object. The spec binds each one to a value set through `ValueSetBoundCoding[<slug>]`, and Care refuses a code that is not in that value set ("Code does not exist in the valueset").
 
 ```text
 Coding {
-  system:  str | null
-  version: str | null
+  system:  str | null = null
+  version: str | null = null
   code:    str            # required
-  display: str | null
-}                          # extra="forbid" — unknown keys rejected
+  display: str | null = null
+}                          # extra="forbid": unknown keys rejected
 ```
 
 | Field | Bound value set (slug) | Code system |
 | --- | --- | --- |
 | `code` | `system-observation` | LOINC (`http://loinc.org`) |
-| `body_site` | `system-body-site-observation` | SNOMED CT (`http://snomed.info/sct`) |
+| `body_site` | `system-body-site-observation` | SNOMED CT: a listed set of concepts plus every concept under 442083009 |
 | `method` | `system-collection-method` | SNOMED CT |
 | `permitted_unit` | `system-ucum-units` | UCUM (`http://unitsofmeasure.org`) |
 
 ### ObservationDefinitionComponentSpec
 
-Element of the `component` list — one per measured value when a definition carries several.
+Element of the `component` list: one per value when a definition carries several.
 
 ```text
 ObservationDefinitionComponentSpec {
@@ -139,9 +145,11 @@ ObservationDefinitionComponentSpec {
 }
 ```
 
+Care interprets a result component with the rules of the definition component whose `code.code` is the same.
+
 ### QualifiedRangeSpec
 
-Element of `qualified_ranges` (on the definition and on each component). A qualified range is either **numeric** (`ranges`) or **categorical** (coded value sets) — never both.
+Element of `qualified_ranges`, on the definition and on each component. A rule is either numeric (`ranges`) or coded (value sets), never both. The facility form creates only numeric rules.
 
 ```text
 QualifiedRangeSpec {
@@ -158,10 +166,10 @@ QualifiedRangeSpec {
 
 `validate_categorical_or_numeric` enforces:
 
-- Either `ranges` (numeric) **or** at least one coded value set / `valueset_interpretation` (categorical) — one is required.
-- Numeric `ranges` and coded value sets cannot both appear.
-- Numeric `ranges` must not overlap (sorted by `min`, treating missing `min`/`max` as -∞/+∞).
-- Coded value-set slugs (`normal_coded_value_set`, `critical_coded_value_set`, `abnormal_coded_value_set`, and each `valueset_interpretation.valuset`) must be unique — duplicates are rejected.
+- Either `ranges` or at least one coded value set or `valueset_interpretation` is required.
+- `ranges` and coded value sets cannot both appear.
+- Numeric `ranges` must not overlap. The check sorts by `min` (a missing `min` or `max` counts as -∞ or +∞) and refuses `curr_min < prev_max`, so ranges that only touch are accepted.
+- Coded value-set slugs must be unique within a rule ("Duplicate valueset interpretations detected").
 
 ### NumericRangeSpec
 
@@ -173,7 +181,7 @@ NumericRangeSpec {
 }
 ```
 
-At least one of `min`/`max` must be provided (`validate_range`).
+At least one of `min` and `max` is required (`validate_range`).
 
 ### InterpretationSpec
 
@@ -187,18 +195,22 @@ InterpretationSpec {
 }
 ```
 
+The fallback switch of the facility form saves `default_interpretation` as `{ display: "", highlight: true }`.
+
 ### ValueSetInterpretationSpec
 
 ```text
 ValueSetInterpretationSpec {
   interpretation: InterpretationSpec   # required
-  valuset:        str                  # value-set slug (note: spelling "valuset")
+  valuset:        str                  # value-set slug; note the spelling "valuset"
 }
 ```
 
+The frontend type for this shape uses the key `valueset`, which does not match. The facility form does not create coded rules.
+
 ### EvaluatorConditionSpec
 
-Element of `QualifiedRangeSpec.conditions`. Validated against `EvaluatorMetricsRegistry`: an unknown `metric` raises, and the registered evaluator validates `operation`/`value`.
+Element of `QualifiedRangeSpec.conditions`. An unknown `metric` is refused with "Invalid metric", and the metric's evaluator validates `operation` and `value`. See [Condition metrics](#condition-metrics).
 
 ```text
 EvaluatorConditionSpec {
@@ -208,56 +220,120 @@ EvaluatorConditionSpec {
 }
 ```
 
+## Related models
+
+```text
+Facility ──< ObservationDefinition         ObservationDefinition.facility: FK, PROTECT, nullable
+ObservationDefinition ──< Observation      Observation.observation_definition: FK, CASCADE, nullable
+ActivityDefinition.observation_result_requirements: list of ObservationDefinition ids, same facility
+```
+
 ## Resource specs (API schema)
 
-All specs subclass `BaseObservationDefinitionSpec` (itself a subclass of `EMRResource`, with `__model__ = ObservationDefinition` and `__exclude__ = ["facility"]`). `EMRResource` provides `serialize`/`de_serialize` plus the `perform_extra_serialization` / `perform_extra_deserialization` hooks.
+All specs subclass `BaseObservationDefinitionSpec`, an `EMRResource` with `__model__ = ObservationDefinition` and `__exclude__ = ["facility"]`.
 
 | Spec class | Role | Notable fields / behaviour |
 | --- | --- | --- |
 | `BaseObservationDefinitionSpec` | Shared base | `id`, `title`, `status`, `description`, `category`, `code`, `permitted_data_type`, `component`, `body_site`, `method`, `permitted_unit`, `derived_from_uri`, `qualified_ranges`. Runs `validate_data_type` and `validate_qualified_ranges_consistency` |
-| `ObservationDefinitionCreateSpec` | Write · create | Adds `facility: UUID4 \| null` and `slug_value: SlugType`. Validates the facility exists; `perform_extra_deserialization` resolves the facility and sets `obj.slug = slug_value` |
-| `ObservationDefinitionUpdateSpec` | Write · update | Adds `slug_value: SlugType`; `perform_extra_deserialization` sets `obj.slug = slug_value`. The facility is not re-bound on update |
-| `ObservationDefinitionReadSpec` | Read · list & detail | Adds `version: int \| null`, `facility: dict \| null`, `slug_config: dict`, `slug: str`. `perform_extra_serialization` sets `id = external_id`, serializes `facility` via `FacilityBareMinimumSpec`, and sets `slug_config = parse_slug(slug)` |
+| `ObservationDefinitionCreateSpec` | Write · create | Adds `facility: UUID4 \| null` (must exist: "Facility not found") and `slug_value: SlugType`. `perform_extra_deserialization` resolves the facility and sets `obj.slug = slug_value` |
+| `ObservationDefinitionUpdateSpec` | Write · update | Adds `slug_value: SlugType`; `perform_extra_deserialization` sets `obj.slug = slug_value`. It cannot change the facility |
+| `ObservationDefinitionReadSpec` | Read · list & retrieve | Adds `version`, `facility` (serialized with `FacilityBareMinimumSpec`), `slug_config` (`parse_slug(slug)`) and `slug`; `id` is the `external_id` |
 
 Notes:
 
-- **Value-set bindings** — `code`, `body_site`, `method`, `permitted_unit` (and component equivalents) are `ValueSetBoundCoding[...]`; the submitted coding is validated against the bound value set (`system-observation`, `system-body-site-observation`, `system-collection-method`, `system-ucum-units`).
-- **Data-type guard** — `permitted_data_type` (definition and component) rejects `group`, `display`, `url`.
-- **Range consistency** — `validate_qualified_ranges_consistency` requires every `qualified_ranges` entry on a definition to be the same kind: all numeric `ranges` or all coded value sets. Mixing raises.
-- **`slug_value`** — `SlugType`: 5–50 chars, URL-safe (`[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]`), starting and ending alphanumeric. Stored namespaced as `obj.slug` (see below).
-- **No metadata store** — `__store_metadata__` is `False`, so spec fields map directly to model columns rather than into `meta`.
+- **Value-set bindings**: `code`, `body_site`, `method` and `permitted_unit`, and the component `code` and `permitted_unit`, are `ValueSetBoundCoding[...]`. Care checks the submitted coding against the bound value set.
+- **Data-type guard**: `permitted_data_type`, on the definition and on each component, rejects `group`, `display` and `url`.
+- **Rule kind consistency**: `validate_qualified_ranges_consistency` requires all rules of one definition to be the same kind: all numeric or all coded. It does not stop rules on both the definition and its components; only the facility form does.
+- **`slug_value`**: `SlugType`, 5–50 characters, pattern `^[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]$`. Stored namespaced in `slug`.
+- **Metadata**: `__store_metadata__` keeps the `EMRResource` default, `False`.
 
 ## Methods & save behaviour
 
-`ObservationDefinition` overrides nothing of its own. Slug handling comes from `SlugBaseModel`, and the create/update side effects live in the API specs.
+`ObservationDefinition` adds no methods of its own. The slug helpers come from `SlugBaseModel`, and the viewset applies the namespacing on create and update.
 
 ### Slug behaviour
 
-`SlugBaseModel` sets `FACILITY_SCOPED = True`, so the stored `slug` is namespaced:
+The viewset's `recalculate_slug` rewrites `slug` on every create and update:
 
 ```text
 facility-scoped: f-<facility.external_id>-<slug_value>
-instance-scoped: i-<slug_value>
+instance-wide:   i-<slug_value>
 ```
 
-- `calculate_slug()` returns the `f-…` form when `facility` is set, otherwise the `i-…` form.
-- `parse_slug(slug)` validates the prefix and returns a dict: `{"facility": <uuid>, "slug_value": <bare slug>}` for `f-` slugs, or `{"slug_value": <bare slug>}` for `i-` slugs. `ObservationDefinitionReadSpec` exposes this as `slug_config`.
+- `calculate_slug()` returns the `f-` form when the model has a facility, otherwise the `i-` form.
+- `parse_slug(slug)` returns `{"facility": <uuid>, "slug_value": <bare slug>}` for an `f-` slug and `{"slug_value": <bare slug>}` for an `i-` slug; anything else raises "Invalid slug". `ObservationDefinitionReadSpec` exposes the result as `slug_config`.
+- The lookup field is `slug`, so the retrieve, update and upsert calls take the stored, namespaced slug.
+- Create and update refuse a slug that already exists in the same scope (compared case-insensitively) with "Slug already exists.".
 
-The create/update specs receive the bare `slug_value` and store it on `obj.slug`; the model's slug helpers apply the namespacing.
+### Save behaviour
+
+- Care writes only the fields whose value differs from the schema default (`exclude_defaults=True`). A field sent as `null` where the default is `null` is not written, so it keeps its stored value.
+- Retiring is an update with `status` set to `retired`. The inherited `deleted` flag is a soft delete that the default manager hides; no endpoint sets it.
 
 ## API integration notes
 
-- The facility binding is write-once: the create spec resolves the `facility` UUID to an FK; the update spec only re-sets `slug_value` and never re-binds the facility.
-- Retire definitions via `status` (`retired`) instead of deleting. The inherited `deleted` flag gives you ORM-level soft-delete if you need it.
-- `permitted_unit` codings follow UCUM, but Care never converts between units at display time — store data in the unit you intend to read.
-- `convert_od_to_observation` (`observation.py`) builds an [`Observation`](../clinical/observation.mdx) from a definition for a given encounter, carrying over `category` and `code` and defaulting `status` to `final`.
+### Endpoints
+
+The viewset is registered at the top level, not under a facility. It has no destroy action, so the API has no delete.
+
+| Method & path | Action | Notes |
+| --- | --- | --- |
+| `GET /api/v1/observation_definition/` | list | Filters: `facility` (UUID), `category` and `status` (exact, case-insensitive), `title` (contains, case-insensitive). Ordering: `created_date`, `modified_date` |
+| `GET /api/v1/observation_definition/{slug}/` | retrieve | Lookup by `slug` |
+| `POST /api/v1/observation_definition/` | create | Body: `ObservationDefinitionCreateSpec` |
+| `PUT` or `PATCH /api/v1/observation_definition/{slug}/` | update | Body: `ObservationDefinitionUpdateSpec`. `PATCH` runs the same full update |
+| `POST /api/v1/observation_definition/upsert/` | upsert | `datapoints`: one with `id` (the slug) is an update, one without is a create. Each runs the create or update checks |
+| `GET /api/v1/observation_definition/metrics/` | metrics | Every registered condition metric: name, verbose name, context and allowed operations. Sign-in only |
+
+### Authorization
+
+| Action | Permission checked | Where it must be held |
+| --- | --- | --- |
+| list with `facility` | Can Read Observation Definition | Any organization of that facility (root or department). Returns only that facility's definitions |
+| list without `facility` | None (sign-in only) | Returns only instance-wide definitions |
+| retrieve a facility definition | Can Read Observation Definition | Any organization of the definition's facility |
+| retrieve an instance-wide definition | None (sign-in only) | Open to every signed-in user |
+| create, update or upsert a facility definition | Can Create Observation Definition on Facility | The facility's root organization (`org_type` root, named "Administration"). A role held only in a department fails with 403 "Access Denied to Observation Definition" |
+
+A facility user cannot create or update an instance-wide definition (no `facility`): the request fails with 403 "Access Denied to Observation Definition".
+
+Default roles: Can Create Observation Definition on Facility is held by Facility Admin. Can Read Observation Definition is held by Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist. These are defaults: the sync command rewrites the system roles from the code, and a deployment can add custom roles.
+
+The facility screens check no permission themselves; every gate is in the backend.
+
+### Interpretation evaluation
+
+`InterpretationEvaluator` applies the rules of a definition to a result:
+
+- Rules are checked in list order. The first rule whose conditions all match is used, and later rules are never checked, even when that rule gives no interpretation. A rule with no conditions always matches.
+- In a numeric rule, ranges are checked in list order, and the first range with `min <= value <= max` gives the interpretation. Both ends are inclusive; a missing bound is open-ended.
+- In a coded rule, the result's coding is checked against `normal_coded_value_set`, `critical_coded_value_set` and `abnormal_coded_value_set` (fixed displays "Normal", "Critical" and "Abnormal"), then each `valueset_interpretation` in order.
+- If nothing in the rule matches the value, the rule's `default_interpretation` is used; without one, the result has no interpretation.
+- `DiagnosticReportViewSet.upsert_observations` runs `compute_observation_interpretation` for each observation linked to a definition, when it is created or updated. It stores the result on the observation as `interpretation` and `reference_range`. Each component value uses the rules of the definition component with the same `code.code`.
+
+### Condition metrics
+
+| Metric (`name`) | Verbose name | Operations | Notes |
+| --- | --- | --- | --- |
+| `patient_age` | Patient Age | `in_range`, `equality` | Value unit `years` (default), `months` or `days`; `in_range` includes both ends |
+| `patient_gender` | Patient Gender | `equality` | Patient context |
+| `encounter_class` | Encounter Class | `equality` | |
+| `encounter_tag` | Encounter Tag | `has_tag` | `value_type` selects the encounter's tags (default) or the patient's tags. Matches when any listed tag is present and not expired |
+| `patient_tag` | Patient Tag | `has_tag` | The facility form does not offer this metric |
+
+### Other notes
+
+- The facility binding is write-once: create resolves `facility`, and update cannot change it.
+- Activity definitions and diagnostic reports accept only definitions of their own facility, and do not check the definition's status. The facility pickers offer only `active` definitions.
+- `convert_od_to_observation` (`observation.py`) builds an [`Observation`](../clinical/observation.mdx) for an encounter from a definition, with the definition's `category` and `code` and the status `final`.
 
 ## Related
 
+- Concept: [Observation Definition](../../concepts/definitions/observation-definition.mdx)
 - Reference: [Observation](../clinical/observation.mdx)
-- Reference: [Service Request](../clinical/service-request.mdx)
-- Reference: [Questionnaire](../definitions/questionnaire.mdx)
-- Reference: [Value Set](../definitions/valueset.mdx)
+- Reference: [Diagnostic Report](../clinical/diagnostic-report.mdx)
+- Reference: [Activity Definition](../definitions/activity-definition.mdx)
+- Reference: [Valueset](../definitions/valueset.mdx)
 - Reference: [Base model](../foundation/base-model.mdx)
 - Source: [observation_definition.py (model)](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/observation_definition.py)
 - Source: [observation_definition/spec.py (resource spec)](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/observation_definition/spec.py)

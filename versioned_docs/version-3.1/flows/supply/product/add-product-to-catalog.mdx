@@ -2,79 +2,145 @@
 sidebar_position: 1
 ---
 
-# Add a product to the catalog
+# Create product knowledge
 
 ## Overview
 
-This flow describes how to add a [product](../../../concepts/supply/product.mdx) to the catalog of a facility in Care. A catalog entry defines a product that the facility can stock and use.
+<video src="/media/supply/product/add-product-to-catalog.mp4" poster="/media/supply/product/add-product-to-catalog.poster.png" controls width="720">
+  <track kind="captions" src="/media/supply/product/add-product-to-catalog.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to create [Product Knowledge](../../../concepts/definitions/product-knowledge.mdx) for your facility in Care. Product Knowledge describes a product that the facility stocks or uses, such as a medication.
 
 ## Pre-requisites
 
-- You are a member of the facility.
-- You know the category that the product belongs to.
-- If you add a global entry that applies to all facilities, you are a superuser.
+- You belong to a department of the facility.
+- The facility has a Product Knowledge category with no subcategories for the new Product Knowledge. If it has none, add one first: see [Add or edit a definition category](../../definitions/resource-category/manage-definition-categories.mdx).
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create Product Knowledge on Facility | Lets you add a catalog entry for the facility. Facility Admin and Admin have this permission. |
+| Can Create Product Knowledge on Facility | Lets you save the new Product Knowledge. You must hold it in the facility's root organization (**Administration**). By default, the Facility Admin role holds this permission. |
+| Can Read Product Knowledge | Lets you open a category and see the Product Knowledge in it. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Read Resource Category | Lets you see the categories, and select one in the **Category** field. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
 
-Note: Only a superuser can add a global catalog entry that belongs to no facility.
+Note: Care shows **Add Product Knowledge** to every user who can open the category. If you do not hold the create permission in the root organization, Care does not save the Product Knowledge.
 
 ## Steps
 
-### 1. Open the product knowledge settings
+### 1. Open Product Knowledge
 
-Open the facility.
+1. Open your facility.
+2. Select **Settings**.
+3. In the **Inventory** group, select **Product Knowledge**.
 
-Click **Settings**.
+Care lists the Product Knowledge categories of the facility.
 
-Click **Product Knowledge**.
+![Step 1, Open Product Knowledge: the screen at this step, with the control for the step outlined](/media/supply/product/add-product-to-catalog-1.png)
 
-### 2. Browse to the category
+### 2. Open the category
 
-Browse to the category that the product belongs to.
+1. Select the category for the new Product Knowledge.
+2. If the category has subcategories, select one of them.
+3. Repeat until you reach a category with no subcategories.
 
-### 3. Start the new catalog entry
+Note: Care shows **Add Product Knowledge** only in a category with no subcategories.
 
-Click **Add Product Knowledge**.
+Note: If the facility has no categories, Care shows **No categories found for this resource type**.
 
-### 4. Complete the form
+![Step 2, Open the category: the screen at this step, with the control for the step outlined](/media/supply/product/add-product-to-catalog-2.png)
 
-Complete the form fields.
+### 3. Start the Product Knowledge
+
+Select **Add Product Knowledge**. Care opens the **Create Product Knowledge** form.
+
+![Step 3, Start the Product Knowledge: the screen at this step, with the control for the step outlined](/media/supply/product/add-product-to-catalog-3.png)
+
+### 4. Enter the basic information
+
+In the **Basic Information** section, complete these fields.
 
 | Components | What it captures |
 | --- | --- |
-| Name | The name of the product. This field is required. |
-| Slug | A short unique code for the product. This field is required. |
-| Product Type | The type of the product: Medication, Nutritional Product, or Consumable. This field is required. |
-| Category | The category that the product belongs to. This field is required. |
-| Code | A standard code for the product. This field is optional. |
-| Base Unit | The unit that measures the product, for example tablet or millilitre. This field is required. |
-| Status | The status of the product. This field is required, and defaults to Active. |
-| Alternate Identifier | Another identifier for the product. This field is optional. |
-| Alternate names | Other names for the product. This field is optional. |
-| Storage guidelines | The storage instructions for the product. This field is optional. |
+| Name | The name of the product, for example "Paracetamol 500 mg tablet". This field is required. |
+| Slug | A short name for the Product Knowledge. Care fills it from the name as you type. You can change it. It must have 5 to 50 characters. Care keeps only lowercase letters, digits, hyphens, and underscores. This field is required. |
+| Product Type | Medication, Nutritional Product, or consumable. The default is Medication. |
+| Category | The category that you started from. To change it, select another category with no subcategories. This field is required. |
+| Code | A code for the product. Type to search for product codes. Select a code from the results. This field is optional. |
+| Base Unit | The unit that Care counts the product in: tablets, gram, milligram, microgram, milliliter, drop, international unit, or count. This field is required. |
+| Status | Draft, Active, or Retired. The default is Active. Pickers offer only Active Product Knowledge. |
+| HSN Code | A secondary identifier for the product. This field is optional. |
 
-### 5. Save the catalog entry
+![Step 4, Enter the basic information: the screen at this step, with the control for the step outlined](/media/supply/product/add-product-to-catalog-4.png)
 
-Save the form.
+### 5. Add alternative names (optional)
+
+Do this step if the product has other names, such as a trade name.
+
+1. In the **Alternative Names** section, select **Add Name**.
+2. Select the **Name Type**: Trade Name, Alias, Original Name, or Preferred. The default is Trade Name.
+3. Enter the **Name**.
+
+Repeat these steps for each name.
+
+![Step 5, Add alternative names (optional): the screen at this step, with the control for the step outlined](/media/supply/product/add-product-to-catalog-5.png)
+
+### 6. Add storage guidelines (optional)
+
+Do this step to record how to store the product and how long it stays stable.
+
+1. In the **Storage Guidelines** section, select **Add Guideline**.
+2. Enter the **Note**, for example "Store below 25 °C".
+3. Enter the **Duration Value** as a whole number.
+4. Select the **Duration Unit**. The default is **Days**.
+
+The **Note** and the **Duration Value** are required. Repeat these steps for each guideline.
+
+![Step 6, Add storage guidelines (optional): the screen at this step, with the control for the step outlined](/media/supply/product/add-product-to-catalog-6.png)
+
+### 7. Complete or remove the product definition
+
+The **Product Definition** section is already open when the form opens. While the section is open, **Dosage Form** is required.
+
+If the product has a dosage form, do these steps:
+
+1. Select the **Dosage Form**.
+2. To add an intended route, select **Add Route**.
+3. Select the **Route**.
+
+Repeat steps 2 and 3 for each intended route.
+
+If the product needs no definition, select **Remove Definition**. Care removes the section and shows **Add Definition**, which adds the section again.
+
+Note: If **Dosage Form** is empty when you select **Create**, Care shows **Required** under the field and does not save the Product Knowledge.
+
+![Step 7, Complete or remove the product definition: the screen at this step, with the control for the step outlined](/media/supply/product/add-product-to-catalog-7.png)
+
+### 8. Create the Product Knowledge
+
+Select **Create**.
+
+![Step 8, Create the Product Knowledge (1 of 2): the screen at this step, with the control for the step outlined](/media/supply/product/add-product-to-catalog-8.png)
+
+![Step 8, Create the Product Knowledge (2 of 2): the screen at this step, with the control for the step outlined](/media/supply/product/add-product-to-catalog-9.png)
 
 ## Expected Outcome
 
-- Care adds the product to the catalog of the facility.
-- The product shows in the selected category.
-- Staff can select the product when they record stock and supply.
+- Care saves the Product Knowledge and shows **Product knowledge created successfully**.
+- Care returns to the category. If the status is Active, the category lists the new Product Knowledge.
+- If the status is Active, pickers offer the Product Knowledge, for example when you create a product.
 
 ## Related
 
 Concepts:
 
+- [Product Knowledge](../../../concepts/definitions/product-knowledge.mdx)
 - [Product](../../../concepts/supply/product.mdx)
 
 Flows:
 
-- [Edit or retire a catalog entry](./edit-retire-catalog-entry.mdx)
+- [Update or retire product knowledge](./edit-retire-catalog-entry.mdx)
+- [Add or edit a definition category](../../definitions/resource-category/manage-definition-categories.mdx)
 - [Add a product instance](./add-product-instance.mdx)

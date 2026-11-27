@@ -1,0 +1,126 @@
+---
+sidebar_position: 3
+---
+
+# Set taxes and discounts for a charge item category
+
+## Overview
+
+<video src="/media/definitions/charge-item-definition/set-category-taxes-and-discounts.mp4" poster="/media/definitions/charge-item-definition/set-category-taxes-and-discounts.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/charge-item-definition/set-category-taxes-and-discounts.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to give a category of [charge item definitions](../../../concepts/definitions/charge-item-definition.mdx) its own taxes and discounts. Care applies them to every definition in the category and in its subcategories.
+
+## Pre-requisites
+
+- You are a member of a department of the facility.
+- Your facility has the charge item definition category that you want to set up. If it does not, [add the category](../resource-category/manage-definition-categories.mdx) first.
+- If you want to add taxes, your deployment has tax components.
+- If you want to add discounts, your facility or your deployment has discount components.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Resource Category on Facility | Lets you save the taxes and discounts of the category. You must hold it in the facility's root organization (**Administration**). By default, the Facility Admin role holds it. |
+| Can Read Resource Category | Lets you see the categories. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Read Tag Config | Needed only for a discount condition on a patient tag or an encounter tag. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+
+Note: Care shows **Set Monetary Components** to every user who can see the categories. If you do not hold Can Create Resource Category on Facility in the root organization, Care refuses to save.
+
+## Steps
+
+### 1. Open the charge item definitions
+
+In the facility sidebar, select **Settings**.
+
+In the settings sidebar, under **Billing**, select **Charge Item Definitions**.
+
+![Step 1, Open the charge item definitions: the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/set-category-taxes-and-discounts-1.png)
+
+### 2. Find the category
+
+Care shows the top-level categories as cards.
+
+If the category is a subcategory, open its parent category. Care then shows the subcategories as cards.
+
+![Step 2, Find the category: the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/set-category-taxes-and-discounts-2.png)
+
+### 3. Open the monetary components of the category
+
+On the card of the category, select the menu button with three dots.
+
+Select **Set Monetary Components**.
+
+Care opens the **Set Monetary Components** sheet. It shows the taxes and discounts that are set on this category.
+
+![Step 3, Open the monetary components of the category (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/set-category-taxes-and-discounts-3.png)
+
+![Step 3, Open the monetary components of the category (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/set-category-taxes-and-discounts-4.png)
+
+### 4. Select the taxes
+
+Under **Taxes**, select the box. It reads **Add tax** while no tax is selected.
+
+If a tax code has more than one rate, Care shows a button for each rate. Select one rate.
+
+If a tax has only one rate, Care shows a check box. Select the check box.
+
+Note: With the default deployment settings, CGST, SGST and IGST each have three rates, and only GST @ 0 has a check box.
+
+Select **Done**.
+
+![Step 4, Select the taxes: the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/set-category-taxes-and-discounts-5.png)
+
+### 5. Select the discounts
+
+Under **Discounts**, select the box. It reads **Add Discount** while no discount is selected.
+
+Select the check box of each discount that applies.
+
+If a discount code has more than one rate, select one rate.
+
+Select **Done**. Care lists each selected discount with a switch.
+
+For each discount, set the switch:
+
+| Switch | What it does |
+| --- | --- |
+| **Use facility global value** | When Care creates a charge item, it uses the facility's current value for this discount. Care sets this by default. |
+| **Override with local value** | The category keeps its own value for this discount. You can add conditions, and Care applies the discount only when the patient or the encounter meets them. |
+
+Note: Conditions can use the age, gender or tags of the patient, and the tags or class of the encounter.
+
+![Step 5, Select the discounts (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/set-category-taxes-and-discounts-6.png)
+
+![Step 5, Select the discounts (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/set-category-taxes-and-discounts-7.png)
+
+### 6. Save the taxes and discounts
+
+Select **Save**.
+
+Note: Care saves exactly the taxes and discounts that the sheet shows. To remove a discount, or a tax with a check box, clear its check box before you select **Save**. You can also remove a discount from the list of selected discounts.
+
+![Step 6, Save the taxes and discounts (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/set-category-taxes-and-discounts-8.png)
+
+![Step 6, Save the taxes and discounts (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/charge-item-definition/set-category-taxes-and-discounts-9.png)
+
+## Expected Outcome
+
+- Care shows the message **Monetary components saved successfully**.
+- When Care creates a charge item from a definition in this category or in its subcategories, it adds these taxes and discounts to the price components of the definition.
+- If a subcategory or a definition has its own tax or discount with the same code, Care uses that one instead of the category's.
+
+## Related
+
+Concepts:
+
+- [Charge Item Definition](../../../concepts/definitions/charge-item-definition.mdx)
+
+Flows:
+
+- [Create a charge item definition](./create-charge-item-definition.mdx)
+- [Update or retire a charge item definition](./update-or-retire-charge-item-definition.mdx)
+- [Add or edit a definition category](../resource-category/manage-definition-categories.mdx)

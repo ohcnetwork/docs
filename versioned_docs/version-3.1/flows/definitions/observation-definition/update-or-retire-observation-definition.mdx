@@ -6,53 +6,121 @@ sidebar_position: 3
 
 ## Overview
 
-This flow describes how to change the details of an [observation definition](../../../concepts/definitions/observation-definition.mdx) in a facility. It also describes how to retire an observation definition that staff must not use again.
+<video src="/media/definitions/observation-definition/update-or-retire-observation-definition.mp4" poster="/media/definitions/observation-definition/update-or-retire-observation-definition.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/observation-definition/update-or-retire-observation-definition.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to change an [observation definition](../../../concepts/definitions/observation-definition.mdx) of your facility, and how to retire one that staff must not pick again. It also describes how to make a retired observation definition Active again.
 
 ## Pre-requisites
 
-- You are a member of the facility.
-- The observation definition that you want to change is not Retired.
-- You have the permission listed below.
+- You belong to a department of the facility.
+- The observation definition is created for your facility. See [Create an observation definition](./create-observation-definition.mdx).
+- If you want to retire the observation definition, its status is not Retired.
+- You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create Observation Definition on Facility | Lets you update or retire an observation definition. |
+| Can Create Observation Definition on Facility | Lets you save changes, retire the observation definition and make it Active again. You must hold it in the facility's root organization (**Administration**). A role in a department is not enough: Care shows "Access Denied to Observation Definition". By default, the Facility Admin role holds this permission. |
+| Can Read Observation Definition | Lets you open the **Observation Definitions** list, the page of the observation definition and the edit form. Hold it in the root organization or in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Read Tag Config | Needed only if you add an **Encounter Tags** condition when you change the interpretation rules. Lets you pick the tags. Hold it in the root organization or in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
 
 ## Steps
 
 ### 1. Open the observation definitions list
 
-Go to your facility. Click **Settings**. Click **Observation Definitions**.
+In the facility sidebar, select **Settings**.
 
-### 2. Select the observation definition
+In the settings sidebar, under **Clinical**, select **Observation Definitions**.
 
-Click the observation definition in the list. Care opens the observation definition.
+Care shows the Active observation definitions of your facility.
 
-### 3. Update the details
+![Step 1, Open the observation definitions list: the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/update-or-retire-observation-definition-1.png)
 
-Click **Edit**.
+### 2. Find the observation definition
 
-Change the details of the observation definition.
+To find an observation definition by its title, type in **Search definitions**.
 
-Click **Save**.
+To see the observation definitions with another status, select that status in the **Status** filter. You can also filter by **Category**.
 
-### 4. Retire the observation definition
+![Step 2, Find the observation definition: the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/update-or-retire-observation-definition-2.png)
 
-Follow this step only when you want to stop new use of the observation definition.
+### 3. Open the edit form
 
-Click **Delete**. Care shows a confirmation dialog.
+If you only want to retire the observation definition, go to step 5.
 
-Click **Confirm**.
+In the row of the observation definition, select **Edit**.
 
-Note: Delete does not remove the record. Care sets the Status to Retired. Care then hides the **Delete** button for that observation definition.
+You can also select **View**, then select **Edit** on the page of the observation definition.
+
+Care opens the **Edit Observation Definition** form. It has the same sections as the create form.
+
+![Step 3, Open the edit form: the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/update-or-retire-observation-definition-3.png)
+
+### 4. Change the details and save
+
+Change the fields that you want to update. For the fields, see [Create an observation definition](./create-observation-definition.mdx).
+
+On the edit form, Care does not change the slug when you change the title.
+
+To change the interpretation rules, see [Set up observation interpretation](./set-up-qualified-ranges.mdx).
+
+Select **Save**.
+
+Care shows **Observation definition updated successfully** and opens the page of the observation definition.
+
+![Step 4, Change the details and save (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/update-or-retire-observation-definition-4.png)
+
+![Step 4, Change the details and save (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/update-or-retire-observation-definition-5.png)
+
+### 5. Retire the observation definition
+
+If you do not want to retire the observation definition, go to step 6.
+
+If you are not on the page of the observation definition, select **View** in its row.
+
+On the page of the observation definition, select **Delete**.
+
+Care shows the **Delete Observation Definition** dialog, with a warning that names the observation definition.
+
+Select **Confirm**.
+
+Note: **Delete** does not delete the observation definition. Care sets its status to Retired.
+
+Care shows **Definition deleted successfully** and opens the observation definitions list.
+
+![Step 5, Retire the observation definition (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/update-or-retire-observation-definition-6.png)
+
+![Step 5, Retire the observation definition (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/update-or-retire-observation-definition-7.png)
+
+### 6. Make a retired observation definition Active again
+
+If you do not want to use a retired observation definition again, skip this step.
+
+In the **Status** filter, select **Retired**.
+
+In the row of the observation definition, select **Edit**.
+
+In **Status**, select **Active**.
+
+Select **Save**.
+
+![Step 6, Make a retired observation definition Active again (1 of 4): the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/update-or-retire-observation-definition-8.png)
+
+![Step 6, Make a retired observation definition Active again (2 of 4): the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/update-or-retire-observation-definition-9.png)
+
+![Step 6, Make a retired observation definition Active again (3 of 4): the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/update-or-retire-observation-definition-10.png)
+
+![Step 6, Make a retired observation definition Active again (4 of 4): the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/update-or-retire-observation-definition-11.png)
 
 ## Expected Outcome
 
 - Care saves your changes to the observation definition.
-- After you retire the observation definition, Care shows its Status as Retired.
-- The history of the retired observation definition stays intact.
+- A retired observation definition has the status Retired. The list shows it only when you select **Retired** in the **Status** filter.
+- Activity definitions and diagnostic reports no longer offer a retired observation definition. Activity definitions that already use it keep it.
+- After you set the status back to Active, activity definitions and diagnostic reports offer the observation definition again.
 
 ## Related
 
@@ -63,4 +131,4 @@ Concepts:
 Flows:
 
 - [Create an observation definition](./create-observation-definition.mdx)
-- [Set up qualified ranges](./set-up-qualified-ranges.mdx)
+- [Set up observation interpretation](./set-up-qualified-ranges.mdx)

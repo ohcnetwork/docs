@@ -6,47 +6,104 @@ sidebar_position: 7
 
 ## Definition
 
-A **[charge item definition](https://build.fhir.org/chargeitemdefinition.html)** in Care is a reusable pricing template. It holds the price, the taxes, and the discounts for one billable service or item in your facility. When you apply a charge item definition, Care creates an actual billable [Charge Item](../../concepts/billing/charge-item.mdx).
+A **[charge item definition](https://build.fhir.org/chargeitemdefinition.html)** in Care is the reusable price of one service or item that your facility bills. It holds the base price and the taxes and discounts that apply to that price.
+
+When a clinician orders a service from an activity definition that uses a charge item definition, Care creates a billable [charge item](../billing/charge-item.mdx) from it. Care does the same when a product that uses it is dispensed, or when an appointment is booked on a schedule that uses it.
+
+Each facility has its own charge item definitions. You find them in the facility settings, under **Billing** > **Charge Item Definitions**, where each definition sits in a category.
 
 ## Key Attributes
 
 | Components | What it captures |
 | --- | --- |
-| Title | The name of the pricing template. This field is required. |
-| Slug | A short identifier that is unique in the facility. This field is required. |
-| Category | The category that holds this definition. This field is required. |
-| Status | The stage of the pricing template. Care sets Active by default. |
-| Description | Extra detail about what the template covers. |
-| Purpose | The reason to use this template. |
-| Derived From URI | The address of the source that this template comes from. |
-| Can Edit Charge Item | A checkbox that controls price changes after Care creates a charge item. |
-| Base Price | The standard price for the service or item. This field is required. |
-| MRP | The maximum retail price. |
-| Purchase Price | The price that your facility pays for the item. |
-| Taxes | One or more taxes that apply to the price. |
-| Discounts | One or more discounts that apply to the price. |
+| Title | The name of the service or item. This field is required. |
+| Slug | A short name that identifies the definition in its web address. Care fills it from the title. It has 5 to 50 characters and is unique in the facility. |
+| Category | The category that holds the definition. Only a category without subcategories can hold definitions. This field is required. |
+| Status | Draft, Active or Retired. Care sets Active by default. |
+| Description | Extra detail about what the definition covers. |
+| Purpose | The reason to use this definition. |
+| Derived From URI | The web address of the source that this definition comes from. It must start with http:// or https://. |
+| Can Edit Charge Item | Whether the price and quantity of a charge item can change after Care creates it. Selected by default. |
+| Base Price | The standard price of one unit. This field is required, and it can be negative. |
+| MRP | The maximum retail price, kept for information. |
+| Purchase Price | The price that your facility pays, kept for information. |
+| Taxes | The taxes that apply to the price. |
+| Discounts | The discounts that can apply to the price. |
+| Tags | Labels that you add from the page of the definition. |
 
-### Can Edit Charge Item
+### How Care calculates the price
 
-This checkbox controls the price of every charge item that comes from this definition. If you clear the checkbox, the charge item keeps its original price. Care blocks each later attempt to change that price.
+When Care creates a charge item from a definition, it multiplies the base price by the quantity. It then subtracts the discounts that apply, and adds the taxes, which it calculates on the price after discounts. MRP and Purchase Price do not change the total.
+
+Each tax or discount is either a fixed amount for each unit or a percentage of the price.
+
+### Taxes
+
+The taxes that you can select are set for the whole Care deployment, not by your facility. Facility settings list them under **Billing** > **Tax Components**, but you cannot change them there.
 
 ### Discounts
 
-You can add more than one discount to a charge item definition. Each discount has its own conditions. The conditions decide when Care applies that discount.
+The discounts that you can select come from the discount components of your facility and of the deployment.
+
+Each discount that you add starts with **Use facility global value**. Care then uses your facility's current value for that discount when it creates the charge item. If your facility does not define that discount, Care uses the value saved in the definition.
+
+If you switch a discount to **Override with local value**, the definition keeps its own value for that discount, and you can add conditions to it. Care applies the discount only when the patient or the encounter meets the conditions. Conditions can use the age, gender or tags of the patient, and the tags or class of the encounter.
+
+The discount configuration of your facility decides how many of the applicable discounts Care uses for one charge item, and in which order. If your facility has no discount configuration, Care uses every applicable discount.
+
+### Category taxes and discounts
+
+Categories group the definitions, and a category can have subcategories. A category can also carry its own taxes and discounts, which you set with **Set Monetary Components**. They apply to every definition in that category and in its subcategories. If a subcategory or a definition has its own tax or discount with the same code, Care uses that one instead.
+
+The **Resource Sub Type** of a category limits two pickers. The bed charges picker on an account offers only categories with the bed charges sub type. The picker that adds charge items to an encounter offers only categories with the sub type **Other**. The charge item definition picker in the activity definition form does not use the sub type.
+
+### Can Edit Charge Item
+
+If you clear **Can Edit Charge Item**, a charge item from this definition keeps the price and quantity that Care gave it. When someone later changes that charge item, Care keeps the original price and quantity and shows no error.
+
+### Negative base price
+
+A negative base price is meant for invoice-level discounts.
+
+Care refuses a charge item whose total is below zero, with the message "Total price is less than 0". The only exception is a user who holds the Can Create Negative Charge Item permission and adds charge items from definitions directly, for example on a patient's account.
+
+Ordering a service from an activity definition never allows a negative total. If the activity definition is linked to a charge item definition with a negative base price, the order fails and Care saves nothing.
 
 ### Status
 
 | Status | Description |
 | --- | --- |
-| Draft | The template is in preparation. |
-| Active | The template is ready for use. |
-| Retired | The template is out of use. |
+| Draft | The definition is not ready for use. The activity definition form does not offer it. |
+| Active | The definition is ready for use. The activity definition form offers only active definitions. |
+| Retired | The **Delete** button sets this status. Care does not remove the definition. |
+
+Retiring a definition does not unlink it. Activity definitions, products and schedules that already use it keep it, and Care still creates charge items from it. To use a retired definition again, set its status back to Active with **Edit**.
+
+## Permissions
+
+Care checks the permissions to change charge item definitions and their categories in the facility's root organization (**Administration**). It checks the permissions to read them in any department of the facility.
+
+| Permission | Access |
+| --- | --- |
+| Can Create Charge Item Definition on Facility | Create, update and retire charge item definitions, and add or remove their tags. Held in the root organization. By default, the Facility Admin role holds it. |
+| Can Read Charge Item Definition | Open the charge item definitions and their details. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Create Resource Category on Facility | Add and edit categories, and set their taxes and discounts. Held in the root organization. By default, the Facility Admin role holds it. |
+| Can Read Resource Category | Browse the categories. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Apply Tag Config to Resources | Add or remove a tag, together with the permission to change the definition. Held in the organization that manages the tag or in one above it. If the tag has no managing organization, any department of the facility counts. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold it. |
+| Can Create Negative Charge Item | Add a charge item with a negative total from a definition. Held in any department of the facility. By default, the Facility Admin role holds it. |
+
+Care shows **Edit**, **Delete** and **Add Tags** to every user who can open a definition. It saves the change only for a user who holds the permission to change definitions in the root organization.
 
 ## Related
 
 - Flow: [Create a charge item definition](../../flows/definitions/charge-item-definition/create-charge-item-definition.mdx)
 - Flow: [Update or retire a charge item definition](../../flows/definitions/charge-item-definition/update-or-retire-charge-item-definition.mdx)
-- Concept: [Charge Item](../../concepts/billing/charge-item.mdx)
-- Concept: [Account](../../concepts/billing/account.mdx)
-- Concept: [Product](../../concepts/supply/product.mdx)
-- Concept: [Activity Definition](../../concepts/definitions/activity-definition.mdx)
+- Flow: [Set taxes and discounts for a charge item category](../../flows/definitions/charge-item-definition/set-category-taxes-and-discounts.mdx)
+- Flow: [Add or edit a definition category](../../flows/definitions/resource-category/manage-definition-categories.mdx)
+- Concept: [Charge Item](../billing/charge-item.mdx)
+- Concept: [Account](../billing/account.mdx)
+- Concept: [Activity Definition](./activity-definition.mdx)
+- Concept: [Product](../supply/product.mdx)
+- Concept: [Schedule](../scheduling/schedule.mdx)
+- Concept: [Tag](../platform/tagging.mdx)
+- Reference: [Charge Item Definition](../../references/definitions/charge-item-definition.mdx)

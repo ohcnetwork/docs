@@ -2,67 +2,168 @@
 sidebar_position: 2
 ---
 
-# Set up qualified ranges
+# Set up observation interpretation
 
 ## Overview
 
-This flow describes how to set up qualified ranges on an [observation definition](../../../concepts/definitions/observation-definition.mdx) in Care. Qualified ranges are the rules that decide the interpretation that Care gives to a result. A rule can depend on the patient, such as age, gender, or tags, or on the encounter.
+<video src="/media/definitions/observation-definition/set-up-qualified-ranges.mp4" poster="/media/definitions/observation-definition/set-up-qualified-ranges.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/observation-definition/set-up-qualified-ranges.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to add interpretation rules to an [observation definition](../../../concepts/definitions/observation-definition.mdx) in the **Observation Interpretation** section of its form. Care uses these rules to interpret each result, for example as Normal or High. A rule can depend on the age or gender of the patient, or on the class or tags of the encounter.
 
 ## Pre-requisites
 
-- You create or edit an observation definition. See [Create an observation definition](./create-observation-definition.mdx).
-- You have the permission listed below.
+- You belong to a department of the facility.
+- You have the create form or the edit form of an observation definition open. See [Create an observation definition](./create-observation-definition.mdx) or [Update or retire an observation definition](./update-or-retire-observation-definition.mdx).
+- You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create Observation Definition on Facility | Lets you add or change interpretation rules. |
+| Can Create Observation Definition on Facility | Lets you save the form, which stores the rules. You must hold it in the facility's root organization (**Administration**). A role in a department is not enough: Care shows "Access Denied to Observation Definition". By default, the Facility Admin role holds this permission. |
+| Can Read Observation Definition | Lets you open the **Observation Definitions** list and the edit form. Hold it in the root organization or in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Read Tag Config | Needed only for an **Encounter Tags** condition. Lets you pick the tags. Hold it in the root organization or in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
 
 ## Steps
 
-### 1. Add an interpretation rule
+### 1. Find the Observation Interpretation section
 
-Go to the **Observation Interpretation** panel on the observation definition form. Click **Add Interpretation**. Care opens the **Add/Edit Interpretation** panel.
+On the observation definition form, find the **Observation Interpretation** section, below **Basic Information**.
 
-Note: You can add rules to the observation definition, or to its components. Care disables one panel when you use the other.
+To add rules to a component, use the **Observation Interpretation** section inside that component.
 
-### 2. Name the rule
+The section heading shows the number of rules.
 
-Enter a short title for the rule in the title box at the top of the panel. Use a title that you recognise later in the list of rules.
+You can add rules to the observation definition or to its components, but not to both.
 
-### 3. Add conditions
+If the section shows a message and **Clear conflicting interpretations**, the other level already has rules. To remove those rules, select **Clear conflicting interpretations**, then select **Remove**.
 
-Conditions decide when Care applies the rule. Conditions are optional. Click **Add** in the **Conditions** section for each condition.
+Caution: **Remove** deletes every rule of the other level.
 
-For each condition, select the metric, the operation, and the value.
+![Step 1, Find the Observation Interpretation section: the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/set-up-qualified-ranges-1.png)
+
+### 2. Add a rule
+
+Select **Add Interpretation**.
+
+Care opens the **Add/Edit Interpretation** panel. The new rule has one empty range.
+
+![Step 2, Add a rule: the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/set-up-qualified-ranges-2.png)
+
+### 3. Name the rule
+
+The title is optional. Until you type a title, the box shows **Untitled interpretation rule**.
+
+Type a short title in the box at the top of the panel, for example Adult range.
+
+![Step 3, Name the rule: the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/set-up-qualified-ranges-3.png)
+
+### 4. Add conditions
+
+If the rule applies to every result, go to step 5.
+
+In the **Conditions** section, select **Add**.
+
+Select a metric, an operation and a value.
 
 | Components | What it captures |
 | --- | --- |
-| Metric | The item to check, such as Patient Age, Patient Gender, Encounter Class, Patient Tags, or Encounter Tags. |
-| Operation | How Care compares the value: Equals to, In range, or Has tag. |
-| Value | The value that Care compares against. |
+| **Patient Age** | Select **In range** or **Equals to**. Enter a minimum and a maximum age, or one age. Select **Years**, **Months** or **Days**. The range includes both ages that you enter. |
+| **Patient Gender** | Select **Equals to**. Select **Male**, **Female**, **Transgender** or **Non-binary**. |
+| **Encounter Class** | Select **Equals to**. Select an encounter class. |
+| **Encounter Tags** | Select **Has tag**. Select one or more encounter tags. The condition matches when the encounter has one of these tags. |
 
-### 4. Add the value ranges
+To add another condition, select **Add** again.
 
-Click **Add** in the **Ranges** section. Enter the interpretation text in the **Display** box, for example Normal, Abnormal, or Critical. Enter a **Min** value and a **Max** value for that range. Turn on the highlight switch to make Care mark a result in that range.
+The rule applies only when all its conditions match.
 
-Click **Add** again for each further range.
+![Step 4, Add conditions (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/set-up-qualified-ranges-4.png)
 
-### 5. Set the fallback interpretation
+![Step 4, Add conditions (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/set-up-qualified-ranges-5.png)
 
-Turn on **Fallback** for the rule. Care applies the fallback when a result matches the conditions of the rule, but no range holds the value.
+### 5. Add the ranges
 
-### 6. Save the rule
+In the **Ranges** section, fill in the empty range.
 
-Click **Save**. To discard the rule, click **Cancel**.
+| Components | What it captures |
+| --- | --- |
+| **Display** | The interpretation text, for example Normal or High. This field is required. |
+| Highlight switch | Turn it on to mark the values in this range for highlighting. |
+| **Min** | The lowest value of the range. |
+| **Max** | The highest value of the range. |
 
-Note: Care checks the rules in the order that you add them. Care skips a rule when the conditions do not match. If no range holds the value and the rule has no fallback, Care checks the next rule.
+Enter a **Min**, a **Max** or both. **Min** must not be more than **Max**.
+
+A range includes its **Min** and its **Max**.
+
+If a range has only a **Min** or only a **Max**, its summary says "greater than" or "less than". Care still includes that end value.
+
+To add another range, select **Add** in the **Ranges** section. To remove a range, select its x button.
+
+Ranges must not overlap. Two ranges can share an end value, for example 0 to 10 and 10 to 20. A value of 10 then gets the range that is first in the list.
+
+Care checks for overlap only when you save the form.
+
+![Step 5, Add the ranges: the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/set-up-qualified-ranges-6.png)
+
+### 6. Turn on the fallback
+
+The fallback is optional.
+
+Turn on **Fallback**.
+
+The fallback has no text box. It has only a highlight switch, which is on.
+
+Care uses the fallback when the rule applies but no range holds the value.
+
+![Step 6, Turn on the fallback: the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/set-up-qualified-ranges-7.png)
+
+### 7. Save the rule
+
+Select **Save**.
+
+**Save** is not available until the rule has at least one range.
+
+Care adds the rule after the existing rules in the section.
+
+To close the panel without the rule, select **Cancel**.
+
+![Step 7, Save the rule: the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/set-up-qualified-ranges-8.png)
+
+### 8. Review the order of the rules
+
+Care checks the rules in the order of the list. It uses only the first rule whose conditions all match.
+
+If no range of that rule holds the value and the rule has no fallback, the result gets no interpretation. Care does not try a later rule.
+
+Put the rules with conditions first. Put a rule without conditions last, because it matches every result.
+
+To change a rule, select its **Edit interpretation** icon. The rule keeps its place in the list.
+
+To delete a rule, select its **Delete interpretation** icon. Care removes the rule at once, without a question.
+
+To move a rule to the end of the list, delete it and add it again.
+
+![Step 8, Review the order of the rules: the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/set-up-qualified-ranges-9.png)
+
+### 9. Save the observation definition
+
+On the create form, select **Create**. On the edit form, select **Save**.
+
+Care stores the rules only when you save the form.
+
+![Step 9, Save the observation definition (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/set-up-qualified-ranges-10.png)
+
+![Step 9, Save the observation definition (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/observation-definition/set-up-qualified-ranges-11.png)
 
 ## Expected Outcome
 
-- The rule shows in the **Observation Interpretation** panel of the observation definition.
-- Care gives an interpretation to each new result for this observation definition from the first rule that matches.
+- The rules show in the **Observation Interpretation** section, and the heading shows the number of rules.
+- On the page of the observation definition, **Technical Details** lists the rules.
+- When staff save results on a diagnostic report, Care interprets each result of this definition with the first rule that matches.
+- Results that are already saved keep their interpretation until staff save them again.
 
 ## Related
 

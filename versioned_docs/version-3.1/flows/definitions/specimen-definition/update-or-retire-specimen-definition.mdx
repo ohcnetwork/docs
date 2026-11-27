@@ -6,56 +6,107 @@ sidebar_position: 2
 
 ## Overview
 
-This flow describes how to change the details of a [specimen definition](../../../concepts/definitions/specimen-definition.mdx) in a facility. It also describes how to retire a specimen definition that the facility no longer uses.
+<video src="/media/definitions/specimen-definition/update-or-retire-specimen-definition.mp4" poster="/media/definitions/specimen-definition/update-or-retire-specimen-definition.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/specimen-definition/update-or-retire-specimen-definition.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to change a [specimen definition](../../../concepts/definitions/specimen-definition.mdx) in your facility, and how to retire one that the facility no longer uses. It also describes how to make a retired specimen definition Active again.
 
 ## Pre-requisites
 
-- The facility has a specimen definition that you want to change.
+- The facility has the specimen definition that you want to change.
+- You belong to a department of the facility.
 - You have the permissions listed below.
-- If you want to retire the specimen definition, its Status is Draft or Active.
+- If you want to retire the specimen definition, its status is Draft or Active.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Read Specimen Definition | Lets you open the specimen definitions list of the facility. |
-| Can Create Specimen Definition on Facility | Lets you update or retire a specimen definition. |
+| Can Create Specimen Definition on Facility | Lets you save changes to a specimen definition, retire it, or make it Active again. You must hold it in the facility's root organization (**Administration**); the same permission in another department is not enough. By default, the **Facility Admin** role holds this permission. |
+| Can Read Specimen Definition | Lets you open the specimen definitions list, the details page and the edit form. Care also checks it when you save. You can hold it in any department of the facility. By default, the **Facility Admin**, **Administrator**, **Staff**, **Doctor**, **Nurse**, **Volunteer** and **Pharmacist** roles hold this permission. |
 
 ## Steps
 
 ### 1. Open the specimen definitions list
 
-1. Go to the facility.
-2. Select **Settings**.
-3. Select **Specimen Definitions**.
+1. In the facility sidebar, select **Settings**.
+2. In the settings sidebar, under **Clinical**, select **Specimen Definitions**.
 
-Care shows the definitions with the Status Active. To find a definition with another status, select the status in the **Status** filter.
+Care shows the Active specimen definitions. To find a definition with another status, select the status in the **Status** filter. To find a definition by its title, type in the **Search definitions** box.
+
+![Step 1, Open the specimen definitions list: the screen at this step, with the control for the step outlined](/media/definitions/specimen-definition/update-or-retire-specimen-definition-1.png)
 
 ### 2. Update the specimen definition
 
-1. Find the specimen definition that you want to change.
-2. Click **Edit** for that specimen definition.
-3. Change the details of the specimen definition.
-4. Click **Save**.
+1. Find the specimen definition in the list.
+2. Select **Edit** in its row.
+3. In the **Update Specimen Definition** form, change the fields.
+4. Select **Save**.
+
+You can also select **View** in the row. Then select **Edit** on the details page.
+
+The form has the same fields as the create form. For each field, see [Create a specimen definition](./create-specimen-definition.mdx).
+
+- When you change the title, Care does not change the slug.
+- To clear Collection, Collection Method or Body Site, select the x next to the value.
+- If you do not hold the create permission in the root organization, Care shows "Access Denied to Specimen Definition".
+
+![Step 2, Update the specimen definition (1 of 3): the screen at this step, with the control for the step outlined](/media/definitions/specimen-definition/update-or-retire-specimen-definition-2.png)
+
+![Step 2, Update the specimen definition (2 of 3): the screen at this step, with the control for the step outlined](/media/definitions/specimen-definition/update-or-retire-specimen-definition-3.png)
+
+![Step 2, Update the specimen definition (3 of 3): the screen at this step, with the control for the step outlined](/media/definitions/specimen-definition/update-or-retire-specimen-definition-4.png)
 
 ### 3. Retire the specimen definition
 
 Do these steps only when the facility no longer uses the specimen definition.
 
 1. Find the specimen definition in the list.
-2. Click **View** for that specimen definition.
-3. Click **Delete**.
-4. Confirm the action in the dialog.
+2. Select **View** in its row.
+3. Select **Delete**.
+4. In the **Are you sure?** dialog, select **Confirm**.
 
-Note: Delete does not remove the record. Care sets the Status of the specimen definition to Retired.
+The dialog shows a **Warning** with the title of the specimen definition.
 
-Note: Care does not show the Delete button for a specimen definition with the Status Retired.
+Note: **Delete** does not remove the specimen definition. Care sets its status to Retired and keeps the record.
+
+Note: Care does not show **Delete** for a specimen definition that is already Retired.
+
+Note: After you retire a specimen definition, the activity definition form does not offer it.
+
+If Care cannot retire the specimen definition, it shows **Error retiring specimen definition**.
+
+![Step 3, Retire the specimen definition (1 of 3): the screen at this step, with the control for the step outlined](/media/definitions/specimen-definition/update-or-retire-specimen-definition-5.png)
+
+![Step 3, Retire the specimen definition (2 of 3): the screen at this step, with the control for the step outlined](/media/definitions/specimen-definition/update-or-retire-specimen-definition-6.png)
+
+![Step 3, Retire the specimen definition (3 of 3): the screen at this step, with the control for the step outlined](/media/definitions/specimen-definition/update-or-retire-specimen-definition-7.png)
+
+### 4. Make a retired specimen definition Active again
+
+Do these steps only if the facility needs the specimen definition again.
+
+1. In the **Status** filter, select **Retired**.
+2. Select **Edit** for the specimen definition.
+3. Set **Status** to **Active**.
+4. Select **Save**.
+
+The activity definition form offers the specimen definition again.
+
+![Step 4, Make a retired specimen definition Active again (1 of 4): the screen at this step, with the control for the step outlined](/media/definitions/specimen-definition/update-or-retire-specimen-definition-8.png)
+
+![Step 4, Make a retired specimen definition Active again (2 of 4): the screen at this step, with the control for the step outlined](/media/definitions/specimen-definition/update-or-retire-specimen-definition-9.png)
+
+![Step 4, Make a retired specimen definition Active again (3 of 4): the screen at this step, with the control for the step outlined](/media/definitions/specimen-definition/update-or-retire-specimen-definition-10.png)
+
+![Step 4, Make a retired specimen definition Active again (4 of 4): the screen at this step, with the control for the step outlined](/media/definitions/specimen-definition/update-or-retire-specimen-definition-11.png)
 
 ## Expected Outcome
 
-- After you update the specimen definition, Care shows the message "Specimen Definition updated". Care opens the specimen definition with your changes.
-- After you retire the specimen definition, Care shows the message "Specimen definition retired successfully". Care opens the specimen definitions list.
-- The retired specimen definition has the Status Retired.
+- After you update the specimen definition, Care shows **Specimen Definition updated**. Care opens the details page of the specimen definition.
+- After you retire the specimen definition, Care shows **Specimen definition retired successfully**. Care opens the specimen definitions list.
+- The retired specimen definition has the status Retired. The list shows it only when you select Retired in the **Status** filter.
 
 ## Related
 
@@ -66,3 +117,4 @@ Concepts:
 Flows:
 
 - [Create a specimen definition](./create-specimen-definition.mdx)
+- [Update or retire an activity definition](../activity-definition/update-or-retire-activity-definition.mdx)

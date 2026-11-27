@@ -2,46 +2,86 @@
 sidebar_position: 3
 ---
 
-# Preview a valueset before saving
+# Preview a valueset
 
 ## Overview
 
-This flow describes how to test the rules of a new [valueset](../../../concepts/definitions/valueset.mdx) in Care before you save it. Care runs your search against the include rules and the exclude rules that you set up.
+<video src="/media/definitions/valueset/preview-valueset.mp4" poster="/media/definitions/valueset/preview-valueset.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/valueset/preview-valueset.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to see which codes the rules of a [valueset](../../../concepts/definitions/valueset.mdx) give in Care. You can preview a valueset before you save it, and you can preview a saved valueset.
 
 ## Pre-requisites
 
-- You are creating a new valueset.
-- You added a minimum of one include rule. See [Build include and exclude rules](./build-include-and-exclude-rules.mdx).
+- You are on the **Create ValueSet**, **Edit ValueSet**, or **Preview ValueSet** page. You can also start from the **Shared catalogue** tab of the **ValueSets** page.
+- The valueset has at least one include or exclude rule. See [Build include and exclude rules](./build-include-and-exclude-rules.mdx).
 - You have the permissions listed below.
-
-Note: Care shows the **Valueset Preview** button only while you create a new valueset. The button is not available after you save the valueset.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| None (Care superuser only) | Lets you preview a valueset you are creating. |
+| Can Read ValueSets | Lets you open a facility valueset on the **This facility** tab and preview it from its page. You must hold it in a department that the valueset is shared with, or in a parent department of one. Holding it in the facility's root organization (**Administration**) alone is not enough, unless the valueset is shared with the root organization. By default, the Facility Admin, Administrator, Doctor, Nurse, Staff, Pharmacist and Volunteer roles hold it. |
+| Can Create/Update ValueSets | Lets you open the **Create ValueSet** page to preview a new valueset. You must hold it in the root organization. By default, the Facility Admin role holds it. |
+
+Note: The preview itself needs no permission. Any member of the facility can preview a valueset on the **Shared catalogue** tab.
 
 ## Steps
 
-### 1. Open the preview panel
+### 1. Open the preview
 
-Select **Valueset Preview**. Care opens the **Valueset Preview** panel.
+Open the preview from one of these places:
 
-### 2. Search for a code
+- On the **Create ValueSet**, **Edit ValueSet**, or **Preview ValueSet** page, select **Preview** in the page header.
+- On the **Shared catalogue** tab of the **ValueSets** page, select **Preview** on the row of the valueset.
 
-Enter your search text in the **Search for a concept in this valueset** box. Care runs the search against the include rules and the exclude rules that you set up. Care runs the search before you save the valueset.
+Care opens the **Valueset Preview** panel. The panel shows the number of include rules and exclude rules.
 
-### 3. Check the results
+If the valueset has no include or exclude rule, the panel shows **Add an include or exclude rule to preview this definition.**
 
-Care shows the matching concepts below the search box. Confirm that your rules return the codes that you want. If no concept matches, Care shows **No Results Found**.
+Note: On the **Create ValueSet** and **Edit ValueSet** pages, the preview uses the current rules, including unsaved changes. The preview does not save anything.
 
-Note: To close the panel, press Escape.
+Note: The preview does not include the rules of a parent valueset. If a parent is set and **Use parent rules** is on, the panel shows **This preview shows only the rules added here, not the complete definition with parent rules.**
+
+![Step 1, Open the preview: the screen at this step, with the control for the step outlined](/media/definitions/valueset/preview-valueset-1.png)
+
+### 2. Check the codes
+
+Care lists up to 20 concepts that match the rules, before you search.
+
+Each concept shows its name, its **Code**, and its **System**.
+
+Care shows how many concepts it lists, for example "Showing 20 concepts".
+
+If no concept matches the rules, Care shows **No Results Found** and **No concepts match this definition. Review the inclusion and exclusion rules, then preview again.**
+
+![Step 2, Check the codes: the screen at this step, with the control for the step outlined](/media/definitions/valueset/preview-valueset-2.png)
+
+### 3. Search for a concept
+
+Type a concept name in **Search for a concept in this valueset**.
+
+Care lists up to 20 matching concepts. To narrow the results, type more of the name.
+
+If no concept matches your search, Care shows **No Results Found** and **Try a different concept name, or clear the search.**
+
+To clear the search, select **Clear search**.
+
+![Step 3, Search for a concept: the screen at this step, with the control for the step outlined](/media/definitions/valueset/preview-valueset-3.png)
+
+### 4. Close the preview
+
+Select the close button in the panel header.
+
+If you are creating or editing the valueset and the codes are not correct, change the rules. Then preview again.
+
+![Step 4, Close the preview: the screen at this step, with the control for the step outlined](/media/definitions/valueset/preview-valueset-4.png)
 
 ## Expected Outcome
 
-- Care shows the codes that match your include rules and your exclude rules.
-- You confirm that your rules are correct before you save the valueset.
+- You see the codes that the rules of the valueset give.
+- Care saves nothing. To keep changed rules, save the valueset.
 
 ## Related
 
@@ -51,5 +91,7 @@ Concepts:
 
 Flows:
 
-- [Create a valueset](./create-valueset.mdx)
 - [Build include and exclude rules](./build-include-and-exclude-rules.mdx)
+- [Create a valueset](./create-valueset.mdx)
+- [Customize a shared valueset](./customize-shared-valueset.mdx)
+- [Update or retire a valueset](./update-or-retire-valueset.mdx)

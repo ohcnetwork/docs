@@ -6,30 +6,41 @@ sidebar_position: 1
 
 ## Overview
 
-This flow describes how to create a new [questionnaire](../../../concepts/definitions/questionnaire.mdx) in Care. You give the questionnaire a title, a slug, a subject type, a status, and one or more organizations.
+<video src="/media/definitions/questionnaire/create-questionnaire.mp4" poster="/media/definitions/questionnaire/create-questionnaire.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/questionnaire/create-questionnaire.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to create a new [questionnaire](../../../concepts/definitions/questionnaire.mdx) in your facility. You give the questionnaire a title, a slug, a status, and a subject type, and you save it. You add the questions after you save it.
 
 ## Pre-requisites
 
-- You are a Care superuser. Care shows the **Admin Dashboard** button only to superusers.
+- You are a member of a department of the facility, so the facility sidebar shows **Settings**.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create/Update Questionnaires | Lets you create a new questionnaire in an organization. |
+| Can Create/Update Questionnaires | Shows **Create Questionnaire** and lets you save the new questionnaire. You must hold it in the facility's root organization (**Administration**). By default, the Facility Admin role holds it. |
+| Can Read Questionnaires | Lets you see the questionnaire list, and open the new questionnaire after you save it. You must hold it in the root organization, because the new questionnaire is not shared with any department yet. By default, the Facility Admin, Administrator, Doctor, Nurse, Staff, Pharmacist and Volunteer roles hold it. |
 
 ## Steps
 
-### 1. Open the admin area
+### 1. Open the questionnaire list
 
-Start from your dashboard. Click **Admin Dashboard**. Care opens the **Questionnaires** list.
+In the facility sidebar, select **Settings**. In the settings sidebar, under **Forms**, select **Questionnaires**.
 
-Note: Care shows the **Admin Dashboard** button only to superusers.
+Care shows the questionnaires of your facility.
+
+![Step 1, Open the questionnaire list: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/create-questionnaire-1.png)
 
 ### 2. Start a new questionnaire
 
-Click **Create Questionnaire**. Care opens the questionnaire form.
+Select **Create Questionnaire**. Care opens the **Create Questionnaire** page, with a **Facility** badge next to the heading.
+
+Note: If you do not see **Create Questionnaire**, you do not hold "Can Create/Update Questionnaires" in the root organization.
+
+![Step 2, Start a new questionnaire: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/create-questionnaire-2.png)
 
 ### 3. Fill in the basic information
 
@@ -37,49 +48,47 @@ Complete the fields under **Basic Information**.
 
 | Components | What it captures |
 | --- | --- |
-| Title | The name of the questionnaire. This field is mandatory. |
-| Slug | A short identifier for the questionnaire in the web address. This field is mandatory. |
+| Title | The name of the questionnaire. This field is required. |
+| Slug | A short name that identifies the questionnaire in your facility. This field is required. Care fills it in from the title as you type. |
 | Description | More information about the questionnaire. This field is optional. |
 
-Note: The slug must have 5 to 25 characters. Use letters, numbers, underscores, and hyphens only.
+The slug must have 5 to 50 characters. Use only letters, numbers, hyphens and underscores, and start and end with a letter or a number.
 
-### 4. Set the properties
+The slug must not match the slug of another questionnaire in your facility. Care ignores capital letters in this check.
 
-Go to the **Properties** panel. Set the fields below.
+![Step 3, Fill in the basic information: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/create-questionnaire-3.png)
+
+### 4. Set the questionnaire properties
+
+In the **Questionnaire Properties** panel, set the fields below.
 
 | Components | What it captures |
 | --- | --- |
-| Status | The state of the questionnaire. Select Active, Draft, or Retired. |
-| Subject Type | Who the questionnaire is about. Select Patient or Encounter. |
+| Status | Select Active, Draft or Retired. The default is Draft. Staff can fill in the questionnaire only when it is Active. |
+| Subject Type | What the questionnaire is about. Select Encounter, Referral, Location, Device or Facility. The default is Encounter. |
 
-Note: Care sets the **Version** value. You cannot change it.
+Note: You cannot change the subject type after you save the questionnaire.
 
-### 5. Select the organizations
+Note: The **Version** shows v1. Care sets the version, and you cannot change it.
 
-Under **Organizations**, click **Select Organizations**.
+![Step 4, Set the questionnaire properties: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/create-questionnaire-4.png)
 
-Search for an organization. Click the organization to select it. Care adds a badge for each organization that you select.
+### 5. Save the questionnaire
 
-Select at least one organization. The organizations control who can see and use the questionnaire.
+Select **Save Questionnaire**.
 
-Note: If you select no organization, Care does not save the form. Care shows the message "At least one organization must be selected".
+Note: You do not add questions on this page. The **Questions** box shows "Save the questionnaire, then use Edit Questions to add questions."
 
-### 6. Add the questions
+Note: To leave without saving, select **Cancel**. If you entered data, Care asks you to confirm.
 
-Click **Add Question** to add a question to the questionnaire. For the full steps, see [Add and edit questions](./add-and-edit-questions.mdx).
-
-### 7. Create the questionnaire
-
-Click **Create**.
-
-Note: To leave the form without saving, click **Cancel**.
+![Step 5, Save the questionnaire: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/create-questionnaire-5.png)
 
 ## Expected Outcome
 
 - Care shows the message "Questionnaire created successfully!".
-- Care creates the questionnaire.
-- The questionnaire shows in the **Questionnaires** list under the tab of its status.
-- Users in the selected organizations can see and use the questionnaire.
+- Care opens the page of the new questionnaire. The questionnaire has no questions yet.
+- The questionnaire shows in the **Questionnaires** list, under the tab of its status.
+- The questionnaire is not shared with any department. Until you share it, only people who hold Can Read Questionnaires in the root organization can see it.
 
 ## Related
 
@@ -90,5 +99,7 @@ Concepts:
 Flows:
 
 - [Add and edit questions](./add-and-edit-questions.mdx)
-- [Manage organizations for a questionnaire](./manage-questionnaire-organizations.mdx)
+- [Share a questionnaire with departments](./manage-questionnaire-organizations.mdx)
+- [Update or retire a questionnaire](./update-or-retire-questionnaire.mdx)
 - [Clone a questionnaire](./clone-questionnaire.mdx)
+- [Import a questionnaire](./import-questionnaire.mdx)

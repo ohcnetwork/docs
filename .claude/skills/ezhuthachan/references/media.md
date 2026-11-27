@@ -54,6 +54,8 @@ Give a Docker stack its own Compose project name, for example `docker compose -p
 
 One trap to check every time: the frontend decides which backend to call from its own configuration (`REACT_CARE_API_URL` in its env files, read in `care.config.ts`), and the default in the repository points at a shared hosted backend. A frontend started without changing that talks to the hosted backend, not to your local one. After signing in, confirm which backend the app is calling before you create anything.
 
+Record from a production build, not the Vite dev server. On 27 November 2026 the dev server drew the TanStack devtools badge in a corner of every screen, and it would have been in every screenshot and video. Build once with the backend set (`REACT_CARE_API_URL=<backend> npm run build`, output in `build/`) and serve it with `npx vite preview --port <port> --strictPort`. When another session already has `node_modules` for the same `package-lock.json`, an APFS clone (`cp -cR`) saves the 1 GB install.
+
 A second dependency sits outside the stack. Searches for coded values, such as diagnoses, medicines and the codes in a value set, go from the backend to a SNOMED terminology server, set by `SNOWSTORM_DEPLOYMENT_URL` (`config/settings/base.py` in `care`; read the default at your pin, which in November 2026 was a public server). When that server is down, those searches fail and every flow that uses one breaks, which looks like a product bug. Before you report one, or change a spec, check that it answers:
 
 ```bash
@@ -190,6 +192,7 @@ When many videos are wanted, hand them to helpers (subagents) that record in par
 
 - Write a brief in `$S/media/` that every helper reads first: the URLs, the accounts by role (credentials stay in the environment), the story of each video, the data rules below, how to check the result, and what to report. A helper knows nothing else.
 - Record one at a time. Browsers recording at once make one another's videos stutter. Every recording and every render goes through `./withlock.sh` from `assets/finishing/`, which waits for `.recording.lock` in the media folder: `EZ_OUT=out/<run> ./withlock.sh npx playwright test <spec>`. Never delete the lock by hand; a lock older than 30 minutes is cleared by the script.
+- Watch the machine's load. The lock keeps recordings apart, but helpers writing specs, renders from other sessions and builds still slow the app, and a slow app makes long videos: on 27 November 2026 flows that took about 50 s at rest took 80–110 s at a load average of 30–70. Check `uptime` before a take, and retake long videos when the 1-minute load is below about 12.
 - Give each run its own output folder (`EZ_OUT=out/<run>`), so runs do not overwrite one another's files.
 - Each helper creates its own patients and encounters off camera, with invented names it has checked are not in the database yet, and changes nothing it did not create.
 - Anything created on camera gets a real-sounding name, the kind a hospital would use for a form, a workspace, a schedule or a value set. Never "Test" or "Demo".

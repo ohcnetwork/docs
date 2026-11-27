@@ -2,75 +2,110 @@
 sidebar_position: 3
 ---
 
-# Value Set
+# Valueset
 
-A `ValueSet` is a FHIR-aligned composition of coded concepts drawn from one or more code systems. Reach for one when a [questionnaire](../definitions/questionnaire.mdx) needs to constrain a coded answer to a fixed set of options.
-
-The Django model is only storage — `compose` is an opaque `JSONField`. The structure that matters (include/exclude clauses, filters, the status enum, validation, and the read/write API schemas) lives in the Pydantic resource specs, covered alongside the model here.
+Technical reference for the `ValueSet` module in Care EMR. For the plain-language model, see the [Valueset concept](../../concepts/definitions/valueset.mdx).
 
 **Source:**
+
 - Model: [`care/emr/models/valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/valueset.py)
 - Resource spec: [`care/emr/resources/valueset/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/valueset/spec.py)
 - Compose schema: [`care/emr/resources/common/valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/valueset.py)
+- Viewset: [`care/emr/api/viewsets/valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/valueset.py)
+- Authorization: [`care/security/authorization/valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/authorization/valueset.py)
+- Permissions: [`care/security/permissions/valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/permissions/valueset.py)
+
+A valueset stores rules, not a list of codes. The model keeps `compose` as opaque JSON. The include and exclude clauses, filters, validation and the read and write schemas live in the Pydantic resource specs. Members resolve against the terminology server each time the valueset is searched.
+
+Every valueset has a scope (`auth_context`): instance, facility, department (`facility_organization`) or user. The scope decides where the slug must be unique, who can write the valueset and who can read it.
 
 ## Models
 
-| Model | Purpose |
-| --- | --- |
-| `ValueSet` | A named, FHIR-compatible composition of codes from one or more code systems |
-| `UserValueSetPreference` | Stores a user's favorited codes within a value set |
-| `RecentViewsManager` | Redis-backed helper for tracking a user's recently used codes (not a database model) |
+| Model | Base | Purpose |
+| --- | --- | --- |
+| `ValueSet` | `EMRBaseModel` | A named composition of codes, with a scope and an optional parent |
+| `ValueSetFacilityOrganization` | `EMRBaseModel` | Links a facility-scoped valueset to a department that can read it |
+| `UserFacilityValueSetPreference` | `EMRBaseModel` | A user's choice of valueset for a slug in one facility |
+| `UserValueSetPreference` | `EMRBaseModel` | A user's favourite (starred) codes in one valueset |
+| `RecentViewsManager` | none | A Redis helper for a user's recently used codes in one valueset; not a database model |
 
-`ValueSet` and `UserValueSetPreference` extend [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base that supplies `external_id`, audit fields, `history`/`meta` JSON, and soft-delete semantics.
+The database models extend [`EMRBaseModel`](../foundation/base-model.mdx).
 
 ## `ValueSet` fields
 
-A value set stores rules, not a flat list of codes: a `compose` object of include/exclude clauses against code systems. Members resolve in real time against terminology servers when the value set is searched or a code is looked up.
-
-| Field | Model type | Spec type | Required | Default | Notes |
+| Field | Model type | Spec type | Required on create | Default | Notes |
 | --- | --- | --- | --- | --- | --- |
-| `slug` | `SlugField(255)` | `SlugType` | yes | — | `unique`, indexed. Public identifier. Spec constrains to min 5 / max 50 chars, URL-safe (`^[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]$`); must start and end alphanumeric. Uniqueness re-checked in spec; `system-` prefix reserved (see validation) |
-| `name` | `CharField(255)` | `str` | yes | — | Display name. Spec rejects blank/whitespace-only and strips surrounding whitespace |
-| `description` | `TextField` | `str` | yes (in spec) | `""` (model) | Free text. The model defaults to an empty string; the spec requires the field present |
-| `compose` | `JSONField` | `ValueSetCompose` | yes | `dict` | Composition rules — structured `include`/`exclude` clauses (see [`compose` shape](#compose-shape)). On write, persisted via `compose.model_dump(exclude_defaults=True, exclude_none=True)` |
-| `status` | `CharField(255)` | `ValueSetStatusOptions` | yes | — | Publication status enum (see [status values](#valuesetstatusoptions-values)) |
-| `is_system_defined` | `BooleanField` | `bool` | no | `False` | Marks value sets shipped and maintained by the platform rather than authored by a deployment |
+| `slug` | `SlugField(255)` | `SlugType` | yes | — | 5 to 50 characters; see [Slug rules](#slug-rules) |
+| `name` | `CharField(255)` | `str` | yes | — | The create and update specs accept a blank name; only `ValueSetSpec` rejects it |
+| `description` | `TextField` | `str` | yes | `""` | The field must be sent; an empty string is accepted |
+| `compose` | `JSONField` | `ValueSetCompose` | yes | `dict` | Include and exclude clauses; see [`compose` shape](#compose-shape) |
+| `status` | `CharField(255)` | `ValueSetStatusOptions` | yes | — | See [status values](#valuesetstatusoptions-values) |
+| `disable_composition` | `BooleanField` | `bool` | yes | `False` | When true, the parent's clauses are not used |
+| `auth_context` | `CharField(255)` | `ValueSetAuthContext` | yes | `"instance"` | The scope. Create spec only; not in the update or read specs |
+| `facility` | FK `facility.Facility`, nullable, `CASCADE` | `UUID4 \| None` | for `facility` and `user` scope | `None` | For `facility_organization` scope, copied from the department. Create spec only |
+| `facility_organization` | FK `emr.FacilityOrganization`, nullable, `CASCADE` | `UUID4 \| None` | for `facility_organization` scope | `None` | Create spec only |
+| `parent` | FK `self`, nullable, `CASCADE` | `UUID4 \| None` | when `inherited` is true | `None` | Must be an instance valueset, or a facility or department valueset of the same facility. Create spec only |
+| `inherited` | `BooleanField` | `bool` | yes | `False` | A facility customization. Takes the parent's slug on create and keeps its slug on update. Create spec only |
+| `is_system_defined` | `BooleanField` | `bool` (read spec only) | — | `False` | Set only by `sync_valueset`; no write spec declares it |
+| `internal_organization_cache` | `ArrayField(IntegerField)` | — | — | `list` | Department IDs that grant read access: the linked departments and their parent departments |
+
+### `ValueSetAuthContext` values
+
+| Value | Target stored | Create and update | Read | Screen |
+| --- | --- | --- | --- | --- |
+| `instance` | — | No role permission grants it. The API refuses it with `You are not authorized to create a value set` | Every signed-in user | Shared catalogue in facility settings, read only |
+| `facility` | `facility` | "Can Create/Update ValueSets" in the facility's root organization | "Can Read ValueSets" in a linked department or a parent department of one | Facility settings > Forms > ValueSets, This facility tab |
+| `facility_organization` | `facility_organization` and `facility` | "Can Create/Update ValueSets" in that department or a parent department | "Can Read ValueSets" in that department or a parent department | None |
+| `user` | `facility` | "Can Create/Update ValueSets" in any organization of the facility. Update and delete: the creator only | The creator only | None |
+
+A facility valueset with no linked department is visible to no facility user, its creator included. A role in the root organization does not make it visible, unless the valueset is shared with the root organization (**Administration**).
+
+### Slug rules
+
+| Rule | Where | Behaviour |
+| --- | --- | --- |
+| Format | `SlugType` | 5 to 50 characters: letters, digits, `-` and `_`, starting and ending with a letter or digit |
+| Unique per scope | Database constraints | Among rows with `deleted=False`: instance-wide for `instance`, per facility for `facility`, per department for `facility_organization`, per user and facility for `user` |
+| Constraint names | Database | `unique_valueset_slug_instance`, `unique_valueset_slug_facility`, `unique_valueset_slug_facility_organization`, `unique_valueset_slug_user` |
+| Reserved prefix on create | `ValueSetCreateSpec` | A slug that contains `system-` is refused unless `inherited` is true: `Cannot create valueset with system like slug` |
+| Reserved prefix on update | `ValueSetUpdateSpec` | The same check, skipped when the stored valueset is system-defined or inherited |
+| Inherited | Create and update | An inherited valueset takes its parent's slug on create, and keeps its stored slug on update |
+
+Create and update do not check slug uniqueness in the spec. A duplicate reaches the database constraint and fails with HTTP 500 (`IntegrityError`), not a validation error.
 
 ### `ValueSetStatusOptions` values
 
-A `str` enum in `resources/valueset/spec.py`. The model column is a free `CharField`; the spec restricts writes to these four values.
-
-| Value | Meaning |
+| Value | Behaviour |
 | --- | --- |
-| `draft` | Authored, not yet in use |
-| `active` | Published and usable |
-| `retired` | No longer recommended for use |
-| `unknown` | Status not known |
+| `draft` | Not used for slug resolution |
+| `active` | The only status used for slug resolution |
+| `retired` | Not used for slug resolution. `expand` by ID still searches it |
+| `unknown` | Not used for slug resolution |
 
 ### `compose` shape
 
-`compose` holds a `ValueSetCompose` structure (`care.emr.resources.common.valueset`). Each clause targets a `system` (a code system URI) and selects concepts directly or through filters. Every nested model sets `extra="forbid"`, so unknown keys are rejected.
+`compose` holds a `ValueSetCompose` (`care.emr.resources.common.valueset`). Every nested model sets `extra="forbid"`, so unknown keys are rejected.
 
 #### `ValueSetCompose`
 
-| Field | Type | Required | Default | Notes |
-| --- | --- | --- | --- | --- |
-| `id` | `str \| None` | no | `None` | Optional identifier |
-| `include` | `list[ValueSetInclude]` | yes | — | Inclusion clauses; the field must be present |
-| `exclude` | `list[ValueSetInclude] \| None` | no | `None` | Exclusion clauses; same shape as `include` |
-| `property` | `list[str] \| None` | no | `None` | Properties to return for member concepts |
+| Field | Type | Required | Default |
+| --- | --- | --- | --- |
+| `id` | `str \| None` | no | `None` |
+| `include` | `list[ValueSetInclude]` | yes (the list can be empty) | — |
+| `exclude` | `list[ValueSetInclude] \| None` | no | `None` |
+| `property` | `list[str] \| None` | no | `None` |
 
-#### `ValueSetInclude` (used for both `include` and `exclude`)
+#### `ValueSetInclude` (used for `include` and `exclude`)
 
-| Field | Type | Required | Default | Notes |
-| --- | --- | --- | --- | --- |
-| `id` | `str \| None` | no | `None` | Optional identifier |
-| `system` | `str \| None` | no | `None` | Code system URI this clause targets |
-| `version` | `str \| None` | no | `None` | Optional code system version |
-| `concept` | `list[ValueSetConcept] \| None` | no | `None` | Explicitly pinned concepts |
-| `filter` | `list[ValueSetFilter] \| None` | no | `None` | Rule-based selection |
+| Field | Type | Required | Default |
+| --- | --- | --- | --- |
+| `id` | `str \| None` | no | `None` |
+| `system` | `str \| None` | no | `None` |
+| `version` | `str \| None` | no | `None` |
+| `concept` | `list[ValueSetConcept] \| None` | no | `None` |
+| `filter` | `list[ValueSetFilter] \| None` | no | `None` |
 
-A clause may set `concept` or `filter`, not both — enforced by `check_concept_or_filter` (mode=after).
+A clause can set `concept` or `filter`, not both: `Only one of 'concept' or 'filter' can be present, not both.`
 
 #### `ValueSetConcept`
 
@@ -82,115 +117,198 @@ A clause may set `concept` or `filter`, not both — enforced by `check_concept_
 
 #### `ValueSetFilter`
 
-| Field | Type | Required | Default | Notes |
-| --- | --- | --- | --- | --- |
-| `id` | `str \| None` | no | `None` | |
-| `property` | `str \| None` | no | `None` | The concept property to filter on |
-| `op` | `str \| None` | no | `None` | Filter operator — validated against the allowed list below |
-| `value` | `str \| None` | no | `None` | Value to compare against |
+| Field | Type | Required | Default |
+| --- | --- | --- | --- |
+| `id` | `str \| None` | no | `None` |
+| `property` | `str \| None` | no | `None` |
+| `op` | `str \| None` | no | `None` |
+| `value` | `str \| None` | no | `None` |
 
-##### `op` allowed values
+`op` must be one of `=`, `is-a`, `descendent-of`, `is-not-a`, `regex`, `in`, `not-in`, `generalizes`, `child-of`, `descendent-leaf`, `exists`. Any other value fails with `Invalid op value ...`.
 
-`validate_op` rejects anything outside this set: `=`, `is-a`, `descendent-of`, `is-not-a`, `regex`, `in`, `not-in`, `generalizes`, `child-of`, `descendent-leaf`, `exists`.
+The same file also defines a plain `ValueSet` model (`name`, optional `status`, `compose`) next to these classes.
 
-```text
-compose:
-  include:
-    - system:  <code system uri>
-      version: <optional system version>
-      concept: [ { code, display } ]      # pin concepts (mutually exclusive with filter)
-      filter:  [ { property, op, value } ] # rule-based selection
-  exclude:
-    - ... same ValueSetInclude shape ...
-  property: [ <property names to return> ]
-```
+## Related models
 
-`create_composition()` regroups these clauses by `system` into `{ <system>: {include: [...], exclude: [...]} }` so each system can be queried independently, dumping each clause with `exclude_defaults=True`.
+### `ValueSetFacilityOrganization`
 
-> Note: a second, simpler `ValueSet` BaseModel (`name`, `status`, `compose`) plus `ValueSetConcept`/`ValueSetFilter`/`ValueSetInclude`/`ValueSetCompose` all live in `resources/common/valueset.py`. The persisted/API resource model is `ValueSetBaseSpec` in `resources/valueset/spec.py`, which reuses the same `ValueSetCompose`.
+| Field | Type |
+| --- | --- |
+| `valueset` | FK `ValueSet`, `CASCADE` |
+| `organization` | FK `FacilityOrganization`, `CASCADE` |
+
+Only `set_facility_organizations` writes these rows. It replaces every row of the valueset, then calls `sync_facility_org_cache()`.
+
+### `UserFacilityValueSetPreference`
+
+| Field | Type |
+| --- | --- |
+| `user` | FK `users.User`, `CASCADE` |
+| `slug` | `SlugField(255)` |
+| `facility` | FK `facility.Facility`, `CASCADE` |
+| `valueset` | FK `emr.ValueSet`, `CASCADE` |
+
+One row per user, facility and slug (constraint on non-deleted rows). `set_slug_preference` creates it or points it at the new valueset.
+
+### `UserValueSetPreference`
+
+| Field | Type |
+| --- | --- |
+| `user` | FK `users.User`, `CASCADE` |
+| `valueset` | FK `emr.ValueSet`, `CASCADE` |
+| `favorite_codes` | `JSONField`, default `list` |
+
+`unique_together = ("user", "valueset")`. The class constant `MAX_FAVORITES` (default 50, setting `MAX_FAVORITES_FOR_VALUESET`) is defined but nothing reads it, so `add_favourite` has no limit.
+
+### `RecentViewsManager`
+
+A class-method helper, not a database model. It keeps a user's recent codes for one valueset in a Redis list.
+
+| Member | Behaviour |
+| --- | --- |
+| `get_client()` | Opens the `"default"` Redis connection on first use |
+| `get_recent_views(cache_key)` | Returns every entry, decoded from JSON |
+| `add_recent_view(cache_key, code_obj)` | Does nothing without a `code`. Removes an entry with the same code, pushes the new entry first, then trims the list to `MAX_RECENT_VIEW` |
+| `remove_recent_view(cache_key, code_obj)` | Removes entries with the same code; does nothing without a `code` |
+| `clear_recent_views(cache_key)` | Deletes the list |
+| `_remove_by_code(cache_key, code)` | Internal. Removes matching entries and skips entries that are not valid JSON |
+
+`MAX_RECENT_VIEW` defaults to 20 (setting `MAX_RECENT_VIEW_FOR_VALUESET`).
 
 ## Resource specs (API schema)
 
-Every spec extends `EMRResource` (`resources/base.py`), which provides `serialize` (DB object → pydantic, via `model_construct`) and `de_serialize` (pydantic → DB object). `ValueSet` leaves `__store_metadata__` unset, so spec fields map directly to model columns — there is no `meta` bag.
+Every spec extends `EMRResource` (`resources/base.py`). Serialization copies only the fields that the read spec declares.
 
-| Spec class | Role | Fields exposed |
+| Spec | Role | Fields |
 | --- | --- | --- |
-| `ValueSetBaseSpec` | shared base (`__model__ = ValueSet`) | `id` (UUID4), `slug`, `name`, `description`, `compose`, `status`, `is_system_defined` |
-| `ValueSetSpec` | write · create & update | inherits base + validation + `perform_extra_deserialization` |
-| `ValueSetReadSpec` | read · list & detail | inherits base + `created_by`, `updated_by` (dicts) |
+| `ValueSetBaseSpec` | Shared base (`__model__ = ValueSet`) | `id` (UUID4, default `None`), `slug`, `name`, `description`, `compose`, `status`, `disable_composition` |
+| `ValueSetCreateSpec` | Write · create | Base, plus `auth_context`, `facility`, `facility_organization`, `inherited`, `parent` |
+| `ValueSetUpdateSpec` | Write · update | Base fields only |
+| `ValueSetMinimalReadSpec` | Read | Base, plus `is_system_defined` |
+| `ValueSetReadSpec` | Read · list and detail | Minimal read, plus `created_by` and `updated_by` |
+| `ValueSetSpec` | Body of `preview_search` | Base, plus the name and slug validators |
 
-### Validation (`ValueSetSpec`)
+The read specs do not return `auth_context`, `facility`, `facility_organization`, `parent` or `inherited`.
 
-| Rule | Where | Behaviour |
+### Validation
+
+| Rule | Spec | Behaviour |
 | --- | --- | --- |
-| Name not empty | `validate_name` (field) | Rejects blank/whitespace-only; strips surrounding whitespace |
-| Slug unique | `validate_slug` (field) | Queries existing `ValueSet` rows; on update, excludes the current object (via `context["object"].id` when `context["is_update"]`); otherwise raises `"Slug must be unique"` |
-| Reserved slug | `validate_slug_system` (model, after) | If the value set is not `is_system_defined` and the slug contains `"system-"`, raises `"Cannot create valueset with system like slug"` |
-| Slug format | `SlugType` | min 5 / max 50 chars, URL-safe, alphanumeric start/end |
-| `op` allowlist | `ValueSetFilter.validate_op` | See [op allowed values](#op-allowed-values) |
-| `concept` xor `filter` | `ValueSetInclude.check_concept_or_filter` | Both present → error |
+| Scope target | `ValueSetCreateSpec` | `Facility is required` for `facility` and `user`; `Facility organization is required` for `facility_organization` |
+| Inheritance | `ValueSetCreateSpec` | `Parent is required for inherited value sets` |
+| Parent exists | `ValueSetCreateSpec` | `Parent not found` when no valueset has that ID |
+| Parent scope | `ValueSetCreateSpec` | `Parent not found` unless the parent is an instance valueset, or a facility or department valueset of the same facility |
+| Facility and department exist | `ValueSetCreateSpec` | `Facility not found`, `Facility organization not found` |
+| Reserved slug | Create and update specs | See [Slug rules](#slug-rules) |
+| Name not blank | `ValueSetSpec` only | `Name cannot be empty`; strips surrounding whitespace |
+| Slug unique | `ValueSetSpec` only | `Slug must be unique` when a valueset of any scope uses the slug |
+| `op` allowlist | `ValueSetFilter` | See [`compose` shape](#compose-shape) |
+| `concept` or `filter` | `ValueSetInclude` | Both present fails |
 
 ### Server-side serialization hooks
 
 | Hook | Spec | Effect |
 | --- | --- | --- |
-| `perform_extra_deserialization(is_update, obj)` | `ValueSetSpec` | On write, sets `obj.compose = self.compose.model_dump(exclude_defaults=True, exclude_none=True)`, normalizing the JSON stored in the model |
-| `perform_extra_serialization(mapping, obj)` | `ValueSetReadSpec` | On read, sets `mapping["id"] = obj.external_id` and populates `created_by` / `updated_by` via `serialize_audit_users` |
+| `perform_extra_deserialization` | `ValueSetCreateSpec` | Looks up the facility for `facility` and `user` scope. For `facility_organization`, sets the department, its facility and the access cache. Resolves and checks the parent, and copies the parent's slug when `inherited` is true |
+| `perform_extra_deserialization` | `ValueSetSpec` | Stores `compose` dumped with `exclude_defaults=True, exclude_none=True` |
+| `perform_extra_serialization` | Both read specs | Sets `id` to `external_id`; `ValueSetReadSpec` also fills `created_by` and `updated_by` |
 
-`ValueSetSpec.model_rebuild()` runs at module load so the forward reference to `ValueSetCompose` resolves.
-
-## Related models
-
-### `UserValueSetPreference`
-
-Holds the codes a single user has favorited within one value set.
-
-```text
-user          → FK users.User (CASCADE)
-valueset      → FK emr.ValueSet (CASCADE)
-favorite_codes → JSONField (default=list)
-```
-
-`unique_together = ("user", "valueset")` enforces one preference row per user per value set. The class constant `MAX_FAVORITES` (default `50`, overridable via `settings.MAX_FAVORITES_FOR_VALUESET`) caps how many codes a user may favorite.
-
-### `RecentViewsManager`
-
-A classmethod-only helper, not a database model. It tracks a user's recently viewed codes in a Redis list (one per `cache_key`) so pickers can surface recent codes alongside favorites.
-
-| Member | Behaviour |
-| --- | --- |
-| `get_client()` | Lazily opens the `"default"` Redis connection |
-| `get_recent_views(cache_key)` | Returns the decoded list of recent code objects |
-| `add_recent_view(cache_key, code_obj)` | De-dupes by `code` (no-op if `code` missing), `LPUSH`es the entry, then `LTRIM`s to `MAX_RECENT_VIEW` |
-| `remove_recent_view(cache_key, code_obj)` | Removes any list entry matching `code` (no-op if `code` missing) |
-| `clear_recent_views(cache_key)` | Deletes the whole list |
-| `_remove_by_code(cache_key, code)` | Internal: scans the list and `LREM`s matching entries; malformed JSON entries are skipped |
-
-`MAX_RECENT_VIEW` defaults to `20` (overridable via `settings.MAX_RECENT_VIEW_FOR_VALUESET`). Entries are JSON-encoded; malformed ones are skipped on read and remove.
+`ValueSetCreateSpec` does not re-dump `compose`, and `ValueSetUpdateSpec` has no deserialization hook.
 
 ## Methods & save behaviour
 
-`ValueSet` does not override `save()`/`delete()` — soft-delete is inherited from the base. Its methods drive terminology resolution:
+`ValueSet` does not override `save()` or `delete()`. Its methods resolve codes:
 
-- `create_composition()` — converts `compose` (a dict or `ValueSetCompose`) into a per-system map of `include`/`exclude` clauses, dumping each clause with `exclude_defaults=True`.
-- `search(search="", count=10, display_language=None)` — runs `ValueSetResource().filter(...).search()` for each system in the composition (optionally filtered by `display_language`) and concatenates the results. Codes are fetched from the terminology server at request time; nothing is materialized into the value set.
-- `lookup(code)` — checks whether `code` is a member by running `ValueSetResource().filter(...).lookup(code)` against each system, returning `True` if any system matches.
+- `create_composition(systems=None)` groups the include and exclude clauses by terminology system, dumping each clause with `exclude_defaults=True`. Unless `disable_composition` is true, it then adds the parent's clauses to the same lists, recursively.
+- `search(search="", count=10, display_language=None)` runs one terminology query per terminology system and joins the results.
+- `lookup(code)` returns true when the code matches in any terminology system.
+- `sync_facility_org_cache()` sets `internal_organization_cache` to the linked departments and all their parent departments.
 
-Membership resolves live, so editing `compose` immediately changes which codes the value set yields. There is no expansion or cache to rebuild.
+Codes resolve at request time. Changing `compose` changes the members at once, and there is no expansion to rebuild.
+
+The viewset's `perform_update` keeps the stored slug of an inherited valueset, whatever slug the request sends.
+
+Delete is a soft delete: it sets `deleted=True`.
 
 ## API integration notes
 
-- The REST API aligns with the FHIR `ValueSet` resource. Writes go through `ValueSetSpec`, reads through `ValueSetReadSpec`; `search` powers code pickers and `lookup` validates submitted codes.
-- The model column `compose` is opaque JSON, so always write through the `ValueSetCompose` schema (clauses, filters, the `op` allowlist, `concept` xor `filter`). `perform_extra_deserialization` re-dumps it with `exclude_defaults`/`exclude_none` to keep stored JSON normalized.
-- Composition rules are stored, not expanded code lists. Members are queried in real time from terminology servers, so results shift as upstream systems change.
-- Treat `is_system_defined` value sets as read-only — they are platform-maintained. Author your own for local terminology; the `system-` slug prefix is reserved for system value sets.
-- `favorite_codes` (via `UserValueSetPreference`) and recent views (via `RecentViewsManager`/Redis) are per-user personalization, not part of the value set definition.
+- The API is served at `/api/v1/valueset/`. A valueset is looked up by its external ID (UUID); before 3.1 the lookup used the slug.
+- The viewset extends `EMRModelViewSet`: create (POST), retrieve and list (GET), update (PUT, and PATCH as partial update), destroy (DELETE) and the generic `upsert` (POST).
+- The list accepts `name` (contains, case-insensitive), `status` (exact, case-insensitive), `auth_context` and `facility` (facility external ID).
+- The permission class needs only a signed-in user. The viewset has no `permissions_controller`.
+- List, retrieve and the detail actions that call `get_object()` use the visible queryset, so a valueset that the user cannot read returns 404.
+- Refused updates and deletes return the message `You are not authorized to create a value set`. The exception is a personal (`user`) valueset updated or deleted by someone other than its creator: `Only the creator of the value set can update it`.
+
+### Authorization
+
+| Action | `instance` | `facility` | `facility_organization` | `user` |
+| --- | --- | --- | --- | --- |
+| Create | No role permission grants it | "Can Create/Update ValueSets" in the facility root | "Can Create/Update ValueSets" in the department or a parent | "Can Create/Update ValueSets" in any organization of the facility |
+| Update, delete | No role permission grants it | As create | As create | As create, and only the creator |
+| List, retrieve | Every signed-in user | "Can Read ValueSets" in a linked department or a parent of one | "Can Read ValueSets" in the department or a parent | The creator only |
+
+A write role in another facility's root, a write role in a department, or a read-only role in the root does not allow creating a facility valueset.
+
+| Permission | Display name | Default facility roles |
+| --- | --- | --- |
+| `can_write_valueset` | Can Create/Update ValueSets | Facility Admin |
+| `can_read_valueset` | Can Read ValueSets | Facility Admin, Administrator, Doctor, Nurse, Staff, Pharmacist, Volunteer |
+
+The role lists are defaults. Roles can be created and edited, and system roles are rewritten from code on each sync.
+
+### Endpoints
+
+| Action | Method | Level | Behaviour |
+| --- | --- | --- | --- |
+| `get_facility_organizations` | GET | detail | Lists the linked departments. `facility` scope only, otherwise 403 `Facility organizations can only be set for facility level questionnaires`. Needs the update permission |
+| `set_facility_organizations` | POST | detail | Body `facility_organizations: list[UUID4]`. Replaces the linked departments; each must belong to the valueset's facility. Refreshes the access cache. Same scope and permission checks as above |
+| `set_slug_preference` | POST | detail | Body `slug`, `facility`. Saves this valueset as the user's choice for the slug in that facility. The user must be able to read the valueset; no write permission is needed. A valueset of another facility fails with `Cannot set preference for different facility's valueset` |
+| `expand` | POST | detail | Searches this valueset. Does not check status |
+| `expand_slug` | POST | list | Resolves the slug (see below), searches that valueset, and returns it with the results |
+| `preview_search` | POST | list | Body is a `ValueSetSpec`; `search` and `count` come from the query string. Builds an unsaved valueset and searches it. A parent's clauses are not included. Needs only sign-in |
+| `validate_code` | POST | detail | Body is a `Coding`. Returns `result` true or false |
+| `lookup_code` | POST | list | Looks up a code and system in the terminology server. Not found returns 404 `No results found for the given system and code`. Needs only sign-in |
+| `favourites` | GET | detail | The user's favourite codes in this valueset |
+| `favourites_by_slug` | GET | list | The user's favourite codes in the valueset that the slug resolves to |
+| `add_favourite` | POST | detail | Adds a code that belongs to the valueset, otherwise `Invalid code value`. Needs no write permission |
+| `remove_favourite` | POST | detail | Removes a code from the favourites |
+| `clear_favourites` | POST | detail | Empties the favourites |
+| `add_recent_view` | POST | detail | Adds a code that belongs to the valueset to the recent codes, otherwise `Invalid code value` |
+| `remove_recent_view` | POST | detail | Removes a code from the recent codes |
+| `recent_views` | GET | detail | The user's recent codes in this valueset |
+| `recent_views_by_slug` | GET | list | The user's recent codes in the valueset that the slug resolves to |
+| `clear_recent_views` | POST | detail | Deletes the recent codes |
+
+`expand` and `expand_slug` take `search` (default `""`), `count` (default 10, from 1 to 99) and `display_language` (default `en-gb`). `expand_slug` also takes `slug` and an optional `facility`.
+
+Favourites are cached under `user_valueset_code_prefs:<valueset>:<user>:favourites`. Recent codes use the same prefix with `:recent_views`.
+
+### Slug resolution
+
+`get_closest_valueset(queryset, slug, user, facility=None)` picks the valueset that a slug means. `expand_slug`, `favourites_by_slug` and `recent_views_by_slug` call it with the visible queryset.
+
+- Only `active` valuesets count.
+- With a facility: the user's saved preference for that facility and slug, if it is still visible and active. Otherwise a `facility` valueset of that facility, then an `instance` valueset.
+- Without a facility: an `instance` valueset only.
+- When nothing matches: `No valueset found`.
+
+### System valuesets
+
+- System valuesets are defined in code (`CareValueset`). The `sync_valueset` command writes them and marks them `is_system_defined`. It skips an existing one unless `--overwrite` is given.
+- `sync_valueset` runs at start-up in the celery scripts.
+- They take the default scope `instance`, so no role permission allows editing them. A facility can customize one with an inherited facility valueset.
+- Example: "Condition", slug `system-condition-code`.
+- A coded field bound to a system valueset, such as a condition's code, is checked on save against the first valueset with that slug, whatever its facility. The errors are `Valueset does not exist in care, Resync valuesets` and `Code does not exist in the valueset`.
+
+Favourite and recent codes are per user. They are not part of the valueset definition.
 
 ## Related
 
-- Reference: [Questionnaire](../definitions/questionnaire.mdx) — consumes value sets to constrain coded answers
-- Reference: [Observation definition](../definitions/observation-definition.mdx) — binds coded fields to value sets
+- Concept: [Valueset](../../concepts/definitions/valueset.mdx)
+- Reference: [Questionnaire](../definitions/questionnaire.mdx), which binds coded answers to valuesets
+- Reference: [Observation definition](../definitions/observation-definition.mdx)
 - Reference: [Base models & conventions](../foundation/base-model.mdx)
 - Source (model): [valueset.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/valueset.py)
 - Source (spec): [resources/valueset/spec.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/valueset/spec.py)
 - Source (compose): [resources/common/valueset.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/valueset.py)
+- Source (viewset): [api/viewsets/valueset.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/valueset.py)

@@ -1,0 +1,124 @@
+---
+sidebar_position: 5
+---
+
+# Share a valueset with departments
+
+## Overview
+
+<video src="/media/definitions/valueset/share-valueset-with-departments.mp4" poster="/media/definitions/valueset/share-valueset-with-departments.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/valueset/share-valueset-with-departments.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to choose the departments that can see and use a facility [valueset](../../../concepts/definitions/valueset.mdx). Care shows a facility valueset only to members of the departments that it is shared with, and of their parent departments.
+
+## Pre-requisites
+
+- The valueset is on the **This facility** tab of the **ValueSets** page.
+- The valueset is already shared with your department, or with one of its sub-departments.
+- You have the permissions listed below.
+
+Note: A new facility valueset stays hidden, even from the person who created it, until it is shared with a department. Until then, a role in the facility's root organization (**Administration**) does not show it either. Use this flow only for a valueset that you can open.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create/Update ValueSets | Lets you see and change the departments of the valueset. You must hold it in the root organization. Without it there, the page does not show **Departments with access**. By default, the Facility Admin role holds it. |
+| Can Read ValueSets | Lets you find the valueset in the list and open it. You must hold it in a department that the valueset is shared with, or in a parent department of one. Holding it in the root organization alone is not enough, unless the valueset is shared with the root organization (**Administration**). By default, the Facility Admin, Administrator, Doctor, Nurse, Staff, Pharmacist and Volunteer roles hold it. |
+| Can View Facility Organizations | Lets you see the departments in the **Select Department** list. If you hold it in the root organization, the list shows every department, including the root organization. If you hold it only in a department, the list leaves out the root organization. By default, the Facility Admin, Administrator, Doctor, Nurse, Staff and Volunteer roles hold it. |
+
+## Steps
+
+### 1. Open the valueset list
+
+In the facility sidebar, select **Settings**.
+
+In the settings sidebar, under **Forms**, select **ValueSets**.
+
+Care opens the **ValueSets** page on the **This facility** tab.
+
+![Step 1, Open the valueset list (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/valueset/share-valueset-with-departments-1.png)
+
+![Step 1, Open the valueset list (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/valueset/share-valueset-with-departments-2.png)
+
+### 2. Open the valueset
+
+To find the valueset by name, type in **Search ValueSets**.
+
+The list shows **Active** valuesets. To find a valueset with another status, change **Status**.
+
+On the row of the valueset, select **Edit**.
+
+Care opens the **Edit ValueSet** page.
+
+![Step 2, Open the valueset: the screen at this step, with the control for the step outlined](/media/definitions/valueset/share-valueset-with-departments-3.png)
+
+### 3. Find the departments
+
+Find **Departments with access**, below **Basic Information** and above **Definition**.
+
+The field shows the departments that the valueset is shared with, below the **Select Department** button.
+
+![Step 3, Find the departments: the screen at this step, with the control for the step outlined](/media/definitions/valueset/share-valueset-with-departments-4.png)
+
+### 4. Add a department
+
+Select **Select Department**. Care opens the list of departments.
+
+To find a department by name, type in the search box at the top of the list.
+
+To see the sub-departments of a department, select its expand button.
+
+Select the check box of the department.
+
+Care saves the change at once and shows **Organizations updated**.
+
+Do the same for each department that you want to add.
+
+Select **Done** to close the list. If no department is selected, the button is **Close**.
+
+![Step 4, Add a department: the screen at this step, with the control for the step outlined](/media/definitions/valueset/share-valueset-with-departments-5.png)
+
+### 5. Remove a department
+
+Below **Select Department**, find the department that you want to remove.
+
+Select the remove button next to its name.
+
+Care saves the change at once and shows **Organizations updated**.
+
+You can also clear the check box of the department in the list.
+
+In the list, **Clear all** removes every department at once.
+
+Caution: If you remove the departments that give you access, Care hides the valueset from you.
+
+Note: You do not need to select **Save** for department changes. Care saves each change as you make it.
+
+![Step 5, Remove a department (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/valueset/share-valueset-with-departments-6.png)
+
+![Step 5, Remove a department (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/valueset/share-valueset-with-departments-7.png)
+
+## Expected Outcome
+
+- **Departments with access** shows the departments that you selected.
+- Members of those departments can find and open the valueset, if they hold Can Read ValueSets.
+- Members of the parent departments of those departments can also see it, with the same permission.
+- Members of a removed department lose access, unless another shared department gives them access.
+- Other facility members cannot see the valueset. A role in the root organization alone is not enough, unless the valueset is shared with the root organization (**Administration**).
+
+## Related
+
+Concepts:
+
+- [Valueset](../../../concepts/definitions/valueset.mdx)
+- [Department](../../../concepts/facility/department.mdx)
+- [Facility Organization](../../../concepts/access-governance/facility-organization.mdx)
+
+Flows:
+
+- [Create a valueset](./create-valueset.mdx)
+- [Customize a shared valueset](./customize-shared-valueset.mdx)
+- [Update or retire a valueset](./update-or-retire-valueset.mdx)
+- [Add users to a department](../../facility/department/add-users-to-department.mdx)

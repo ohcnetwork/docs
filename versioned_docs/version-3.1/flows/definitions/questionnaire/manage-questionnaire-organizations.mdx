@@ -2,71 +2,98 @@
 sidebar_position: 3
 ---
 
-# Manage organizations for a questionnaire
+# Share a questionnaire with departments
 
 ## Overview
 
-This flow describes how to control which organizations can see and use a [questionnaire](../../../concepts/definitions/questionnaire.mdx) in Care.
+<video src="/media/definitions/questionnaire/manage-questionnaire-organizations.mp4" poster="/media/definitions/questionnaire/manage-questionnaire-organizations.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/questionnaire/manage-questionnaire-organizations.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to share a [questionnaire](../../../concepts/definitions/questionnaire.mdx) of your facility with [departments](../../../concepts/facility/department.mdx), so that their members can see it in the questionnaire list and select it when they fill in a questionnaire. It also describes how to stop sharing it with a department.
 
 ## Pre-requisites
 
-- The questionnaire is saved in Care, and you open it to change it. See [Create a questionnaire](./create-questionnaire.mdx).
+- The questionnaire is saved in your facility. See [Create a questionnaire](./create-questionnaire.mdx).
+- The departments that you want to share with belong to your facility.
+- You are a member of a department of the facility, so the facility sidebar shows **Settings**.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create/Update Questionnaires | Lets you add or remove the organizations of a questionnaire. |
-
-Note: You need this permission in the current organizations of the questionnaire. You also need this permission in each organization that you add.
+| Can Create/Update Questionnaires | Lets you load the departments of the questionnaire, change them, and save them. You must hold it in the facility's root organization (**Administration**). By default, the Facility Admin role holds it. |
+| Can View Facility Organizations | Lets the department picker list the departments of the facility. If you hold it in the root organization, the picker lists every department. By default, the Facility Admin, Administrator, Doctor, Nurse, Staff and Volunteer roles hold it. |
+| Can Read Questionnaires | Lets you see the questionnaire list and open the questionnaire. You must hold it in the root organization, in a department that the questionnaire is shared with, or in a department above one. By default, the Facility Admin, Administrator, Doctor, Nurse, Staff, Pharmacist and Volunteer roles hold it. |
 
 ## Steps
 
-### 1. Open the organizations panel
+### 1. Open the questionnaire
 
-Open the questionnaire that you want to change.
+In the facility sidebar, select **Settings**. In the settings sidebar, under **Forms**, select **Questionnaires**.
 
-In the **Properties** panel, click **Manage Organizations**.
+The list shows **Active** questionnaires. If the questionnaire has another status, select the **Draft** or **Retired** tab. Select the questionnaire in the list. Care opens the questionnaire page.
 
-Care opens a panel. Under **Selected Organizations**, the panel shows the current organizations as badges.
+![Step 1, Open the questionnaire: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/manage-questionnaire-organizations-1.png)
 
-Note: When you create a new questionnaire, you select the organizations on the form. Care does not save the form until you select at least one organization.
+### 2. Open the department picker
 
-### 2. Add an organization
+In the **Questionnaire Properties** panel, find the **Organizations** field.
 
-Under **Add Organizations**, click **Search Organizations**.
+Select **Select Department**. Care opens the list of departments of the facility.
 
-Enter the name of the organization that you want to add.
+Note: If the field shows "Organization settings are not available for this questionnaire in this view.", Care could not load the departments of the questionnaire. Loading them needs "Can Create/Update Questionnaires" in the root organization.
 
-Click the organization in the list. Care adds a badge for the organization.
+![Step 2, Open the department picker: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/manage-questionnaire-organizations-2.png)
 
-### 3. Remove an organization
+### 3. Select the departments
 
-Find the badge of the organization that you want to remove.
+To find a department, type its name in the search box.
 
-Click the cross on the badge. Care removes the badge.
+To see the sub-departments of a department, expand it.
 
-### 4. Save your changes
+Select the check box of each department that you want to share the questionnaire with.
 
-Click **Save**.
+Select **Done**. Care lists the selected departments below **Select Department**.
 
-Note: The **Save** button stays inactive until you change the organizations.
+![Step 3, Select the departments: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/manage-questionnaire-organizations-3.png)
 
-Note: To close the panel without saving, click **Cancel**.
+### 4. Remove a department
+
+Follow this step only when a department must stop seeing the questionnaire.
+
+In the list of selected departments, select the X button next to the department.
+
+![Step 4, Remove a department: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/manage-questionnaire-organizations-4.png)
+
+### 5. Save your changes
+
+Select **Save Questionnaire** at the top of the page.
+
+Note: Care saves the department changes only when you select **Save Questionnaire**. If you leave the page before you save, Care asks you to confirm.
+
+Note: The question editor, which opens from **Edit Questions**, also shows the **Organizations** field under **Form Settings**. If you change the departments there, save with **Save Changes**.
+
+![Step 5, Save your changes: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/manage-questionnaire-organizations-5.png)
 
 ## Expected Outcome
 
-- Care shows the message "Organizations updated successfully".
-- The organizations that you added can see and use the questionnaire.
-- The organizations that you removed can no longer see or use the questionnaire.
+- Care shows the message "Questionnaire updated successfully".
+- Members of each selected department who hold Can Read Questionnaires can see the questionnaire. Members of the departments above a selected department can see it too.
+- Members of the root organization keep access, even when you remove every department.
+- Members of a removed department no longer see the questionnaire, unless they also belong to the root organization or to another department that has access.
+- The version number stays the same, because the questions did not change.
 
 ## Related
 
 Concepts:
 
 - [Questionnaire](../../../concepts/definitions/questionnaire.mdx)
+- [Department](../../../concepts/facility/department.mdx)
 
 Flows:
 
 - [Create a questionnaire](./create-questionnaire.mdx)
+- [Update or retire a questionnaire](./update-or-retire-questionnaire.mdx)
+- [Clone a questionnaire](./clone-questionnaire.mdx)

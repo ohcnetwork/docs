@@ -6,61 +6,107 @@ sidebar_position: 1
 
 ## Definition
 
-A **[questionnaire](https://build.fhir.org/questionnaire.html)** in Care is the definition of a structured form. It holds the title of the form, the questions, and the order of those questions. A questionnaire is a template, not a submission. When staff fill in a questionnaire for a patient, Care saves the answers as a [Questionnaire Response](../../concepts/clinical/questionnaire-response.mdx).
+A **[questionnaire](https://build.fhir.org/questionnaire.html)** in Care is the definition of a structured form: its title, its questions, and the order of those questions.
+
+A questionnaire is a template, not a submission. When staff fill in a questionnaire, Care saves the answers as a [Questionnaire Response](../clinical/questionnaire-response.mdx), and the response records the version of the questionnaire that was used.
+
+You manage the questionnaires of your facility in **Settings**, in the **Forms** group, under **Questionnaires**.
 
 ## Key Attributes
 
 | Components | What it captures |
 | --- | --- |
-| Title | The name of the form. The title is required. |
-| Slug | A short identifier for the form in the web address. The slug is required. |
-| Description | A short text that explains the purpose of the form. The description is optional. |
-| Status | The stage of the questionnaire in its lifecycle. The status is required. |
-| Subject Type | The level at which staff fill in the form. The subject type is required. |
-| Organizations | The organizations that can see and use the questionnaire. You must select at least one organization. |
-| Questions | The questions and the question groups in the form. |
-| Version | The version number of the questionnaire. Care sets this value, and you cannot change it. |
+| Title | The name of the questionnaire. This field is required. |
+| Slug | A short name that identifies the questionnaire in the facility. This field is required. |
+| Description | A short text that explains the purpose of the questionnaire. This field is optional. |
+| Status | Active, Draft, or Retired. Staff can fill in a questionnaire only when it is Active. |
+| Subject Type | What the questionnaire is about, for example an encounter or a device. You select it when you create the questionnaire, and you cannot change it later. |
+| Organizations | The departments that the questionnaire is shared with. This field is optional. |
+| Questions | The questions and the groups of questions in the form. |
+| Version | The version number, shown as v1, v2, and so on. Care sets it, and it goes up each time the questions change. |
+
+### Where a questionnaire belongs
+
+A questionnaire that you create in facility settings belongs to that facility. Care shows a **Facility** badge next to its title.
+
+Some questionnaires are shared across the whole Care instance; they do not show in the facility's list, and they cannot be changed from facility settings.
 
 ### Slug
 
-The slug must have 5 to 25 characters. The slug accepts letters, numbers, underscores, and hyphens. Each questionnaire needs a different slug.
+The slug has 5 to 50 characters. It uses only letters, numbers, hyphens, and underscores, and it starts and ends with a letter or a number. When you type the title on the create page, Care fills in the slug for you.
+
+Two questionnaires in the same facility cannot have the same slug, and Care ignores capital letters when it compares them. Other facilities can use the same slug.
 
 ### Subject Type
 
-The subject type is Patient or Encounter. If you select Patient, staff fill in the form at the patient level. If you select Encounter, staff fill in the form inside an encounter.
+The subject type says what the questionnaire is about: Encounter, Referral, Location, Device, or Facility. Patient questionnaires exist only for the whole Care instance, so facility settings do not offer Patient.
+
+The subject type also decides what the questionnaire can hold. Care offers a structured question type only when it fits the subject type: for example, Medication Request and Service Request questions exist only in Encounter questionnaires. Actions run only for Patient and Encounter questionnaires.
 
 ### Questions
 
-Each question has a type. The available types are Group, Display, Boolean, Decimal, Integer, Date, Date Time, Time, String, Text, URL, Choice, Quantity, and Structured. A Group holds other questions together. A Display shows text to the reader and takes no answer.
+Each question has an answer type: Group, Display, Boolean, Decimal, Integer, Date, Date Time, Time, String, Text, URL, Choice, Quantity, or Structured. A Group holds related questions together and must contain at least one question. A Display shows text or instructions and collects no answer.
 
-Each question also has three flags:
+A question can have these settings:
 
-- Required: staff must answer the question before they submit the form.
-- Repeatable: staff can give more than one answer to the question. Care hides this flag for the Boolean, Group, Display, and Structured types.
-- Read only: staff can see the question but cannot change the answer.
+- **Required**: the form cannot be submitted without an answer to the question.
+- **Repeatable**: the person can record more than one answer. Care does not offer this setting for Boolean, Display, and Structured questions.
+- **Read only**: the question is shown, but it cannot be answered.
 
-A Choice question gets its answers in one of two ways. You add a set of custom options. You can also select a [Valueset](../../concepts/definitions/valueset.mdx) for the question. A Quantity question always gets its units from a valueset.
+A Choice question takes its answers from custom options or from a [valueset](./valueset.mdx). A Quantity question takes its units from a valueset.
+
+On the **Logic** tab of a question, you set when the question appears; with no rules, it is always shown. On the **Coding** tab, you link the question to a standard code, so that answers are comparable across facilities.
+
+### Versions
+
+Care keeps the earlier versions of a questionnaire. When a save changes the questions, Care keeps the previous questions as a past version and raises the version number. A save that changes only the title, slug, description, status, or departments keeps the version number.
+
+Past versions are read-only: you cannot edit a past version, and staff cannot fill in a past version. Each response keeps the version that it was answered with. You open past versions from the **Versions** tab of the questionnaire.
 
 ### Status
 
 | Status | Description |
 | --- | --- |
-| Active | The questionnaire is in use. Staff can fill it in. |
-| Draft | The questionnaire is in preparation and is not ready for use. |
-| Retired | The questionnaire is no longer in use. |
+| Active | The questionnaire is in use. Staff can select it when they fill in a questionnaire. |
+| Draft | The questionnaire is in preparation. Staff cannot fill it in. The create form selects Draft unless you select another status; a clone or an import always starts as Draft. |
+| Retired | The questionnaire is no longer in use. Staff cannot select it when they fill in a questionnaire. |
 
-Note: The questionnaire screens have no action to delete a questionnaire. Set the status to Retired to take a questionnaire out of use.
+Note: The questionnaire screens have no action to delete a questionnaire. To take a questionnaire out of use, set its status to Retired. To use it again, set its status back to Active.
 
-## Access
+### Favorites
 
-The **Admin Dashboard** button opens the questionnaire screens. Care shows this button only to superusers. To create a questionnaire, you need the "Can Create/Update Questionnaires" permission in each organization that you select. To change a saved questionnaire, you must be a superuser. To add or remove the organizations of a saved questionnaire, you need the "Can Create/Update Questionnaires" permission.
+You can keep the questionnaires that you fill in most often in encounters as favorite forms. In an encounter, on the **Overview** tab, select **Forms**. Search for the questionnaire if it is not in the list, then select the star next to it. Select the star again to remove it.
+
+Your favorite forms show on the **Overview** tab, below **Forms** and the other quick action buttons. Select one to fill it in for that encounter.
+
+- **Forms** and your favorite forms show only if you can add clinical data to the encounter, and only while the encounter is not Completed, Cancelled, Discontinued, or Entered in error.
+- Only Active questionnaires for encounters show as favorite forms. When a questionnaire is retired, it leaves your favorite forms.
+- Your favorites are your own. Other people do not see them. A favorite questionnaire of your facility shows only in that facility. A favorite questionnaire that is shared across the whole Care instance shows in every facility.
+- You can keep up to 5 favorite forms in total, unless your deployment sets another limit. At the limit, Care shows "You've reached the limit. Only 5 forms can be favourited." Remove a favorite to add another.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create/Update Questionnaires | Create, change, clone, import, and share the facility's questionnaires. Care checks this permission in the facility's root organization (**Administration**); the same permission in another department is not enough. By default, the Facility Admin role holds it. |
+| Can Read Questionnaires | See and open the facility's questionnaires, in the questionnaire list and when you choose a questionnaire to fill in. Care checks this permission in the root organization, in a department that the questionnaire is shared with, or in a department above one. By default, the Facility Admin, Administrator, Doctor, Nurse, Staff, Pharmacist, and Volunteer roles hold it. |
+| Can View Facility Organizations | List the departments of the facility in the department picker when you share a questionnaire. Care checks this permission in any department of the facility; held in the root organization, it lets the picker list every department. By default, the Facility Admin, Administrator, Doctor, Nurse, Staff, and Volunteer roles hold it. |
+
+A new questionnaire is not shared with any department. Until you share it, only people who hold Can Read Questionnaires in the root organization can see it. A person who holds the permission only in other departments sees it, in the questionnaire list and when they fill in a questionnaire, after it is shared with one of their departments.
+
+Your deployment can also have custom roles with other sets of permissions.
 
 ## Related
 
 - Flow: [Create a questionnaire](../../flows/definitions/questionnaire/create-questionnaire.mdx)
 - Flow: [Add and edit questions](../../flows/definitions/questionnaire/add-and-edit-questions.mdx)
-- Flow: [Manage organizations for a questionnaire](../../flows/definitions/questionnaire/manage-questionnaire-organizations.mdx)
+- Flow: [Update or retire a questionnaire](../../flows/definitions/questionnaire/update-or-retire-questionnaire.mdx)
+- Flow: [Share a questionnaire with departments](../../flows/definitions/questionnaire/manage-questionnaire-organizations.mdx)
 - Flow: [Clone a questionnaire](../../flows/definitions/questionnaire/clone-questionnaire.mdx)
-- Concept: [Questionnaire Response](../../concepts/clinical/questionnaire-response.mdx)
-- Concept: [Questionnaire Response Template](../../concepts/definitions/questionnaire-response-template.mdx)
-- Concept: [Valueset](../../concepts/definitions/valueset.mdx)
+- Flow: [Import a questionnaire](../../flows/definitions/questionnaire/import-questionnaire.mdx)
+- Flow: [View earlier versions of a questionnaire](../../flows/definitions/questionnaire/view-questionnaire-versions.mdx)
+- Concept: [Questionnaire Response](../clinical/questionnaire-response.mdx)
+- Concept: [Questionnaire Response Template](./questionnaire-response-template.mdx)
+- Concept: [Valueset](./valueset.mdx)
+- Concept: [Department](../facility/department.mdx)
+- Reference: [Questionnaire](../../references/definitions/questionnaire.mdx)

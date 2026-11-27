@@ -6,99 +6,132 @@ sidebar_position: 2
 
 ## Overview
 
-This flow describes how to add questions to a [questionnaire](../../../concepts/definitions/questionnaire.mdx) and how to change them. You set the type, the settings, and the answer options of each question.
+<video src="/media/definitions/questionnaire/add-and-edit-questions.mp4" poster="/media/definitions/questionnaire/add-and-edit-questions.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/questionnaire/add-and-edit-questions.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to add questions to a [questionnaire](../../../concepts/definitions/questionnaire.mdx) and change them in the question editor. When you save changed questions, Care makes a new version of the questionnaire and keeps the earlier questions as a past version.
 
 ## Pre-requisites
 
-- You create a questionnaire, or you open a saved questionnaire to change it. See [Create a questionnaire](./create-questionnaire.mdx).
-- If you change a saved questionnaire, you are a Care superuser. Only superusers can change a saved questionnaire.
+- The questionnaire is saved in your facility. See [Create a questionnaire](./create-questionnaire.mdx).
+- You are a member of a department of the facility, so the facility sidebar shows **Settings**.
+- You change the current version of the questionnaire. A past version cannot be changed.
+- If the questionnaire has actions, you are allowed to use each of its actions.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create/Update Questionnaires | Lets you add and change the questions in a questionnaire. |
+| Can Create/Update Questionnaires | Shows **Edit Questions** and lets you change and save the questions. You must hold it in the facility's root organization (**Administration**). Without it, the editor opens in preview only. By default, the Facility Admin role holds it. |
+| Can Read Questionnaires | Lets you find the questionnaire in the list and open it. You must hold it in the root organization, in a department that the questionnaire is shared with, or in a department above one. By default, the Facility Admin, Administrator, Doctor, Nurse, Staff, Pharmacist and Volunteer roles hold it. |
+| Can Read ValueSets | Lets you pick a facility valueset in **Select a value set**. You must hold it in a department that the valueset is shared with, or in a department above one. Holding it in the root organization is not enough unless the valueset is shared with the root organization. Valuesets that are shared across the whole Care instance appear without it. By default, the Facility Admin, Administrator, Doctor, Nurse, Staff, Pharmacist and Volunteer roles hold it. |
 
 ## Steps
 
-### 1. Add a question
+### 1. Open the questionnaire
 
-Click **Add Question**. Care adds a new question to the form.
+In the facility sidebar, select **Settings**. In the settings sidebar, under **Forms**, select **Questionnaires**.
 
-### 2. Set the question type
+The list shows **Active** questionnaires. If the questionnaire has another status, select the **Draft** or **Retired** tab. Select the questionnaire in the list.
 
-Select the **Type** of the question from the dropdown. The dropdown has these types:
+![Step 1, Open the questionnaire: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/add-and-edit-questions-1.png)
 
-- Group
-- Display
-- Boolean
-- Decimal
-- Integer
-- Date
-- Date Time
-- Time
-- String
-- Text
-- URL
-- Choice
-- Quantity
-- Structured
+### 2. Open the question editor
 
-### 3. Enter the question text
+Select **Edit Questions**.
 
-Enter the **Question Text**. This text is the question that staff read on the form.
+You can also select **Add Question** in the **Questions** list, or **Add First Question** if the questionnaire has no questions. To start at one question, open its row menu and select **Edit**.
 
-Enter a **Description** for the question. The description is optional.
+![Step 2, Open the question editor: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/add-and-edit-questions-2.png)
 
-### 4. Set the question settings
+### 3. Add a question or a section
 
-Under **Question Settings**, use the **Required**, **Repeatable**, and **Read only** switches. The switches control how the question behaves.
+Select **Add new question**. Care adds a **String** question with no title. To add a group of questions, select **Add Section**.
 
-Note: Care hides the **Repeatable** switch for the Boolean, Group, Display, and Structured types.
+To change a question that is already there, select it in the form. Care marks it **Editing**.
 
-### 5. Add sub-questions to a group
+Note: If the questionnaire has no questions, you can select **Import Questions** instead. Choose **Import from a JSON file** or **Import from URL**. Check the **Question count**, then select **Import**. Care warns "All existing data will be replaced": the imported questions replace the questions in the editor. Care saves them only when you select **Save Changes**.
 
-If the **Type** is **Group**, click **Add Sub-Question**. Care adds a question inside that group.
+![Step 3, Add a question or a section: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/add-and-edit-questions-3.png)
 
-### 6. Set the answers of a choice question
+### 4. Fill in the Question tab
 
-If the **Type** is **Choice**, go to **Answer options**. Select **Custom Options** or **Value Set**.
+| Components | What it captures |
+| --- | --- |
+| **Question Title** | The question that people read on the form. Every question needs a title. |
+| **Helper text** | Extra text that Care shows under the question. |
+| **Answer type** | The kind of answer, for example **Date**, **Choice** or **Quantity**. |
+| **Unit** | For **Integer**, **Decimal** and **Choice** questions: a unit that Care shows next to the question label. |
+| **Required** | The form cannot be submitted without an answer to this question. |
+| **Repeatable** | People can record more than one answer. Care does not show it for **Boolean**, **Display** and **Structured** questions. |
+| **Read only** | Care shows the question, but people cannot answer it. |
 
-For **Custom Options**:
+Note: The **Structured** answer types that Care offers depend on the subject type of the questionnaire.
 
-1. Click **Add Option**. Care adds a row to the option table.
-2. Enter the answer in the **Value** column.
-3. Enter the text that staff read in the **Display Text** column. This text is optional.
-4. Select the option in the **Default** column to make it the default answer.
+![Step 4, Fill in the Question tab: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/add-and-edit-questions-4.png)
 
-Note: If the question is repeatable, you can mark more than one option as the default.
+### 5. Set the answers
 
-For **Value Set**, select a [valueset](../../../concepts/definitions/valueset.mdx), or create a new one. The valueset gives the allowed answers of the question.
+If the answer type is **Choice**, go to **Answer options**. Select **Custom Options** or **Value Set**.
 
-To change the order of an option, open the row menu in the **Actions** column. Under **Quick Actions**, click **Move Up**, **Move Down**, **To Top**, or **To Bottom**. To move the option to a set place, enter the number under **Move to specific position**. Then click **Move**.
+For **Custom Options**, select **Add Option**. Type the answer in **Option Value**. Do this for each answer. To make an option the default answer, select **Set as default**. Use **Move Up**, **Move Down** and **Delete** on a row to order or remove options.
 
-To remove an option, open the row menu in the **Actions** column. Click **Delete**.
+For **Value Set**, select a [valueset](../../../concepts/definitions/valueset.mdx) in **Select a value set**.
 
-### 7. Change the order of the questions
+If the answer type is **Quantity**, go to **Unit Options**. In **Select a value set**, select the valueset of units that people can answer with. You can also set a **Default Unit**.
 
-Open the menu of a question. Click **Move Up** to move the question before the question above it. Click **Move Down** to move the question after the question below it.
+For a section or a **Simple Group** question, select **Add Sub-Question** under **Sub-Questions**. A group needs at least one sub-question.
 
-To add a question in a set place, open the menu of a question. Click **Add Question Above** or **Add Question Below**.
+![Step 5, Set the answers: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/add-and-edit-questions-5.png)
 
-To remove a question, open its menu and click **Delete**.
+### 6. Choose when the question appears
 
-### 8. Save the questionnaire
+If the question must show only after certain answers, open the **Logic** tab. With no conditions, Care always shows the question.
 
-Click **Save** to save your changes to a saved questionnaire. For a new questionnaire, click **Create**.
+Select **Add a condition**. Set the question that it depends on, the operator and the answer. If you add more than one condition, select **All conditions are true (AND)** or **Any condition is true (OR)**. Read the rule under **In plain words**.
 
-Note: To leave the form without saving, click **Cancel**.
+Note: A condition cannot depend on a group or display question. Conditions also cannot form a loop.
+
+![Step 6, Choose when the question appears: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/add-and-edit-questions-6.png)
+
+### 7. Link the question to a standard code
+
+If answers must be comparable across facilities, open the **Coding** tab. Link the question to a standard code. To record more fields with the answer, use **Also capture**.
+
+![Step 7, Link the question to a standard code: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/add-and-edit-questions-7.png)
+
+### 8. Move, copy or delete a question
+
+Select the question in the form. Use the buttons on the selected question:
+
+- **Move question up** and **Move question down** change its place.
+- **Duplicate question** adds a copy, with "(Copy)" after the title.
+- **Delete question** removes it.
+
+Note: On the questionnaire page, you can also drag a question or use **Move Up** and **Move Down** in its row menu. Care saves the new order at once, as a new version.
+
+![Step 8, Move, copy or delete a question: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/add-and-edit-questions-8.png)
+
+### 9. Save the changes
+
+To check the form before you save, select **Preview**. To go back, select **Edit**.
+
+At the top of the editor, Care shows **Ready to save**, or a button with the number of issues, for example "2 to fix". If you see that button, select it. Select each issue to go to its question, and fix it.
+
+Select **Save Changes**. To remove all changes that you did not save, select **Discard**.
+
+Note: **Form Settings** in the editor holds the questionnaire details, such as the title and the status. Changes there also save with **Save Changes**.
+
+![Step 9, Save the changes: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/add-and-edit-questions-9.png)
 
 ## Expected Outcome
 
-- The questionnaire contains the questions with the type, the settings, and the options that you set.
-- The questions show in the order that you set.
-- Care shows the message "Questionnaire updated successfully" when you save a saved questionnaire.
+- Care shows "Questionnaire updated successfully".
+- If you changed the questions, Care saves them as a new version. The earlier questions stay available as a past version.
+- If you changed only the questionnaire details, such as the title, the version stays the same.
+- Each response records the version of the questionnaire that was filled in.
 
 ## Related
 
@@ -110,3 +143,6 @@ Concepts:
 Flows:
 
 - [Create a questionnaire](./create-questionnaire.mdx)
+- [View earlier versions of a questionnaire](./view-questionnaire-versions.mdx)
+- [Update or retire a questionnaire](./update-or-retire-questionnaire.mdx)
+- [Clone a questionnaire](./clone-questionnaire.mdx)

@@ -4,71 +4,83 @@ sidebar_position: 8
 
 # Product Knowledge
 
-**Product Knowledge** is the master definition of a thing your facility stocks — a medication, a nutritional product, or a consumable — described once so every batch, shelf, and order can point back to it. It is the catalogue's source of truth for what a product *is*, kept separate from the physical units on hand.
+## Definition
 
-## What it represents
+**Product Knowledge** in Care describes a product that a facility stocks or uses: a medication, a nutritional product, or a consumable. It records what the product is, not how much of it the facility holds.
 
-Product Knowledge answers a single question: what is this product? It is the definition, not the stock. A typical entry records:
+Each [product](../supply/product.mdx) that the facility stocks refers to one Product Knowledge, and each [inventory item](../supply/inventory-item.mdx) refers to a product. You describe a product once, and many products and stock records can refer back to that description.
 
-- **Identity** — a primary name, alternate or trade names, and a product code
-- **Type** — whether it is a medication, a nutritional product, or a consumable
-- **Unit** — how the product is measured and counted (tablets, mL, mg, and so on)
-- **Make-up** — for medications, the form, routes, and ingredients with their strengths; for nutritional products, the nutrient content
-- **Handling** — how to store it and how long it stays usable
+You manage the facility's Product Knowledge in **Settings**, in the **Inventory** group, under **Product Knowledge**.
 
-Product Knowledge is not the same as a [Product](../supply/product.mdx) or an [Inventory Item](../supply/inventory-item.mdx). Knowledge is the abstract definition (what "Paracetamol 500 mg tablet" *is*); a Product is a concrete stockable form of it; an Inventory Item is the physical quantity sitting in a particular location. One Knowledge entry underpins many Products and countless Inventory Items — define it once, reuse it everywhere.
+## Key Attributes
 
-In Care's FHIR-aligned model, Product Knowledge draws on the **MedicationKnowledge** and **NutritionProduct** resources — the reference definitions of a substance, kept distinct from the resources that track physical stock and dispensing.
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the product. This field is required. |
+| Slug | A short name that identifies the Product Knowledge in the facility, 5 to 50 characters long. Care fills it from the name, and you can change it. This field is required. |
+| Product Type | The kind of product: Medication, Nutritional Product, or consumable. The default is Medication. |
+| Category | The category that holds the Product Knowledge. See Categories below. This field is required. |
+| Code | A code for the product, which you find with a search of product codes. This field is optional. |
+| Base Unit | The unit that Care counts the product in: tablets, gram, milligram, microgram, milliliter, drop, international unit, or count. This field is required. |
+| Status | Draft, Active, or Retired. The default is Active. See Status below. |
+| HSN Code | A secondary identifier for the product. This field is optional. |
+| Alternative Names | Other names for the product. Each name has a Name Type: Trade Name, Alias, Original Name, or Preferred. The Product Knowledge page lists them under **Names**. This section is optional. |
+| Storage Guidelines | Notes on how to store the product. Each note has a duration: how long the product stays stable. This section is optional. |
+| Product Definition | The Dosage Form of the product and its Intended Routes. The create form shows this section at first, and you can remove it. This section is optional. |
 
-## Types
+### Categories
 
-A product's type decides what it means and which details matter:
+The facility keeps its Product Knowledge in categories, and a category can hold subcategories. You add Product Knowledge only to a category that has no subcategories, and the **Category** field accepts only such a category.
 
-- **Medication** — a drug, with a dosage form, routes, ingredients, and characteristics like shape, colour, or imprint
-- **Nutritional product** — feeds and supplements, described by their nutrient content
-- **Consumable** — supplies that are used up but are neither drug nor food (gloves, syringes, dressings)
+In a category that already holds Product Knowledge, Care does not offer **Add Category**. If the facility has no suitable category, a person with the permission to add categories adds one first. See [Add or edit a definition category](../../flows/definitions/resource-category/manage-definition-categories.mdx).
 
-## Scope
+### Where Care uses Product Knowledge
 
-A Knowledge entry lives at one of two levels:
+- When you create a [product](../supply/product.mdx), you select the Product Knowledge that it belongs to.
+- An [inventory item](../supply/inventory-item.mdx) belongs to a product, and through that product to its Product Knowledge.
+- A [supply request](../supply/supply-request.mdx) names the Product Knowledge that it asks for.
+- A [medication request](../medications/medication-request.mdx) can name the Product Knowledge of the product that it requests, and a medication administration can name the Product Knowledge of the product given.
 
-- **Instance-level** — shared across the whole deployment, so common drugs and supplies are defined once for everyone
-- **Facility-scoped** — owned by a single facility, for items local to one site
+Some Product Knowledge is shared across the whole Care instance: pickers can offer it, but you cannot change it from facility settings.
 
-This lets a deployment maintain a shared formulary while individual facilities add their own entries without polluting the global catalogue.
+### Status
 
-## Lifecycle
+| Status | Description |
+| --- | --- |
+| Draft | Care keeps the Product Knowledge, but pickers do not offer it. |
+| Active | Pickers offer the Product Knowledge, for example when you create a product. |
+| Retired | The facility no longer uses the Product Knowledge. Pickers do not offer it. |
 
-```text
-draft → active → retired
-```
+Note: In **Settings**, a category shows only Active Product Knowledge until you change the **Status** filter.
 
-- **draft** — being prepared; not yet ready for general use
-- **active** — approved and available to be stocked and ordered against
-- **retired** — withdrawn from use; kept for history but not offered for new stock
+Note: The **Delete** button does not remove Product Knowledge. It sets the status to Retired, and Care keeps the Product Knowledge. To use it again, edit it and set **Status** to **Active**.
 
-Retiring a definition does not erase it — past records that referenced it stay intact and auditable.
+### Favorites and recent items
 
-## How it connects
+Some Product Knowledge pickers, for example the one in the product form, have **Recent** and **Favorites** tabs.
 
-- **Product** — every [Product](../supply/product.mdx) references exactly one Product Knowledge entry for its definition
-- **Inventory Item** — physical [Inventory Items](../supply/inventory-item.mdx) trace back through their Product to this definition
-- **Supply requests and deliveries** — what gets ordered and moved between locations is ultimately a quantity of a known product
-- **Medication orders** — when a clinician prescribes, the drug being prescribed is anchored in this catalogue
+- **Favorites:** select the star next to Product Knowledge to add it to your favorites. Select the star again to remove it.
+- **Recent:** Care adds the Product Knowledge that you select, with the most recent first.
+
+Each list keeps up to 50 items, unless your deployment sets another limit. When a list is full, Care drops the oldest item.
+
+Your favorites and recent items are your own. Other people do not see them, and Care keeps them separately for each facility.
 
 ## Permissions
 
-Access to Product Knowledge is governed at the facility level.
+| Permission | Access |
+| --- | --- |
+| Can Create Product Knowledge on Facility | Create, update, and retire the facility's Product Knowledge. Care checks this permission in the facility's root organization (**Administration**). By default, the Facility Admin role holds this permission. |
+| Can Read Product Knowledge | See the facility's Product Knowledge in Settings. Care checks this permission in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Read Resource Category | See the Product Knowledge categories, and select one in the **Category** field. Care checks this permission in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
 
-| Permission | Description | System Roles |
-| --- | --- | --- |
-| `can_write_product_knowledge` | Create and update facility-scoped product knowledge definitions | Facility Admin, Admin |
-| `can_read_product_knowledge` | View product knowledge definitions in a facility | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
-
-Roles are granted through a user's organization, facility, or patient memberships, and permissions cascade down the organization tree — a role held higher up applies to the facilities and resources beneath it.
+Care counts only the roles that you hold in the facility's departments. If you hold the create permission only in a department other than the root organization, Care does not save your changes.
 
 ## Related
 
-- Reference: [Product Knowledge (technical)](../../references/definitions/product-knowledge.mdx)
+- Flow: [Create product knowledge](../../flows/supply/product/add-product-to-catalog.mdx)
+- Flow: [Update or retire product knowledge](../../flows/supply/product/edit-retire-catalog-entry.mdx)
+- Flow: [Add or edit a definition category](../../flows/definitions/resource-category/manage-definition-categories.mdx)
 - Concept: [Product](../supply/product.mdx)
 - Concept: [Inventory Item](../supply/inventory-item.mdx)
+- Reference: [Product Knowledge](../../references/definitions/product-knowledge.mdx)

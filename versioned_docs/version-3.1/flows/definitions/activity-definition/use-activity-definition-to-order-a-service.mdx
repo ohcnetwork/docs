@@ -6,56 +6,118 @@ sidebar_position: 4
 
 ## Overview
 
-This flow describes how a clinician uses an [activity definition](../../../concepts/definitions/activity-definition.mdx) template to order a service for a patient. The other flows in this module cover how an administrator builds the template.
+<video src="/media/definitions/activity-definition/use-activity-definition-to-order-a-service.mp4" poster="/media/definitions/activity-definition/use-activity-definition-to-order-a-service.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/activity-definition/use-activity-definition-to-order-a-service.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how a clinician orders a service for a patient from an [activity definition](../../../concepts/definitions/activity-definition.mdx). Care creates a [service request](../../../concepts/clinical/service-request.mdx) from the activity definition, and a charge item for each charge item definition linked to it.
 
 ## Pre-requisites
 
-- The patient is registered in Care and has an open encounter at the facility.
-- The facility has one or more activity definitions with the status Active.
-- You have the permission listed below.
+- The patient is registered in Care and has an encounter at the facility.
+- You open the encounter from the facility.
+- The encounter is not Cancelled, Entered in error, Discontinued or Completed.
+- The facility has an Active activity definition for the service.
+- You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Write Service Request on Facility | Create and change service requests for patients at the facility. Facility Admin, Admin, Doctor, and Nurse roles hold this permission. |
+| Can Write Service Request on Facility | Lets you save the service request. You must hold it in a department of the encounter, of the encounter's current location, or of a location on the service request. Care copies those locations from the activity definition. By default, the Facility Admin, Doctor and Nurse roles hold this permission. |
+| Can view clinical data about patients | Lets you see **Create Service Request** in the encounter. You need this permission on the patient, or Can Read encounter related clinical data on the encounter. By default, the Facility Admin, Staff, Doctor and Nurse roles hold this permission. |
+| Can Read encounter related clinical data | The other way to see **Create Service Request**. You need it on the encounter. By default, the Facility Admin, Doctor and Nurse roles hold this permission. |
+| Can Read Activity Definition | Lets you see and choose activity definitions in **Select Activity Definition**. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse and Volunteer roles hold this permission. |
+| Can Read Resource Category | Lets you browse the activity definition categories in **Select Activity Definition**. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+
+By default, the Doctor, Nurse and Facility Admin roles hold every permission in this table.
 
 ## Steps
 
-### 1. Open the Service Requests tab
+### 1. Open the encounter
 
-Open the encounter of the patient. Select the **Service Requests** tab.
+1. In the facility sidebar, under **Encounters & Locations**, select **All Encounters**.
+2. Find the patient's encounter.
+3. Select **View Encounter** on the encounter.
 
-### 2. Start a new service request
+By default, **All Encounters** shows only the encounters created today. If the encounter was created on an earlier day, type the patient's identifier, such as a phone number, in the search box. Under **Look up a patient**, select the identifier, and then select the patient.
+
+Care then shows all the encounters of that patient and the message **Date range cleared for this patient.** If Care asks for the patient's year of birth, enter it and select **Verify**.
+
+Note: The sidebar entry has the name of your default encounter list. It is **All Encounters** unless you or your deployment chose another default.
+
+![Step 1, Open the encounter: the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/use-activity-definition-to-order-a-service-1.png)
+
+### 2. Open the Service Requests tab
+
+Select the **Service Requests** tab.
+
+![Step 2, Open the Service Requests tab: the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/use-activity-definition-to-order-a-service-2.png)
+
+### 3. Start a new service request
 
 Select **Create Service Request**.
 
-### 3. Select the activity definition
+Care opens the Service Request form.
+
+Note: Care shows **Create Service Request** only when you can see the clinical data of the patient or the encounter, and the encounter is still open.
+
+![Step 3, Start a new service request: the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/use-activity-definition-to-order-a-service-3.png)
+
+### 4. Select the activity definition
 
 1. Select **Select Activity Definition**.
-2. Open the resource category that holds the template.
-3. Select the template.
+2. Open the category that holds the activity definition, or type its title to search.
+3. Select the activity definition.
 
-Care adds a card for that service to the form. Care copies the Title, the Category, the Code, the Body Site, and the Locations from the template. Care also copies the Healthcare Service.
+Care adds a card for the service. Care copies the title, the category, the code, the body site and the locations from the activity definition. Care sets the priority to Routine and sets you as the requester.
 
-Note: Care shows only the activity definitions with the status Active.
+When Care saves the service request, it also copies the healthcare service of the activity definition.
 
-### 4. Adjust the details
+Note: Care lists only Active activity definitions.
 
-Change the Priority, the Body Site, the Patient Instruction, the Requester, and the Note on the card.
+![Step 4, Select the activity definition: the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/use-activity-definition-to-order-a-service-4.png)
 
-Note: Priority is mandatory. The default value is Routine.
+### 5. Complete the card
 
-### 5. Add more services or submit
+Care adds the card closed. Select the card to open its fields.
 
-Repeat step 3 to add more services to the same form. Select **Submit** to save all the services together.
+Change the fields as needed.
+
+| Components | What it captures |
+| --- | --- |
+| Priority | How urgent the service is: Routine, Urgent, ASAP or STAT. Required. The default is Routine. |
+| Body Site | The part of the body that the service is for. |
+| Patient Instruction | Instructions for the patient. |
+| Requester | The clinician who asks for the service. The default is you. |
+| Note | More information for the team that does the service. |
+
+![Step 5, Complete the card: the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/use-activity-definition-to-order-a-service-5.png)
+
+### 6. Add more services
+
+To order more services in the same form, repeat step 4 for each service. Care adds a card for each one.
+
+When the form has more than one card, select **Apply to All** to set one requester for every card.
+
+### 7. Save the service requests
+
+Select **Save Changes**.
+
+If Care shows **Save as Draft**, you can select it to save the form as a draft instead.
+
+If Care shows "Total price is less than 0", a charge item definition linked to the activity definition has a negative base price. Care saves no service request and no charge item. Ask the person who manages the activity definition to change that link.
+
+![Step 7, Save the service requests (1 of 2): the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/use-activity-definition-to-order-a-service-6.png)
+
+![Step 7, Save the service requests (2 of 2): the screen at this step, with the control for the step outlined](/media/definitions/activity-definition/use-activity-definition-to-order-a-service-7.png)
 
 ## Expected Outcome
 
-- Care creates a service request for the patient under the current encounter.
-- If the template has linked charge item definitions, Care creates the matching charge items for the patient.
-
-For the full ordering flow, and the other ways to create a service request, see the [Service Request](../../../concepts/clinical/service-request.mdx) module.
+- Care shows the message **Questionnaire submitted successfully** and opens the **Overview** of the encounter.
+- Care creates a service request for each card under the current encounter.
+- Care creates a charge item for each charge item definition linked to the activity definition, whatever the status of the charge item definition. A retired charge item definition still creates a charge.
+- Care adds each charge item to the patient's open account at the facility. If the patient has no open account there, Care creates one named after the patient and the date.
 
 ## Related
 
@@ -63,8 +125,10 @@ Concepts:
 
 - [Activity Definition](../../../concepts/definitions/activity-definition.mdx)
 - [Service Request](../../../concepts/clinical/service-request.mdx)
+- [Charge Item Definition](../../../concepts/definitions/charge-item-definition.mdx)
 
 Flows:
 
-- [Create a service request](../../../flows/clinical/service-request/create-a-service-request.mdx)
+- [Create a service request](../../clinical/service-request/create-a-service-request.mdx)
 - [Create an activity definition](./create-activity-definition.mdx)
+- [Link requirements to an activity definition](./link-requirements-to-activity-definition.mdx)

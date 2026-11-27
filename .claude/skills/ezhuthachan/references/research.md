@@ -153,6 +153,10 @@ Send one researcher to the backend and one to the frontend, in parallel. Give ea
 
 A researcher's report is a lead until you have checked it. Open the cited lines for every permission, role and label it reports before the fact goes into `facts.md`. Spot-check the rest.
 
+A module with several sub-modules (Definitions & Terminology has eight) researches better split by sub-module than by repository: one researcher per group of sub-modules reads both codebases and the existing pages, and checks each page claim by claim. Give each a fact-number range (E1000–E1999, E2000–E2999, …) and its own facts file, so parallel researchers never collide.
+
+In Claude Code, subagents may write their facts file but may not write a findings file: the harness refuses it and asks for findings as text. Ask for the findings in the reply, and save them to the session yourself. Do not rename the file to get around the refusal.
+
 ## Before you leave research
 
 - Every fact in `facts.md` has a source you opened in this session, at the pinned commit.

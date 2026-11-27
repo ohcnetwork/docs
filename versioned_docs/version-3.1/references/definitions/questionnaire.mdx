@@ -4,34 +4,30 @@ sidebar_position: 1
 
 # Questionnaire
 
-A `Questionnaire` is a versioned, FHIR-inspired form: a tree of questions answered about a patient or an encounter. You touch it whenever you define a data-collection form, render one for filling, or submit answers — which can flow back out as [Observations](../clinical/observation.mdx). It captures both clinical data and arbitrary non-clinical structured data.
-
-The Django model is only the storage layer. The API schema you code against lives in the Pydantic resource specs under `care/emr/resources/questionnaire*`: enums, the nested shape of the JSON fields, validation, and the split between read and write contracts.
+Technical reference for the `Questionnaire` module in Care EMR. For what a questionnaire is in the product, see the [Questionnaire concept](../../concepts/definitions/questionnaire.mdx).
 
 **Source (model):** [`care/emr/models/questionnaire.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/questionnaire.py)
 
-**Source (specs):**
-[`resources/questionnaire/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/questionnaire/spec.py) ·
-[`resources/questionnaire/utils.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/questionnaire/utils.py) ·
-[`resources/questionnaire/questionnaire_organization.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/questionnaire/questionnaire_organization.py) ·
-[`resources/questionnaire_response/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/questionnaire_response/spec.py) ·
-[`resources/questionnaire_response_template/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/questionnaire_response_template/spec.py) ·
-[`resources/form_submission/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/form_submission/spec.py)
+**Source (specs):** [`resources/questionnaire/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/questionnaire/spec.py) · [`resources/questionnaire/utils.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/questionnaire/utils.py) · [`resources/questionnaire/questionnaire_organization.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/questionnaire/questionnaire_organization.py) · [`resources/questionnaire_response/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/questionnaire_response/spec.py) · [`resources/form_submission/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/form_submission/spec.py)
+
+**Source (API):** [`api/viewsets/questionnaire/questionnaire.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/questionnaire/questionnaire.py) · [`security/authorization/questionnaire.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/authorization/questionnaire.py)
+
+The Django model is only the storage layer. `questions` is an opaque `JSONField` there; the Pydantic specs define its recursive `Question` shape, the enums, the validation, and the split between the create, update, and read contracts.
+
+A questionnaire has a scope (`auth_context`) and a revision chain. Each update that changes the questions copies the old row as a past revision, so a response can be read against the questions it was answered with.
 
 ## Models
 
-Six models back the forms feature. The `Questionnaire` is the definition; everything else records submissions, answers, organization scope, or reusable prefill.
-
 | Model | Purpose |
 | --- | --- |
-| `Questionnaire` | A versioned form definition: questions, styling, subject type, and status |
-| `FormSubmission` | A submission of a questionnaire against a patient (and optional encounter) |
-| `QuestionnaireResponse` | A stored set of answers for a subject, optionally tied to a submission |
-| `QuestionnaireOrganization` | Scopes a questionnaire to an instance-level `Organization` |
-| `QuestionnaireFacilityOrganization` | Scopes a questionnaire to a `FacilityOrganization` |
-| `QuestionnaireResponseTemplate` | Reusable prefill template for questionnaire responses |
+| `Questionnaire` | A form definition: questions, subject type, status, scope, and revision chain |
+| `FormSubmission` | A submission record for a questionnaire, a patient, and an optional encounter, with a status and a response dump |
+| `QuestionnaireResponse` | The stored answers for a subject, with the questionnaire revision they were answered with |
+| `QuestionnaireOrganization` | Links an instance questionnaire to an instance `Organization` |
+| `QuestionnaireFacilityOrganization` | Links a facility questionnaire to a `FacilityOrganization` (department) |
+| `QuestionnaireResponseTemplate` | A reusable template of answers (`template_data`) for a questionnaire; see the [Questionnaire Response Template reference](./questionnaire-response-template.mdx) |
 
-All extend [`EMRBaseModel`](../foundation/base-model.mdx), which supplies `external_id`, audit fields, and soft-delete semantics.
+All six extend [`EMRBaseModel`](../foundation/base-model.mdx).
 
 ## `Questionnaire` fields
 
@@ -39,48 +35,80 @@ All extend [`EMRBaseModel`](../foundation/base-model.mdx), which supplies `exter
 
 | Field | Type | Req | Notes |
 | --- | --- | --- | --- |
-| `version` | `CharField(255)` | yes | Version label. The write spec freezes it to `"1.0"` |
-| `slug` | `CharField(255)` | yes | `unique`; defaults to a generated `uuid4`. The write spec validates `SlugType`: 5–50 chars, URL-safe, and may not shadow an internal questionnaire type |
-| `title` | `CharField(255)` | yes | Display title. The write spec strips it and rejects blank/whitespace |
+| `version` | `CharField(255)` | no | The write spec defaults it to `"1.0"` and freezes it there. It is not the revision number; see `internal_revision` |
+| `slug` | `CharField(255)` | no | Defaults to a generated `uuid4`. When given, the write spec validates `SlugType`: 5–50 characters of letters, digits, `_` and `-`, starting and ending with a letter or digit. It may not shadow an internal questionnaire type. Unique per scope; see [Slug uniqueness](#slug-uniqueness) |
+| `title` | `CharField(255)` | yes | Stored stripped; a blank or whitespace-only title is rejected |
 | `description` | `TextField` | no | Defaults to `""` |
-| `subject_type` | `CharField(255)` | yes | `SubjectType` enum — see [values](#subjecttype-values) |
-| `status` | `CharField(255)` | yes | `QuestionnaireStatus` enum — see [values](#questionnairestatus-values) |
-| `styling_metadata` | `JSONField` | no | Defaults to `{}`. Opaque UI/layout hints; never validated |
-| `questions` | `JSONField` | yes | Defaults to `{}` in the DB, but is a `list[Question]` tree in practice — see [Question shape](#question-nested-shape) |
-| `organization_cache` | `ArrayField[int]` | — | Denormalized cache, server-maintained (see [cache sync](#organization-cache-sync)) |
-| `internal_organization_cache` | `ArrayField[int]` | — | Denormalized cache, server-maintained (see [cache sync](#organization-cache-sync)) |
+| `subject_type` | `CharField(255)` | yes | `SubjectType` enum. Set on create only |
+| `status` | `CharField(255)` | yes | `QuestionnaireStatus` enum |
+| `styling_metadata` | `JSONField` | no | Defaults to `{}`. Not validated |
+| `questions` | `JSONField` | yes | Defaults to `{}` in the database; the API takes a `list[Question]` tree. See [`Question` nested shape](#question-nested-shape) |
+| `actions` | `JSONField` | no | Defaults to `[]`. On create and update, each action's instructions must be authorized for the caller |
 
-The write spec also carries a `type: str` field (default `"custom"`) that has no backing model column.
+### Scope and revision
 
-#### Organization scope caches
+| Field | Type | Req | Notes |
+| --- | --- | --- | --- |
+| `auth_context` | `CharField(255)` | yes on create | `QuestionnaireAuthContext` enum. The model default is `"instance"`; the create spec requires it |
+| `facility` | FK `facility.Facility` (CASCADE, nullable) | scope-dependent | Required for `facility` and `user` scopes. For `facility_organization` scope, Care copies the organization's facility |
+| `facility_organization` | FK `emr.FacilityOrganization` (CASCADE, nullable) | scope-dependent | Required for `facility_organization` scope |
+| `internal_revision` | `IntegerField` | — | Default 1. Server-maintained: incremented when an update changes the questions |
+| `latest_revision` | FK `self` (CASCADE, nullable) | — | `null` on the current row. On a past revision, points to the current row |
+| `questions_hash` | `CharField(255)` | — | SHA-256 of the questions serialized as JSON with sorted keys. Set on create, compared on update |
 
-`organization_cache` and `internal_organization_cache` hold flattened organization IDs so access filtering can run without deep joins. The through-models below own them; clients never write them directly.
+### Access caches
 
-| Field | Maintained by |
-| --- | --- |
-| `organization_cache` | `QuestionnaireOrganization.sync_questionnaire_cache()` — instance `Organization` IDs plus each org's `parent_cache` |
-| `internal_organization_cache` | `QuestionnaireFacilityOrganization.sync_questionnaire_cache()` — `FacilityOrganization` IDs plus each org's `parent_cache` |
+| Field | Type | Req | Notes |
+| --- | --- | --- | --- |
+| `organization_cache` | `ArrayField[int]` | — | Instance `Organization` ids. Server-maintained; see [Access cache sync](#access-cache-sync) |
+| `internal_organization_cache` | `ArrayField[int]` | — | `FacilityOrganization` ids. Server-maintained; see [Access cache sync](#access-cache-sync) |
+
+#### Slug uniqueness
+
+Slugs are unique per scope among current rows (rows with no `latest_revision`), compared case-insensitively. The viewset checks this before it saves and raises "Questionnaire with this slug already exists."; four partial unique constraints enforce it in the database for rows that are not deleted and have no `latest_revision`. The check runs only when a slug is given.
+
+| Scope | Unique within | Constraint |
+| --- | --- | --- |
+| `instance` | All instance questionnaires | `unique_questionnaire_slug_instance` |
+| `facility` | The facility | `unique_questionnaire_slug_facility` |
+| `facility_organization` | The facility organization | `unique_questionnaire_slug_facility_organization` |
+| `user` | The facility and the creator | `unique_questionnaire_slug_user` |
+
+Past revisions keep the slug of the row they were copied from.
 
 ## Enum values
 
+### `QuestionnaireAuthContext` values
+
+| Value | Meaning |
+| --- | --- |
+| `instance` | Shared across the Care instance. No facility permission allows creating, updating, or deleting it |
+| `facility` | Belongs to one facility; managed under the facility's settings |
+| `facility_organization` | Belongs to one facility organization. The frontend has no screen for this scope |
+| `user` | Belongs to its creator within a facility. The frontend has no screen for this scope |
+
 ### `QuestionnaireStatus` values
 
-The lifecycle state of the definition, modeled on FHIR publication-status. Once a questionnaire is `active`, edit and delete are off the table — move it to `retired` instead.
+| Value | Meaning |
+| --- | --- |
+| `active` | Can be submitted |
+| `retired` | Cannot be submitted |
+| `draft` | Cannot be submitted |
 
-| Value |
-| --- |
-| `active` |
-| `retired` |
-| `draft` |
+The spec has no transition rules, and status does not limit updates or deletes: any status can follow any other.
 
 ### `SubjectType` values
 
-What kind of resource the form is about. This drives whether an encounter is required at submit time.
+What the questionnaire is about. It is set on create only.
 
-| Value |
-| --- |
-| `patient` |
-| `encounter` |
+| Value | Notes |
+| --- | --- |
+| `patient` | Instance scope only. Submitted through `submit` without an encounter |
+| `encounter` | Submitted through `submit` with an encounter. For a questionnaire that has a facility, the encounter must be in that facility |
+| `referral` | Refused by `submit`, `submit_resource`, and form submissions; submitted through a referral |
+| `location` | Submitted through `submit_resource` |
+| `device` | Submitted through `submit_resource` |
+| `facility` | Submitted through `submit_resource` |
 
 ### `QuestionType` values
 
@@ -88,20 +116,20 @@ The `type` of each question (`Question.type`). The commented-out members `open_c
 
 | Value | Notes |
 | --- | --- |
-| `group` | Container; must have ≥1 sub-question |
-| `boolean` | Validated against `true/false/1/0` on submit |
-| `decimal` | |
-| `integer` | |
+| `group` | Container; must have at least one sub-question |
+| `boolean` | On submit, the value must be `true`, `false`, `1`, or `0` |
+| `decimal` | On submit, the value must parse as a decimal |
+| `integer` | On submit, the value must parse as an integer |
 | `string` | |
-| `text` | Length capped by `settings.MAX_QUESTIONNAIRE_TEXT_RESPONSE_SIZE` on submit |
-| `display` | Display-only, no answer |
-| `date` | ISO date |
-| `dateTime` | Must include timezone on submit |
-| `time` | `%H:%M:%S` |
-| `choice` | Requires `answer_option` or `answer_value_set` |
-| `url` | Must have scheme + netloc |
-| `quantity` | Requires `answer_option` or `answer_value_set`; answers need a `unit` |
-| `structured` | Skipped by response validation |
+| `text` | On submit, length capped by `settings.MAX_QUESTIONNAIRE_TEXT_RESPONSE_SIZE` |
+| `display` | Display only; collects no answer |
+| `date` | On submit, an ISO date |
+| `dateTime` | On submit, an ISO date-time that includes a timezone |
+| `time` | On submit, `%H:%M:%S` |
+| `choice` | Requires `answer_option` or `answer_value_set`. On submit, the value must be one of the options, or a coding in the value set |
+| `url` | On submit, the value needs a scheme and a host |
+| `quantity` | Requires `answer_option` or `answer_value_set`. On submit, each answer needs a `unit` |
+| `structured` | Skipped by answer validation |
 
 ### `EnableOperator` values
 
@@ -119,16 +147,16 @@ The comparison for an `enable_when` condition (`EnableWhen.operator`).
 
 ### `EnableBehavior` values
 
-How multiple `enable_when` conditions combine (`Question.enable_behavior`).
+How several `enable_when` conditions combine (`Question.enable_behavior`).
 
 | Value | Meaning |
 | --- | --- |
-| `all` | Enable only if all conditions pass (default on submit) |
-| `any` | Enable if any condition passes |
+| `all` | Enabled only if every condition passes. Used when the field is absent |
+| `any` | Enabled if any condition passes |
 
 ### `DisabledDisplay` values
 
-How a disabled question renders (`Question.disabled_display`).
+Values for `Question.disabled_display`.
 
 | Value |
 | --- |
@@ -137,7 +165,7 @@ How a disabled question renders (`Question.disabled_display`).
 
 ### `AnswerConstraint` values
 
-Whether free input outside the options is allowed (`Question.answer_constraint`).
+Values for `Question.answer_constraint`.
 
 | Value |
 | --- |
@@ -165,15 +193,15 @@ Whether free input outside the options is allowed (`Question.answer_constraint`)
 
 ## `Question` nested shape
 
-`Questionnaire.questions` is an opaque `JSONField`, but the API contract is a recursive list of `Question` (`QuestionnaireBaseSpec`). Fields, with their real types and validation:
+`Questionnaire.questions` is an opaque `JSONField`, but the API contract is a recursive list of `Question`. Fields, with their types and validation:
 
 | Field | Type | Req | Default | Notes |
 | --- | --- | --- | --- | --- |
-| `link_id` | `str` | yes | — | Human-readable link ID; must be unique across the whole tree |
-| `id` | `UUID4 \| UUID5` | no | `uuid4()` | Machine ID; must be unique across the whole tree |
-| `code` | `Coding` bound to value set `system-observation` | no | `None` | LOINC-bound; required to emit observations |
-| `collect_time` | `bool` | no | `false` | Collect a per-answer timestamp |
-| `collect_performer` | `bool` | no | `false` | Collect a `Performer` reference |
+| `link_id` | `str` | yes | — | Human-readable link ID; unique across the whole tree |
+| `id` | `UUID4 \| UUID5` | yes | — | Machine ID supplied by the client; unique across the whole tree |
+| `code` | `Coding` bound to value set `system-observation` | no | `None` | |
+| `collect_time` | `bool` | no | `false` | Collect a timestamp |
+| `collect_performer` | `bool` | no | `false` | Collect a performer |
 | `text` | `str` | yes | — | Question text |
 | `description` | `str \| None` | no | `None` | |
 | `type` | `QuestionType` | yes | — | See [values](#questiontype-values) |
@@ -184,68 +212,73 @@ Whether free input outside the options is allowed (`Question.answer_constraint`)
 | `collect_body_site` | `bool \| None` | no | `None` | |
 | `collect_method` | `bool \| None` | no | `None` | |
 | `required` | `bool \| None` | no | `None` | |
-| `repeats` | `bool \| None` | no | `None` | Multi-select / repeating group |
+| `repeats` | `bool \| None` | no | `None` | |
 | `read_only` | `bool \| None` | no | `None` | |
 | `max_length` | `int \| None` | no | `None` | |
 | `answer_constraint` | `AnswerConstraint \| None` | no | `None` | |
 | `answer_option` | `list[AnswerOption] \| None` | no | `None` | Inline choices |
-| `answer_value_set` | `str \| None` | no | `None` | Slug of a `ValueSet`; validated to exist |
-| `is_observation` | `bool \| None` | no | `None` | Store the answer as an observation |
-| `unit` | `Coding` bound to value set `system-ucum-units` | no | `None` | UCUM-bound unit |
+| `answer_value_set` | `ValueSetConfig \| None` | no | `None` | `{ slug, external_id }`, one required. An `external_id` may name any value set; a `slug` alone must name an instance value set ("Value set not found") |
+| `is_observation` | `bool \| None` | no | `None` | |
+| `unit` | `Coding` bound to value set `system-ucum-units` | no | `None` | |
 | `questions` | `list[Question]` | no | `[]` | Recursive children |
-| `formula` | `str \| None` | no | `None` | Client-side calculated field |
+| `formula` | `str \| None` | no | `None` | |
 | `styling_metadata` | `dict` | no | `{}` | |
 | `templates` | `list[TemplateConfig]` | no | `[]` | |
-| `is_component` | `bool` | no | `false` | Emit child answers as observation components |
+| `is_component` | `bool` | no | `false` | |
 
-A `model_validator` (mode `after`) enforces three rules:
+Validation on each `Question`:
 
-- `choice` / `quantity` types must have `answer_option` or `answer_value_set`.
-- `group` types must have at least one sub-question.
-- `answer_value_set`, when set, must reference an existing `ValueSet`.
+- `choice` and `quantity` questions must have `answer_option` or `answer_value_set`.
+- `group` questions must have at least one sub-question.
+- `answer_value_set` must resolve to an existing value set, by `external_id` or by instance `slug`.
+
+The write spec also requires every `link_id` and every `id` to be unique across the whole tree ("Link IDs must be unique", "Question IDs must be unique").
 
 ### Sub-specs of `Question`
 
 | Spec | Shape |
 | --- | --- |
 | `EnableWhen` | `{ question: str (link_id), operator: EnableOperator, answer: Any }` |
-| `AnswerOption` | `{ value: Any (non-blank, stripped), initial_selected: bool = false }` |
+| `AnswerOption` | `{ value: Any (stripped, non-blank), initial_selected: bool = false }` |
+| `ValueSetConfig` | `{ slug: SlugType \| None, external_id: UUID4 \| None }`, at least one required |
 | `Performer` | `{ performer_type: str, performer_id: str \| None, text: str \| None }` |
 | `TemplateConfig` | `{ name: str, content: str, structured_content: dict \| None, meta: dict \| None }` |
 
 ## Resource specs (API schema)
 
-Every spec builds on `EMRResource`, which provides `serialize` / `de_serialize`. Read specs run `perform_extra_serialization`; write specs run `perform_extra_deserialization`.
+The resource specs build on `EMRResource`; the submit request schemas and `ValueSetConfig` are plain Pydantic models.
 
 ### Questionnaire
 
 | Spec | Role | Key fields / behaviour |
 | --- | --- | --- |
 | `QuestionnaireBaseSpec` | shared | `__model__ = Questionnaire` |
-| `QuestionnaireWriteSpec` | write (base) | `version` (frozen `"1.0"`), `slug` (`SlugType`), `title`, `description`, `type` (`"custom"`), `status`, `subject_type`, `styling_metadata`, `questions`. Validates slug uniqueness and that it doesn't shadow internal types, a non-empty title, and unique `link_id`s and `id`s across the whole tree |
-| `QuestionnaireSpec` | write · create | Extends the write spec with `organizations: list[UUID4]` (`min_length=1`). `perform_extra_deserialization` stashes them on `obj._organizations`; the view then links them through `QuestionnaireOrganization`, which rebuilds `organization_cache` |
-| `QuestionnaireUpdateSpec` | write · update | Same as `QuestionnaireWriteSpec`, minus `organizations` |
-| `QuestionnaireReadSpec` | read · list/detail | `id` (= `external_id`), `slug`, `version`, `title`, `description`, `status`, `subject_type`, `styling_metadata`, `questions` (raw list), `created_by` / `updated_by` (resolved via `serialize_audit_users`) |
+| `QuestionnaireWriteSpec` | write (base) | `version` (frozen `"1.0"`), `slug` (optional `SlugType`), `title`, `description`, `status`, `styling_metadata`, `questions`, `actions` (optional). Validates that the slug does not shadow an internal questionnaire type, a non-empty title, and unique `link_id`s and `id`s |
+| `QuestionnaireCreateSpec` | write · create | Adds `auth_context` (required), `facility`, `facility_organization`, and `subject_type`. Patient questionnaires only at instance scope; `facility` required for `facility` and `user` scopes; `facility_organization` required for its scope. Stores `questions_hash`. There is no `organizations` field |
+| `QuestionnaireUpdateSpec` | write · update | The write spec fields only: no `subject_type`, `auth_context`, `facility`, or `facility_organization`. Creates a past revision when the questions change |
+| `QuestionnaireReadSpec` | read · list / detail | `id` (= `external_id`), `slug`, `version`, `title`, `description`, `status`, `subject_type`, `styling_metadata`, `questions` (raw list), `created_by`, `updated_by`, `internal_revision`, `actions`. It does not return `auth_context`, `facility`, or `facility_organization` |
+| `QuestionnaireSpec` | unused | An empty subclass of the write spec; no viewset uses it |
 
-Value sets bound on questions: `code` → `system-observation` (LOINC), `unit` → `system-ucum-units` (UCUM). `answer_value_set` references any [`ValueSet`](../definitions/valueset.mdx) by slug.
+Value sets bound on questions: `code` → `system-observation`, `unit` → `system-ucum-units`. `answer_value_set` references a [`ValueSet`](./valueset.mdx) by `external_id`, or an instance value set by `slug`.
 
 ### Questionnaire response
 
 | Spec | Role | Key fields / behaviour |
 | --- | --- | --- |
 | `EMRQuestionnaireResponseBase` | shared | `__model__ = QuestionnaireResponse` |
-| `QuestionnaireResponseUpdate` | write · update | `status: QuestionnaireResponseStatusChoices` (default `completed`) — the only handle for voiding a response by marking it `entered_in_error` |
-| `QuestionnaireResponseReadSpec` | read · detail | `id`, `status`, `questionnaire` (nested `QuestionnaireReadSpec`), `subject_id`, `responses` (raw list), `encounter` (external id or `None`), `structured_responses`, `structured_response_type`, `created_by` / `updated_by` (`UserSpec`), `created_date`, `modified_date` |
+| `QuestionnaireResponseUpdate` | write · update | `status: QuestionnaireResponseStatusChoices` (default `completed`) |
+| `QuestionnaireResponseReadSpec` | read · detail | `id`, `status`, `questionnaire` (the revision the response was answered with), `questionnaire_latest_revision_id` (the current questionnaire), `subject_id`, `responses`, `cleaned_response`, `encounter` (external id or `None`), `structured_responses`, `structured_response_type`, `created_by`, `updated_by`, `created_date`, `modified_date` |
 
-#### Submit request schema (not a DB write spec)
+#### Submit request schema
 
-The submit endpoint (`/questionnaire/<slug>/submit/`) takes a plain Pydantic request, which `handle_response()` in `utils.py` validates and persists:
+`POST /api/v1/questionnaire/<id>/submit/` takes a plain Pydantic request, and `POST /api/v1/questionnaire/<id>/submit_resource/` takes the resource variant.
 
 | Spec | Shape |
 | --- | --- |
-| `QuestionnaireSubmitRequest` | `{ resource_id: UUID4, encounter: UUID4 \| None, patient: UUID4, results: list[QuestionnaireSubmitResult], form_submission: UUID4 \| None }` |
-| `QuestionnaireSubmitResult` | `{ question_id: UUID4\|UUID5, body_site: Coding \| None, method: Coding \| None, taken_at: datetime \| None, values: list[QuestionnaireSubmitResultValue], note: str \| None, sub_results: list[list[QuestionnaireSubmitResult]] }` |
+| `QuestionnaireSubmitRequest` | `{ results: list[QuestionnaireSubmitResult], resource_id: UUID4, encounter: UUID4 \| None, patient: UUID4, form_submission: UUID4 \| None }` |
+| `QuestionnaireSubmitResult` | `{ question_id: UUID4 \| UUID5, body_site: Coding \| None, method: Coding \| None, taken_at: datetime \| None, values: list[QuestionnaireSubmitResultValue], note: str \| None, sub_results: list[list[QuestionnaireSubmitResult]] }` |
 | `QuestionnaireSubmitResultValue` | `{ value: str \| None, unit: Coding \| None, coding: Coding \| None }` |
+| `ResourceQuestionnaireSubmitRequest` | `{ results, resource_id: UUID4 }`; its results have no `body_site` |
 
 ### Form submission
 
@@ -253,141 +286,145 @@ The submit endpoint (`/questionnaire/<slug>/submit/`) takes a plain Pydantic req
 | --- | --- | --- |
 | `BaseFormSubmissionSpec` | shared | `__model__ = FormSubmission`, `id: UUID4 \| None` |
 | `FormSubmissionUpdateSpec` | write · update | `status: FormSubmissionStatusChoices`, `response_dump: dict` |
-| `FormSubmissionWriteSpec` | write · create | Adds `questionnaire: str` (slug), `patient: UUID4`, `encounter: UUID4 \| None`. `perform_extra_deserialization` resolves the questionnaire by slug and the patient/encounter by `external_id`; when an encounter is given it overrides `patient` with the encounter's patient |
-| `FormSubmissionReadSpec` | read · detail | `id`, `status`, `response_dump`, `created_date`, `modified_date`, `created_by` / `updated_by` (`UserSpec`) |
+| `FormSubmissionWriteSpec` | write · create | Adds `questionnaire: UUID4` (resolved by `external_id`), `patient: UUID4`, `encounter: UUID4 \| None`. Refuses referral questionnaires. When an encounter is given, the patient is set to the encounter's patient |
+| `FormSubmissionReadSpec` | read · detail | `id`, `status`, `response_dump`, `created_date`, `modified_date`, `created_by`, `updated_by` |
 
 ### Questionnaire response template
 
-| Spec | Role | Key fields / behaviour |
-| --- | --- | --- |
-| `QuestionnaireResponseTemplateBaseSpec` | shared | `__model__ = QuestionnaireResponseTemplate`, `id: UUID4 \| None`, `template_data: TemplateData`, `name: str`, `description: str = ""` |
-| `QuestionnaireResponseTemplateCreateSpec` | write · create | Adds `questionnaire: str \| None` (slug), `facility: UUID4 \| None`, `users: list[str]`, `facility_organizations: list[UUID4]`. Requires `facility` whenever `facility_organizations` is set. Resolves questionnaire/facility and recomputes `available_keys` from the non-empty keys of `template_data` |
-| `QuestionnaireResponseTemplateUpdateSpec` | write · update | `users`, `facility_organizations`; recomputes `available_keys` |
-| `QuestionnaireResponseTemplateReadSpec` | read · list | `created_date`, `modified_date`; `id` = `external_id` |
-| `QuestionnaireResponseTemplateRetrieveSpec` | read · detail | Extends the read spec with resolved `users: list[dict]`, `facility_organizations: list[dict]`, `created_by`, `updated_by` |
-
-#### `template_data` (`TemplateData`) shape
-
-`QuestionnaireResponseTemplate.template_data` is an opaque `JSONField` that the spec validates as:
-
-| Field | Type | Notes |
-| --- | --- | --- |
-| `medication_request` | `list[MedicationRequestTemplateSpec] \| None` | Extends the [MedicationRequest](../medications/medication-request.mdx) write spec with `requested_product: str \| None` (validated against `ProductKnowledge.slug`) |
-| `questionnaire` | `list[QuestionnaireAnswer] \| None` | `QuestionnaireAnswer = { question_id: str, answer: dict, meta: dict }` |
-| `activity_definition` | `list[ActivityDefinitionTemplateSpec] \| None` | `{ slug (validated against ActivityDefinition), service_request: ServiceRequestUpdateSpec }` |
-| `meta` | `dict \| None` | |
-
-`available_keys` (model `ArrayField`) is server-maintained: on create/update it is set to the `template_data` keys whose value is truthy.
+The template specs live in `resources/questionnaire_response_template/spec.py` and are documented in the [Questionnaire Response Template reference](./questionnaire-response-template.mdx).
 
 ## Related models
 
 ### `FormSubmission`
 
-A submission event linking a questionnaire to a patient and, optionally, an encounter.
-
-```text
-questionnaire → FK Questionnaire (CASCADE)
-patient       → FK emr.Patient (CASCADE)
-encounter     → FK emr.Encounter (CASCADE, nullable)
-status        → CharField(255)         # FormSubmissionStatusChoices
-response_dump → JSONField (default {})
-```
+| Field | Type |
+| --- | --- |
+| `questionnaire` | FK `Questionnaire` (CASCADE) |
+| `patient` | FK `emr.Patient` (CASCADE) |
+| `encounter` | FK `emr.Encounter` (CASCADE, nullable) |
+| `status` | `CharField(255)`, a `FormSubmissionStatusChoices` value |
+| `response_dump` | `JSONField`, default `{}` |
 
 ### `QuestionnaireResponse`
 
-The answers for a subject. The `questionnaire` FK is nullable, so a response can outlive or detach from its definition.
+| Field | Type |
+| --- | --- |
+| `questionnaire` | FK `Questionnaire` (CASCADE, nullable): the current row of the questionnaire |
+| `revision` | `IntegerField`, default 1: the questionnaire's `internal_revision` at submit time |
+| `subject_id` | `UUIDField` |
+| `responses` | `JSONField`, default `[]`: the raw submitted results |
+| `cleaned_response` | `JSONField`, default `{}`: answers keyed by link ID |
+| `structured_responses` | `JSONField`, default `{}` |
+| `structured_response_type` | `CharField`, nullable |
+| `patient` | FK `emr.Patient` (CASCADE) |
+| `encounter` | FK `emr.Encounter` (CASCADE, nullable) |
+| `form_submission` | FK `FormSubmission` (CASCADE, nullable) |
+| `status` | `CharField(255)`, default `"completed"` |
 
-```text
-questionnaire            → FK Questionnaire (CASCADE, nullable)
-subject_id               → UUIDField
-responses                → JSONField (default [])  # raw submitted results
-structured_responses     → JSONField (default {})  # extracted/structured data
-structured_response_type → CharField (nullable)
-patient                  → FK emr.Patient (CASCADE)
-encounter                → FK emr.Encounter (CASCADE, nullable)
-form_submission          → FK FormSubmission (CASCADE, nullable)
-status                   → CharField(255), default "completed"
-```
+### `QuestionnaireOrganization` and `QuestionnaireFacilityOrganization`
 
-### `QuestionnaireOrganization` / `QuestionnaireFacilityOrganization`
+Through-models that link a questionnaire to organizations: the first to an instance `Organization` (instance scope), the second to a `FacilityOrganization` (facility scope). Neither overrides `save()`; the viewset rebuilds the caches after it changes the links.
 
-Through-models that scope a questionnaire to organizations — the first to an instance-level `Organization`, the second to a `FacilityOrganization`.
+| Model | Fields |
+| --- | --- |
+| `QuestionnaireOrganization` | `questionnaire` → FK `Questionnaire` (CASCADE); `organization` → FK `Organization` (CASCADE) |
+| `QuestionnaireFacilityOrganization` | `questionnaire` → FK `Questionnaire` (CASCADE); `organization` → FK `FacilityOrganization` (CASCADE) |
 
-```text
-questionnaire → FK Questionnaire (CASCADE)
-organization  → FK Organization | FacilityOrganization (CASCADE)
-```
-
-Each overrides `save()` to recompute the matching cache on the parent `Questionnaire` (see [Methods & save behaviour](#organization-cache-sync)). Their specs (`questionnaire_organization.py`) exclude both FKs from serialization (`__exclude__ = ["questionnaire", "organization"]`): the write spec accepts `organization: UUID4`, the read spec returns `organization: dict`.
+The specs in `questionnaire_organization.py` exclude both foreign keys from serialization: the write spec takes `organization: UUID4`, and the read spec returns `organization: dict`.
 
 ### `QuestionnaireResponseTemplate`
 
-A reusable template that prefills questionnaire responses, optionally scoped to a facility and to specific facility organizations or users.
-
-```text
-facility               → FK facility.Facility (CASCADE, nullable)
-name                   → CharField(255)
-description            → TextField (default "")
-template_data          → JSONField (default {})   # TemplateData shape
-questionnaire          → FK Questionnaire (CASCADE, nullable, default None)
-facility_organizations → ArrayField[int] (default [])
-users                  → ArrayField[int] (default [])
-available_keys         → ArrayField[CharField(255)] (default [])  # server-maintained
-```
+| Field | Type |
+| --- | --- |
+| `facility` | FK `facility.Facility` (CASCADE, nullable) |
+| `name` | `CharField(255)` |
+| `description` | `TextField`, default `""` |
+| `template_data` | `JSONField`, default `{}` |
+| `questionnaire` | FK `Questionnaire` (CASCADE, nullable, default `None`) |
+| `facility_organizations` | `ArrayField[int]`, default `[]` |
+| `users` | `ArrayField[int]`, default `[]` |
+| `available_keys` | `ArrayField[CharField(255)]`, default `[]`; server-maintained |
 
 ## Methods & save behaviour
 
+### Revisions on update
+
+`QuestionnaireUpdateSpec.perform_extra_deserialization` hashes the incoming questions and compares the hash with the stored `questions_hash`. If they differ, it saves a copy of the old row with a new `external_id` and `latest_revision` set to the current row, increments `internal_revision`, and stores the new hash. If they match, no revision is made, so an update of the title, slug, description, or status alone keeps the revision.
+
+A past revision cannot be updated ("This Questionnaire is a past revision, please update the latest revision") or submitted to.
+
+### Update lock
+
+`handle_update` takes a `QuestionnaireLock` on the row. A concurrent update fails with "Questionnaire update failed, try again after a while".
+
+### Create
+
+`QuestionnaireCreateSpec.perform_extra_deserialization` resolves the facility (or the facility organization and its facility), sets `questions_hash`, and for `facility_organization` scope sets `internal_organization_cache`. After the save, the viewset calls `sync_facility_org_cache()`.
+
+### Access cache sync
+
+| Method | Scope | Result |
+| --- | --- | --- |
+| `sync_facility_org_cache()` | `facility` | `internal_organization_cache` = the facility's root organization, each linked department, and each linked department's parents. Called after create and by `set_facility_organizations` |
+| `sync_facility_org_cache()` | `facility_organization` | `internal_organization_cache` = the organization and its parents |
+| `sync_org_cache()` | `instance` | `organization_cache` = each linked `Organization` and its parents. Called by `set_organizations` |
+
+Each method de-duplicates the ids and saves only its cache field.
+
 ### `Questionnaire.get_questions_by_id()`
 
-Walks the `questions` tree, recursing into nested `questions`, and returns a `{ str(question_id): question }` dict. The result is memoized on the instance via `_questions_by_id_cache`. If `questions` is not a list, it returns an empty dict.
+Walks the `questions` tree, recursing into nested `questions`, and returns a `{ str(question_id): question }` dict. The result is memoized on the instance in `_questions_by_id_cache`. If `questions` is not a list, it returns an empty dict.
 
-### `QuestionnaireResponse.render_responses()`
+### `QuestionnaireResponse.resolved_questionnaire` and `render_responses()`
 
-Joins stored `responses` against the live questionnaire definition. For each answer it looks up the question through `questionnaire.get_questions_by_id()` and returns a list of `{ "answer": ..., "question": ... }`. It returns an empty list when there are no responses or no linked questionnaire, and skips any answer whose `question_id` is no longer in the definition.
+`resolved_questionnaire` returns the linked questionnaire when the response's `revision` equals its `internal_revision`; otherwise it returns the past revision whose `latest_revision` is that questionnaire and whose `internal_revision` equals the response's `revision`.
 
-### Submission handling — `handle_response()`
+`render_responses()` pairs each stored answer with its question from that revision. It skips answers whose `question_id` is not in that revision, and returns an empty list when there are no responses or no questionnaire.
 
-`resources/questionnaire/utils.py` runs this server-side on every submission:
+### Submission handling
 
-1. Rejects the submission if the questionnaire `status != "active"` (`questionnaire_inactive`).
-2. Resolves `encounter` (required when `subject_type == "encounter"`) and `patient` by `external_id`.
-3. Rejects empty submissions (`questionnaire_empty`).
-4. Prunes the question tree by `enable_when` rules; answers to disabled questions raise `enable_when_failed`.
-5. Validates each answer against its `type` (type checks per [QuestionType](#questiontype-values)), `required`, `answer_value_set` (the coding must belong to the value set), and `quantity` units. Any failure aborts with an `errors` payload.
-6. Builds `ObservationSpec` objects for coded/group questions and creates a `QuestionnaireResponse` (raw `responses` = the dumped results).
-7. When an encounter is present, bulk-creates the derived [Observations](../clinical/observation.mdx), linked back to the response.
+`submit` and `handle_response()` in `utils.py` run these steps:
 
-### Organization cache sync
+1. Refuse referral questionnaires and past revisions.
+2. For an encounter questionnaire, require an encounter of the given patient, refuse an encounter from another facility when the questionnaire has a facility, and check the encounter submit permission. For other subject types, refuse an encounter and check the patient submit permission.
+3. Refuse the submission if the questionnaire `status` is not `active` (`questionnaire_inactive`) or if it has no answers (`questionnaire_empty`).
+4. Drop questions whose `enable_when` conditions fail; an answer to a dropped question is an `enable_when_failed` error. A condition whose answer is an object compares coding system and code.
+5. Validate each answer: `required`, the type checks in [QuestionType](#questiontype-values), value-set membership, and `quantity` units. Any failure aborts with an `errors` payload.
+6. Refuse a patient questionnaire that is not instance-level, then resolve the encounter and the patient.
+7. Create the `QuestionnaireResponse` with `responses` and `cleaned_response`, and store the questionnaire's `internal_revision` in `revision`.
+8. When an encounter is present, bulk-create the derived [Observations](../clinical/observation.mdx), linked to the response.
+9. If `form_submission` is given, it must be a draft for the same questionnaire and patient with no response yet; link the response to it.
+10. Evaluate the questionnaire's `actions` with the patient or encounter questionnaire context, and return the result under `_actions`.
 
-`QuestionnaireOrganization.save()` and `QuestionnaireFacilityOrganization.save()` call `super().save()`, then `sync_questionnaire_cache()`, which:
-
-1. Loads all through-rows for the parent questionnaire.
-2. Collects each linked organization's `id` plus its `parent_cache` (ancestor chain).
-3. De-duplicates the IDs.
-4. Writes them back via `questionnaire.save(update_fields=[...])` — `organization_cache` for instance orgs, `internal_organization_cache` for facility orgs.
-
-Saving any organization link triggers a second write to the `Questionnaire` row.
+`submit_resource` serves location, device, and facility questionnaires. It checks the resource permission and that the resource's facility matches the questionnaire's facility, then runs the same answer validation and writes a `FacilityResourceQuestionnaireResponse` and `FacilityResourceObservation` rows instead.
 
 ## API integration notes
 
-- Questionnaires expose CRUD plus a submit endpoint (`/questionnaire/<slug>/submit/`). Create uses `QuestionnaireSpec` (requires ≥1 `organizations`); update uses `QuestionnaireUpdateSpec`; reads use `QuestionnaireReadSpec`.
-- `questions` and `styling_metadata` are open `JSONField`s at the DB layer, but the API validates `questions` against the recursive [`Question`](#question-nested-shape) spec — unique `link_id`/`id`, the choice/quantity/group constraints, and value-set existence. `styling_metadata` is never validated.
-- `organization_cache` / `internal_organization_cache` and `QuestionnaireResponseTemplate.available_keys` are platform-maintained. Don't set them from clients; write through the through-models or `template_data`.
-- Submitting answers validates type/required/value-set server-side and, for clinical questions, materializes [Observations](../clinical/observation.mdx). To void a response, set its status to `entered_in_error` via `QuestionnaireResponseUpdate`.
-- `FormSubmissionWriteSpec` resolves the questionnaire by slug and, when an encounter is supplied, forces the submission's patient to the encounter's patient.
+- Routes: `/api/v1/questionnaire/` (list, create) and `/api/v1/questionnaire/<id>/` (retrieve, update, delete), plus `upsert`, the [favorites](../platform/favorites.mdx) actions (`favorite_lists`, `add_favorite`, `remove_favorite`), and the detail actions `submit`, `submit_resource`, `get_facility_organizations`, `set_facility_organizations`, `get_organizations`, and `set_organizations`.
+- Questionnaires are looked up by `external_id` (UUID), not by slug.
+- List filters: `title` (contains, case-insensitive), `subject_type` (multi-select), `auth_context` (exact, case-insensitive), `facility`, `facility_isnull`, `status` (exact, case-insensitive), `parent_revision`, `facility_or_instance`, `slug` (exact, case-insensitive). Without `parent_revision`, the list returns only current rows; with it, the past revisions of that questionnaire. `facility_or_instance` returns the facility's rows plus rows with no facility.
+- The list returns the questionnaires whose `organization_cache` overlaps an instance organization where the caller holds a role with "Can Read Questionnaires", or whose `internal_organization_cache` overlaps such a facility organization, plus the caller's own `user` questionnaires. Other actions run per-object checks instead.
+- `facility` scope: retrieve needs "Can Read Questionnaires" in a facility organization listed in `internal_organization_cache`; create, update, and delete need "Can Create/Update Questionnaires" in the facility's root organization.
+- `facility_organization` scope: read or write permission in that organization or one of its parents. `user` scope: the permission in any organization of the facility, and only the creator can update or delete.
+- `instance` scope: no facility permission allows create, update, delete, or organization changes.
+- On create and update, each action instruction must be authorized for the caller; an unknown or unauthorized instruction is a validation error.
+- `get_facility_organizations` and `set_facility_organizations` work only for `facility` questionnaires, and both run the update authorization, so reading the linked departments also needs write access. `set_facility_organizations` takes `{ facility_organizations: list[UUID4] }` and replaces every link; each department must belong to the questionnaire's facility (404 otherwise).
+- `get_organizations` and `set_organizations` work only for `instance` questionnaires.
+- Delete is a soft delete with the update authorization. The frontend does not call it.
+- Server-maintained, and in no write spec: `internal_revision`, `latest_revision`, `questions_hash`, `organization_cache`, `internal_organization_cache`, and `QuestionnaireResponse.revision`.
+- Submitting validates answers server-side and, when an encounter is present, creates [Observations](../clinical/observation.mdx). `QuestionnaireResponseUpdate` changes only the response status, for example to `entered_in_error`.
 
 ## Related
 
 - Source: [questionnaire.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/questionnaire.py)
-- Spec: [questionnaire/spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/questionnaire/spec.py) · [response spec](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/questionnaire_response/spec.py) · [submit utils](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/questionnaire/utils.py) · [form_submission spec](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/form_submission/spec.py) · [response template spec](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/questionnaire_response_template/spec.py)
+- Spec: [questionnaire/spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/questionnaire/spec.py) · [response spec](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/questionnaire_response/spec.py) · [submit utils](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/questionnaire/utils.py) · [form_submission spec](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/form_submission/spec.py)
+- Concept: [Questionnaire](../../concepts/definitions/questionnaire.mdx)
 - Reference: [Base model](../foundation/base-model.mdx)
-- Reference: [Questionnaire Response](../clinical/questionnaire-response.mdx) — submitted answers (`QuestionnaireResponse` / `FormSubmission`)
-- Reference: [Questionnaire Response Template](../definitions/questionnaire-response-template.mdx) — reusable pre-fill templates
-- Reference: [ValueSet](../definitions/valueset.mdx)
+- Reference: [Questionnaire Response](../clinical/questionnaire-response.mdx)
+- Reference: [Questionnaire Response Template](./questionnaire-response-template.mdx)
+- Reference: [ValueSet](./valueset.mdx)
 - Reference: [Patient](../clinical/patient)
 - Reference: [Encounter](../clinical/encounter.mdx)
 - Reference: [Observation](../clinical/observation.mdx)
 - Reference: [Organization](../access-governance/organization.mdx)
-- Reference: [MedicationRequest](../medications/medication-request.mdx)
-- Reference: [ServiceRequest](../clinical/service-request.mdx)
-- Reference: [ActivityDefinition](../definitions/activity-definition.mdx)
+- Reference: [Favorites](../platform/favorites.mdx)

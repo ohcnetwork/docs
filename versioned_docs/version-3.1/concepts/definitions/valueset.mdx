@@ -6,51 +6,122 @@ sidebar_position: 3
 
 ## Definition
 
-A **[valueset](https://build.fhir.org/valueset.html)** in Care is a named list of allowed codes that you can use again in many places. For example, a valueset holds all the codes for a type of allergy. Other parts of Care point to a valueset by name instead of listing each code by hand. A Choice question in a questionnaire and a diagnosis code in a condition both get their codes from a valueset.
+A **[valueset](https://build.fhir.org/valueset.html)** in Care is a named list of allowed codes that you can use again in many places. Coded fields, such as a question in a questionnaire or the code of a condition, get their codes from a valueset. A valueset does not store the codes themselves. It stores rules, and Care looks up the matching codes in the terminology system each time a user searches.
 
 ## Key Attributes
 
 | Components | What it captures |
 | --- | --- |
-| Name | The name of the valueset. Care requires this. |
-| Slug | A short identifier that is unique in Care. Care requires this. |
-| Description | Text that explains the purpose of the valueset. This is optional. |
-| Status | The stage of the valueset in its life. Care requires this. |
+| Name | The name of the valueset. The name is required. |
+| Slug | A short identifier that fields use to find the valueset. The slug is required. You cannot change it after you save the valueset. |
+| Description | Text that explains the purpose of the valueset. The description is optional. |
+| Status | The stage of the valueset in its lifecycle. The status is required. |
+| Parent value set | An existing valueset that this valueset builds on. The parent is optional. You choose it only when you create the valueset. |
+| How will this value set be used? | Separate value set or Facility customization. You choose this only when you create the valueset. |
+| Use parent rules | Whether the valueset also uses the rules of its parent. |
 | Include rules | The rules that add codes to the valueset. |
 | Exclude rules | The rules that remove codes from the valueset. |
-| System | Shows if the valueset comes with Care. Care sets this value. |
+| Departments with access | The departments whose members can see and use a facility valueset. |
 
 ### Include rules and exclude rules
 
-Together, the include rules and the exclude rules decide which codes belong to the valueset.
+Together, the include rules and the exclude rules decide which codes belong to the valueset. If a code matches both, the exclude rule wins.
 
-Each rule selects one code system, for example LOINC, SNOMED, or UCUM. A rule can also give a version of that code system. The rule then does one of two things:
+Each rule selects one terminology system: LOINC, SNOMED or UCUM. A rule can also give a version of that terminology system. The rule then does one of two things:
 
 - The rule lists the exact codes to use.
-- The rule sets a filter, for example all codes that are a type of X.
+- The rule sets filters, for example all codes that are a type of a given code.
+
+A rule cannot do both. A rule with no codes and no filters takes every code in its terminology system.
+
+### Facility valuesets and the Shared catalogue
+
+Each facility manages its own valuesets in facility settings, under **Forms** > **ValueSets**. This page has two tabs:
+
+- **This facility** lists the valuesets of your facility. You change your facility's valuesets here.
+- **Shared catalogue** lists the shared valuesets.
+
+Shared valuesets are shared across the whole Care instance and cannot be changed from facility settings. You can preview a shared valueset, or customize it for your facility, and the shared original stays unchanged.
+
+### Parent valueset
+
+When you create a facility valueset, you can choose a **Parent value set** to build on. The parent can be a valueset of your facility, marked **This facility**, or a shared valueset, marked **Instance**. The list offers only Active valuesets.
+
+A valueset with a parent combines its own include and exclude rules with the rules of its parent. To use only its own rules, turn off **Use parent rules**.
+
+### Separate value set and Facility customization
+
+When you create a facility valueset, you choose how it is used:
+
+- A **Separate value set** keeps its own slug. To use it, a person selects it directly when they configure a questionnaire. This is the default.
+- A **Facility customization** takes the slug of its parent. In your facility, it takes the place of the shared valueset in the fields that find their valueset by that slug, for the users who can see it. You can choose it only when the parent is a shared valueset.
+
+The **Customize** action on a row of the **Shared catalogue** starts a facility customization of that valueset.
+
+### Who can see a facility valueset
+
+A facility valueset is not visible to everyone in the facility. Care shows it only to members of the departments that it is shared with, and of their parent departments, who hold the Can Read ValueSets permission.
+
+A new facility valueset stays hidden from everyone in the facility, including the person who created it, until it is shared with a department.
+
+A role in the facility's root organization (**Administration**) does not show a facility valueset to you, even with the Can Create/Update ValueSets permission, unless the valueset is shared with the root organization (**Administration**).
+
+You share a facility valueset on its edit page, under **Departments with access**.
+
+### Which valueset a coded field uses
+
+A coded field finds its valueset in one of two ways:
+
+- By slug. In the questionnaire builder, a field that uses a shared valueset finds it by its slug.
+- Pinned. A field that uses a facility valueset is pinned to that valueset, and always uses it as it is.
+
+When a field finds its valueset by slug in a facility, Care uses the first of these that is Active and that you can see:
+
+1. The valueset that you chose for this slug with **Change**.
+2. A valueset of your facility with the same slug, such as a facility customization.
+3. The shared valueset with that slug.
+
+Because of this, two users in the same facility can get different codes in the same field. The result depends on the departments they belong to and on the choices they made.
+
+If your facility has an Active valueset with the same slug as the field, and you can see it, the code search shows the name of the valueset in use and a **Change** button. **Change** opens **Choose which value set to search**, which lists the shared valueset, marked **Instance**, and the facility valuesets, marked **This facility**. When you choose one, Care shows **Value set preference saved**. Your choice applies only to you, in this facility, for this slug.
+
+In the code search, you can star a code to add it to **Starred**. **Clear** removes starred codes. The codes that you picked before appear above the search results, and by default Care keeps your last 20. Starred and recent codes belong to you and to the valueset in use, so a different valueset has its own starred codes.
 
 ### Status
 
 | Status | Description |
 | --- | --- |
-| Active | The valueset is ready for use in Care. |
-| Draft | The valueset is still in preparation. |
-| Retired | The valueset is no longer for use. |
-| Unknown | The stage of the valueset is not known. |
+| Active | The valueset is ready for use. Only an Active valueset answers the fields that find their valueset by slug. |
+| Draft | The valueset is still in preparation. Fields that find their valueset by slug do not use it. |
+| Retired | The valueset is no longer for use. Fields that find their valueset by slug stop using it. A field that is pinned to it still searches it. |
+| Unknown | The stage of the valueset is not known. Fields that find their valueset by slug do not use it. |
 
-### Who can change a valueset
+The **ValueSets** list shows Active valuesets unless you change the **Status** filter.
 
-Only a superuser can create, change, or retire a valueset. Any signed-in user can search a valueset and use its codes, for example to answer a question in a form.
+Note: The valueset screens have no action to delete a valueset. To take a valueset out of use, set its status to **Retired**.
 
-Note: The valueset pages show the same controls to every user. Care accepts a change only from a superuser.
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create/Update ValueSets | Create a facility valueset, customize a shared valueset, change or retire a facility valueset, and choose its departments. You must hold it in the root organization. To open a facility valueset for these changes, you also need Can Read ValueSets. By default, the Facility Admin role holds this permission. |
+| Can Read ValueSets | See and use a facility valueset. You must hold it in a department that the valueset is shared with, or in a parent department of one. By default, the Facility Admin, Administrator, Doctor, Nurse, Staff, Pharmacist and Volunteer roles hold this permission. |
+| Can View Facility Organizations | Lets you see the departments when you choose the departments of a valueset. If you hold it in the root organization, the list shows every department, including the root organization. If you hold it only in a department, the list leaves out the root organization. By default, the Facility Admin, Administrator, Doctor, Nurse, Staff and Volunteer roles hold this permission. |
+
+You need no permission to see the **Shared catalogue** or to use **Preview**. To star a code or to choose a valueset with **Change**, you need no write permission, but you must be able to see the valueset.
+
+These are the default roles. Your deployment can also have custom roles that hold these permissions.
 
 ## Related
 
 - Flow: [Create a valueset](../../flows/definitions/valueset/create-valueset.mdx)
+- Flow: [Customize a shared valueset](../../flows/definitions/valueset/customize-shared-valueset.mdx)
+- Flow: [Share a valueset with departments](../../flows/definitions/valueset/share-valueset-with-departments.mdx)
 - Flow: [Build include and exclude rules](../../flows/definitions/valueset/build-include-and-exclude-rules.mdx)
-- Flow: [Preview a valueset before saving](../../flows/definitions/valueset/preview-valueset.mdx)
+- Flow: [Preview a valueset](../../flows/definitions/valueset/preview-valueset.mdx)
 - Flow: [Update or retire a valueset](../../flows/definitions/valueset/update-or-retire-valueset.mdx)
-- Concept: [Questionnaire](../../concepts/definitions/questionnaire.mdx)
-- Concept: [Observation Definition](../../concepts/definitions/observation-definition.mdx)
-- Concept: [Specimen Definition](../../concepts/definitions/specimen-definition.mdx)
-- Concept: [Activity Definition](../../concepts/definitions/activity-definition.mdx)
+- Concept: [Questionnaire](../definitions/questionnaire.mdx)
+- Concept: [Department](../facility/department.mdx)
+- Concept: [Facility Organization](../access-governance/facility-organization.mdx)
+- Concept: [Roles and Permission](../access-governance/access-control.mdx)
+- Reference: [Valueset](../../references/definitions/valueset.mdx)

@@ -6,63 +6,139 @@ sidebar_position: 1
 
 ## Overview
 
-This flow describes how to create a new [valueset](../../../concepts/definitions/valueset.mdx) in Care. A valueset
-gives a named set of codes that Care shows to users in coded fields.
+<video src="/media/definitions/valueset/create-valueset.mp4" poster="/media/definitions/valueset/create-valueset.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/valueset/create-valueset.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to create a [valueset](../../../concepts/definitions/valueset.mdx) for your facility in facility settings. The new valueset has its own slug, and you can select it when you configure a questionnaire.
+
+Note: A new facility valueset stays hidden from everyone in the facility, including you, until it is shared with a department. After that, members of the departments that it is shared with can see and use it. Members of their parent departments can too. These members need the Can Read ValueSets permission. A role in the facility's root organization does not show it to you. This is true even with Can Create/Update ValueSets, unless the valueset is shared with the root organization (**Administration**).
 
 ## Pre-requisites
 
-- You are a Care superuser.
+- You are a member of a department of the facility.
+- If you want to build on another valueset, that valueset is Active. It is in the **Shared catalogue**, or it is a valueset of your facility that you can see.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| None (Care superuser only) | Lets you create a new valueset. |
+| Can Create/Update ValueSets | Lets you see **Create ValueSet** and save the new valueset. You must hold it in the root organization. By default, the Facility Admin role holds this permission. |
+
+You need no other permission to open the **ValueSets** page, choose a parent, verify codes, or preview the valueset.
 
 ## Steps
 
 ### 1. Open the valueset list
 
-Open the Admin sidebar. Select **Valuesets**. Care shows the **ValueSets** page.
+In the facility sidebar, select **Settings**.
+
+In the settings sidebar, under **Forms**, select **ValueSets**.
+
+Care opens the **ValueSets** page on the **This facility** tab.
+
+![Step 1, Open the valueset list (1 of 3): the screen at this step, with the control for the step outlined](/media/definitions/valueset/create-valueset-1.png)
+
+![Step 1, Open the valueset list (2 of 3): the screen at this step, with the control for the step outlined](/media/definitions/valueset/create-valueset-2.png)
+
+![Step 1, Open the valueset list (3 of 3): the screen at this step, with the control for the step outlined](/media/definitions/valueset/create-valueset-3.png)
 
 ### 2. Start a new valueset
 
-Select **Create ValueSet**. Care opens the **Create New ValueSet** page.
+Select **Create ValueSet**.
 
-### 3. Fill in the valueset details
+Care opens the **Create ValueSet** page.
 
-Complete the fields in the form.
+Note: If you do not see **Create ValueSet**, you do not hold Can Create/Update ValueSets in the root organization.
+
+![Step 2, Start a new valueset: the screen at this step, with the control for the step outlined](/media/definitions/valueset/create-valueset-4.png)
+
+### 3. Choose a starting point
+
+The **Starting point** section lets you start from scratch or build on an existing valueset.
+
+To start from scratch, leave **Parent value set** empty.
+
+To build on another valueset, select it in **Parent value set**.
+
+The list shows Active valuesets: those of your facility that you can see, marked **This facility**, and the shared valuesets, marked **Instance**.
+
+Under **How will this value set be used?**, keep **Separate value set**.
+
+Note: To replace a shared valueset in your facility, use **Facility customization** instead. See [Customize a shared valueset](./customize-shared-valueset.mdx).
+
+![Step 3, Choose a starting point: the screen at this step, with the control for the step outlined](/media/definitions/valueset/create-valueset-5.png)
+
+### 4. Enter the basic information
+
+Under **Basic Information**, complete the fields.
 
 | Components | What it captures |
 | --- | --- |
-| Name | The name of the valueset. This field is required. When you type the name, Care fills in a matching **Slug**. |
-| Slug | A short identifier that Care uses in links. This field is required. Use 5 to 25 characters. Use letters, numbers, underscores, and hyphens only. |
-| Description | More information about the valueset. This field is optional. |
-| Status | The stage of the valueset: **Active**, **Draft**, **Retired**, or **Unknown**. Care selects **Active** for a new valueset. |
+| Name | The name of the valueset. This field is required. When you type the name, Care fills in the **Slug**. |
+| Slug | A short identifier for the valueset. This field is required. Use 5 to 50 characters: letters, numbers, underscores and hyphens. Start and end with a letter or a number. Care changes capital letters to small letters and removes other characters. |
+| Status | The stage of the valueset: **Active**, **Draft**, **Retired** or **Unknown**. This field is required. Care selects **Active** for a new valueset. |
+| Description | Text that explains the purpose of the valueset. This field is optional. |
 
-### 4. Add the rules
+Do not use the slug of a valueset in the **Shared catalogue**. Care shows an error if you do.
 
-Add a minimum of one rule to **Include rules**. For the full procedure, see
-[Build include and exclude rules](./build-include-and-exclude-rules.mdx).
+Do not put "system-" in the slug. Care refuses that slug when you save.
 
-### 5. Preview the codes
+You cannot change the slug after you save the valueset.
 
-Before you save, you can see which codes match your rules. For the full procedure, see
-[Preview a valueset before saving](./preview-valueset.mdx).
+While Care checks the slug against the shared catalogue, it shows **Checking this slug against the shared catalogue…** and you cannot save.
 
-### 6. Save the valueset
+If the check fails, select **Try Again**.
 
-Select **Save ValueSet**. To leave the page without a change, select **Cancel**.
+![Step 4, Enter the basic information: the screen at this step, with the control for the step outlined](/media/definitions/valueset/create-valueset-6.png)
 
-Note: Only a Care superuser can save a new valueset. The page shows the same
-controls to every user.
+### 5. Add the rules
+
+Under **Definition**, add the include rules and the exclude rules.
+
+You can save a valueset without rules.
+
+For the full procedure, see [Build include and exclude rules](./build-include-and-exclude-rules.mdx).
+
+If you selected a parent, **Use parent rules** is on. The valueset then uses the rules of the parent together with the rules that you add.
+
+To use only the rules that you add, turn off **Use parent rules**.
+
+![Step 5, Add the rules: the screen at this step, with the control for the step outlined](/media/definitions/valueset/create-valueset-7.png)
+
+### 6. Preview the codes
+
+This step is optional.
+
+Select **Preview** to see the codes that match the rules.
+
+For the full procedure, see [Preview a valueset](./preview-valueset.mdx).
+
+![Step 6, Preview the codes: the screen at this step, with the control for the step outlined](/media/definitions/valueset/create-valueset-8.png)
+
+### 7. Save the valueset
+
+Select **Save**.
+
+**Save** is available only after you change a field.
+
+If a field needs a correction, Care lists it under **Review these fields before saving**.
+
+To leave without saving, select the back arrow next to the page title. If you have unsaved changes, Care asks you to confirm.
+
+![Step 7, Save the valueset: the screen at this step, with the control for the step outlined](/media/definitions/valueset/create-valueset-9.png)
 
 ## Expected Outcome
 
-- Care creates the valueset with the name, slug, and status that you entered.
-- Care shows the new valueset in the valueset list.
-- Care shows the codes from the valueset in the coded fields that use this valueset.
+- Care saves the valueset for your facility with the details that you entered.
+- Care shows **ValueSet created successfully** and then **Not Found**.
+- Care then shows an empty **Create ValueSet** form, with **No changes to save** and **Save** not available.
+- The **Not Found** message and the empty form appear because the new valueset is hidden. It stays hidden until it is shared with a department. Your valueset is saved.
+- The valueset does not appear on the **This facility** tab until it is shared with a department.
+- After the valueset is shared, members of those departments and of their parent departments can open it.
+- These members need Can Read ValueSets. They can then select the valueset in a questionnaire.
+- You cannot use [Share a valueset with departments](./share-valueset-with-departments.mdx) on the new valueset yet. That flow needs a valueset that is already shared with a department that you belong to.
 
 ## Related
 
@@ -72,5 +148,8 @@ Concepts:
 
 Flows:
 
+- [Customize a shared valueset](./customize-shared-valueset.mdx)
+- [Share a valueset with departments](./share-valueset-with-departments.mdx)
 - [Build include and exclude rules](./build-include-and-exclude-rules.mdx)
-- [Preview a valueset before saving](./preview-valueset.mdx)
+- [Preview a valueset](./preview-valueset.mdx)
+- [Update or retire a valueset](./update-or-retire-valueset.mdx)

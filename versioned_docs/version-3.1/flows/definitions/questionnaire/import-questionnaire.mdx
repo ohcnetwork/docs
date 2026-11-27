@@ -1,0 +1,103 @@
+---
+sidebar_position: 5
+---
+
+# Import a questionnaire
+
+## Overview
+
+<video src="/media/definitions/questionnaire/import-questionnaire.mp4" poster="/media/definitions/questionnaire/import-questionnaire.poster.png" controls width="720">
+  <track kind="captions" src="/media/definitions/questionnaire/import-questionnaire.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to create a [questionnaire](../../../concepts/definitions/questionnaire.mdx) in your facility from a JSON file. Care creates a draft questionnaire with the subject type, description and questions from the file.
+
+## Pre-requisites
+
+- You have a questionnaire JSON file of 5 MB or smaller.
+- The questionnaire in the file is not a patient questionnaire. A facility questionnaire can have the subject type Encounter, Referral, Location, Device or Facility.
+- You are a member of a department of the facility, so the facility sidebar shows **Settings**.
+- You have the permissions listed below.
+
+Note: To get a file, open a questionnaire and select **Download JSON**. Care saves the questionnaire as a JSON file that this import accepts.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create/Update Questionnaires | Shows **Import Questionnaire** and lets you create the questionnaire. You must hold it in the facility's root organization (**Administration**). By default, the Facility Admin role holds it. |
+| Can Read Questionnaires | Lets you see the questionnaire list, and open the new questionnaire after the import. For the new questionnaire, you must hold it in the root organization, because it is not shared with any department yet. By default, the Facility Admin, Administrator, Doctor, Nurse, Staff, Pharmacist and Volunteer roles hold it. |
+
+## Steps
+
+### 1. Open the questionnaire list
+
+In the facility sidebar, select **Settings**. In the settings sidebar, under **Forms**, select **Questionnaires**.
+
+![Step 1, Open the questionnaire list: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/import-questionnaire-1.png)
+
+### 2. Start the import
+
+Select **Import Questionnaire**. Care opens the **Import Questionnaire** dialog.
+
+![Step 2, Start the import: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/import-questionnaire-2.png)
+
+### 3. Choose the file
+
+Under **Please select a JSON file**, choose the file.
+
+If Care cannot use the file, it shows a message and you can choose another file:
+
+| Message | What to do |
+| --- | --- |
+| "The questionnaire JSON file must be 5 MB or smaller." | Choose a smaller file. |
+| "Patient questionnaires cannot be imported in this scope." | Choose a file with another subject type. A facility cannot have a patient questionnaire. |
+| "Invalid JSON: please check the format and try again" | Check that the file is a questionnaire JSON file. |
+
+![Step 3, Choose the file: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/import-questionnaire-3.png)
+
+### 4. Check the title and the slug
+
+Care shows the details from the file. Check these fields, and change them if needed.
+
+| Components | What it captures |
+| --- | --- |
+| **Title** | The name of the questionnaire. Care fills it in from the file. |
+| **Slug** | A short name that identifies the questionnaire in your facility. Care fills it in from the file. If the file has no slug, type one. |
+
+The slug must have 5 to 50 characters. Use only letters, numbers, hyphens and underscores. Start and end with a letter or a number.
+
+The slug must not match the slug of another questionnaire in your facility. Care ignores capital letters in this check.
+
+Below the fields, Care shows the subject type, the **Draft** badge and the **Question count**. To choose another file, select **Back**.
+
+![Step 4, Check the title and the slug: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/import-questionnaire-4.png)
+
+### 5. Import the questionnaire
+
+Select **Import**.
+
+Note: If the file contains actions, Care checks that you are allowed to use each one. If you are not, Care does not create the questionnaire.
+
+![Step 5, Import the questionnaire: the screen at this step, with the control for the step outlined](/media/definitions/questionnaire/import-questionnaire-5.png)
+
+## Expected Outcome
+
+- Care shows "Questionnaire Imported Successfully" and opens the new questionnaire.
+- The questionnaire is a **Draft** in your facility, with the subject type, description, questions and actions from the file.
+- The questionnaire is not shared with any department. Until you share it, only people who hold Can Read Questionnaires in the root organization can see it.
+- People can fill in the questionnaire only after you set its status to **Active**.
+
+## Related
+
+Concepts:
+
+- [Questionnaire](../../../concepts/definitions/questionnaire.mdx)
+
+Flows:
+
+- [Create a questionnaire](./create-questionnaire.mdx)
+- [Clone a questionnaire](./clone-questionnaire.mdx)
+- [Add and edit questions](./add-and-edit-questions.mdx)
+- [Share a questionnaire with departments](./manage-questionnaire-organizations.mdx)
+- [Update or retire a questionnaire](./update-or-retire-questionnaire.mdx)

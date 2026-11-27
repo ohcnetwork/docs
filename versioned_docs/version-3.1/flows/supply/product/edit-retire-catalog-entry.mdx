@@ -2,82 +2,110 @@
 sidebar_position: 2
 ---
 
-# Edit or retire a catalog entry
+# Update or retire product knowledge
 
 ## Overview
 
-This flow describes how to change the details of a [product](../../../concepts/supply/product.mdx) catalog entry, and how to retire an entry that your facility no longer uses.
+<video src="/media/supply/product/edit-retire-catalog-entry.mp4" poster="/media/supply/product/edit-retire-catalog-entry.poster.png" controls width="720">
+  <track kind="captions" src="/media/supply/product/edit-retire-catalog-entry.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to change the details of [Product Knowledge](../../../concepts/definitions/product-knowledge.mdx) in Care. It also describes how to retire Product Knowledge that the facility no longer uses.
 
 ## Pre-requisites
 
-- Someone added the catalog entry to the product catalog of your facility.
+- The facility has the Product Knowledge that you want to change.
+- You belong to a department of the facility.
+- If you retire the Product Knowledge, its status is not Retired.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create Product Knowledge on Facility | Lets you create and edit product catalog entries at the facility. |
+| Can Create Product Knowledge on Facility | Lets you save your changes and retire the Product Knowledge. You must hold it in the facility's root organization (**Administration**). By default, the Facility Admin role holds this permission. |
+| Can Read Product Knowledge | Lets you see the Product Knowledge in a category, open its page, and open the edit form. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Read Resource Category | Lets you open the categories, and select one in the **Category** field. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
 
-Facility Admin and Admin have this permission.
+Note: Care shows **Edit** and **Delete** to every user who can open the Product Knowledge. If you do not hold the create permission in the root organization, Care does not save the change.
 
 ## Steps
 
-### 1. Open the product catalog
+### 1. Find the Product Knowledge
 
-1. Go to the facility.
-2. Click **Settings**.
-3. Click **Product Knowledge**.
+1. Open your facility.
+2. Select **Settings**.
+3. In the **Inventory** group, select **Product Knowledge**.
+4. Select the category that holds the Product Knowledge. If it has subcategories, open them until you reach the Product Knowledge.
 
-### 2. Open the catalog entry
+Note: A category lists only Active Product Knowledge at first. To find Draft or Retired Product Knowledge, change the **Status** filter.
 
-1. Find the entry that you want to change.
-2. Click the entry to open it.
+Note: To find Product Knowledge by name in a category, type in **Search products**.
 
-### 3. Edit the details
+![Step 1, Find the Product Knowledge: the screen at this step, with the control for the step outlined](/media/supply/product/edit-retire-catalog-entry-1.png)
 
-1. Click **Edit**.
+### 2. Open the Product Knowledge
+
+Select **View** on the row of the Product Knowledge. Care opens the Product Knowledge page.
+
+The page shows the details in the **Overview**, **Names**, **Storage Guidelines**, and **Product Definition** cards.
+
+Note: You can also open the Product Knowledge from a product. If the Product Knowledge belongs to your facility, select **View Details** on the page of the product.
+
+![Step 2, Open the Product Knowledge: the screen at this step, with the control for the step outlined](/media/supply/product/edit-retire-catalog-entry-2.png)
+
+### 3. Update the details
+
+1. Select **Edit**. Care opens the **Edit Product Knowledge** form.
 2. Change the fields that you want to update.
+3. Select **Update**.
 
-| Components | What it captures |
-| --- | --- |
-| Name | The name of the product. |
-| Slug | The short reference for the product. |
-| Product Type | The type of the product. |
-| Category | The category of the product. |
-| Code | The code of the product. |
-| Base Unit | The unit that Care uses to count the product. |
-| Status | The current state of the catalog entry. |
-| Alternate Identifier | An additional identifier for the product. |
-| Alternate names | Other names for the same product. |
-| Storage guidelines | The storage instructions for the product. |
+The form has the same fields as the create form. For a description of each field, see [Create product knowledge](./add-product-to-catalog.mdx).
 
-Note: Which fields are mandatory depends on your deployment's configuration.
+Note: **Update** stays unavailable until you change a field.
 
-### 4. Save the changes
+Note: If you change the **Slug**, the web address of the Product Knowledge page changes.
 
-1. Save the entry.
+Note: You can also select **Edit** on the row of the Product Knowledge in the category.
 
-### 5. Retire the entry
+![Step 3, Update the details (1 of 3): the screen at this step, with the control for the step outlined](/media/supply/product/edit-retire-catalog-entry-3.png)
 
-Care does not remove a catalog entry. If you no longer use a product, retire the entry.
+![Step 3, Update the details (2 of 3): the screen at this step, with the control for the step outlined](/media/supply/product/edit-retire-catalog-entry-4.png)
 
-1. Open the catalog entry.
-2. Click **Delete**.
-3. Care sets the Status of the entry to Retired.
+![Step 3, Update the details (3 of 3): the screen at this step, with the control for the step outlined](/media/supply/product/edit-retire-catalog-entry-5.png)
+
+### 4. Retire the Product Knowledge
+
+Do this step only when the facility no longer uses the Product Knowledge.
+
+1. On the Product Knowledge page, select **Delete**. Care shows this button only when the status is not Retired.
+2. Care asks you to confirm. Select **Confirm**.
+
+Note: **Delete** does not remove the Product Knowledge. Care sets its status to Retired.
+
+Note: You can also retire Product Knowledge from the edit form. Set **Status** to **Retired**. Then select **Update**.
+
+Note: To use retired Product Knowledge again, open the edit form and set **Status** to **Active**. Then select **Update**.
+
+![Step 4, Retire the Product Knowledge (1 of 2): the screen at this step, with the control for the step outlined](/media/supply/product/edit-retire-catalog-entry-6.png)
+
+![Step 4, Retire the Product Knowledge (2 of 2): the screen at this step, with the control for the step outlined](/media/supply/product/edit-retire-catalog-entry-7.png)
 
 ## Expected Outcome
 
-- The catalog entry shows the updated details.
-- A retired entry has the status Retired, and stays in the catalog.
+- After an update, Care shows **Product knowledge updated successfully** and opens the Product Knowledge page with your changes.
+- After you retire the Product Knowledge, Care shows **Product knowledge deleted successfully** and returns to the category.
+- Retired Product Knowledge stays in Care. The category lists it only when you set the **Status** filter to Retired.
+- Pickers no longer offer retired Product Knowledge, for example when you create a product.
 
 ## Related
 
 Concepts:
 
+- [Product Knowledge](../../../concepts/definitions/product-knowledge.mdx)
 - [Product](../../../concepts/supply/product.mdx)
 
 Flows:
 
-- [Add a product to the catalog](./add-product-to-catalog.mdx)
+- [Create product knowledge](./add-product-to-catalog.mdx)
 - [Add a product instance](./add-product-instance.mdx)
