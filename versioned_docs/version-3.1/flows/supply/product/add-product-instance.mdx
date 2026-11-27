@@ -2,78 +2,189 @@
 sidebar_position: 3
 ---
 
-# Add a product instance
+# Add a product
 
 ## Overview
 
-This flow describes how to add a [product](../../../concepts/supply/product.mdx) instance in Care. A product instance is one facility's stocked batch of a catalog entry, with its own lot number, expiration date, and purchase price.
+<video src="/media/supply/product/add-product-instance.mp4" poster="/media/supply/product/add-product-instance.poster.png" controls width="720">
+  <track kind="captions" src="/media/supply/product/add-product-instance.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to add a [product](../../../concepts/supply/product.mdx) in Care. A product is one batch of a Product Knowledge, with its own lot number, expiration date, pack size, and purchase price.
+
+In Care 3.1, you add a product when you receive a new batch of stock from a supplier in a [purchase delivery](../../../concepts/supply/purchase-delivery.mdx). Care creates the product when you save the delivery item. **Settings** has no way to add a product.
 
 ## Pre-requisites
 
-- You are a member of the facility that stocks the product.
-- Someone added the catalog entry for the product to the product catalog.
-- If you add the product instance while you receive goods, you record a [purchase delivery](../../../concepts/supply/purchase-delivery.mdx) that contains the delivered item.
+- You belong to a department of the facility.
+- The facility has a store location, that is, a location whose inventory usage is **Store**.
+- A service of the facility lists the store location under **Available Locations**.
+- The Product Knowledge of the item exists, and its status is **Active**. If it does not exist, see [Create product knowledge](./add-product-to-catalog.mdx).
+- The store location has a purchase delivery with the status **Draft**. If it has none, see [Create a purchase delivery](../purchase-delivery/create-purchase-delivery.mdx).
+- If Care asks for a **Category** in step 7, the facility has at least one charge item definition category.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create Product on Facility | Lets you add a product instance to the facility. Facility Admin and Admin have this permission. |
+| Can Create Product on Facility | Lets you save the item. In this flow, Care creates a new product for the item. You must hold this permission in the facility's root organization, Administration. By default, the Facility Admin role holds this permission. |
+| Can Create External Supply Delivery on Facility | Lets you save the item in the purchase delivery. You must hold this permission in one of the departments of the store location. By default, the Facility Admin role holds this permission. |
+| Can Create Charge Item Definition on Facility | Lets you save the item when Care also creates a charge item definition for it. You need it only in that case. You must hold this permission in Administration. By default, the Facility Admin role holds this permission. |
+| Can Read Healthcare Service | Lets you open **Services** and the service that lists the store location. You can hold this permission in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can List Facility Locations | Lets you open the store location. You must hold this permission in one of the departments of the store location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, and Pharmacist roles hold this permission. |
+| Can Read Supply Delivery | Lets you see the purchase deliveries of the store location, open one, and see its saved items. You must hold this permission in one of the departments of the store location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Read Inventory Item | Lets you see the stock of each existing batch at the store location. You must hold this permission in one of the departments of the store location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Read Product Knowledge | Lets you select a Product Knowledge in the **Product** column. You can hold this permission in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Read Product | Lets you see the existing batches of the Product Knowledge, and lets Care fill the row from them. You can hold this permission in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Read Resource Category | Lets you browse the categories in the **Product** picker, and select a **Category** in the row. You can hold this permission in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+
+The departments of a location are the departments linked to it or to a location that contains it, the parents of those departments, and Administration.
+
+Care counts only the roles that you hold in the departments of the facility.
+
+Note: Care shows **Add Item** and **Save Changes** to every user who can open a purchase delivery in **Draft**. In this flow, Care always creates a new product. If you do not hold Can Create Product on Facility in Administration, Care does not save the item. A role in another department does not count. The same applies to Can Create Charge Item Definition on Facility when Care creates a charge item definition.
 
 ## Steps
 
-You can add a product instance from two places. Use the settings screen to manage the facility catalog directly. Use the purchase delivery screen when you receive an item that Care does not know yet. Most new product instances start from a purchase delivery.
+### 1. Open the store location
 
-### 1. Open the form from facility settings
+1. Open your facility.
+2. In the sidebar, select **Services**.
+3. Select the service that lists the store location.
+4. Under **Available Locations**, select the store location.
 
-1. Open the facility.
-2. Select **Settings**.
-3. Select **Products**.
-4. Click **Add Product**.
+Care opens the location and shows the location sidebar.
 
-### 2. Open the form from a purchase delivery
+![The Available Locations of a pharmacy service, with the Pharmacy location card outlined](/media/supply/product/add-product-instance-1.png)
 
-Use this entry point when you add a delivered item that is not a known product instance.
+Note: The location card depends on the service type. For a Store service, it shows **View Inventory**. For a pharmacy service, it shows **View Prescriptions** and opens the **Prescription Queue**. In both cases, the location sidebar shows **Inventory**.
 
-1. Open the purchase delivery.
-2. Add the delivered item.
-3. Create the product instance from the same screen.
+### 2. Open Purchase Deliveries
 
-### 3. Complete the product details
+1. In the location sidebar, select **Inventory**.
+2. Under **External Supply**, select **Purchase Deliveries**.
 
-Enter the details of the batch that the facility stocks.
+![The location sidebar with Purchase Deliveries outlined under External Supply](/media/supply/product/add-product-instance-2.png)
+
+Care shows the **Inward Purchase Entries** page, with the purchase deliveries of the location.
+
+Note: If the inventory usage of the location is not **Store**, the sidebar does not show **External Supply**.
+
+### 3. Open the purchase delivery
+
+1. Select the **Created** tab.
+2. Find the purchase delivery with the status **Draft**.
+3. In its row, select **View Details**.
+
+Care opens the purchase delivery.
+
+![The Inward Purchase Entries list with the Draft purchase delivery outlined](/media/supply/product/add-product-instance-3.png)
+
+Note: You can add items only while the status of the purchase delivery is **Draft**.
+
+### 4. Add an item
+
+Under **Add delivery items**, select **Add Item**. Care adds a row and opens the **Product** picker of the row.
+
+![The purchase delivery page with the Add Item button outlined](/media/supply/product/add-product-instance-4.png)
+
+Note: With **Add Item**, you add one item at a time. To add the next item, save this item first.
+
+### 5. Select the Product Knowledge
+
+In the **Product** picker, select the Product Knowledge of the item.
+
+Care offers only Active Product Knowledge, from your facility or shared across the Care instance.
+
+![The Product picker of the new row with a Product Knowledge outlined in the search results](/media/supply/product/add-product-instance-5.png)
+
+If the facility has Active products of this Product Knowledge, Care fills the row from the most recent one.
+
+### 6. Enter the new batch number
+
+1. Select the field in the **Batch** column.
+2. If the field shows the batch number of an earlier batch, delete that number.
+3. Type the batch number of the new batch.
+4. Select the **Create batch** option that shows your batch number.
+
+![The batch list of the row with the Create batch option for the new batch number outlined](/media/supply/product/add-product-instance-6.png)
+
+The field turns green, and the row shows **New** under the field.
+
+![The row with the new batch number in the Batch column and the New badge under it](/media/supply/product/add-product-instance-7.png)
+
+Note: **Existing Batches** lists the Active products of this Product Knowledge, with their stock at this location.
+
+Note: If you select an existing batch and change only **Pack Qty**, Care uses that product and creates no new product. If you change any other value, Care creates a new product. If you keep the batch number, the new product has the same lot number.
+
+### 7. Enter the batch details
+
+Complete the other columns of the row. If Care filled the row from an earlier product, check each value against the new batch.
 
 | Components | What it captures |
 | --- | --- |
-| Product Knowledge | The catalog entry for this product. This field is required. |
-| Status | The availability of the product instance. This field is required, and defaults to Active. |
-| Lot Number | The batch number of the stock. This field is optional. |
-| Expiration Date | The date when the batch expires. This field is required. |
-| Standard Pack Size | The quantity in one standard pack. This field is optional. |
-| Purchase Price | The price that the facility pays for the product. This field is optional. |
-| Charge Item Definition | The charge that bills this product to a patient. This field is optional. |
+| Expiry | The expiration date of the new batch. Select the date. This field is required. |
+| Category | The charge item definition category of the batch. If a category has subcategories, open it. Then select a subcategory. Care applies the taxes of the category to the row. If no earlier product filled the row, this field is required. If you change the sale price, taxes, or discounts, this field is also required. |
+| Pack Size | The number of units in one pack, as a whole number of at least 1. The default is 1, or the pack size of the earlier product. |
+| Pack Qty | The number of packs that you receive, as a whole number of at least 1. This field is required. |
+| Qty | The total quantity: **Pack Qty** multiplied by **Pack Size**. Care calculates it. You cannot change it. |
+| Item Price | Under **Sale**, the sale price of one unit. This field is required. If you select **Tax Inclusive**, Care calculates the Item Price from the MRP, the tax, and the pack size. |
+| PR | Under **Purchase**, the purchase price of one unit. Care calculates it as **TPR** divided by **Pack Size**. You cannot change it. |
+| TPR | Under **Purchase**, the purchase price of one pack. Enter the price. |
+| Tax | The taxes and the discounts of the batch. Select them in the tax selector and the discount selector. |
 
-Note: You select the Product Knowledge entry one time. You cannot change it after you save the product instance.
+![The row with the Expiry, Category, Pack Size, and Pack Qty filled in, and Pack Qty outlined](/media/supply/product/add-product-instance-8.png)
 
-### 4. Save the product instance
+![The Sale and Purchase columns of the row, with TPR outlined](/media/supply/product/add-product-instance-9.png)
 
-1. Check the details that you entered.
-2. Save the form.
+Note: Your Care instance can add more columns under **Sale**, such as MRP.
+
+### 8. Save the item
+
+Select **Save Changes**. Care saves the item and shows **1 item created successfully**. The panel shows **Add delivery items** again.
+
+![The bar under the row with the Save Changes button outlined](/media/supply/product/add-product-instance-10.png)
+
+![The saved item listed under Items to Receive, with the item name outlined](/media/supply/product/add-product-instance-11.png)
+
+Care checks the row before it saves. If a value is missing, Care shows a message and does not save the item. Because you add one item at a time, the row number in these messages is 1.
+
+| If Care shows | What to do |
+| --- | --- |
+| **Please fix the errors in the highlighted fields and try submitting again.** | Make sure that you selected a Product Knowledge. Make sure that **Pack Qty** and **Pack Size** are whole numbers of at least 1. |
+| **Batch number is required at row 1** | Enter the batch number in the **Batch** column, as in step 6. |
+| **Expiry date is required at row 1** | Select a date in **Expiry**. |
+| **Category is required at row 1** | Select a **Category**. |
+| **Unit price is required at row 1** | Enter the **Item Price**. |
+| **This item could not be saved. Your changes are still here; try saving again.** | Check the row. Then select **Save Changes** again. Care does not create the product a second time for this row. If you do not hold the permissions listed above, ask your facility administrator for them. |
 
 ## Expected Outcome
 
-- Care adds the product instance to the facility.
-- The product instance is available when you record a delivered item.
-- If you started from a purchase delivery, the new product instance applies to the delivered item.
+- Care creates a new product with the status **Active**. It takes its lot number from the **Batch** column, and its expiration date, pack size, and purchase price from the row.
+- Care also creates a charge item definition for the new product in these cases:
+  - The earlier product that filled the row has a charge item definition.
+  - No earlier product filled the row.
+  - You changed a charge item value in the row, such as the category, sale price, taxes, or discounts.
+- In all other cases, the new product has no charge item definition.
+- The new charge item definition is **Active**. Its title is the title of the earlier product's charge item definition. If there is none, the title is the Product Knowledge name and the batch number.
+- The item shows under **Items to Receive** with the status **In Progress** and the condition **Normal**.
+- The item name links to the product in **Settings**, in the **Inventory** group, under **Product**.
+- The new product shows at the top of the **Products** list in **Settings**.
+- The stock at the store location does not change yet. The stock increases when you receive and complete the purchase delivery. See [Receive and complete a purchase delivery](../purchase-delivery/receive-purchase-delivery.mdx).
 
 ## Related
 
 Concepts:
 
 - [Product](../../../concepts/supply/product.mdx)
+- [Product Knowledge](../../../concepts/definitions/product-knowledge.mdx)
 - [Purchase Delivery](../../../concepts/supply/purchase-delivery.mdx)
+- [Charge Item Definition](../../../concepts/definitions/charge-item-definition.mdx)
 
 Flows:
 
-- [Edit a product instance](./edit-product-instance.mdx)
+- [Create a purchase delivery](../purchase-delivery/create-purchase-delivery.mdx)
+- [Add delivered items to a purchase delivery](../purchase-delivery/add-items-purchase-delivery.mdx)
+- [Receive and complete a purchase delivery](../purchase-delivery/receive-purchase-delivery.mdx)
+- [Edit a product](./edit-product-instance.mdx)
