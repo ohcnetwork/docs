@@ -2,14 +2,14 @@
 sidebar_position: 2
 ---
 
-# Design what a workspace shows on encounters
+# Set up the encounter screen with a workspace
 
 ## Overview
 
-This flow describes how to design the tabs and sections that a [workspace](../../../concepts/platform/workspace.mdx) shows on an [encounter](../../../concepts/clinical/encounter.mdx). You start from a ready-made starter, change the tabs, layouts and sections, check the result in a preview, and then save it.
+This flow describes how to set up what a [workspace](../../../concepts/platform/workspace.mdx) shows on an [encounter](../../../concepts/clinical/encounter.mdx): its tabs, their layouts and sections, and for each section the title that users see, its options and when it shows. You start from a ready-made starter, arrange the tabs and sections, set up each section, check the result in a preview, and then save it.
 
-<video src="/media/platform/workspace/design-a-workspace-encounter-screen.mp4" poster="/media/platform/workspace/design-a-workspace-encounter-screen.poster.png" controls width="720">
-  <track kind="captions" src="/media/platform/workspace/design-a-workspace-encounter-screen.vtt" srcLang="en" label="English" default />
+<video src="/media/platform/workspace/set-up-the-encounter-screen.mp4" poster="/media/platform/workspace/set-up-the-encounter-screen.poster.png" controls width="720">
+  <track kind="captions" src="/media/platform/workspace/set-up-the-encounter-screen.vtt" srcLang="en" label="English" default />
 </video>
 
 ## Pre-requisites
@@ -27,14 +27,16 @@ This flow describes how to design the tabs and sections that a [workspace](../..
 | Can Create/Update Workspaces | For a **Department workspace**: save the design. You need this permission through a role in the owner department or in a department above it. A role only in Administration is not enough, unless Administration is the owner department. By default, only the Facility Admin role has it in a facility. |
 | Can Create/Update Workspaces | For a **Personal workspace**: save the design. You need this permission through a role in any department or team of the facility, or in its Administration. You must also be the person who created the workspace. By default, only the Facility Admin role has it in a facility. |
 | Can Read Workspaces | For a **Department workspace**: open the workspace. You need this permission through a role in the owner department or in a department above it. A role only in Administration is not enough, unless Administration is the owner department. By default, the Facility Admin, Administrator, Doctor, Nurse, Pharmacist, Staff and Volunteer roles have it in a facility. |
+| Can View Organizations | For a Questionnaire Responses section: choose an **Author role**. The list shows a role organization only if you hold this permission through a role in it. A role in an organization above it also counts. A role in a department of the facility does not count. Without such a role, the list is empty. By default, the Admin, Manager and Member roles of role organizations have it. |
 
 With the default roles, this means:
 
-- A Facility Admin in Administration can design a Facility workspace.
-- A Facility Admin in the owner department, or in a department above it, can design a Department workspace.
+- A Facility Admin in Administration can set up a Facility workspace.
+- A Facility Admin in the owner department, or in a department above it, can set up a Department workspace.
 - A Doctor in the owner department can open a Department workspace, but Care refuses to save changes to it.
 - A Facility Admin whose only role is in Administration cannot open a Department workspace that another department owns.
-- Only the person who created a Personal workspace can design it. That person also needs Can Create/Update Workspaces somewhere in the facility.
+- Only the person who created a Personal workspace can set it up. That person also needs Can Create/Update Workspaces somewhere in the facility.
+- The **Author role** list depends on roles in organizations, not on roles in departments. See [Organisation](../../../concepts/access-governance/organization.mdx).
 
 To give someone a role in a department, see [Add users to a department](../../../flows/facility/department/add-users-to-department.mdx).
 
@@ -60,7 +62,7 @@ Note: After you create a workspace, Care opens this page for you.
 
 Note: The list shows only the workspaces that you can see. If the workspace is not in the list, check the permissions above.
 
-![The Draft tab of the Workspaces list of City General Hospital, with the workspace Morning rounds outlined](/media/platform/workspace/design-a-workspace-encounter-screen-1.png)
+![The Draft tab of the Workspaces list of City General Hospital, with the workspace Morning rounds outlined](/media/platform/workspace/set-up-the-encounter-screen-1.png)
 
 ### 2. Choose a starter
 
@@ -79,7 +81,7 @@ Note: A starter changes nothing for users until you save.
 
 After the workspace has a design, two buttons in the **Design** area choose the screen: **Encounter** and **Clinical history**. This flow covers **Encounter**. For the other screen, see [Design a workspace's clinical history screen](./design-a-workspace-clinical-history.mdx).
 
-![The starter picker What would you like to design?, with Blank outlined](/media/platform/workspace/design-a-workspace-encounter-screen-2.png)
+![The starter picker What would you like to design?, with Blank outlined](/media/platform/workspace/set-up-the-encounter-screen-2.png)
 
 ### 3. Arrange the tabs
 
@@ -124,7 +126,7 @@ A built-in tab shows "This tab is built into CARE". You can show, hide or move i
 
 The **Overview** tab is the only built-in tab that offers **Customise this tab**. Select it to add or move sections on that tab. The tab keeps the same name and address.
 
-![The Add tab menu open under Built-in tabs, with Notes outlined](/media/platform/workspace/design-a-workspace-encounter-screen-3.png)
+![The Add tab menu open under Built-in tabs, with Notes outlined](/media/platform/workspace/set-up-the-encounter-screen-3.png)
 
 ### 4. Choose the layout of a tab
 
@@ -143,7 +145,7 @@ A layout is not available if a column then holds more than 50 sections.
 
 If a tab shows "Custom widths from JSON. Pick a layout to standardise them.", select a layout to use standard widths.
 
-![The Overview tab with the Layout row outlined and Main + side selected, showing the Main and Side columns](/media/platform/workspace/design-a-workspace-encounter-screen-4.png)
+![The Overview tab with the Layout row outlined and Main + side selected, showing the Main and Side columns](/media/platform/workspace/set-up-the-encounter-screen-4.png)
 
 ### 5. Add sections
 
@@ -199,7 +201,7 @@ If no section matches your search, Care shows "No widgets match your search."
 
 A column holds at most 50 sections. A workspace holds at most 200 sections across the **Encounter** and **Clinical history** screens.
 
-![The Add a section dialog with Vitals typed in Search sections and the Vitals section outlined](/media/platform/workspace/design-a-workspace-encounter-screen-5.png)
+![The Add a section dialog with Vitals typed in Search sections and the Vitals section outlined](/media/platform/workspace/set-up-the-encounter-screen-5.png)
 
 ### 6. Arrange the sections
 
@@ -211,11 +213,97 @@ To copy a section, select **Duplicate** in its menu.
 
 To remove a section, select **Remove section** in its menu.
 
-To change the title, options or visibility of a section, select its title or its settings button (sliders icon). See [Set what a section shows and when](./set-what-a-section-shows.mdx).
+![The menu of the Questionnaire Responses section open, with Move up outlined](/media/platform/workspace/set-up-the-encounter-screen-6.png)
 
-![The menu of the Diagnoses section open, with Move up outlined](/media/platform/workspace/design-a-workspace-encounter-screen-6.png)
+### 7. Set the title and options of a section
 
-### 7. Preview the design
+To set up a section, select its title, or the settings button (sliders icon) beside the title.
+
+Care opens the section settings panel. Its heading is the name of the section, with the description of the section below it.
+
+The panel can show one or more of the badges below. They tell you when the section shows.
+
+| Badge | What it means |
+| --- | --- |
+| **Requires an active encounter. Automatically hidden when closed.** | The section shows only while the encounter is active. |
+| **Patient-level: works without an active encounter** | The section shows the patient's records and needs no encounter. |
+| **Works on history pages** | With an encounter, the section shows the records of that encounter. Without one, it shows the patient's records. |
+| **Editors only: hidden for read-only users** | The section hides for people who cannot make changes to the encounter, and outside a facility. |
+| **Editors only: hidden for read-only users, except referral shortcuts** | Shown on Quick Actions. The section hides for read-only users, except for its referral shortcuts. |
+
+In **Title shown to users**, enter the title that users see. Use at most 120 characters.
+
+To use the default title of the section, leave the field empty.
+
+If the section has options, they show under **Options**. Set them as the table below describes.
+
+| Section | Options |
+| --- | --- |
+| Vitals | **Vital signs to show**: up to 20 observation codes. Use **Quick add from observation charts** or **Add another observation code**. If you choose none, the section shows the standard vital signs. |
+| Questionnaire Responses | **Form slug**, **Form responses only**, **Author role**, **Submitted by** and **Latest results**. **Submitted by** offers **Anyone** or **The person viewing**. |
+| Service Requests | **Request status** and **Latest results**. |
+| Recent orders | **Category**, **Include completed orders**, **Include orders on hold** and **Latest results**. |
+| Current medication | **Medication sources** and **Latest results**. **Medication sources** offers **Prescriptions and outside medications**, **Prescriptions only** or **Outside medications only**. |
+| Recent encounters | **Care team filter**, **Care team member username**, **Encounter Class**, **Status**, **Hide the encounter being viewed** and **Latest results**. **Care team filter** offers **All encounters** or **My encounters**. |
+| Referrals | **Filter referrals by status**, **Assigned to me** and **Latest results**. The section shows 5 referrals if you set no number. |
+| Observation chart | **Chart set**, **Charts to show** (up to 20), **Chart height** (120 to 600 pixels) and **Charts per row** (1 or 2). |
+| Encounter summary | **Tabs to show**: which tabs of the summary to show. **Open on**: the tab that opens first. It must be one of the tabs that you show. |
+| All other built-in sections | No options. The panel shows "This widget has no configuration options. Existing custom settings are preserved." |
+
+In **Latest results**, enter a number from 1 to 100. For Recent encounters, the number is from 1 to 20. If you leave it empty, more results keep loading, except for Referrals.
+
+If **Open on** is not one of the tabs that you show, Care shows "Choose one of the selected tabs as the default tab."
+
+Note: If Encounter summary shows only its actions tab, it needs an encounter that the viewer can change.
+
+Note: The chart sets for Vitals and Observation chart come from the observation charts configuration of your deployment.
+
+Note: For **Author role**, you choose from role organizations. See the Permissions section above.
+
+![The section settings panel of Questionnaire Responses, with Round notes in Title shown to users, and the Options outlined: Submitted by set to The person viewing and Latest results set to 5](/media/platform/workspace/set-up-the-encounter-screen-7.png)
+
+### 8. Choose when the section shows
+
+This step is for the **Encounter** screen only.
+
+Under **When to show**, select an option in **Show this section**.
+
+| Option | The section shows |
+| --- | --- |
+| **Whenever it has something to show** | Whenever the section has something to show. No status filter applies. |
+| **Only while the encounter is active** | When the encounter has any status that counts as active. |
+| **Only after the encounter is closed** | When the encounter has any status that counts as closed. This option is not available for a section that needs an active encounter. |
+| **Only for specific encounter statuses…** | When the encounter has one of the statuses that you select. |
+
+If you select **Only for specific encounter statuses…**, Care shows a checkbox for each encounter status. Select the statuses. You cannot clear the last selected status.
+
+Care also hides a section in the cases below. In the preview, a hidden section shows "Hidden in this view" and the reason.
+
+| Reason | When it applies |
+| --- | --- |
+| **Requires an encounter** | The section needs an encounter, and there is none. |
+| **Requires an active encounter. Automatically hidden when closed.** | The section needs an active encounter, and the encounter is closed. |
+| **Hidden by the configured encounter-status filter** | The status of the encounter is not one that you selected. |
+| **Hidden when this encounter is read-only or outside a facility** | The section is for people who can make changes to the encounter. The viewer cannot make changes, or the page is outside a facility. |
+| **Hidden because no installed app adds content here** | The section is App overview content, and no installed app adds content to it. |
+
+A section that the viewer may not read does not hide. It shows "You do not have permission to view clinical data for this encounter" and "Contact your administrator to grant you access."
+
+To check your choice, select **Closed encounter** in the preview. See step 10.
+
+![The Show this section list open under When to show, with Only while the encounter is active outlined](/media/platform/workspace/set-up-the-encounter-screen-8.png)
+
+### 9. Close the section settings
+
+To edit the settings of the section as JSON, open **Advanced configuration**. If the text is not a valid JSON object, Care shows "Enter a valid JSON object before saving the workspace."
+
+Select **Done**.
+
+**Done** is not available while a setting is not valid.
+
+To remove the section from the design, select **Remove section**.
+
+### 10. Preview the design
 
 The canvas is a layout preview with sample content. It loads no patient records.
 
@@ -241,9 +329,9 @@ A section that the preview hides shows "Hidden in this view" and the reason.
 
 A column that the preview hides reads "Whole column hidden in this view; the other columns widen". An empty column reads "Not shown to users while empty".
 
-![The design previewed as Closed encounter: the Quick Actions section reads Hidden in this view: Requires an active encounter, outlined](/media/platform/workspace/design-a-workspace-encounter-screen-7.png)
+![The design previewed as Closed encounter: the Round notes section reads Hidden in this view: Hidden by the configured encounter-status filter, outlined, and the Side column with Quick Actions is hidden](/media/platform/workspace/set-up-the-encounter-screen-9.png)
 
-### 8. Edit the design as JSON (optional)
+### 11. Edit the design as JSON (optional)
 
 If you prefer to edit the design as text, select the more options button (⋯) in the toolbar. Then select **Edit as JSON (advanced)**.
 
@@ -257,11 +345,13 @@ If the text is not a JSON object, Care does not save it. It shows "Enter valid J
 
 If the design is not a valid layout, Care opens it in the JSON editor and shows "This configuration needs the JSON editor. Its content is preserved. Use a valid encounter page configuration to return to the visual editor."
 
-### 9. Save the design
+### 12. Save the design
 
 Select **Save Changes**.
 
 **Save Changes** is available only when you have changes, nothing is saving, and every section setting is valid.
+
+If a section setting is not valid, Care names the section and asks you to correct it before you save.
 
 On a wide screen, the header shows "Unsaved configuration changes" or "No changes to save".
 
@@ -273,15 +363,15 @@ If you leave the page before you save, Care asks "You have unsaved changes. Leav
 
 Note: If the workspace is **Active**, people who chose it see the new design after you save. To work on the design out of view, set its status to **Draft** first. While the workspace is **Draft**, Care does not use it on the encounters of the people who chose it. See [Publish, hold back or archive a workspace](./publish-or-archive-a-workspace.mdx).
 
-![The message Workspace updated after selecting Save Changes](/media/platform/workspace/design-a-workspace-encounter-screen-8.png)
+![The message Workspace updated after selecting Save Changes](/media/platform/workspace/set-up-the-encounter-screen-10.png)
 
 ## Expected Outcome
 
 - Care saves the design and shows "Workspace updated".
-- If the workspace is **Active**, people who chose it see its tabs on their encounters, in your order.
+- If the workspace is **Active**, people who chose it see its tabs on their encounters, in your order, and each section with the title and options that you set.
 - A built-in tab shows the standard Care tab. Every other tab shows your sections.
 - A hidden tab stays in the design, but users do not see it.
-- A section that does not apply to the encounter is not shown. Columns that become empty collapse, and the other columns widen.
+- A section shows only when your **When to show** choice and the rules of the section allow it. When a section is hidden, columns that become empty collapse, and the other columns widen.
 - If every tab is hidden, people who chose the workspace see "This workspace has no visible pages."
 - The clinical history of a patient keeps the standard tabs until you design that screen.
 
@@ -292,11 +382,11 @@ Concepts:
 - [Workspace](../../../concepts/platform/workspace.mdx)
 - [Encounter](../../../concepts/clinical/encounter.mdx)
 - [Department](../../../concepts/facility/department.mdx)
+- [Organisation](../../../concepts/access-governance/organization.mdx)
 
 Flows:
 
 - [Create a workspace](./create-a-workspace.mdx)
-- [Set what a section shows and when](./set-what-a-section-shows.mdx)
 - [Design a workspace's clinical history screen](./design-a-workspace-clinical-history.mdx)
 - [Publish, hold back or archive a workspace](./publish-or-archive-a-workspace.mdx)
 - [Choose the workspace you use on encounters](./choose-your-encounter-workspace.mdx)
