@@ -40,6 +40,8 @@ cd "$S/media/narration"
 python3 make_plan.py --draft          # script/<slug>.txt for each flow: one caption-only line per caption
 ```
 
+The scripts read `../out/<slug>.vtt` and `../out/<slug>.mp4`. When the recordings ran with `EZ_OUT=out/<slug>` (one folder per flow, as "Several recorders at once" in `media.md` has it), link the files up first: `cd "$S/media/out" && ln -sfn <slug>/<slug>.vtt <slug>.vtt && ln -sfn <slug>/<slug>.mp4 <slug>.mp4`.
+
 Write the script of each flow in `script/<slug>.txt`: extend each line with its context, as "What the voice says" describes, and keep one line per caption, in order. Send the scripts to the user before you make any speech: a changed line costs a new clip. Then make the plan:
 
 ```bash
