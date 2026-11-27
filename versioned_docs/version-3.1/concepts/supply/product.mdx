@@ -6,87 +6,108 @@ sidebar_position: 1
 
 ## Definition
 
-Care keeps two kinds of records for every item that a facility stocks or dispenses. A **Product Knowledge** entry is the catalog definition of a type of product, for example "Paracetamol 500mg tablet". A **Product** is one facility's stocked batch of that catalog entry, with its own lot number, expiry date, and purchase price.
+A **Product** in Care is one batch of a [Product Knowledge](../definitions/product-knowledge.mdx) that your facility holds, with its own lot number, expiration date, pack size, and purchase price.
 
-Note: Care does not map these two records to a single named FHIR R5 resource.
+Product Knowledge describes what an item is, for example a medication. A product records one batch of that item that your facility received from a supplier.
+
+Care creates products when you receive stock in a purchase delivery.
 
 ## Key Attributes
 
+| Components | What it captures |
+| --- | --- |
+| Product Knowledge | The Product Knowledge that the product is a batch of. Care sets it when it creates the product, and you cannot change it later. |
+| Lot Number | The manufacturing lot or batch number. When you receive stock, you enter it in the **Batch #** field. |
+| Expiration Date | The date after which the product should not be used. When you receive stock, you enter it in the **Expiry** column. |
+| Standard Pack Size | The pack size of the batch. Care takes it from the **Pack Size** column of the delivery row. |
+| Purchase Price | The purchase price of the batch. Care takes it from the **Purchase** columns of the delivery row. |
+| Charge Item Definition | The [charge item definition](../definitions/charge-item-definition.mdx) that Care uses to price the product when it bills a patient. This field is optional. |
+| Status | Active, Inactive, or Entered in Error. See Status below. |
+
 ### Product Knowledge
 
-| Components | What it captures |
-| --- | --- |
-| Name | The name of the catalog entry. This is required. |
-| Slug | A short unique code that identifies the catalog entry. This is required. |
-| Product Type | The kind of product: Medication, Nutritional Product, or Consumable. This is required. |
-| Category | The group that the catalog entry belongs to. This is required. |
-| Code | A standard medical code for the product. This is optional. |
-| Base Unit | The unit that measures the product, for example tablet or millilitre. This is required. |
-| Status | The stage of the catalog entry. This is required. |
-| Alternate Identifier | Another identifier for the product. This is optional. |
-| Alternate names | Trade names and other aliases of the product. This is optional. |
-| Storage guidelines | The instructions to store the product. This is optional. |
+Each product belongs to one Product Knowledge. One Product Knowledge can have many products, such as the different batches that your facility receives.
 
-### Product
+A product can use a Product Knowledge of your facility, or one that is shared across the whole Care instance.
 
-| Components | What it captures |
-| --- | --- |
-| Status | The stage of the stocked batch. This is required. |
-| Product Knowledge | The catalog entry that the batch belongs to. This is required. You select it when you create the product, and you cannot change it later. |
-| Lot Number | The batch number that the supplier prints on the product. This is optional. |
-| Expiration Date | The date that the batch expires on. This is required. |
-| Standard Pack Size | The number of base units in one pack. This is optional. |
-| Purchase Price | The price that the facility paid for the product. This is optional. |
-| Charge Item Definition | The price that Care uses to bill this product to a patient. This is optional. |
+You manage Product Knowledge in **Settings**, in the **Inventory** group, under **Product Knowledge**. For its attributes and statuses, see [Product Knowledge](../definitions/product-knowledge.mdx).
 
-## Status
+### Where you see products
 
-Product Knowledge and Product use different status values.
+You see the products of your facility in **Settings**, in the **Inventory** group, under **Product**. From the **Products** list, you can view or edit each product.
 
-### Product Knowledge status
+The edit form does not show the Product Knowledge field. Care has no delete action for products.
+
+### How Care creates a product
+
+You do not create a product in **Settings**. Care creates products when you receive stock from a supplier in **Purchase Deliveries**.
+
+**Purchase Deliveries** is in the **Inventory** menu of a store location, under **External Supply**. You can add items to a purchase delivery while its status is **Draft**.
+
+In each row, you select a Product Knowledge in the **Product** column. Care then fills the row from the most recent Active product of that Product Knowledge in your facility.
+
+When you select **Save Changes**, Care creates a new product for a row in these cases:
+
+- Your facility has no Active product of that Product Knowledge.
+- You change the batch details in the row: the batch number, expiration date, pack size, prices, taxes, or discounts.
+
+When you type a new batch number or change the expiration date, the row shows **New**.
+
+The new product is Active. It takes its lot number, expiration date, pack size, and purchase price from the row.
+
+Care can also create a new charge item definition for the new product. It copies the charge item definition of the product that filled the row, if that product has one. If no product filled the row, or you change the **Item Price**, taxes, or discounts, Care takes the prices from the row.
+
+A transfer between two locations of your facility does not create a product. It uses stock that already exists.
+
+### Stock and billing
+
+An [inventory item](./inventory-item.mdx) counts how much of one product is in stock at one location. Care creates it the first time the product arrives at that location.
+
+When staff dispense a medication from stock whose product has a charge item definition, Care creates a charge item for the dispensed quantity. The charge item is Billable, and Care adds it to the patient's default account.
+
+If the product has no charge item definition, Care creates no charge item for the dispense.
+
+When a patient returns dispensed items and the return is completed, Care creates a refund charge item from the charge item definition of each returned product. Care skips a product that has no charge item definition.
+
+### Status
 
 | Status | Description |
 | --- | --- |
-| Draft | The catalog entry is not ready for use. |
-| Active | Staff can use the catalog entry. |
-| Retired | The catalog entry is no longer in use. |
+| Active | Care offers the product as an existing batch when you receive stock. |
+| Inactive | Care keeps the product, but does not offer it when you receive stock. |
+| Entered in Error | Care keeps the product, but does not offer it when you receive stock. |
 
-### Product status
+Note: The **Products** list shows only Active products until you change the **Status** filter.
 
-| Status | Description |
-| --- | --- |
-| Active | The facility stocks and dispenses this batch. |
-| Inactive | The facility no longer uses this batch. |
-| Entered in Error | Someone created this batch by mistake. |
-
-Note: Care has no delete action for these records. Retire a catalog entry, or set a product to Inactive or Entered in Error.
-
-## Ownership and Sharing
-
-A product always belongs to one catalog entry and one facility. A catalog entry is either global or private. A superuser manages global catalog entries, and all facilities share them. A facility admin manages the private catalog entries of that facility.
-
-## How Products Connect to Stock
-
-An inventory item tracks how much of a product is in stock at one location. Staff most often create a new product while they receive a purchase delivery. When a delivered item is not already in stock, the person who receives the delivery creates the product record for that batch, expiry date, and price.
-
-You can link a product to a charge item definition. Care then creates a billable charge item when staff dispense the product.
+Note: To stop Care from offering a product when you receive stock, edit the product. Set its status to Inactive or Entered in Error.
 
 ## Permissions
 
-Permissions apply within a facility.
+| Permission | Access |
+| --- | --- |
+| Can Create Product on Facility | Edit a product, and save a purchase delivery row that creates a new product. Care checks this permission in the facility's root organization, Administration. By default, the Facility Admin role holds this permission. |
+| Can Read Product | See the products of your facility in **Settings** and open each product. In a purchase delivery row, see the existing batches of a Product Knowledge. Care checks this permission in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Read Product Knowledge | Select a Product Knowledge in a purchase delivery row. Care checks this permission in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Read Resource Category | Browse the categories in the Product Knowledge and charge item definition pickers, and select a **Category** in a purchase delivery row. Care checks this permission in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Read Charge Item Definition | Select a charge item definition in the product edit form. Care checks this permission in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Create Charge Item Definition on Facility | Save a purchase delivery row for which Care creates a charge item definition, or save a new charge item definition from **Create New** in the product edit form. Care checks this permission in the facility's root organization, Administration. By default, the Facility Admin role holds this permission. |
+| Can List Facility Locations | Open the store location that holds **Purchase Deliveries**. Care checks this permission in the departments of that location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, and Pharmacist roles hold this permission. |
+| Can Read Supply Delivery | Open a purchase delivery of the store location. Care checks this permission in the departments of that location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Read Inventory Item | In a purchase delivery row, see the stock of each existing batch at the store location. Care checks this permission in the departments of that location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Create External Supply Delivery on Facility | Save the items of a purchase delivery. Care checks this permission in the departments of the store location. By default, the Facility Admin role holds this permission. |
 
-| Permission | Roles | What it allows |
-| --- | --- | --- |
-| Can Create Product Knowledge on Facility | Facility Admin, Admin | Create and edit catalog entries. |
-| Can Create Product on Facility | Facility Admin, Admin | Create and edit products. |
-| Can Read Product Knowledge | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist | View catalog entries. |
-| Can Read Product | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist | View products. |
+The departments of a location are the departments linked to it or to a location that contains it, the parents of those departments, and the root organization.
+
+Care counts only the roles that you hold in the facility's departments. Care shows **Edit** to every user who can open a product. If you hold Can Create Product on Facility only in a department other than the root organization, Care does not save your changes.
 
 ## Related
 
-- Flow: [Add a product to the catalog](../../flows/supply/product/add-product-to-catalog.mdx)
-- Flow: [Edit or retire a catalog entry](../../flows/supply/product/edit-retire-catalog-entry.mdx)
-- Flow: [Add a product instance](../../flows/supply/product/add-product-instance.mdx)
+- Flow: [Create product knowledge](../../flows/supply/product/add-product-to-catalog.mdx)
+- Flow: [Update or retire product knowledge](../../flows/supply/product/edit-retire-catalog-entry.mdx)
+- Flow: [Add delivered items to a purchase delivery](../../flows/supply/purchase-delivery/add-items-purchase-delivery.mdx)
 - Flow: [Edit a product instance](../../flows/supply/product/edit-product-instance.mdx)
-- Concept: [Inventory Item](../../concepts/supply/inventory-item.mdx)
-- Concept: [Purchase Delivery](../../concepts/supply/purchase-delivery.mdx)
+- Concept: [Product Knowledge](../definitions/product-knowledge.mdx)
+- Concept: [Inventory Item](./inventory-item.mdx)
+- Concept: [Purchase Delivery](./purchase-delivery.mdx)
+- Concept: [Charge Item Definition](../definitions/charge-item-definition.mdx)
+- Reference: [Product](../../references/supply/product.mdx)
