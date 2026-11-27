@@ -124,6 +124,9 @@ Name it `<flow-slug>.demo.ts`. Start from `example.demo.ts`.
 - Never use `page.evaluate` or a direct API call to do a step of the flow.
 - After typing into a search or picker, wait for the options and click one. Do not press Enter blind.
 - Use only keyboard shortcuts that the page documents.
+- To replace the value of a field, click it, call `locator.selectText()`, then type. On 28 November 2026 `pointer.type(..., { clear: true })` and End plus Backspace both left a number input untouched in headless Chromium, so "12" became "1012" on camera and was saved.
+- A button that shows a shortcut badge has the badge letter in its accessible name ("Add Item A"). Match it with a regex anchored at the label, ``new RegExp(`^${t("add_item")}( |$)`)``, not with `exact: true`. A picker option can carry its category in its name too ("Paracetamol Medications"); read the error context's snapshot for the real name.
+- Rehearse a flow that saves before you record it: put the final click behind a flag (`if (process.env.EZ_DRY === "1") return;`) and run it with `EZ_DRY=1 EZ_SHOTS_ONLY=1` until it passes. A failed take after a save leaves records behind, and some links cannot be undone through the product (on 28 November 2026 a product's charge item definition could not be unlinked), so a retake then needs new records.
 
 **Own your data.**
 
