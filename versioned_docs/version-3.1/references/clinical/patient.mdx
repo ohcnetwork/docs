@@ -4,21 +4,32 @@ sidebar_position: 1
 
 # Patient
 
-Technical reference for the `Patient` module in Care EMR. For a product-oriented overview, see the [Patient concept](../../concepts/clinical/patient).
+Technical reference for the `Patient` module in Care EMR. For what a patient is and who can work with patients, see the [Patient concept](../../concepts/clinical/patient).
 
-**Source:** [`care/emr/models/patient.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/patient.py)
+The Django model is the storage layer. Several `Patient` columns are JSON fields, and several are caches that Care rebuilds. The model alone does not show what a request must contain.
+
+The Pydantic resource specs are the API layer. They define the enums, the validation, and the request and response shapes.
+
+Source files:
+
+- Model: [`care/emr/models/patient.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/patient.py)
+- Patient specs: [`care/emr/resources/patient/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/patient/spec.py)
+- Identifier config specs: [`care/emr/resources/patient_identifier/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/patient_identifier/spec.py)
+- API: [`care/emr/api/viewsets/patient.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/patient.py) and [`care/emr/api/viewsets/patient_identifier.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/patient_identifier.py)
+- Authorization: [`care/security/authorization/patient.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/authorization/patient.py)
+- Permissions: [`care/security/permissions/patient.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/permissions/patient.py)
 
 ## Models
 
 | Model | Purpose |
 | --- | --- |
-| `Patient` | Core patient record |
+| `Patient` | A person registered in Care: demographics, contact details, geo organization, and caches for access, identifiers and tags |
 | `PatientOrganization` | Links a patient to an `Organization` |
-| `PatientUser` | Grants a `User` access to a patient with a `RoleModel` |
-| `PatientIdentifierConfig` | Defines identifier types (instance-wide or per-facility) |
-| `PatientIdentifier` | Stores an identifier value for a patient |
+| `PatientUser` | Assigns a user to one patient with a role |
+| `PatientIdentifierConfig` | Defines one identifier, deployment-wide (no facility) or for one facility |
+| `PatientIdentifier` | Stores a patient's value for one identifier config |
 
-All models extend `EMRBaseModel` (shared Care EMR base with `external_id`, audit fields, and soft-delete semantics).
+All five models extend [`EMRBaseModel`](../foundation/base-model.mdx), which gives `external_id`, audit fields, `history`, `meta` and soft delete.
 
 ## `Patient` fields
 
@@ -26,110 +37,485 @@ All models extend `EMRBaseModel` (shared Care EMR base with `external_id`, audit
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `name` | `CharField(200)` | Display name |
-| `gender` | `CharField(35)` | Administrative gender |
-| `date_of_birth` | `DateField` | Nullable; preferred when known |
-| `year_of_birth` | `IntegerField` | Min 1900; used when full DOB is unknown. Auto-set from `date_of_birth` on save |
-| `deceased_datetime` | `DateTimeField` | Set when patient is marked deceased; affects age calculation |
-| `blood_group` | `CharField(16)` | |
+| `name` | `CharField(200)`, default empty | The patient's full name. The API limits it to `PATIENT_NAME_MAX_LENGTH` characters (default 75) |
+| `gender` | `CharField(35)`, default empty | The patient's sex. API: one of the `GenderChoices` values below; required on create |
+| `date_of_birth` | `DateField`, nullable | Optional in the API. When a request gives `age`, Care clears the date of birth |
+| `year_of_birth` | `IntegerField`, nullable | Set from `age` (current year minus age) or from `date_of_birth`. On save, filled from `date_of_birth` when empty. The model declares a minimum of 1900, but API writes do not enforce it: a create with `age` 200 is accepted |
+| `deceased_datetime` | `DateTimeField`, nullable | The time of death. API: optional, timezone-aware and not in the future. Age calculations end at this time |
+| `blood_group` | `CharField(16)` | API: optional, one of the `BloodGroupChoices` values below |
 
-### Contact & address
-
-| Field | Type | Notes |
-| --- | --- | --- |
-| `phone_number` | `CharField(14)` | Validated with `mobile_or_landline_number_validator` |
-| `emergency_phone_number` | `CharField(14)` | Same validator |
-| `address` | `TextField` | Current address |
-| `permanent_address` | `TextField` | |
-| `pincode` | `IntegerField` | Nullable |
-
-### Organization & access caches
-
-These are **denormalized caches** rebuilt on every `Patient.save()` for fast filtering without deep joins.
-
-| Field | Type | Rebuilt by |
-| --- | --- | --- |
-| `geo_organization` | `FK → Organization` | Geographic/administrative org assignment |
-| `organization_cache` | `ArrayField[int]` | `rebuild_organization_cache()` — includes `geo_organization` parent chain and all linked `PatientOrganization` orgs |
-| `users_cache` | `ArrayField[int]` | `rebuild_users_cache()` — user IDs from `PatientUser` rows |
-
-### Identifiers & tags
+### Contact and address
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `instance_identifiers` | `JSONField` | List of `{config, value}` built from `PatientIdentifier` rows (instance-scoped configs) |
-| `facility_identifiers` | `JSONField` | Dict keyed by `facility_id` → list of `{config, value}` |
-| `instance_tags` | `ArrayField[int]` | Instance-level tag IDs |
-| `facility_tags` | `JSONField` | Dict keyed by facility → tag IDs |
-| `extensions` | `JSONField` | Open extension bag for deployment-specific metadata |
+| `phone_number` | `CharField(14)`, `validators=[mobile_or_landline_number_validator]`, default empty | The patient's phone number. API: required on create, at most 14 characters, validated as a phone number and stored in E.164 format, with no default region. A number without a country code is refused |
+| `emergency_phone_number` | `CharField(14)`, same validator, default empty | API: optional, with the same validation as `phone_number`. An empty string is refused |
+| `address` | `TextField`, default empty | The patient's current address. API: optional |
+| `permanent_address` | `TextField`, default empty | API: optional |
+| `pincode` | `IntegerField`, nullable, model default `0` | The PIN code. API: optional. Care stores an empty or 0 value as empty |
 
-Identifier values live in `PatientIdentifier` and are materialized into the JSON caches via `build_instance_identifiers()` and `build_facility_identifiers(facility_id)`.
+### Geo organization and access caches
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `geo_organization` | `FK → Organization`, nullable, `SET_NULL` | The patient's geo organization. API: the id (UUID) of an organization of type `govt`; required on create, optional on update |
+| `organization_cache` | `ArrayField(IntegerField)`, default empty | Platform-maintained, rebuilt on every save from the geo organization and its parent organizations. Access checks compare it with the organizations where a user has a role. No API creates `PatientOrganization` links |
+| `users_cache` | `ArrayField(IntegerField)`, default empty | Platform-maintained, rebuilt on every save. The ids of the users assigned to the patient |
+
+### Identifiers, tags and extensions
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `instance_identifiers` | `JSONField`, list, nullable | Platform-maintained. One entry per value of a deployment-wide identifier config, with `config` (the config id) and `value` |
+| `facility_identifiers` | `JSONField`, object, nullable | Platform-maintained. Keyed by facility id. Each value is a list of entries with `config` and `value` for that facility's identifier configs |
+| `instance_tags` | `ArrayField(IntegerField)`, default empty | Ids of the deployment-wide tag configs applied to the patient |
+| `facility_tags` | `JSONField`, object, nullable | Keyed by facility id. Each value is that facility's list of tag config ids |
+| `tags_data` | `JSONField`, default empty | Tag expiry data |
+| `extensions` | `JSONField`, default empty | Extension data, checked per key on write (see API integration notes) |
+
+### Inherited from `EMRBaseModel`
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `external_id` | `UUIDField`, unique | The patient id in the API |
+| `created_date` | `DateTimeField` | Set when the record is created |
+| `modified_date` | `DateTimeField` | Set on every save |
+| `created_by`, `updated_by` | `FK → User`, nullable, `SET_NULL` | The users who created and last updated the record |
+| `deleted` | `BooleanField`, default false | Soft delete. Deleting sets the flag and keeps the row; the default manager hides such rows |
+| `history`, `meta` | `JSONField`, default empty | `meta` also stores request fields that have no model column |
+
+## Enum values
+
+### `gender` values (`GenderChoices`)
+
+| Value |
+| --- |
+| `male` |
+| `female` |
+| `non_binary` |
+| `transgender` |
+
+### `blood_group` values (`BloodGroupChoices`)
+
+| Value |
+| --- |
+| `A_negative` |
+| `A_positive` |
+| `B_negative` |
+| `B_positive` |
+| `AB_negative` |
+| `AB_positive` |
+| `O_negative` |
+| `O_positive` |
+| `unknown` |
+
+### Identifier `use` values (`PatientIdentifierUse`)
+
+| Value |
+| --- |
+| `usual` |
+| `official` |
+| `temp` |
+| `secondary` |
+| `old` |
+
+### Identifier config `status` values (`PatientIdentifierStatus`)
+
+| Value |
+| --- |
+| `draft` |
+| `active` |
+| `inactive` |
+
+`get_instance_config()` and `get_facility_config()` return only `active` configs.
+
+## Nested JSON shapes
+
+### `IdentifierConfig` (`PatientIdentifierConfig.config`)
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `use` | `PatientIdentifierUse` | Required |
+| `description` | `str` | Default empty |
+| `system` | `str` | Required. Error messages name the identifier by its system |
+| `required` | `bool` | Required in the request. A required identifier sent with an empty value is refused |
+| `unique` | `bool` | Required in the request. A value that another patient already has for the same config is refused |
+| `regex` | `str` | Required in the request. A value that does not match it is refused |
+| `display` | `str` | Required. The display name |
+| `retrieve_config` | `PatientIdentifierRetrieveConfig` | Search settings; see below |
+| `default_value` | `str`, optional | An expression that Care evaluates to fill a value; see below |
+| `auto_maintained` | `bool`, default false | Care maintains the value. Create and update ignore values sent for it, and `update_identifier` refuses it |
+
+### `PatientIdentifierRetrieveConfig` (`retrieve_config`)
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `retrieve_with_dob` | `bool`, default false | |
+| `retrieve_with_year_of_birth` | `bool`, default false | An identifier search with this config returns partial results |
+| `retrieve_with_otp` | `bool`, default false | |
+| `retrieve_partial_search` | `bool`, default false | Each word of the search value must appear in the stored value, case-insensitive. When false, the value must match exactly |
+
+### Default value expressions
+
+A `default_value` is an expression. It can use these variables:
+
+- `patient_count`: the number of identifiers already issued for that config.
+- `current_year_yyyy`: the current year, with four digits.
+- `current_year_yy`: the current year, with two digits.
+
+Care fills a default value only when the patient has no value for that config yet:
+
+1. When a patient is created: for each active deployment-wide config that has a `default_value`.
+2. When an encounter is created: for each active config of the encounter's facility. Care then rebuilds `facility_identifiers` for that facility.
+
+An update does not fill default values.
+
+### Identifier entries (`instance_identifiers`, `facility_identifiers`)
+
+`instance_identifiers` is a list of entries. `facility_identifiers` is an object keyed by facility id, and each value is a list of entries for that facility's configs.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `config` | `str` | The identifier config id (`external_id`) |
+| `value` | `str` | The patient's value |
+
+### `facility_tags`
+
+An object keyed by facility id. Each value is that facility's list of tag config ids.
+
+### `PatientIdentifierConfigRequest` (items of `identifiers`)
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `config` | `UUID4` | The identifier config id |
+| `value` | `str` | The patient's value |
+
+### `TagSetRequest` (items of `tags`)
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `tag` | `UUID4` | The tag config id |
+| `expiry_offset` | `ExpiryOffset`, optional | `days`, `hours`, `minutes` and `seconds`. Used when the tag config allows the expiry to be changed |
 
 ## Related models
 
 ### `PatientOrganization`
 
-```text
-patient  → FK Patient
-organization → FK Organization
-```
+Links a patient to an organization.
 
-Saving a `PatientOrganization` triggers `patient.save()`, which rebuilds `organization_cache`.
+| Field | Type |
+| --- | --- |
+| `patient` | `FK → Patient`, `CASCADE` |
+| `organization` | `FK → Organization`, `CASCADE` |
+
+Saving a link saves the patient, which rebuilds `organization_cache`. No API endpoint creates or changes these links.
 
 ### `PatientUser`
 
-Grants a Care user access to a patient record.
+Assigns a user to one patient with a role. The role counts as a role on the patient, and the patient appears in the user's patient list.
 
-```text
-user   → FK User
-patient → FK Patient
-role   → FK RoleModel (PROTECT)
-```
+| Field | Type |
+| --- | --- |
+| `user` | `FK → User`, `CASCADE` |
+| `patient` | `FK → Patient`, `CASCADE` |
+| `role` | `FK → RoleModel`, `PROTECT` |
 
-Saving a `PatientUser` triggers `patient.save()`, which rebuilds `users_cache`.
+Saving an assignment saves the patient, which rebuilds `users_cache`. Removing a user through the API also saves the patient.
 
-### `PatientIdentifier` / `PatientIdentifierConfig`
+### `PatientIdentifierConfig`
 
-`PatientIdentifierConfig` defines what identifiers exist (status, optional facility scope, JSON config). `PatientIdentifier` stores the actual value:
+| Field | Type | Notes |
+| --- | --- | --- |
+| `status` | `CharField(255)` | One of the `PatientIdentifierStatus` values |
+| `facility` | `FK → Facility`, nullable, `CASCADE` | Empty for a deployment-wide config |
+| `config` | `JSONField`, nullable | Shape: `IdentifierConfig` |
 
-```text
-patient → FK Patient
-config  → FK PatientIdentifierConfig
-facility → FK Facility (nullable)
-value   → CharField(1024), indexed
-```
+The facility detail response carries the active deployment-wide and facility configs, as `patient_instance_identifier_configs` and `patient_facility_identifier_configs`.
 
-`PatientIdentifierConfigCache` provides in-process caching for configs (`get_instance_config()`, `get_facility_config(facility_id)`).
+### `PatientIdentifier`
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `patient` | `FK → Patient`, `CASCADE` | |
+| `config` | `FK → PatientIdentifierConfig`, `CASCADE` | |
+| `value` | `CharField(1024)`, indexed | The identifier value |
+| `facility` | optional | |
+
+### `PatientIdentifierConfigCache`
+
+A helper class in the model file that returns identifier configs:
+
+- `get_config()` keeps serialized configs in an in-process dictionary.
+- `get_instance_config()` queries the active deployment-wide configs on each call and reads each config from Django's shared cache.
+- `get_facility_config(facility_id)` does the same for the active configs of one facility.
+
+## Resource specs (API schema)
+
+`PatientBaseSpec` is an `EMRResource` with `__model__ = Patient` and the `patient` extension resource type.
+
+Its `__exclude__` list keeps `geo_organization`, `instance_identifiers`, `facility_identifiers`, `instance_tags` and `facility_tags` from being copied directly between a request and the model.
+
+| Spec | Role | Notes |
+| --- | --- | --- |
+| `PatientBaseSpec` | shared | `name` and `gender` required; `phone_number` required, at most 14 characters; `emergency_phone_number`, `address`, `permanent_address`, `pincode`, `deceased_datetime` and `blood_group` optional |
+| Create spec | write · create | `name` at most `PATIENT_NAME_MAX_LENGTH` characters; `geo_organization` (UUID) required; `date_of_birth` and `age` optional; `identifiers` and `tags` lists, default empty |
+| Update spec | write · update | Every field optional, including `name`, `gender` and `phone_number`; `geo_organization` optional; `identifiers` list; no `tags` field |
+| `PatientListSpec` | read · list | Base fields plus `date_of_birth`, `year_of_birth`, `created_date`, `modified_date` and `instance_tags`. Adds `facility_tags` when the request names a facility. No identifiers |
+| `PatientRetrieveSpec` | read · detail | Extends the list spec and `PatientPermissionsMixin`. Adds `geo_organization` (an organization object), `created_by`, `updated_by`, `instance_identifiers`, `facility_identifiers`, `extensions` and `permissions` |
+| `PatientPartialSpec` | read · search | `name`, `gender`, `phone_number` and `partial_id` only |
+| `PatientIdentifierConfigRequest` | nested · write | `config` (UUID) and `value` |
+| `PatientIdentifierResponse` | nested · read | `config` and `value` |
+| `TagSetRequest` | nested · write | `tag` (UUID) and an optional `expiry_offset` |
+
+In the detail response, `facility_identifiers` holds the entries of one facility, and only when the request names that facility.
+
+The detail response's `permissions` list holds the `PATIENT` and `FACILITY` context permissions of every role that the user has on the patient.
+
+### Server-maintained behaviour
+
+- Care saves only the request fields whose value differs from the spec default.
+- Request fields that have no model column go to the record's `meta`.
+- When a request gives `age`, Care clears `date_of_birth` and sets `year_of_birth` to the current year minus `age`. Otherwise `year_of_birth` comes from `date_of_birth`.
+- Care stores an empty or 0 `pincode` as empty.
+- On update, Care ignores `id`, `external_id`, `patient` and `encounter` in the request.
+- PATCH works exactly like PUT.
+- On create, Care validates the data before it checks the permission. On update, Care first opens the patient, then validates the data, then checks the permission.
+- Care takes one deployment-wide lock (`PatientCreateLock`) while it creates a patient.
+- Care creates the patient, its identifiers, its default identifier values and its tags in one transaction. If a tag is refused, no patient is created.
+- No backend rule blocks editing a deceased patient or creating an encounter for one.
+
+### Identifiers in create and update
+
+- A create request must use deployment-wide identifier configs. A facility config gives "not found".
+- Create and update ignore values sent for auto-maintained configs.
+- On update, an identifier sent with an empty value is removed. An identifier sent with a value replaces the stored value, or is created.
+- After an update, Care rebuilds `instance_identifiers`.
+
+### Validation messages
+
+| Rule | Message |
+| --- | --- |
+| `phone_number` or `emergency_phone_number` is not a valid phone number, for example a number without a country code, or an empty emergency number | `value is not a valid phone number` |
+| `deceased_datetime` is in the future | `Deceased datetime cannot be in the future` |
+| A date and time has no timezone | `Datetime must be timezone aware` |
+| `geo_organization` is not an organization of type `govt` | `Geo Organization does not exist` |
+| A required identifier is sent with an empty value | `Identifier config <system> is required` |
+| Another patient already has the value for a unique config (on update, the patient being edited does not count) | `Identifier config <system> is not unique` |
+| The value does not match the config's `regex` | `Identifier config <system> is not valid` |
+| `date_of_birth` is after the date of death | `Date of birth cannot be after the date of death` |
+| The year of birth, from `age` or stored, is after the year of death | `Year of birth cannot be after the year of death` |
+| Another patient create holds the lock | `Patient creation failed, try again after a while` |
+| Extension data fails the check of its handler | `Invalid extensions` |
 
 ## Methods & save behaviour
 
 ### Age
 
-- `get_age() → str` — human-readable age (years, months, days) relative to `deceased_datetime` or now
-- `age → int` — whole years only
-
-Both use `date_of_birth` when present, otherwise `year_of_birth` (January 1).
+- `get_age() -> str` counts from `date_of_birth`, or from 1 January of `year_of_birth`. It counts up to `deceased_datetime`, or up to now.
+- It returns whole years when the age is one year or more, for example "34 years".
+- Under one year, it returns months, plus days when there are any. Under one month, it returns days.
+- When no full day has passed, it returns "0 days".
+- The `age` property returns whole years as an integer, with the same start and end.
 
 ### `save()` side effects
 
-On every save:
+1. If `date_of_birth` is set and `year_of_birth` is empty, Care sets `year_of_birth` from `date_of_birth`.
+2. `rebuild_organization_cache()` refills `organization_cache`.
+3. `rebuild_users_cache()` refills `users_cache`.
+4. A second `save(update_fields=["organization_cache", "users_cache"])` stores both caches.
 
-1. If `date_of_birth` is set and `year_of_birth` is empty → `year_of_birth` is derived
-2. `rebuild_organization_cache()` runs
-3. `rebuild_users_cache()` runs
-4. A second `save(update_fields=["organization_cache", "users_cache"])` persists the caches
+Expect two write passes for each save through the ORM. Saving a `PatientOrganization` or a `PatientUser` also saves the patient.
 
-Integrators should expect **two write passes** when creating or updating patients through the ORM.
+### Identifier JSON fields
+
+- `build_instance_identifiers()` writes `instance_identifiers` from the patient's values for deployment-wide configs.
+- `build_facility_identifiers(facility_id)` writes the entry for one facility in `facility_identifiers`.
+
+Care calls `build_instance_identifiers()` after an update, and `build_facility_identifiers()` when an encounter is created. After `update_identifier`, it calls the method that matches the config.
+
+### System-maintained identifiers
+
+Signal handlers keep three identifiers in step with patient data. The handlers load when the EMR app starts, and each one depends on a setting.
+
+| Setting (default) | Identifier | Updated when |
+| --- | --- | --- |
+| `MAINTAIN_PATIENT_NAME_IDENTIFIER` (off) | Deployment-wide. System `system.care.ohc.network/patient-name`, display "Patient Name", partial search | Every patient save |
+| `MAINTAIN_PATIENT_PHONE_NUMBER_IDENTIFIER` (off; on in the local development settings) | Deployment-wide. System `system.care.ohc.network/patient-phone-number`, display "Patient Phone Number", retrieve with year of birth | Every patient save |
+| `MAINTAIN_FACILITY_PATIENT_NAME_IDENTIFIER` (on) | A name identifier for each facility | An encounter is saved at that facility, or an appointment with a practitioner resource is saved. Renaming the patient does not update it |
+
+The configs that Care creates for these identifiers are active, `secondary` use, not required, not unique and auto-maintained.
 
 ## API integration notes
 
-- Patient records are exposed through Care's REST API and FHIR `Patient` resources; field names in API payloads may differ from Django model names.
-- Use `instance_identifiers` / `facility_identifiers` JSON for read-optimized identifier lookup; write through `PatientIdentifier` for consistency.
-- `extensions` is the supported place for custom key-value data without schema migrations.
-- `users_cache` and `organization_cache` are maintained by the platform — do not set them directly from clients.
+- All routes are under `/api/v1/`. The patient API is `/api/v1/patient/`.
+- A successful create answers 200, not 201.
+- Clinical resources, such as allergy, symptom, diagnosis and observation, are nested under `/api/v1/patient/<id>/`.
+- The patient `id` in the API is the model's `external_id`.
+- Every API view needs a signed-in user. The patient viewset adds no other global check.
+- Lists use limit and offset pagination: 14 items per page by default, and at most 200.
+- A validation error returns 400 with an `errors` list. Each item has `type` `validation_error` and a `msg`.
+- A patient that the user cannot open returns 404 with `type` `object_not_found`.
+- Do not set `organization_cache`, `users_cache`, `instance_identifiers` or `facility_identifiers` from a client. Care rebuilds them.
+- Write identifiers with `identifiers` in a create or update request, or with `update_identifier`.
+- Care checks `extensions` key by key. A key that has no registered extension handler is dropped without an error.
+- Care registers an extension handler named `core` for patients. It validates the data against the JSON schema in the environment variable `CORE_EXTENSIONS_PATIENT_WRITE`.
+- The patient portal uses `/api/v1/otp/patient/`, with patient OTP sign-in instead of a staff account.
+- The portal lists the patients with the verified phone number, and creates patients with that number.
+- A portal create needs `age` or `date_of_birth`, and `address`, `pincode` and `geo_organization`.
+
+### Access to a patient
+
+A role on the patient is a role that the user holds in one of these places:
+
+Here, a department is any `FacilityOrganization` of a facility: a department, a team, or the facility's Administration department.
+
+- A department linked to an open encounter of the patient, any department above it, or the Administration department of that encounter's facility.
+- A department of that open encounter's current location.
+- The patient's geo organization, or one of its parent organizations.
+- A direct assignment on the patient (`PatientUser`).
+
+An open encounter has a status other than `completed`, `cancelled`, `entered_in_error` and `discontinued`.
+
+A role counts only when it holds the permission that the check names.
+
+A user can open a patient when one of these is true:
+
+- `PATIENT_GLOBAL_EDIT_ACCESS_ENABLED` is on. Then any signed-in user can open any patient.
+- The user has "Can view clinical data about patients" through a role on the patient.
+- The user has "Can list patients" in an organization, not a department, that is in the patient's `organization_cache`.
+- The user is assigned to the patient.
+
+This rule applies to the detail request and to the actions that load the patient first, such as `get_users`, `add_user` and `update_identifier`.
+
+If no condition is true, the answer is 404, not 403. Care looks the patient up inside the set of patients that the user can open.
+
+The patient list holds the patients whose `organization_cache` overlaps the organizations where the user has "Can list patients". It also holds the patients assigned to the user.
+
+Roles in departments do not put a patient in the list.
+
+When a list, detail or `search_retrieve` request names a facility, Care also runs the facility tag check.
+
+The facility tag check needs "Can Read Tag Config" in the facility's Administration department or in one of its departments or teams. A role in a government organization does not count.
+
+If the facility tag check fails, the request fails with `Cannot view facility tags`.
+
+### Permissions
+
+The role lists below are the defaults. A deployment can add custom roles, and plugs can register more roles.
+
+Each permission sync resets the permissions of the system roles to these defaults.
+
+| Permission | Context | Checked for | Default roles |
+| --- | --- | --- | --- |
+| Can Create Patient | `PATIENT` | Creating a patient. Counts in a department of any facility, or in any organization | Staff, Doctor, Nurse, Administrator, Facility Admin; Admin in a responsibility |
+| Can Update a Patient's data | `PATIENT` | Updating a patient, `update_identifier`, the tag actions, `add_user` and `delete_user`. Counts through a role on the patient | Staff, Doctor, Nurse, Administrator, Facility Admin |
+| Can list patients | `PATIENT` | The patient list and opening a patient: counts in an organization in `organization_cache`. Opening the patient's encounters: counts through a role on the patient | Staff, Doctor, Nurse, Administrator, Facility Admin, Volunteer, Pharmacist |
+| Can view clinical data about patients | `PATIENT` | Opening a patient, and the questionnaire responses of an encounter. Counts through a role on the patient | Staff, Doctor, Nurse, Facility Admin |
+| Can view questionnaire responses on patient | `PATIENT` | Viewing the patient's questionnaire responses without an encounter. Counts through a role on the patient | Volunteer, Staff, Doctor, Nurse, Facility Admin, Administrator, Pharmacist |
+| Can submit questionnaire about patients | `PATIENT` | Submitting or updating a questionnaire response that has no encounter. Counts through a role on the patient | Volunteer, Staff, Doctor, Nurse, Facility Admin, Administrator |
+| Can Read Patient Identifier Config | `FACILITY` | Searching with a facility identifier config, and reading facility configs. Counts in a department of that facility | Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Read Tag Config | `FACILITY` | The facility tag check. Counts in the facility's Administration department or in one of its departments or teams | Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Apply Tag Config to Resources | `FACILITY` | Applying or removing each tag. Counts in the tag config's managing department or organization, or one above it. With no managing organization: a department of the tag's facility, or any department for a deployment-wide tag | Facility Admin, Staff, Doctor, Nurse, Pharmacist |
+| Can list bookings on Object | `FACILITY` | `get_appointments` with a facility. Counts in a department of that facility | Staff, Facility Admin, Doctor, Nurse, Administrator |
+| Can list token on Object | `FACILITY` | `get_tokens` with a facility. Counts in a department of that facility | Staff, Facility Admin, Doctor, Nurse, Administrator |
+
+### Endpoints
+
+| Endpoint | Permission | Notes |
+| --- | --- | --- |
+| `GET /api/v1/patient/` | "Can list patients" in an organization in the patient's `organization_cache`, or assigned to the patient | Filters: `name` (contains, case-insensitive), `phone_number` (exact, case-insensitive), `organization`. Ordering: `created_date`, `modified_date`. With `facility`: the facility tag check |
+| `GET /api/v1/patient/<id>/` | The opening rule | With `facility`: adds that facility's identifiers and tags, and runs the facility tag check |
+| `POST /api/v1/patient/` | "Can Create Patient" in a department of any facility, or in any organization. Each tag also needs "Can Apply Tag Config to Resources" | Create spec. Care validates the data before the permission check |
+| `PUT` or `PATCH /api/v1/patient/<id>/` | The opening rule, then "Can Update a Patient's data" through a role on the patient | With `PATIENT_GLOBAL_EDIT_ACCESS_ENABLED` on, the permission counts in any department or organization. Refused: `Cannot Update Patient` |
+| `POST /api/v1/patient/search/` | Sign-in only. A facility identifier config needs "Can Read Patient Identifier Config" in a department of that facility | See Patient search |
+| `POST /api/v1/patient/search_retrieve/` | Sign-in only. With `facility`: the facility tag check | See Patient search |
+| `GET /api/v1/patient/<id>/get_users/` | The opening rule | The assigned users' details, without their roles |
+| `POST /api/v1/patient/<id>/add_user/` | The opening rule, then "Can Update a Patient's data" | Body: `user` and `role` ids. Refused when the user is already assigned: `User already exists` |
+| `POST /api/v1/patient/<id>/delete_user/` | The opening rule, then "Can Update a Patient's data" | Body: `user`. Refused when the user is not assigned: `User does not exist` |
+| `GET /api/v1/patient/<id>/get_appointments/` | Without `facility`: the opening rule. With `facility`: "Can list bookings on Object" in a department of that facility | With `facility`, only that facility's appointments. Refused: `Cannot list bookings` |
+| `GET /api/v1/patient/<id>/get_tokens/` | Without `facility`: the opening rule. With `facility`: "Can list token on Object" in a department of that facility | With `facility`, only that facility's tokens. Refused: `Cannot list tokens` |
+| `POST /api/v1/patient/<id>/update_identifier/` | The opening rule, then "Can Update a Patient's data" | Body: `config` and `value`. See Identifier updates |
+| `POST /api/v1/patient/<id>/set_instance_tags/`, `POST /api/v1/patient/<id>/remove_instance_tags/` | The opening rule, "Can Update a Patient's data", and "Can Apply Tag Config to Resources" for each tag | Body: `tags`. Deployment-wide tag configs only |
+| `POST /api/v1/patient/<id>/set_facility_tags/`, `POST /api/v1/patient/<id>/remove_facility_tags/` | As the deployment-wide tag actions, plus the facility tag check | Body: `tags` and `facility`. Tag configs of that facility only |
+| `POST /api/v1/patient/upsert/` | "Can Create Patient" for each new patient; "Can Update a Patient's data" for each existing patient | Body: `datapoints`, at most `MAX_DATAPOINTS_PER_UPSERT` (default 100), else `Too many datapoints provided`. A datapoint with an `id` updates that patient |
+| `GET /api/v1/patient_identifier_config/`, `GET /api/v1/patient_identifier_config/<id>/` | Deployment-wide configs: sign-in only. Facility configs: "Can Read Patient Identifier Config" in a department of that facility | Filters: `facility`, `status`, `display` (contains). Without `facility`, the list holds only deployment-wide configs. Refused: `You do not have permission to read patient identifier configs` |
+
+### Patient search
+
+- `POST /api/v1/patient/search/` takes `phone_number`, or `config` and `value`. It also takes an optional `facility` and `page_size`.
+- It returns at most 100 patients, newest first.
+- The response has `partial` (true or false) and `results`.
+- A phone-number search matches the stored phone number exactly and returns partial results.
+- An identifier search returns full detail records. It returns partial results when the config has `retrieve_with_year_of_birth`.
+- An identifier search matches the value exactly, unless the config has `retrieve_partial_search`.
+- A partial result holds only `name`, `gender`, `phone_number` and `partial_id`, the first 5 characters of the patient id. Its `id` is a random UUID, not the patient id.
+- To get the full record from a partial result, call `POST /api/v1/patient/search_retrieve/` with `phone_number`, `year_of_birth` and `partial_id`.
+- `search_retrieve` returns the patient whose phone number and year of birth match, and whose id starts with `partial_id`.
+
+| Rule | Message |
+| --- | --- |
+| The search has neither a phone number nor a config | `Either phone number or config is required` |
+| The config does not exist | `Config not found` |
+| An identifier search has no value | `Value is required` |
+| A facility config search without "Can Read Patient Identifier Config" in that facility | `Cannot search for patient identifier configs in this facility` |
+| No patient matches a `search_retrieve` request (403) | `No valid patients found` |
+
+### Identifier updates
+
+`POST /api/v1/patient/<id>/update_identifier/` changes one identifier value:
+
+- It refuses auto-maintained configs: `Cannot update auto maintained identifier`.
+- It refuses an empty value for a required config: `Value is required`.
+- It runs the unique and regex checks on a value that is not empty.
+- An empty value removes the patient's identifier for that config.
+- It then rebuilds `facility_identifiers` for a facility config, or `instance_identifiers` for a deployment-wide config.
+- The response is the patient detail without facility identifiers.
+
+### Tags
+
+- Deployment-wide tags use tag configs that have no facility. Facility tags use tag configs of the facility in the request.
+- A create request applies its `tags` as deployment-wide tags. The update request has no `tags` field.
+- A tag id that matches no usable tag config is skipped without an error.
+- Only one tag from the same tag group (the same parent tag) can be on the patient.
+- A tag config with `autoset_expiry` and an `expiry_offset` in its expiry settings sets an expiry time when the tag is applied.
+- If the tag config allows it, `expiry_offset` in the request sets the expiry time.
+- An expired tag is shown with `expired` set to true, and a background task removes it.
+- The list response always renders deployment-wide tags. It renders facility tags only when the request names a facility.
+
+| Rule | Message |
+| --- | --- |
+| The tag is already on the patient | `Tag already set` |
+| The tag is not on the patient | `Tag not set` |
+| The tag config is for another resource type | `Tag resource does not match resource type` |
+| A tag from the same tag group is already on the patient | `Tag Parent is already set` |
+| The user lacks "Can Apply Tag Config to Resources" for the tag | `You do not have permission to apply tag '<tag>'` or `You do not have permission to remove tag '<tag>'` |
+
+### Settings
+
+| Setting | Default | Effect |
+| --- | --- | --- |
+| `PATIENT_NAME_MAX_LENGTH` | 75 | Maximum length of `name` on create and update |
+| `PATIENT_GLOBAL_EDIT_ACCESS_ENABLED` | off | When on, any signed-in user can open any patient, and "Can Update a Patient's data" counts in any department or organization |
+| `MAINTAIN_PATIENT_NAME_IDENTIFIER` | off | Maintains the deployment-wide "Patient Name" identifier |
+| `MAINTAIN_PATIENT_PHONE_NUMBER_IDENTIFIER` | off (on in the local development settings) | Maintains the deployment-wide "Patient Phone Number" identifier |
+| `MAINTAIN_FACILITY_PATIENT_NAME_IDENTIFIER` | on | Maintains a name identifier for each facility |
+| `MAX_APPOINTMENTS_PER_PATIENT` | 10 | More appointments are refused: `Patient already has maximum number of appointments (<n>)` |
+| `MAX_ACTIVE_ENCOUNTERS_PER_PATIENT_IN_FACILITY` | 5 | More active encounters at one facility are refused: `Patient already has maximum number of active encounters (<n>) in the facility` |
+| `MAX_DATAPOINTS_PER_UPSERT` | 100 | Maximum datapoints in one `upsert` request |
+| `LOCK_TIMEOUT` | 32 seconds | Used by the patient-create lock |
 
 ## Related
 
 - Concept: [Patient](../../concepts/clinical/patient)
-- Flow: [Register a patient](../../flows/clinical/patient/register-patient)
-- Source: [patient.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/patient.py)
+- Flow: [Register a patient](../../flows/clinical/patient/register-patient.mdx)
+- Flow: [Search for a patient](../../flows/clinical/patient/search-patient.mdx)
+- Flow: [Update a patient's details](../../flows/clinical/patient/update-patient-details.mdx)
+- Flow: [Manage a patient's identifiers](../../flows/clinical/patient/manage-patient-identifiers.mdx)
+- Flow: [Manage patient tags](../../flows/clinical/patient/manage-patient-tags.mdx)
+- Flow: [Manage the users assigned to a patient](../../flows/clinical/patient/manage-patient-users.mdx)
+- Flow: [View a patient's appointments and tokens](../../flows/clinical/patient/view-patient-appointments.mdx)
+- Reference: [Encounter](./encounter.mdx) · [Organization](../access-governance/organization.mdx) · [Role](../access-governance/role.mdx) · [Tagging](../platform/tag-config.mdx) · [Facility](../facility/facility.mdx)
+- Reference: [Base models & conventions](../foundation/base-model.mdx)
+- Source (model): [patient.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/patient.py)
+- Source (specs): [resources/patient on GitHub](https://github.com/ohcnetwork/care/tree/develop/care/emr/resources/patient) · [resources/patient_identifier on GitHub](https://github.com/ohcnetwork/care/tree/develop/care/emr/resources/patient_identifier)
+- Source (API): [viewsets/patient.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/patient.py)

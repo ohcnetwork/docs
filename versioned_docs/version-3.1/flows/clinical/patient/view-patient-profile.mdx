@@ -6,77 +6,192 @@ sidebar_position: 3
 
 ## Overview
 
-This flow describes how to open the profile of a [patient](../../../concepts/clinical/patient) in Care. The profile shows the patient's demographic, contact, and clinical information in tabs.
+This flow describes how to open the profile of a [patient](../../../concepts/clinical/patient) in Care, and what each tab of the profile shows. The profile is the page titled **Patient Details**.
+
+<video src="/media/clinical/patient/view-patient-profile.mp4" poster="/media/clinical/patient/view-patient-profile.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/patient/view-patient-profile.vtt" srcLang="en" label="English" default />
+</video>
 
 ## Pre-requisites
 
 - The patient is registered in Care.
-- You find the patient through a search, or you open the patient from an Encounter, an Appointment, or another clinical record of that patient.
+- Inside a facility, you have a role in the facility's Administration department or in one of its departments or teams.
+- Care can open the patient for you. This is true in any of these cases:
+  - You have a role on the patient, and that role holds Can view clinical data about patients.
+  - You hold Can list patients in a government organization that covers the patient.
+  - Someone assigned you to the patient on the **Users** tab.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can view clinical data about patients | Open the patient's profile and the Clinical History tab. |
-| Can list patients | See the Encounters tab. A permission to list encounters also gives this access. |
-| Can view questionnaire responses on patient | See the Questionnaire Updates tab. |
-| Permission to view appointments | See the Appointments tab. |
+| Can view clinical data about patients | Open the patient's profile, when you hold this permission through a role on the patient. It also shows the **Files** and **Clinical History** tabs. It lists the patient's notes on the **Notes** tab and the files on the **Files** tab. The **Notes** tab always shows, but without this permission Care does not list the notes. By default, the Staff, Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can list patients | Open the patient's profile, when you hold this permission in a government organization that covers the patient. A role in a facility with this permission does not open the patient. Through a role on the patient, this permission also shows the **Encounters** tab. By default, the Staff, Doctor, Nurse, Administrator, Facility Admin, Volunteer and Pharmacist roles hold this permission. The Pharmacist and Facility Admin roles are for facilities only. |
+| Can Read Tag Config | Open Patient Home in step 1, and the profile inside a facility. You need it in the facility's Administration department or in one of its departments or teams. A role in a government organization does not count. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can list bookings on Object | Shows the **Appointments** tab. By default, the Staff, Facility Admin, Doctor, Nurse and Administrator roles hold this permission. |
+| Can view questionnaire responses on patient | Shows the **Updates** tab. By default, the Volunteer, Staff, Doctor, Nurse, Facility Admin, Administrator and Pharmacist roles hold this permission. |
+| Can submit questionnaire about patients | Shows **Add Patient Updates** on the **Updates** tab. By default, the Volunteer, Staff, Doctor, Nurse, Facility Admin and Administrator roles hold this permission. |
+| Can Read Referrals | Shows the **Referrals** tab with the patient's referrals. You need it through a role on the patient. By default, the Administrator, Doctor, Facility Admin, Nurse and Staff roles hold this permission. |
+| Can Create Referrals | Shows the **Referrals** tab with **New Referral**. By default, the same roles as Can Read Referrals hold this permission. |
+| Can update bookings on Object | Shows **Schedule Appointment** at the top of the profile, inside a facility. By default, the Staff, Facility Admin, Doctor and Nurse roles hold this permission. |
+| Can Update a Patient's data | Shows **Edit** in **General Info** and in **Patient Tags**. **Edit** in **General Info** shows only inside a facility. By default, the Staff, Doctor, Nurse, Administrator and Facility Admin roles hold this permission. |
+| Can Read Account | Inside a facility: see the patient's accounts on the **Accounts** tab. The tab always shows, but Care lists the accounts only if you hold this permission in the facility's Administration department or in one of its departments or teams. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
 
-Note: Some deployments relax the check for clinical data. Your access to the profile can depend on your deployment's configuration.
+Note: Care decides which tabs to show from the permissions of your roles on the patient.
+
+A role on the patient comes, for example, from a role in the department of the patient's open encounter. A role in the Administration department of that encounter's facility also counts. The [patient](../../../concepts/clinical/patient) concept lists every way to have a role on a patient.
 
 ## Steps
 
-### 1. Open the patient
+### 1. Open Patient Home
 
-Find the patient. Use the steps in [Search for a patient](./search-patient.mdx).
+Search for the patient. See [Search for a patient](./search-patient.mdx).
 
-Select the patient in the search results. Care opens the patient's profile.
+Select the patient in the results.
 
-You can also open the profile from a patient's Encounter, Appointment, or other clinical record.
+If Care shows **Verify Patient Identity**, enter the patient's year of birth. Select **Verify**.
 
-### 2. Read the patient's information
+Care opens Patient Home for the patient.
 
-The profile shows the patient's information in tabs. Select a tab to read that information.
+For more about Patient Home, see [Open Patient Home](./open-patient-home.mdx).
 
-| Tab | What it shows |
+![Patient Home with the patient card outlined, showing the patient's name, age and sex](/media/clinical/patient/view-patient-profile-1.png)
+
+### 2. Open the profile
+
+On the patient card, select the patient's name. Care opens a pop-up.
+
+In the pop-up, select **View Profile**.
+
+Care opens the patient's profile inside the facility. The page title is **Patient Details**.
+
+You can open the same pop-up from other pages:
+
+- On an encounter, select the patient's name in the header.
+- On an appointment, select the patient's name on the patient card.
+
+If you hold Can list patients in a government organization, you can also start from its **Patients** tab. Select the patient's row, or select **Open**. Care opens the profile without a facility. See [View an organization's patients](./view-organization-patients.mdx).
+
+If Care cannot open the patient for you, the page shows **Patient Not Found** and the message "Not Found". This happens, for example, to a Doctor whose only role is in a department unrelated to the patient's open encounters.
+
+Inside a facility, without Can Read Tag Config in that facility, the page also shows **Patient Not Found**. Care shows the message "Cannot view facility tags".
+
+![The pop-up that opens from the patient's name, with View Profile outlined](/media/clinical/patient/view-patient-profile-2.png)
+
+### 3. Read the header
+
+The header shows the patient's name, age and sex.
+
+The header also shows each identifier of the patient, with its name and value.
+
+The patient's tags show next to **Patient Tags**.
+
+If the patient is deceased, a red banner shows the **Deceased** badge. The banner shows "Passed away on", then the date and the time of death.
+
+Inside a facility, users with Can update bookings on Object see **Schedule Appointment** at the top of the profile. It opens **Book Appointment**.
+
+![The profile header outlined, with the patient's name, age, sex, Hospital Card Number and Patient Tags](/media/clinical/patient/view-patient-profile-3.png)
+
+### 4. Use the Actions panel
+
+The **Actions** panel shows next to every tab except **Notes**. It has these items:
+
+- **Patient Home**: inside a facility, this button opens Patient Home for the patient.
+- **Last updated by**: the user who last updated the patient, and when.
+- **Patient profile created by**: the user who created the patient's profile, and when.
+
+Your deployment can add other buttons to this panel.
+
+![The Actions panel outlined, with the Patient Home button, Last updated by and Patient profile created by](/media/clinical/patient/view-patient-profile-4.png)
+
+### 5. Read the Demography tab
+
+The profile opens on the **Demography** tab. The tab has these sections.
+
+| Section | What it shows |
 | --- | --- |
-| General Info | The patient's core demographic and contact details. |
-| Additional Details | The address, geo-organization, blood group, deceased status, and similar information. |
-| Identifiers | The identifiers configured for the patient. |
-| Patient Tags | The labels attached to the patient record. |
-| Insurance Details | The patient's insurance information. |
-| Social Profile | The patient's social information. |
-| Volunteer Contact | The users assigned to support this patient in the field, for example volunteers. |
+| **General Info** | **Full Name**, **Phone Number** with **Chat on WhatsApp**, **Date of Birth** with the age, **Sex**, **Blood Group**, **Emergency Contact**, **Current Address and Route to Home** and **Permanent Address**. If only the age is known, the section shows **Year of Birth** instead of **Date of Birth**. The last rows show each level of the patient's geo organization. |
+| **Additional Details** | The extra patient fields that your deployment adds. Care shows this section only when the patient has values in these fields. |
+| **Identifiers** | Each identifier of the patient, with its name and value. This section has no **Edit**. |
+| **Patient Tags** | The tags on the patient. Users who can update the patient see **Edit**. |
 
-### 3. Open the other tabs
+Inside a facility, **General Info** has **Edit** for users who can update the patient. To change the details, see [Update a patient's details](./update-patient-details.mdx).
 
-Care shows more tabs when you have the necessary permissions.
+To change the tags, see [Manage patient tags](./manage-patient-tags.mdx).
 
-| Tab | What it shows |
-| --- | --- |
-| Encounters | The patient's encounters. |
-| Clinical History | The patient's clinical history. |
-| Appointments | The patient's appointments. |
-| Questionnaire Updates | The questionnaire responses recorded for the patient. |
+![The General Info section of the Demography tab outlined, with Edit at its top right](/media/clinical/patient/view-patient-profile-5.png)
 
-Note: Which of these tabs you see depends on your permissions.
+### 6. Open the other tabs
+
+Select a tab to open it. Some tabs show only when you hold a permission on the patient.
+
+| Tab | What it shows | When Care shows it |
+| --- | --- | --- |
+| **Appointments** | The patient's appointments at every facility, under **Upcoming**, **Past** and **Cancelled**. See [View a patient's appointments and tokens](./view-patient-appointments.mdx). | With Can list bookings on Object. |
+| **Encounters** | The patient's encounters, five on each page. **View Encounter** opens an encounter. | With Can list patients. |
+| **Updates** | The questionnaire responses about the patient. **Add Patient Updates** opens the patient's questionnaire page. See [View questionnaire responses](../questionnaire-response/view-questionnaire-responses.mdx). | With Can view questionnaire responses on patient. |
+| **Referrals** | The patient's referrals, and **New Referral**. | With Can Read Referrals or Can Create Referrals. |
+| **Requests** | The requests linked to the patient. Inside a facility, **Create Request** starts a request at the facility for this patient. | Always. |
+| **Users** | The users assigned to the patient. See [Manage the users assigned to a patient](./manage-patient-users.mdx). | Always. |
+| **Notes** | The patient's discussions that belong to no encounter. See [Find discussions for a patient or an encounter](../notes/find-discussions.mdx). | Always. |
+| **Files** | The patient's files. See [View or preview a file](../files/view-or-preview-a-file.mdx) and [Upload a file](../files/upload-a-file.mdx). | With Can view clinical data about patients. |
+| **Accounts** | The facility's accounts for this patient. **Create Account** shows for users who can create accounts at the facility. See [View an account](../../billing/account/view-account.mdx) and [Create an account](../../billing/account/create-account.mdx). | Always. |
+| **Clinical History** | Opens the clinical history page of the patient. Select **Back to Patient** to return. See [View the clinical history](../condition/view-clinical-history.mdx). | With Can view clinical data about patients. |
+
+The **Notes** tab always shows. Care lists the notes only with Can view clinical data about patients through a role on the patient.
+
+Inside a facility, the **Accounts** tab lists the accounts only if you have Can Read Account at the facility.
+
+Inside a facility, if the patient has no encounters, the **Encounters** tab says "No active encounters found". Users who can create encounters at the facility see **Create Encounter**. See [Create an encounter](../encounter/create-encounter.mdx).
+
+If you opened the profile without a facility, the profile has no **Schedule Appointment** and no **Edit** in **General Info**. **Edit** in **Patient Tags** still shows for users who can update the patient. The **Requests** tab has no **Create Request**.
+
+![The Appointments tab outlined, with Upcoming selected and three booked appointments](/media/clinical/patient/view-patient-profile-6.png)
+
+![The Encounters tab outlined, with one in-progress encounter and View Encounter](/media/clinical/patient/view-patient-profile-7.png)
+
+![The Updates tab outlined, with Add Patient Updates and No responses found](/media/clinical/patient/view-patient-profile-8.png)
+
+![The Referrals tab outlined, with Filter, New Referral and No referrals found](/media/clinical/patient/view-patient-profile-9.png)
+
+![The Requests tab outlined, with Create Request and No requests found](/media/clinical/patient/view-patient-profile-10.png)
+
+![The Users tab outlined, with Assign User and No User Assigned to this patient](/media/clinical/patient/view-patient-profile-11.png)
+
+![The Notes tab outlined, with the Discussions list, New and Start New Discussion](/media/clinical/patient/view-patient-profile-12.png)
+
+![The Files tab outlined, with the Files and Reports tabs, Add Files and No files found](/media/clinical/patient/view-patient-profile-13.png)
+
+![The Accounts tab outlined, with the Account Status filter set to Active and No accounts found](/media/clinical/patient/view-patient-profile-14.png)
+
+![The patient's clinical history page, with the back arrow of Back to Patient outlined](/media/clinical/patient/view-patient-profile-15.png)
 
 ## Expected Outcome
 
-- Care shows the patient's profile.
-- You read the patient's information in the tabs that your permissions allow.
+- Care shows the patient's profile, titled **Patient Details**, on the **Demography** tab.
+- Care shows the tabs that your roles on the patient allow.
+- If Care cannot open the patient for you, the page shows **Patient Not Found** and an error message.
 
 ## Related
 
 Concepts:
 
 - [Patient](../../../concepts/clinical/patient)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+- [Questionnaire Response](../../../concepts/clinical/questionnaire-response.mdx)
+- [Files](../../../concepts/clinical/files.mdx)
+- [Notes](../../../concepts/clinical/notes.mdx)
+- [Account](../../../concepts/billing/account.mdx)
 
 Flows:
 
 - [Search for a patient](./search-patient.mdx)
-- [Update patient details](./update-patient-details.mdx)
+- [Open Patient Home](./open-patient-home.mdx)
+- [View an organization's patients](./view-organization-patients.mdx)
+- [Update a patient's details](./update-patient-details.mdx)
+- [Mark a patient as deceased](./mark-patient-deceased.mdx)
+- [Manage a patient's identifiers](./manage-patient-identifiers.mdx)
 - [Manage patient tags](./manage-patient-tags.mdx)
-- [Manage patient users](./manage-patient-users.mdx)
+- [Manage the users assigned to a patient](./manage-patient-users.mdx)
 - [View a patient's appointments and tokens](./view-patient-appointments.mdx)

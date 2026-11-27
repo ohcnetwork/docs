@@ -2,67 +2,117 @@
 sidebar_position: 4
 ---
 
-# Update patient details
+# Update a patient's details
 
 ## Overview
 
-This flow describes how to update the details of a [patient](../../../concepts/clinical/patient) in Care. You edit the details from the patient's profile.
+This flow describes how to change the details of a [patient](../../../concepts/clinical/patient) who is registered in Care. You change the details on the **Update Patient Details** form, which you open from the patient's profile.
+
+<video src="/media/clinical/patient/update-patient-details.mp4" poster="/media/clinical/patient/update-patient-details.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/patient/update-patient-details.vtt" srcLang="en" label="English" default />
+</video>
 
 ## Pre-requisites
 
 - The patient is registered in Care.
-- You can open the patient's profile.
+- You have a role in the facility's Administration department or in one of its departments or teams.
+- You can open the patient's profile inside the facility. See [View a patient's profile](./view-patient-profile.mdx).
+- You have a role on the patient. For example, you hold a role in the department of the patient's open encounter. A role in the facility's Administration department also counts while the patient has an open encounter there. The [patient](../../../concepts/clinical/patient) concept lists every way to have a role on a patient.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Update a Patient's data | Lets you edit the details of a patient. |
+| Can Update a Patient's data | Save your changes. Care shows **Edit** in **General Info** only if you hold it. You need it through a role on the patient. By default, the Staff, Doctor, Nurse, Administrator and Facility Admin roles hold it. |
+| Can view clinical data about patients | Open the patient's profile. You need it through a role on the patient. By default, the Staff, Doctor, Nurse and Facility Admin roles hold it. |
+| Can list patients | Open the patient's profile, in place of Can view clinical data about patients. A role in a facility does not count: you need it in a government organization that covers the patient. If you are assigned to the patient on the **Users** tab, you need neither of these two permissions. By default, the Staff, Doctor, Nurse, Volunteer and Administrator roles hold it. The Pharmacist and Facility Admin roles hold it too, but Care does not offer them for a government organization. |
+| Can Read Tag Config | Open Patient Home and then the profile inside the facility. Hold it in the facility's Administration department or in one of its departments or teams. A role in a government organization does not count. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
 
 ## Steps
 
 ### 1. Open the patient's profile
 
-Open the profile of the patient that you want to update. See [View a patient's profile](./view-patient-profile.mdx).
+Open the patient's profile from Patient Home. See [View a patient's profile](./view-patient-profile.mdx).
 
-### 2. Select Edit
+Note: **Edit** in **General Info** shows only when you open the profile inside a facility. If you opened the profile from an organization's **Patients** tab, open it again from Patient Home.
 
-Go to the "General Info" section or the "Additional Details" section. Select the Edit action on that section. Care opens the registration form. The form shows the current details of the patient.
+Note: To open the profile inside a facility, you need a role in that facility. If your only role is in a government organization, you can open the profile only without a facility. Then the profile has no **Edit** in **General Info**.
 
-### 3. Update the details
+Note: A role only in a department unrelated to the patient's open encounters is not a role on the patient. With only such a role, the profile shows **Patient Not Found**.
 
-Change the details that you want to update. You can update these fields:
+![The patient's profile with the General Info section of the Demography tab outlined](/media/clinical/patient/update-patient-details-1.png)
+
+### 2. Open the update form
+
+On the **Demography** tab, go to the **General Info** section.
+
+Select **Edit**. Care opens the **Update Patient Details** form.
+
+The form shows the patient's current details.
+
+If the profile shows an **Additional Details** section, its **Edit** opens the same form. The profile shows that section only when your deployment adds extra patient fields and the patient has values in them.
+
+![The General Info section with the Edit button outlined](/media/clinical/patient/update-patient-details-2.png)
+
+### 3. Change the details
+
+The form has two sections, **Patient Basics** and **Additional Details**. Change the fields that you want to update.
+
+Note: On some deployments, the **Additional Details** section is closed when the form opens. Open the section to see its fields.
+
+The **Patient Basics** section has these fields:
 
 | Components | What it captures |
 | --- | --- |
-| Name | The name of the patient. |
-| Gender | The gender of the patient. |
-| Phone Number | The primary contact number of the patient. |
-| Emergency Phone Number | The contact number for emergencies. |
-| Date of birth or Age | The date of birth of the patient, or the age. |
-| Blood Group | The blood group of the patient. |
-| Address | The current address of the patient. |
-| Permanent Address | The permanent address of the patient. |
-| PIN Code | The postal code of the address. |
-| Geo Organization | The administrative area of the patient. |
-| Is Deceased | The deceased status of the patient, with the date and time. |
+| **Name** | The patient's name. This field is required. |
+| **Phone Number** | The patient's phone number. This field is required. If the number is not valid, Care shows "Entered phone number is not valid". |
+| **Use a different emergency contact number** | Tick this box to enter an **Emergency Phone Number**. If the box is not ticked, Care saves the phone number as the emergency number. When the box is ticked, **Emergency Phone Number** is required. If you leave it empty, Care does not save the change. |
+| **Sex** | **Male**, **Female**, **Transgender** or **Non-binary**. This field is required. |
+| **Date of Birth/Age** | This field is required. On the **Date** tab, enter the date of birth. It cannot be in the future. On the **Age** tab, enter the age in years, from 1 to 120. |
+| **Blood Group** | The patient's blood group. This field is optional. |
+| Required identifiers | One field for each required identifier of your deployment. The label is the name of the identifier. |
 
-The form uses the same fields and the same validation rules as registration. For the details of each field, see [Register a patient](./register-patient.mdx).
+The **Additional Details** section has these fields:
 
-To record the death of a patient, see [Mark a patient as deceased](./mark-patient-deceased.mdx).
+| Components | What it captures |
+| --- | --- |
+| **Address** | The patient's current address. This field is required, unless your deployment makes it optional. |
+| **Permanent address is different from current address** | Tick this box to enter a **Permanent Address**. If the box is not ticked, Care saves the address as the permanent address. |
+| **PIN Code** | The PIN code of the address. This field is optional. It has 6 digits. |
+| Geo organization levels | One dropdown for each level of the patient's geo organization, such as **State**. Select the levels in order. Select down to the last level, unless your deployment needs fewer levels. |
+| Optional identifiers | One field for each optional identifier of your deployment. |
+| **Deceased Status** | **Mark as deceased** and the **Date and Time of Death**. See [Mark a patient as deceased](./mark-patient-deceased.mdx). |
+| Generated identifiers | The identifiers that Care generates. You cannot type in these fields. Care does not fill an empty one when you update the patient. |
+| Extra fields | The fields that your deployment adds, at the end of the section. |
 
-Note: If you leave the form with unsaved changes, Care shows a warning first.
+Keep these points in mind:
+
+- If you enter an age, Care replaces the stored date of birth with a year of birth.
+- If you clear the field of an optional identifier, Care removes that identifier from the patient. See [Manage a patient's identifiers](./manage-patient-identifiers.mdx).
+- You cannot clear a required identifier. If you leave it empty, Care shows "This field is required".
+- The form has no **Patient Tags** field. To change the tags, see [Manage patient tags](./manage-patient-tags.mdx).
+- This form does not show **Patient Records Found** when another patient has the same phone number.
+
+![The Additional Details section of the Update Patient Details form, with a new address typed in the outlined Address field](/media/clinical/patient/update-patient-details-3.png)
 
 ### 4. Save the changes
 
-Save the form. Care shows a success message. Care returns you to the patient's profile.
+Select **Update**. You can also press Shift+Enter.
+
+**Update** is available only after you change something on the form.
+
+If you leave the form before you save, Care asks "You have unsaved changes. Are you sure you want to leave?"
+
+![The end of the Update Patient Details form with the Update button outlined](/media/clinical/patient/update-patient-details-4.png)
+
+![The profile after saving, with the message Patient Updated Successfully and the General Info section outlined, showing the new address](/media/clinical/patient/update-patient-details-5.png)
 
 ## Expected Outcome
 
 - Care saves the new details of the patient.
-- Care shows a success message.
-- Care shows the patient's profile with the new details.
+- Care shows "Patient Updated Successfully".
+- Care returns you to the previous page.
 
 ## Related
 
@@ -72,6 +122,8 @@ Concepts:
 
 Flows:
 
-- [Register a patient](./register-patient.mdx)
 - [View a patient's profile](./view-patient-profile.mdx)
+- [Register a patient](./register-patient.mdx)
 - [Mark a patient as deceased](./mark-patient-deceased.mdx)
+- [Manage a patient's identifiers](./manage-patient-identifiers.mdx)
+- [Manage patient tags](./manage-patient-tags.mdx)

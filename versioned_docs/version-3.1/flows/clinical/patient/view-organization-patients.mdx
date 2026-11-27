@@ -1,0 +1,115 @@
+---
+sidebar_position: 11
+---
+
+# View an organization's patients
+
+## Overview
+
+This flow describes how to see the [patients](../../../concepts/clinical/patient) of a government [organization](../../../concepts/access-governance/organization.mdx) on its **Patients** tab, and how to open one of them. The list shows the patients that the organization covers. A [responsibility](../../../concepts/access-governance/responsibility.mdx) also has a **Patients** tab; step 1 says how to reach it.
+
+<video src="/media/clinical/patient/view-organization-patients.mp4" poster="/media/clinical/patient/view-organization-patients.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/patient/view-organization-patients.vtt" srcLang="en" label="English" default />
+</video>
+
+## Pre-requisites
+
+- You have a role in the government organization, or in an organization above it. A role in a facility or in a department does not count here.
+- If you want the **Patients** tab of a responsibility, you have a role in that responsibility.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can list patients | For a government organization: see the **Patients** tab, see the patients in the list, and open them. You need it through a role in this organization or in an organization above it. The list shows only the patients that you may list: patients covered by an organization where you hold it, and patients assigned to you. By default, the Staff, Doctor, Nurse, Volunteer and Administrator roles hold it. The Pharmacist and Facility Admin roles hold it too, but Care does not offer them for a government organization. For a responsibility: see the **Patients** tab. You need it through your role in that responsibility. By default, the Admin role of a responsibility holds it. |
+| Can View Organizations | Open a child organization from the **Organizations** tab of its parent. You need it in the parent organization or in an organization above it. By default, every default role holds it. |
+
+## Steps
+
+### 1. Open the organization
+
+On your dashboard, select the **Governance** tab. It lists the government organizations where you hold a role.
+
+Care shows the **Governance** tab only when it has organizations.
+
+Select the card of the organization.
+
+You can also use the sidebar of any organization page. The **Organizations** section of the sidebar lists the same organizations.
+
+For a responsibility, select the **Responsibilities** tab on your dashboard. Then select the card of the responsibility.
+
+![The Governance tab of the dashboard, with the card of the organization Ernakulam outlined](/media/clinical/patient/view-organization-patients-1.png)
+
+### 2. Open a child organization
+
+Do this step only if you want the patients of an organization below this one.
+
+Select the **Organizations** tab.
+
+Select the child organization.
+
+Note: Only government organizations and team organizations have the **Organizations** tab. Care shows it only if you hold Can View Organizations there. A responsibility has no **Organizations** tab.
+
+### 3. Open the Patients tab
+
+Select the **Patients** tab.
+
+Care shows the **Patients** tab only if you hold Can list patients in this organization or one above it.
+
+The page heading is the name of the organization. The section has the heading **Patients** and the text "View patients associated with this organization."
+
+If Care cannot load the organization, the page shows only "No Organizations Found".
+
+![The Patients tab of the organization, with the text View patients associated with this organization outlined above the patient list](/media/clinical/patient/view-organization-patients-2.png)
+
+### 4. Find a patient
+
+In the search field, select **Name** or **Phone Number**.
+
+For **Name**, type any part of the name of the patient. Capital letters do not matter.
+
+For **Phone Number**, type the complete phone number. Care searches only when the number has 13 characters or more. It finds only an exact match.
+
+The list shows these columns.
+
+| Column | What it shows |
+| --- | --- |
+| **Patient** | The name of the patient. |
+| **Phone** | The phone number of the patient. |
+| **Gender** | The sex of the patient: Male, Female, Transgender or Non-binary. |
+| **Last Modified** | When the details of the patient last changed, as a time relative to now. |
+
+The list shows 15 patients on each page.
+
+If no patient matches, the list shows "No Patients Found".
+
+![The patient list outlined after a search by name, showing one patient with Open](/media/clinical/patient/view-organization-patients-3.png)
+
+### 5. Open a patient
+
+On the row of the patient, select **Open**. You can also select the row.
+
+Care opens the profile of the patient without a facility.
+
+![The patient's profile opened without a facility, with the General Info section outlined](/media/clinical/patient/view-organization-patients-4.png)
+
+## Expected Outcome
+
+- You see the patients that the government organization covers, limited to the patients that you may list.
+- When you select **Open**, Care opens the profile of the patient without a facility. On this profile, Care does not show **Schedule Appointment** or the **Edit** button of **General Info**.
+
+## Related
+
+Concepts:
+
+- [Patient](../../../concepts/clinical/patient)
+- [Organisation](../../../concepts/access-governance/organization.mdx)
+- [Responsibility](../../../concepts/access-governance/responsibility.mdx)
+
+Flows:
+
+- [View a patient's profile](./view-patient-profile.mdx)
+- [Search for a patient](./search-patient.mdx)
+- [View the organization hierarchy](../../access-governance/organization/view-organization-hierarchy.mdx)
+- [View your responsibilities](../../access-governance/responsibility/view-your-responsibilities.mdx)

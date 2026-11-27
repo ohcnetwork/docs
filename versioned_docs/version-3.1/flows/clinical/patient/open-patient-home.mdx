@@ -1,0 +1,160 @@
+---
+sidebar_position: 10
+---
+
+# Open Patient Home
+
+## Overview
+
+This flow describes how to open Patient Home, the page for one [patient](../../../concepts/clinical/patient) inside a facility. Search and registration both end on Patient Home. From it, you start the next task for the patient, such as an encounter or an appointment.
+
+<video src="/media/clinical/patient/open-patient-home.mp4" poster="/media/clinical/patient/open-patient-home.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/patient/open-patient-home.vtt" srcLang="en" label="English" default />
+</video>
+
+## Pre-requisites
+
+- The patient is registered in Care.
+- You have a role in the facility's Administration department or in one of its departments or teams.
+- You start from **Search patients**, the registration form, the patient's profile, an encounter or an appointment. Care takes the patient's phone number and the start of the patient's ID from that page.
+- If Care asks for the patient's year of birth, you know it. Patient Home shows the patient only if the year is correct.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Read Tag Config | Open Patient Home, and the profile in step 6. You need it in the facility's Administration department or in one of its departments or teams. A role in a government organization does not count. Patient Home needs no patient permission. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can list encounters | See the encounter list on the **Encounters** tab. You need it at this facility. By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can list patients | Load the encounter list. You need it through a role on the patient, for example a role in a department of one of the patient's open encounters. A role in the facility's Administration department also counts while the patient has an open encounter at the facility. Step 6: in place of Can view clinical data about patients, it opens the profile when you hold it in a government organization that covers the patient. A role in a facility does not count for this. If you are assigned to the patient on the **Users** tab, you need neither. By default, the Staff, Doctor, Nurse, Administrator, Facility Admin, Volunteer and Pharmacist roles hold it. Care does not offer the Pharmacist and Facility Admin roles for a government organization. |
+| Can view clinical data about patients | Step 6: open the patient's profile. You need it through a role on the patient. By default, the Staff, Doctor, Nurse and Facility Admin roles hold it. |
+| Can Create encounter | See **Create Encounter**. You need it at this facility. By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can update bookings on Object | See **Schedule Appointment** and the **Appointments** tab. You need it at this facility. By default, the Staff, Facility Admin, Doctor and Nurse roles hold it. |
+| Can list bookings on Object | See the **Upcoming Appointment** card and load the patient's appointments at this facility. You need it at this facility. By default, the Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can list token on Object | See the patient's tokens at this facility. You need it at this facility. By default, the Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can Create on Token | See **Generate Token**, if your deployment turns it on. You need it at this facility. By default, the Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+
+Note: "At this facility" means a role in the facility's Administration department or in one of its departments or teams.
+
+## Steps
+
+### 1. Open Patient Home
+
+Open Patient Home in one of these ways.
+
+- From **Search patients**: select the patient. If Care asks for the year of birth, enter it. Then select **Verify**. See [Search for a patient](./search-patient.mdx).
+- After you register a patient: Care opens Patient Home. See [Register a patient](./register-patient.mdx).
+- From the patient's profile: in the **Actions** panel, select **Patient Home**.
+- From an encounter or an appointment: select the patient's name. In the pop-up, select **Patient Home**.
+
+If no patient matches, Care shows **Verification Failed** and "Please enter the correct birth year to verify the patient details."
+
+Care also shows **Verification Failed** if you do not have Can Read Tag Config in this facility. Then Care also shows the message "Cannot view facility tags".
+
+Select **Go Back** to return to the previous page. If there is no previous page in Care, Care opens **Search patients**.
+
+![Patient Home with the patient card, the action buttons, the Encounters tab and the Tokens panel](/media/clinical/patient/open-patient-home-1.png)
+
+### 2. Check the patient card
+
+The patient card shows the patient's name and tags.
+
+If the patient has no tags, the card shows "No tags assigned".
+
+To apply or remove tags, select **Add Tags** or **Manage Tags** on the card. See [Manage patient tags](./manage-patient-tags.mdx).
+
+Care shows **Add Tags** or **Manage Tags** to everyone who opens Patient Home. To save a change, you need the permissions in [Manage patient tags](./manage-patient-tags.mdx).
+
+![The patient card outlined, showing the patient's name, age, sex, a tag and Manage Tags](/media/clinical/patient/open-patient-home-2.png)
+
+### 3. Start a task with the action buttons
+
+Patient Home shows these buttons when your permissions at this facility allow them.
+
+| Button | What it does |
+| --- | --- |
+| **Create Encounter** | Opens the form to create an encounter for the patient. Keyboard shortcut: `e`. See [Create an encounter](../encounter/create-encounter.mdx). |
+| **Schedule Appointment** | Opens the **Book Appointment** panel for the patient. Keyboard shortcut: `s`. |
+| **Generate Token** | Shows only when your deployment turns it on. Keyboard shortcut: `t`. See [Create a token](../../scheduling/token/create-token.mdx). |
+| **View Accounts** | Opens the facility's active accounts for this patient. Care always shows this button. Keyboard shortcut: `a`. |
+
+Note: A keyboard shortcut works only when its button shows on the page.
+
+![The action buttons Create Encounter, Schedule Appointment and View Accounts, outlined](/media/clinical/patient/open-patient-home-3.png)
+
+### 4. View the patient's encounters
+
+Patient Home opens on the **Encounters** tab.
+
+Select **Active** or **Completed**.
+
+- **Active**: encounters that are Planned, In Progress or On Hold.
+- **Completed**: encounters that are Discharged, Completed, Cancelled, Discontinued or Entered in error.
+
+The list shows the patient's encounters at every facility, not only at this facility.
+
+If there are no encounters, Care shows "No active encounters found" or "No completed encounters found".
+
+If you do not have Can list encounters at this facility, Care does not show the list.
+
+To load the list, you also need Can list patients through a role on the patient. See the Permissions section.
+
+![The encounter list outlined, with Active selected and one in-progress encounter with View Encounter](/media/clinical/patient/open-patient-home-4.png)
+
+### 5. View the patient's appointments and tokens
+
+The **Upcoming Appointment** card shows the patient's appointment today at this facility.
+
+If the patient has more than one appointment today, the card has a link to all of them. The link opens the **Appointments** tab.
+
+If you do not have Can update bookings on Object at this facility, Patient Home has no **Appointments** tab.
+
+The **Appointments** tab lists the patient's appointments at this facility.
+
+On a large screen, the patient's tokens at this facility show in a side panel. On a smaller screen, they show in the **Tokens** tab.
+
+The token list shows the tokens of one date, up to 50.
+
+For details, see [View a patient's appointments and tokens](./view-patient-appointments.mdx).
+
+![The Appointments tab of Patient Home, with Upcoming selected and the list of two booked appointments outlined](/media/clinical/patient/open-patient-home-5.png)
+
+### 6. Open the patient's profile
+
+Select the patient's name on the patient card.
+
+In the pop-up, select **View Profile**.
+
+Care opens the patient's profile, **Patient Details**. See [View a patient's profile](./view-patient-profile.mdx).
+
+If Care cannot open the patient for you, the profile shows **Patient Not Found**. Patient Home needs no patient permission, but the profile does.
+
+![The pop-up that opens from the patient's name, with View Profile outlined above the patient's identifier, phone numbers, address and tags](/media/clinical/patient/open-patient-home-6.png)
+
+![The patient's profile, with the Patient Details heading outlined](/media/clinical/patient/open-patient-home-7.png)
+
+## Expected Outcome
+
+- Care shows Patient Home for the patient. Patient Home has the patient card, the **Encounters** tab and the action buttons that your permissions allow.
+- From Patient Home, you can create an encounter, schedule an appointment or open the patient's profile.
+
+## Related
+
+Concepts:
+
+- [Patient](../../../concepts/clinical/patient)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+- [Appointment Booking](../../../concepts/scheduling/booking.mdx)
+- [Token](../../../concepts/scheduling/token.mdx)
+- [Tag](../../../concepts/platform/tagging.mdx)
+- [Account](../../../concepts/billing/account.mdx)
+
+Flows:
+
+- [Search for a patient](./search-patient.mdx)
+- [Register a patient](./register-patient.mdx)
+- [View a patient's profile](./view-patient-profile.mdx)
+- [View a patient's appointments and tokens](./view-patient-appointments.mdx)
+- [Manage patient tags](./manage-patient-tags.mdx)
+- [Create an encounter](../encounter/create-encounter.mdx)
+- [Create a token](../../scheduling/token/create-token.mdx)

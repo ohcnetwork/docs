@@ -6,55 +6,139 @@ sidebar_position: 6
 
 ## Overview
 
-This flow describes how to add and remove tags on a [patient](../../../concepts/clinical/patient) in Care. Tags are labels that mark or categorize a patient, separate from clinical data.
+This flow describes how to apply [tags](../../../concepts/platform/tagging.mdx) to a [patient](../../../concepts/clinical/patient) and how to remove them. You can do this from the patient's profile or from Patient Home. Care saves each change at once, so there is no Save button. When you register a patient, you can also choose deployment-wide tags; see [Register a patient](./register-patient.mdx).
+
+<video src="/media/clinical/patient/manage-patient-tags.mp4" poster="/media/clinical/patient/manage-patient-tags.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/patient/manage-patient-tags.vtt" srcLang="en" label="English" default />
+</video>
 
 ## Pre-requisites
 
 - The patient is registered in Care.
-- You can access the patient's profile.
+- If you start from the profile, you can open the patient's profile. See [View a patient's profile](./view-patient-profile.mdx).
+- If you start from Patient Home, you opened Patient Home for the patient. See [Open Patient Home](./open-patient-home.mdx).
+- The tag that you want is set up for patients and is active. See [Create a tag](../../platform/tagging/create-a-tag.mdx).
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Update a Patient's data | Add and remove tags on an existing patient. |
+| Can Update a Patient's data | Apply and remove tags on this patient. You need it through a [role on the patient](../../../concepts/clinical/patient). On the profile, Care shows **Edit** in **Patient Tags** only if you hold it. By default, the Staff, Doctor, Nurse, Administrator and Facility Admin roles hold it. |
+| Can Apply Tag Config to Resources | Apply or remove each tag. Where you need it depends on the tag. If a department manages the tag, you need it in that department or in one above it. If an organization manages the tag, you need it in that organization or in one above it. If no one manages a facility tag, you need it in any department or team of that facility. Its Administration department counts too. If no one manages a deployment-wide tag, you need it in any department or team of any facility. By default, the Staff, Doctor, Nurse, Pharmacist and Facility Admin roles hold it. The Administrator and Volunteer roles do not. |
+| Can Read Tag Config | Inside a facility: open the profile or Patient Home, and see the facility's tags in the picker. Hold it in the facility's Administration department or in one of its departments or teams. A role in a government organization does not count. By default, the Staff, Doctor, Nurse, Pharmacist, Volunteer, Administrator and Facility Admin roles hold it. |
+| Can view clinical data about patients | Open the patient. Care opens the patient when it loads the profile, and again for each tag change. You need it through a role on the patient. By default, the Staff, Doctor, Nurse and Facility Admin roles hold it. |
+| Can list patients | Open the patient, in place of Can view clinical data about patients. You need it in a government organization that covers the patient. If you are assigned to the patient on the **Users** tab, you need neither of these two permissions to open the patient. By default, the Staff, Doctor, Nurse, Volunteer and Administrator roles hold it. The Pharmacist and Facility Admin roles hold it too, but Care does not offer them for a government organization. |
+
+By default, a Staff, Doctor, Nurse or Facility Admin role gives every permission above for a tag that no one manages.
+
+The role can be in a department of the patient's open encounter, or in one above it. A department of the encounter's current location also counts. So does the facility's Administration department, while the patient has an open encounter at the facility.
+
+By default, the Pharmacist role can apply tags, but it cannot update the patient. So it cannot change the patient's tags.
 
 ## Steps
 
-### 1. Open the patient's profile
+### 1. Open the tag picker
 
-Open the profile of the patient that you want to tag. See [View a patient's profile](./view-patient-profile.mdx).
+Open the picker from one of these places:
 
-### 2. Find the Patient Tags section
+- On the profile, Care opens the **Demography** tab first. In the **Patient Tags** section, select **Edit**.
+- On Patient Home, select **Add Tags** on the patient card. If the patient has tags, the control reads **Manage Tags**.
 
-Go to the **Patient Tags** section. This section shows the current tags of the patient.
+On a phone, the picker opens as a drawer titled **Manage Tags**. On a larger screen, it opens as a drop-down menu.
 
-### 3. Open the tag picker
+Note: If **Patient Tags** has no **Edit**, you lack Can Update a Patient's data on this patient.
 
-Select **Edit** in the **Patient Tags** section. Care opens the tag picker.
+Note: On Patient Home, Care shows **Add Tags** or **Manage Tags** to every user who opens Patient Home.
 
-### 4. Add or remove tags
+![The Patient Tags section of the Demography tab with the Edit button outlined](/media/clinical/patient/manage-patient-tags-1.png)
 
-Select a tag in the picker to add it to the patient. Remove a tag to take it off the patient.
+### 2. Find the tag
 
-### 5. Save the tags
+To find a tag by its name, type in the **Search tags...** box.
 
-Save your changes. Care updates the tags of the patient.
+The picker lists the tags under three headings.
 
-Note: You can also add tags when you register a new patient. See [Register a patient](./register-patient.mdx).
+| Heading | What it lists |
+| --- | --- |
+| **Selected Tags** | The tags that the patient has now. |
+| **Tag Groups** | The tag groups. Each group has a **Group** badge. Select a group to see its tags, each with a checkbox. |
+| **Other Tags** | The tags that are not in a group. |
+
+A tag group is a parent tag with its child tags, as set up in tag configuration. See [Parent and child tags](../../../concepts/platform/tagging.mdx#parent-and-child-tags).
+
+Inside a facility, the picker offers the facility's tags and the deployment-wide tags.
+
+If you opened the profile from an organization's patient list, Care opened it without a facility. The picker then offers only deployment-wide tags. See [View an organization's patients](./view-organization-patients.mdx).
+
+If Care has no tags to offer, the picker shows "No tags or groups found".
+
+![The tag picker outlined, with Search tags..., Selected Tags and Tag Groups](/media/clinical/patient/manage-patient-tags-2.png)
+
+![The tags of the Care Programme group outlined, each with a checkbox, beside the tag picker](/media/clinical/patient/manage-patient-tags-3.png)
+
+### 3. Apply a tag
+
+Select a tag that the patient does not have.
+
+If Care asks for an expiry, go to step 4.
+
+If Care does not ask, it saves the tag at once and shows "Tags updated successfully".
+
+When Care does not ask for an expiry, the tag gets its default expiry, if it has one.
+
+If the patient already has a tag from the same group, the new tag replaces it. A patient can have only one tag from each group.
+
+### 4. Set the expiry
+
+Do this step only if Care asks for an expiry.
+
+Care asks when the setup of the tag lets you change its expiry. The step is titled "Set expiry for", followed by the tag name.
+
+Enter the expiry in days, hours and minutes.
+
+Below the fields, Care shows the default expiry of the tag. If the tag has no default, Care shows "Leave empty to apply without an expiry."
+
+The expiry can be 3650 days at most. If it is longer, Care shows an error, and you cannot apply the tag.
+
+Select **Apply tag**. Care saves the tag and shows "Tags updated successfully".
+
+When the expiry passes, Care removes the tag from the patient later.
+
+![The Set expiry for Diabetes Clinic step outlined, with 180 days entered and the Apply tag button](/media/clinical/patient/manage-patient-tags-4.png)
+
+### 5. Remove a tag
+
+Select a tag that the patient has. These tags are under **Selected Tags**.
+
+Care removes the tag at once and shows "Tags updated successfully".
+
+Note: If Care cannot save a change, it shows an error message. The picker then goes back to the tags that the patient had.
+
+![The tag picker with the selected tag Follow-up Call Due outlined under Selected Tags](/media/clinical/patient/manage-patient-tags-5.png)
+
+![The Patient Tags section outlined, showing the tag that remains after the change](/media/clinical/patient/manage-patient-tags-6.png)
 
 ## Expected Outcome
 
-- The **Patient Tags** section shows the updated tags of the patient.
+- Care shows "Tags updated successfully" after each change.
+- The **Patient Tags** section shows one row for each tag. For a tag in a group, the row shows the group name and the tag name.
+- The header of the profile shows the tags next to **Patient Tags**.
+- On Patient Home, the patient card shows **Manage Tags**. If you removed every tag, it shows "No tags assigned" and **Add Tags**.
 
 ## Related
 
 Concepts:
 
 - [Patient](../../../concepts/clinical/patient)
+- [Tag](../../../concepts/platform/tagging.mdx)
 
 Flows:
 
-- [Register a patient](./register-patient.mdx)
+- [Open Patient Home](./open-patient-home.mdx)
 - [View a patient's profile](./view-patient-profile.mdx)
+- [Register a patient](./register-patient.mdx)
+- [View an organization's patients](./view-organization-patients.mdx)
+- [Create a tag](../../platform/tagging/create-a-tag.mdx)
+- [Create a child tag](../../platform/tagging/create-a-child-tag.mdx)
+- [View tags](../../platform/tagging/view-tags.mdx)
