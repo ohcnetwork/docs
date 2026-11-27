@@ -1,0 +1,124 @@
+---
+sidebar_position: 8
+---
+
+# Respond to a referral
+
+## Overview
+
+<video src="/media/clinical/referral/respond-to-a-referral.mp4" poster="/media/clinical/referral/respond-to-a-referral.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/referral/respond-to-a-referral.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to answer a [referral](../../../concepts/clinical/referral.mdx) with a response form. You can share records with the response, and you can complete the referral when you save.
+
+## Pre-requisites
+
+- You can open the referral page.
+- The referral availability has an active response form.
+- If you want to complete the referral when you save, its status is Pending or In progress.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Update Referrals | Lets you see **Respond**, save a response, share response records and complete the referral. By default, the Admin, Administrator, Doctor, Facility Admin, Nurse, Staff, Manager and Member roles have this permission. |
+| Can Read Referrals | Lets you open the referral page and its forms. By default, the same roles have this permission. |
+
+Note: You need each permission at one end of the referral, the sending end or the receiving end.
+
+- Sending end, referral from an encounter: you need the permission through a role in a department of the encounter or a department above it, or in the facility's root department, Administration. A role in the department of the encounter's current location also counts.
+- Sending end, referral sent from the patient's page: you need the permission through a role on the patient.
+- Receiving end, referral availability of a facility: you need the permission through a role in the facility's root department, Administration.
+- Receiving end, referral availability of a department: you need the permission through a role in that department or a department above it. A role only in the Administration department does not count for a department.
+- Receiving end, referral availability of an organization: you need the permission through a role in that organization or an organization above it.
+
+A role on the patient comes from the organizations of the patient's open encounters and their current locations, from the patient's own organizations, or from a direct link to the patient.
+
+To share an existing record with **Add record**, you also need permission to read that record. See [Share records with a referral](./share-records-with-a-referral.mdx).
+
+## Steps
+
+### 1. Open the respond page
+
+You can open the respond page from three places:
+
+- On the referral page, in **Responses**, select **Respond**. It is the green button at the right of the section. After the first completed response, the button reads **Add response**. Care shows this button in every status of the referral.
+- On the referral page, in **Appointment and visit**, select **Respond** on the linked appointment. Care shows it when the appointment has an encounter and the status is Pending or In progress.
+- On an encounter that you opened from the referral, in the **Referral review** panel, select **Respond**. Care shows it while the status is Pending or In progress.
+
+Care opens the respond page on the full screen. It has the tabs **Respond** and **Referral and shared records**.
+
+If you cannot update the referral, the respond page shows **Read only** and the message "You can view this referral, but you do not have permission to add a response."
+
+### 2. Choose the form
+
+Care shows the active response forms of the referral availability.
+
+If there is more than one form, select the form in **Form**. If there is only one, Care shows it at once.
+
+If there is no form, Care shows the message "No active forms are configured for this referral."
+
+A person with Can Manage Referral Availabilities can add a response form to the referral availability. See [Change or remove referral availability](./change-referral-availability.mdx).
+
+### 3. Answer the form
+
+Answer the questions of the form. A red asterisk (*) marks a required question.
+
+![The response form on the respond page, with red asterisks on the required questions](/media/clinical/referral/respond-to-a-referral-3.png)
+
+![Answers typed in the response form, and the Draft label on the Respond tab](/media/clinical/referral/respond-to-a-referral-4.png)
+
+The respond page also has a **Referral and shared records** tab.
+
+### 4. Share response records
+
+This step is optional.
+
+Go to the **Response records** section. The section reads "Records are shared immediately and remain attached if you discard unsaved answers."
+
+To share a record, select **Add record** or **Upload file**. For the steps, see [Share records with a referral](./share-records-with-a-referral.mdx).
+
+For **Diagnosis**, **Response** and **Diagnostic report** records, Care shows **Records from** when the response has a **Receiving encounter**. Use it to choose **Receiving encounter** or **All patient records**.
+
+### 5. Save the response
+
+Select one of the two save buttons at the bottom right of the page:
+
+- **Save response** saves your answers. Care shows the message "Form response saved".
+- **Save response and complete** saves your answers. Then Care sets the status of the referral to Completed. Care shows the message "Response saved and referral completed".
+
+Care shows **Save response and complete** only while the status is Pending or In progress.
+
+![The Save response and Save response and complete buttons at the bottom right of the respond page](/media/clinical/referral/respond-to-a-referral-5.png)
+
+After **Save response and complete**, Care opens the referral page again. It shows the status Completed.
+
+![The message Response saved and referral completed and the referral with the status Completed](/media/clinical/referral/respond-to-a-referral-toast.png)
+
+Care sets the status to Completed only if the referral is still Pending or In progress when you save.
+
+Note: If you leave the page with unsaved answers, Care asks "Discard response?" and shows "Your unsaved answers will be lost." To stay on the page, select **Keep editing**. Records that you shared in **Response records** stay on the referral.
+
+## Expected Outcome
+
+- Care saves your answers as a response on the referral.
+- On the referral page, the **Responses** section offers **Add response** for the next response.
+- The **Responses** section shows the records that you shared with the response. You cannot change them there.
+- If you selected **Save response and complete**, the status of the referral is Completed. The **Responses** section reads "This referral is completed."
+
+## Related
+
+Concepts:
+
+- [Referral](../../../concepts/clinical/referral.mdx)
+- [Questionnaire](../../../concepts/definitions/questionnaire.mdx)
+
+Flows:
+
+- [Share records with a referral](./share-records-with-a-referral.mdx)
+- [Book the referred patient's visit](./book-a-visit-for-a-referral.mdx)
+- [Change a referral's status](./change-a-referral-status.mdx)
+- [Mark a referral form as entered in error](./mark-a-referral-form-entered-in-error.mdx)
+- [Change or remove referral availability](./change-referral-availability.mdx)

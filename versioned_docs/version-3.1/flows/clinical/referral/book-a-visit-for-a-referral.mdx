@@ -1,0 +1,148 @@
+---
+sidebar_position: 7
+---
+
+# Book the referred patient's visit
+
+## Overview
+
+<video src="/media/clinical/referral/book-a-visit-for-a-referral.mp4" poster="/media/clinical/referral/book-a-visit-for-a-referral.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/referral/book-a-visit-for-a-referral.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how the receiving team starts a visit for the patient of a [referral](../../../concepts/clinical/referral.mdx). You can start a walk-in consultation now, or book an appointment for a scheduled visit.
+
+## Pre-requisites
+
+- You work at the receiving end of the referral, and you can open the referral page.
+- The status of the referral is Pending or In progress.
+- The referral was sent to a facility or to a department, not to an organization.
+- If the referral came from an encounter, the receiving facility is not the sending facility. For a department, the receiving facility is the facility of that department.
+- No appointment is linked to the referral yet.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Update Referrals | Lets you see **Start Consultation** and **Book appointment**, and link the appointment to the referral. By default, the Admin, Administrator, Doctor, Facility Admin, Nurse, Staff, Manager and Member roles have this permission. |
+| Can Read Referrals | Lets you open the referral page. By default, the same roles have this permission. |
+| Can Create encounter | Lets you see **Start Consultation** and start the encounter at the receiving facility. By default, the Admin, Doctor, Nurse and Facility Admin roles have this permission. |
+| Can update bookings on Object | Lets you see **Book appointment** and book the appointment at the receiving facility. By default, the Admin, Staff, Facility Admin, Doctor and Nurse roles have this permission. |
+| Can list bookings on Object | Lets you link the booked appointment to the referral. Where you need it depends on the schedule of the appointment. |
+
+Note: You need Can Read Referrals at one end of the referral, the sending end or the receiving end.
+
+Note: For **Start Consultation** and **Book appointment**, you need Can Update Referrals at the receiving end:
+
+- Referral availability of a facility: you need the permission through a role in the facility's root department, Administration.
+- Referral availability of a department: you need the permission through a role in that department or a department above it. A role only in the Administration department does not count for a department.
+
+Note: For **Start Consultation**, you need Can Create encounter in the receiving facility. For **Book appointment**, you need Can update bookings on Object there. A role in the Administration department or in any other department of that facility counts.
+
+Note: For Can list bookings on Object, you need a role in one of these places:
+
+- Appointment with a practitioner: the Administration department, or a department of the facility that the practitioner belongs to. A department above that one also counts.
+- Appointment for a healthcare service: the organization that manages the service, or an organization above it. With no managing organization: the Administration department.
+- Appointment for a location: an organization of the location.
+
+## Steps
+
+### 1. Open the Appointment and visit section
+
+Open the referral page. To find it, see [Find a referral](./find-a-referral.mdx).
+
+Go to the **Appointment and visit** section. It has a green **Start Consultation** button and a **Book appointment** button.
+
+![The Appointment and visit section with the Start Consultation and Book appointment buttons](/media/clinical/referral/book-a-visit-for-a-referral-1.png)
+
+The section offers a walk-in consultation at the receiving facility, or an appointment for a scheduled visit.
+
+To see the patient now, do step 2. To book a visit for later, do steps 3 and 4.
+
+Note: Care does not show **Start Consultation** or **Book appointment** if you opened the referral page from an appointment or an encounter.
+
+If the section does not offer these buttons, you can still respond to the referral. See [Respond to a referral](./respond-to-a-referral.mdx).
+
+### 2. Start a walk-in consultation
+
+Select **Start Consultation**.
+
+Care opens the encounter form for the receiving facility. The status of the encounter is already set to **In Progress**.
+
+Complete the form. Then save the encounter. For the fields, see [Create an encounter](../encounter/create-encounter.mdx).
+
+### 3. Book an appointment
+
+Select **Book appointment**.
+
+Care opens the appointments of the patient at the receiving facility. The page shows "Booking for referral:" followed by the title of the referral.
+
+The **Book Appointment** sheet opens on its own, with a **Return to referral** link at the top right.
+
+Under **Select resource type**, choose what the appointment is with: **Practitioner**, **Location** or **Healthcare Service**.
+
+For a practitioner, open **Practitioner** and select the practitioner. The list can show a department first. Select the department to see its practitioners.
+
+![The Practitioner list in the Book Appointment sheet, with the practitioners of a department](/media/clinical/referral/book-a-visit-for-a-referral-practitioner.png)
+
+The calendar shows how many slots are left on each day that has free slots. Select a day. Then select a slot in the list on the right.
+
+![A day selected in the calendar and its slots listed on the right](/media/clinical/referral/book-a-visit-for-a-referral-4.png)
+
+Select **Confirm Appointment** at the bottom right of the sheet.
+
+![A slot selected and the Confirm Appointment button](/media/clinical/referral/book-a-visit-for-a-referral-5.png)
+
+For how bookings work, see [Appointment Booking](../../../concepts/scheduling/booking.mdx).
+
+If you cannot book appointments at that facility, the booking page shows "Appointment booking is managed by the team at", the name of the facility, and "You need booking access at that facility to schedule a visit."
+
+If you cannot update the referral, Care shows the message "You do not have permission to link appointments to this referral."
+
+### 4. Check the link to the referral
+
+After you book the appointment, Care links it to the referral as a response record.
+
+Care shows "Appointment created successfully" and opens the **Appointment Details** page. Its **Referral appointment** panel reads "This appointment is linked to" followed by the title of the referral.
+
+![The Appointment Details page with the Referral appointment panel and the Return to referral button](/media/clinical/referral/book-a-visit-for-a-referral-7.png)
+
+If the link fails, the appointment stays booked. Care shows the message "The appointment is booked, but linking it to the referral failed. You can retry from the appointment details."
+
+To retry, use the **Referral appointment** panel of the appointment page. The panel shows only when the appointment page is opened for the referral.
+
+In the panel, select **Link appointment to referral**.
+
+The panel then reads "This appointment is linked to" followed by the title of the referral.
+
+To go back to the referral, select **Return to referral**.
+
+On the referral, **Appointment and visit** now shows the appointment and a **Manage appointment** button.
+
+![The Appointment and visit section showing the booked appointment and the Manage appointment button](/media/clinical/referral/book-a-visit-for-a-referral-linked.png)
+
+For how to start an encounter from an appointment, see [Create an encounter](../encounter/create-encounter.mdx).
+
+## Expected Outcome
+
+- If you started a walk-in consultation, the patient has an encounter at the receiving facility.
+- If you booked an appointment, the patient has an appointment at the receiving facility.
+- If you booked an appointment and the link succeeded, the appointment is linked to the referral as a response record.
+- After an appointment is linked, Care no longer offers **Start Consultation** or **Book appointment** on the referral.
+
+## Related
+
+Concepts:
+
+- [Referral](../../../concepts/clinical/referral.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+- [Appointment Booking](../../../concepts/scheduling/booking.mdx)
+
+Flows:
+
+- [Create an encounter](../encounter/create-encounter.mdx)
+- [View a patient's appointments and tokens](../patient/view-patient-appointments.mdx)
+- [Start a referral and assign the team](./start-and-assign-a-referral.mdx)
+- [Respond to a referral](./respond-to-a-referral.mdx)
+- [Share records with a referral](./share-records-with-a-referral.mdx)

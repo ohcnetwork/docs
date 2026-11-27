@@ -1,0 +1,89 @@
+---
+sidebar_position: 12
+---
+
+# Mark a referral form as entered in error
+
+## Overview
+
+<video src="/media/clinical/referral/mark-a-referral-form-entered-in-error.mp4" poster="/media/clinical/referral/mark-a-referral-form-entered-in-error.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/referral/mark-a-referral-form-entered-in-error.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to mark a request form or a response form on a [referral](../../../concepts/clinical/referral.mdx) as entered in error. Care keeps the original answers and shows the form as Entered in Error.
+
+## Pre-requisites
+
+- You can open the referral. [Find a referral](./find-a-referral.mdx) describes how.
+- Someone filled in a request form or a response form on the referral. The form is not marked as entered in error.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Update Referrals | Lets you mark a form on the referral as entered in error. By default, the Admin, Administrator, Doctor, Facility Admin, Nurse, Staff, Manager and Member roles have this permission. |
+| Can Read Referrals | Lets you open the referral and see its forms. By default, the same roles have this permission. |
+
+Note: You need each permission at one end of the referral, the sending end or the receiving end.
+
+- At the sending end, if the referral came from an encounter: you need the permission through a role in a department of the encounter or a department above it, or in the facility's root department, Administration. A role in the department of the encounter's current location also counts.
+- At the sending end, if the referral was sent from the patient's page: you need the permission through a role on the patient.
+- At the receiving end, if a facility published the referral availability: you need the permission through a role in the facility's root department, Administration.
+- At the receiving end, if a department published it: you need the permission through a role in that department or a department above it. A role only in the Administration department does not count for a department.
+- At the receiving end, if an organization published it: you need the permission through a role in that organization or an organization above it.
+
+A role on the patient comes from the organizations of the patient's open encounters and their current locations, from the patient's own organizations, or from a direct link to the patient.
+
+## Steps
+
+### 1. Open the referral
+
+Open the referral page. [Find a referral](./find-a-referral.mdx) describes how.
+
+### 2. Find the form
+
+Find the form in the **Request** section or in the **Responses** section. In the **Request** section, each form shows its title, the time and the name of the person who filled it in.
+
+### 3. Select Mark entered in error
+
+Select the ... button at the right of the form's title, next to the arrow that collapses the form. Screen readers announce it as **Form actions**.
+
+Select **Mark entered in error**. It is the only item of the menu, in red.
+
+![The ... button of a form in the Request section, with Mark entered in error in its menu](/media/clinical/referral/mark-a-referral-form-entered-in-error-form-actions.png)
+
+Note: Care shows the ... button only if you can update the referral. Care does not show it on a form that is already entered in error.
+
+### 4. Confirm the action
+
+Care opens the **Mark entered in error** dialog. The dialog names the form and says "The original answers will remain available in the referral."
+
+The dialog names the form only by its title. If the referral has two forms with the same title, check the answers in the form before you open its menu. The dialog does not show which of the two you chose.
+
+![The Mark entered in error dialog with Cancel and the Mark entered in error button](/media/clinical/referral/mark-a-referral-form-entered-in-error-4.png)
+
+Select **Mark entered in error** in the dialog to confirm.
+
+Care shows the message "Response marked as entered in error". The form shows the **Entered in Error** badge and is collapsed.
+
+![The message Response marked as entered in error and the form with the Entered in Error badge](/media/clinical/referral/mark-a-referral-form-entered-in-error-6.png)
+
+## Expected Outcome
+
+- The form shows the **Entered in Error** badge.
+- The form starts collapsed. The original answers stay available in the referral.
+- Care does not delete the filled-in form. It keeps the answers and marks the form **Entered in Error**.
+- The form no longer has the ... button.
+
+## Related
+
+Concepts:
+
+- [Referral](../../../concepts/clinical/referral.mdx)
+- [Questionnaire](../../../concepts/definitions/questionnaire.mdx)
+
+Flows:
+
+- [Respond to a referral](./respond-to-a-referral.mdx)
+- [Share records with a referral](./share-records-with-a-referral.mdx)

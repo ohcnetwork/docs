@@ -1,0 +1,155 @@
+---
+sidebar_position: 2
+---
+
+# Change or remove referral availability
+
+## Overview
+
+<video src="/media/clinical/referral/change-referral-availability.mp4" poster="/media/clinical/referral/change-referral-availability.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/referral/change-referral-availability.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to change a referral availability, stop new [referrals](../../../concepts/clinical/referral.mdx) to it, or delete it.
+
+You can change every detail except the referral type. When you delete a referral availability, Care keeps the referrals that were already sent to it.
+
+## Pre-requisites
+
+- Someone set up the referral availability. To add one, see [Set up referral availability](./set-up-referral-availability.mdx).
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Manage Referral Availabilities | Lets you open the Referral availability page, and add, change, and delete referral availability. For a facility, you need it through a role in the facility's root department, Administration. For a department, you need it through a role in that department or a department above it. A role only in the Administration department does not count for a department. For an organization, you need it through a role in that organization or an organization above it. By default, the Admin, Administrator, Facility Admin, and Manager roles have this permission. |
+| Can Read Questionnaires | Lets you add a questionnaire as a referral form. For a questionnaire of a facility, you need it in one of the [facility organizations](../../../concepts/access-governance/facility-organization.mdx) of that questionnaire. |
+
+## Steps
+
+### 1. Open the Referral availability page
+
+In the facility sidebar, select **Settings**. It is near the bottom of the sidebar, under the heading **Administration**. Care opens the facility settings.
+
+Under **Clinical**, select **Referral availability**.
+
+![The Referral availability item under Clinical in the facility settings sidebar](/media/clinical/referral/change-referral-availability-2.png)
+
+If the referral availability belongs to a department, select **Filter** next to the search box, then select the department under **Department**.
+
+If the referral availability belongs to an organization, start from the home page. Open the **Governance** tab or the **Responsibilities** tab. Select the organization.
+
+Then select the **Referral availability** tab of the organization. Care shows this tab only if you have the Can Manage Referral Availabilities permission in that organization.
+
+If you do not have the permission for the facility, department, or organization, Care shows "You cannot configure this destination".
+
+Note: If you have the permission only in a department, you see this message for the facility. Select **Filter**, then select your department under **Department** to continue.
+
+Note: A role only in the Administration department does not count for a department. You need a role in that department or a department above it.
+
+### 2. Find the referral availability
+
+The list shows the referral availability of the facility, department, or organization that you chose. It includes the Draft and Inactive ones.
+
+To find one by name, type in **Search referral availability**.
+
+![A name typed in Search referral availability and the matching referral availability in the list](/media/clinical/referral/change-referral-availability-3.png)
+
+To filter the list by status, select **Filter**, then **Status**, then Draft, Active, or Inactive.
+
+The list shows 15 referral availabilities on each page.
+
+If the list is empty, Care shows "No referral availability found".
+
+### 3. Open the referral availability
+
+On the row of the referral availability, select **Edit**. It is at the right of the row.
+
+![The Edit button at the right of a referral availability row](/media/clinical/referral/change-referral-availability-4.png)
+
+Care opens the **Edit referral availability** sheet.
+
+You can also delete the referral availability from this sheet or from the list. See step 7.
+
+### 4. Change the details
+
+Change the fields that you need. The sheet shows the current values.
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the referral availability. This field is required. It has at most 255 characters. |
+| Description | More information about the referral availability. This field is optional. |
+| Referral type | Consultation or Lab. Care shows the referral type greyed out. You cannot change it. |
+| Status | Draft, Active, or Inactive. Only an Active referral availability can receive new referrals. |
+| Accept referrals from other facilities | If on, users with permission to create referrals can find the referral availability and send referrals to it. If off, only some users can send referrals to it. They need the Can Submit to Private Referral Availabilities permission at that facility, department, or organization. |
+
+To stop new referrals and keep the referral availability, set **Status** to **Inactive**.
+
+![The Edit referral availability sheet with Status set to Inactive](/media/clinical/referral/change-referral-availability-5.png)
+
+When the status is not Active, senders cannot find the referral availability in the **Referral unit** list. Care also refuses new referrals to it.
+
+To accept referrals again, set **Status** to **Active**. The referral availability must have an active request form.
+
+### 5. Change the forms and add care team members
+
+To add a form, select the form type under **Referral forms**. Search for the questionnaire in **Search active forms**. Select the questionnaire.
+
+To remove a form, select the X at the right of the form.
+
+A form that is no longer active shows **Inactive form**.
+
+To add a person to the **Default care team**, select the person in **Select Member**. Select the role in **Select Role**. Then select **Add**.
+
+Note: Care copies the default care team to each new referral when the referral is sent.
+
+### 6. Save the changes
+
+Select **Save Changes** at the bottom right of the sheet.
+
+![The Edit referral availability sheet with Status set to Inactive and the Save Changes button at the bottom right](/media/clinical/referral/change-referral-availability-6.png)
+
+Care closes the sheet and shows "Referral availability updated". The row shows the saved name and status.
+
+![The message Referral availability updated and the row with the Inactive status](/media/clinical/referral/change-referral-availability-7.png)
+
+If you changed the forms and a form in the list is not active, Care shows "Remove inactive forms or replace them with active forms before saving." Remove the form or replace it with an active form.
+
+An Active referral availability must have an active request form. Care checks this when you set the status to Active or change the forms. If the request form is missing, Care shows "Add an active request form before activating this referral availability."
+
+If Care cannot save the referral availability, it shows "Unable to save referral availability. Review the details and try again."
+
+### 7. Delete the referral availability
+
+On the row of the referral availability, select the red trash button to the right of **Edit**. You can also select **Delete availability** at the bottom left of the **Edit referral availability** sheet.
+
+![The red trash button at the right of a referral availability row](/media/clinical/referral/change-referral-availability-8.png)
+
+Care opens the **Delete availability** dialog. The dialog says that the referral availability is no longer available for new referrals. Existing referrals are kept.
+
+Select **Delete availability** in the dialog to confirm.
+
+![The Delete availability dialog with the Delete availability button](/media/clinical/referral/change-referral-availability-9.png)
+
+Care shows "Referral availability deleted" and removes the referral availability from the list.
+
+If you do not have the permission, Care shows "You do not have permission to delete this referral availability."
+
+## Expected Outcome
+
+- If you saved changes, the list shows the referral availability with its new details.
+- If you set the status to Inactive, senders cannot find the referral availability or send new referrals to it.
+- If you deleted the referral availability, no one can send new referrals to it. Referrals that were already sent to it are kept.
+
+## Related
+
+Concepts:
+
+- [Referral](../../../concepts/clinical/referral.mdx)
+- [Questionnaire](../../../concepts/definitions/questionnaire.mdx)
+
+Flows:
+
+- [Set up referral availability](./set-up-referral-availability.mdx)
+- [Send a referral](./send-a-referral.mdx)

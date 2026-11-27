@@ -1,0 +1,201 @@
+---
+sidebar_position: 3
+---
+
+# Send a referral
+
+## Overview
+
+<video src="/media/clinical/referral/send-a-referral.mp4" poster="/media/clinical/referral/send-a-referral.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/referral/send-a-referral.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to send a [referral](../../../concepts/clinical/referral.mdx) for a patient to a referral availability that a facility, a department or an organization publishes.
+
+You choose where to refer the patient, give the reason, answer the request form of the referral availability, check the referral and send it. You can start from an encounter or from the patient's page.
+
+## Pre-requisites
+
+- The patient is registered in Care. You can open the patient's page or the encounter that the referral starts from.
+- The referral availability that you send to is active and has an active request form.
+- If you use the quick action on the encounter's overview, the encounter is active.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Referrals | Lets you see **New Referral** and send the referral. If you start from an encounter, you need it at the sending end, as described below. If you start from the patient's page, you need it through a role on the patient. By default, the Admin, Administrator, Doctor, Facility Admin, Nurse, Staff, Manager and Member roles have this permission. |
+| Can Submit to Private Referral Availabilities | Needed only when the referral availability is restricted. You need it at the receiving end, as described below. By default, the same roles have this permission. |
+| Can view clinical data about patients | Needed only for the quick action. It shows the quick actions on the encounter's overview. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles have this permission. |
+
+At the sending end, the place depends on where you start:
+
+- From an encounter: you need the permission through a role in a department of the encounter or a department above it, or in the facility's root department, Administration. A role in the department of the encounter's current location also counts.
+- From the patient's page: you need it through a role on the patient.
+
+A role on the patient comes from the organizations of the patient's open encounters and their current locations. It also comes from the patient's own organizations, or from a direct link to the patient.
+
+A completed, cancelled, discontinued or entered-in-error encounter gives no role on the patient.
+
+At the receiving end, you need the permission through a role in the place that publishes the referral availability:
+
+- For a facility, through a role in the Administration department.
+- For a department, through a role in that department or a department above it. A role only in the Administration department does not count for a department.
+- For an organization, through a role in that organization or an organization above it.
+
+Each referral availability is public or restricted. Its settings show **Public destination** or **Restricted destination**.
+
+What the **Referral unit** list shows depends on your roles:
+
+- It shows only active referral availabilities of the kind that you chose, sorted by name.
+- It shows every public referral availability, in any facility or organization.
+- It shows a restricted referral availability only if you have one of these permissions at its receiving end: Can Manage Referral Availabilities, Can Read Referral Availabilities, or Can Submit to Private Referral Availabilities.
+- The role counts in the same places as the receiving-end rules above.
+
+If you can see a restricted referral availability, you cannot always send to it. To send to it, you need Can Submit to Private Referral Availabilities.
+
+## Steps
+
+### 1. Open the New Referral form
+
+Start in one of these places:
+
+- On the encounter's overview, select **New Referral** in the quick actions.
+- On the encounter, open the **Referrals** tab and select **New Referral**.
+- On the patient's page, open the **Referrals** tab and select **New Referral**.
+
+On the encounter's overview, **New Referral** is a tile in the quick actions. The tile also shows the hint Shift + R.
+
+![The New Referral tile in the quick actions on the encounter's overview](/media/clinical/referral/send-a-referral-1.png)
+
+The quick action is shown only while the encounter is active. It is not shown when the encounter is completed, cancelled, discontinued or entered in error.
+
+The **New Referral** button on the encounter's **Referrals** tab is shown whatever the encounter's status.
+
+The encounter's workspace can hide the **Referrals** tab.
+
+If you start from the patient's page, the referral is not linked to an encounter.
+
+Care opens the **New Referral** form on the full screen, with the text "Choose a referral unit and answer the service’s questions."
+
+The form has the tabs **Request form** and **Patient Clinical History**. **Cancel** and **Review referral** are at the top right.
+
+![The New Referral form on the full screen, with the Destination and Reason for referral sections](/media/clinical/referral/send-a-referral-2.png)
+
+### 2. Choose where to refer
+
+In **Destination**, open **Refer to**.
+
+Select whether to refer to a facility, a department or an organization. **Refer to** starts at **Facilities**.
+
+| Option | Lists the referral availabilities of |
+| --- | --- |
+| **Facilities** | A facility. |
+| **Departments** | A department or team of a facility. |
+| **Organizations** | An organization. |
+
+![The Refer to list open, with Facilities, Departments and Organizations](/media/clinical/referral/send-a-referral-4.png)
+
+### 3. Choose the referral unit
+
+Open the **Referral unit** list.
+
+Type in **Search referral units** to find a referral availability.
+
+Select the referral availability. Each one shows its name and its referral type, **Consultation** or **Lab**, and its description if it has one.
+
+![The Referral unit list with its search box and a referral availability with its referral type](/media/clinical/referral/send-a-referral-5.png)
+
+The list shows 20 at a time. To see more, select **Load more**.
+
+If nothing matches, the list shows "No referral units found".
+
+If you do not find a referral availability, it can be restricted. See Permissions above.
+
+Care shows the referral availability under **Destination**. It fills **Referral title** with the name of the referral availability.
+
+To choose another one, select **Change destination**, at the right of **Destination**.
+
+![The chosen referral unit under Destination with the Change destination button, and the filled Referral title](/media/clinical/referral/send-a-referral-6.png)
+
+### 4. Give the reason for the referral
+
+In **Reason for referral**, check **Referral title**. The title is required, and has at most 255 characters.
+
+Change the title to describe the reason for the referral.
+
+If necessary, enter context for the receiving team in **Additional note (optional)**.
+
+![Referral title and Additional note (optional) under Reason for referral](/media/clinical/referral/send-a-referral-7.png)
+
+### 5. Answer the service questions
+
+**Service questions** is shown after you choose a referral unit. It shows the request form of the referral availability.
+
+If the referral availability has more than one request form, choose one in **Request form**.
+
+Answer the questions of the form. A red asterisk (*) marks a required question.
+
+![A request form under Service questions, with red asterisks on the required questions](/media/clinical/referral/send-a-referral-answers.png)
+
+If the referral availability has no active request form, Care shows "This destination doesn't have an active request form. Choose another destination or ask its administrator to add one."
+
+If the form has questions that referrals cannot use, Care shows "This form includes questions that aren't supported in referrals yet. Choose another form or ask its administrator to update it."
+
+Care sends your answers with the referral. They do not create clinical records for the patient.
+
+### 6. Review the referral
+
+Select **Review referral** at the top right.
+
+**Review referral** is disabled until you choose a referral unit and enter the title. It also stays disabled if the form has unsupported questions.
+
+If an answer is not valid, Care shows "Please review the highlighted answers before sending the referral." Correct the highlighted answers.
+
+Care shows the review: "Check the referral unit and clinical information before sending. Nothing has been sent yet."
+
+Check the referral unit, the reason and the answers. The review shows them under **Destination**, **Reason for referral** and **Service questions**.
+
+![The Review referral screen with Back to editing and Send referral at the top right](/media/clinical/referral/send-a-referral-11.png)
+
+To make a change, select **Back to editing** at the top right.
+
+### 7. Send the referral
+
+Select **Send referral** at the top right.
+
+Care closes the form and shows the message "Referral sent". The encounter's overview lists the new referral under **Referrals**.
+
+![The message Referral sent and the new referral under Referrals on the encounter's overview](/media/clinical/referral/send-a-referral-toast.png)
+
+If Care shows "The referral could not be sent. Review any reported errors and try again. Your answers are still here.", correct the errors and send again.
+
+If Care shows "We could not confirm whether the referral was sent. Check the referral list before sending again to avoid creating a duplicate.", check the list before you send again.
+
+## Expected Outcome
+
+- Care creates the referral for the patient, with the status **Pending**.
+- If you started from an encounter, the referral is linked to that encounter.
+- The people in the default care team of the referral availability become the referral's assignees.
+- The referral is shown on the patient's **Referrals** tab.
+- If the referral is linked to an encounter, it is also shown on the encounter's **Referrals** tab.
+- The referral is shown in the referral list of the facility, department or organization that you sent it to.
+- People at the receiving end can open the referral if they have Can Read Referrals there.
+
+## Related
+
+Concepts:
+
+- [Referral](../../../concepts/clinical/referral.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+- [Patient](../../../concepts/clinical/patient)
+- [Questionnaire](../../../concepts/definitions/questionnaire.mdx)
+- [Facility organization](../../../concepts/access-governance/facility-organization.mdx)
+
+Flows:
+
+- [Set up referral availability](./set-up-referral-availability.mdx)
+- [Share records with a referral](./share-records-with-a-referral.mdx)
+- [Find a referral](./find-a-referral.mdx)
+- [Start a referral and assign the team](./start-and-assign-a-referral.mdx)

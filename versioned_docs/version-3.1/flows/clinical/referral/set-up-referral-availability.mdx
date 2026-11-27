@@ -1,0 +1,163 @@
+---
+sidebar_position: 1
+---
+
+# Set up referral availability
+
+## Overview
+
+<video src="/media/clinical/referral/set-up-referral-availability.mp4" poster="/media/clinical/referral/set-up-referral-availability.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/referral/set-up-referral-availability.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to set up referral availability for a facility, a department, or an organization. Every [referral](../../../concepts/clinical/referral.mdx) goes to one referral availability, and staff choose it when they send a referral.
+
+The referral availability sets its request and response forms, and the team that Care assigns to each new referral.
+
+## Pre-requisites
+
+- If you make the referral availability Active, you need a request form. The request form is an active questionnaire with the **Subject Type** **Referral**. In a facility, the **Questionnaires** page is in **Settings** > **Forms**. See [Questionnaire](../../../concepts/definitions/questionnaire.mdx).
+- If you want a response form, you need a second such questionnaire.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Manage Referral Availabilities | Lets you open the Referral availability page, and add, change, and delete referral availability. For a facility, you need it through a role in the facility's root department, Administration. For a department, you need it through a role in that department or a department above it. A role only in the Administration department does not count for a department. For an organization, you need it through a role in that organization or an organization above it. By default, the Admin, Administrator, Facility Admin, and Manager roles have this permission. |
+| Can Read Questionnaires | Lets you add a questionnaire as a referral form. For a questionnaire of a facility, you need it in one of the [facility organizations](../../../concepts/access-governance/facility-organization.mdx) of that questionnaire. |
+
+## Steps
+
+### 1. Open the Referral availability page
+
+In the facility sidebar, select **Settings**. It is near the bottom of the sidebar, under the heading **Administration**. Care opens the facility settings.
+
+Under **Clinical**, select **Referral availability**.
+
+![The Referral availability item under Clinical in the facility settings sidebar](/media/clinical/referral/set-up-referral-availability-2.png)
+
+Care shows **Referral availability** only to users with the Can Manage Referral Availabilities permission. The permission can be in any department or team of the facility, including the Administration department.
+
+Care opens the **Referral availability** page. The page has a frame with the title **Configure a destination**. The frame has the search box **Search referral availability** and a **Filter** button.
+
+![The Referral availability page with the Configure a destination frame, its search box, the Filter button, and the message No referral availability found](/media/clinical/referral/set-up-referral-availability-3.png)
+
+If you set up referral availability for an organization, start from the home page. Open the **Governance** tab or the **Responsibilities** tab. Select the organization.
+
+Then select the **Referral availability** tab of the organization. Care shows this tab only if you have the Can Manage Referral Availabilities permission in that organization.
+
+### 2. Choose where the referral availability belongs
+
+The page starts with the referral availability of the facility.
+
+To set up referral availability for a department, select **Filter**, then select the department under **Department**. Care then shows the referral availability of that department.
+
+If there is no referral availability yet, the list shows "No referral availability found".
+
+If you do not have the permission for the facility or the department, Care shows "You cannot configure this destination". Care also shows "Choose a department where you have permission to manage referral availability, or contact your administrator."
+
+Note: If you have the permission only in a department, you see this message for the facility. Select **Filter**, then select your department under **Department** to continue.
+
+Note: A role only in the Administration department does not count for a department. You need a role in that department or a department above it.
+
+For an organization, the page has no **Department** filter. The page shows the referral availability of that organization.
+
+If you do not have the permission in the organization, Care shows "You cannot configure this destination". Care also shows "Contact an organization administrator for permission to configure referral availability."
+
+### 3. Start a new referral availability
+
+Select **Add referral availability** at the top right of the page. Care shows this button only if you have the permission for the facility, department, or organization that you chose.
+
+Care opens the **Add referral availability** sheet.
+
+![The Add referral availability button at the top right of the Referral availability page](/media/clinical/referral/set-up-referral-availability-4.png)
+
+### 4. Enter the details
+
+Complete the fields below.
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the referral availability. This field is required. It has at most 255 characters. |
+| Description | More information about the referral availability. This field is optional. |
+| Referral type | Consultation or Lab. The default is Consultation. You cannot change it after you add the referral availability. |
+| Status | Draft, Active, or Inactive. The default is Draft. Only an Active referral availability can receive new referrals. |
+| Accept referrals from other facilities | If on, users with permission to create referrals can find the referral availability and send referrals to it. If off, only some users can send referrals to it. They need the Can Submit to Private Referral Availabilities permission at that facility, department, or organization. It is off by default. |
+
+Note: If the name is empty, Care shows "This field is required".
+
+![The Add referral availability sheet with Name, Description, Referral type, Status and the Accept referrals from other facilities switch](/media/clinical/referral/set-up-referral-availability-5.png)
+
+### 5. Add the referral forms
+
+Under **Referral forms**, select the form type: **Request form** or **Response form**.
+
+A request form captures the referral details. A response form captures the findings of the receiving team.
+
+In **Search active forms**, search for the questionnaire. Select the questionnaire.
+
+The search shows only active questionnaires with the subject type Referral.
+
+Care adds the form below the search, with a **Request form** or **Response form** label.
+
+Do this step again for each form. You can add each questionnaire only one time.
+
+To remove a form, select the X at the right of the form.
+
+![A request form and a response form listed under Referral forms, each with its label and an X button](/media/clinical/referral/set-up-referral-availability-6.png)
+
+Note: Senders cannot send a referral to a referral availability that has no active request form.
+
+### 6. Add the default care team
+
+Under **Default care team**, add the people that Care assigns to each new referral.
+
+Select the person in **Select Member**.
+
+For a department, the list shows the users of that department. For a facility, it shows the users of the facility. For an organization, it shows all users.
+
+Select the role of the person in **Select Role**.
+
+Select **Add**, to the right of **Select Role**. The button is available only after you select a member and a role.
+
+![A member and a role chosen under Default care team, with the Add button outlined](/media/clinical/referral/set-up-referral-availability-7.png)
+
+Care lists the person below and empties **Select Member** and **Select Role** for the next person.
+
+Do this step again for each person. If the person is already in the list, Care shows "Member already added".
+
+### 7. Save the referral availability
+
+Select **Add referral availability** at the bottom right of the sheet.
+
+Care closes the sheet and shows "Referral availability created". The new referral availability is in the list.
+
+![The message Referral availability created and the new referral availability in the list](/media/clinical/referral/set-up-referral-availability-10.png)
+
+If a form in the list is not active, Care shows "Remove inactive forms or replace them with active forms before saving." Remove the form or replace it with an active form.
+
+If the status is Active and the list has no active request form, Care shows "Add an active request form before activating this referral availability."
+
+If Care cannot save the referral availability, it shows "Unable to save referral availability. Review the details and try again."
+
+## Expected Outcome
+
+- The referral availability is in the list on the **Referral availability** page. The row shows its name, its status, and **Public destination** or **Restricted destination**.
+- If the status is **Active**, senders can select the referral availability in the **Referral unit** list.
+- If **Accept referrals from other facilities** is off, only some users see it in that list. They need Can Manage Referral Availabilities, Can Read Referral Availabilities, or Can Submit to Private Referral Availabilities at that facility, department, or organization. For a facility, the role must be in the Administration department.
+- Care assigns the default care team to each new referral that is sent to the referral availability.
+
+## Related
+
+Concepts:
+
+- [Referral](../../../concepts/clinical/referral.mdx)
+- [Questionnaire](../../../concepts/definitions/questionnaire.mdx)
+- [Department](../../../concepts/facility/department.mdx)
+- [Organization](../../../concepts/access-governance/organization.mdx)
+
+Flows:
+
+- [Change or remove referral availability](./change-referral-availability.mdx)
+- [Send a referral](./send-a-referral.mdx)

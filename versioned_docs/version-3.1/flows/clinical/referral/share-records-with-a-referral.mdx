@@ -1,0 +1,203 @@
+---
+sidebar_position: 4
+---
+
+# Share records with a referral
+
+## Overview
+
+<video src="/media/clinical/referral/share-records-with-a-referral.mp4" poster="/media/clinical/referral/share-records-with-a-referral.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/referral/share-records-with-a-referral.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to share records with a [referral](../../../concepts/clinical/referral.mdx) and how to add request information to it. You can share one of the patient's records, upload a file, remove a shared record, or add answers to a request form.
+
+People at the sending end and at the receiving end can do this if they can update the referral. Everyone who can open the referral can then see the shared records. They need no access to the patient or encounter of the original record.
+
+To share records as part of a response, see [Respond to a referral](./respond-to-a-referral.mdx).
+
+## Pre-requisites
+
+- The referral is sent, and you can open its page.
+- The record that you share belongs to the referral's patient.
+- If you share a file, its upload is complete and it is not archived.
+- If you add request information, the referral availability has an active request form.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Update Referrals | Lets you see **Add record**, **Upload file**, **Remove** and **Add request information**, and save the change. You need it at the sending end or at the receiving end. By default, the Admin, Administrator, Doctor, Facility Admin, Nurse, Staff, Manager and Member roles have this permission. |
+| Can Read Referrals | Lets you open the referral page. You need it at the sending end or at the receiving end. To share a **Related referral**, you also need it on that other referral, and through a role on the patient. By default, the same roles have this permission. |
+| Can view clinical data about patients | Lets you share a **Diagnosis**, a **Response** that belongs to an encounter, or a **File** from **Patient record**, **Patient encounter** or **Consent**. You need it through a role on the patient. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles have this permission. |
+| Can Read encounter related clinical data | Lets you share a **Diagnosis** or **Response** that belongs to an encounter, or a **File** from **Patient encounter** or **Consent**, instead of the permission above. You need it at that encounter, in the same places as for the sending end below. |
+| Can view questionnaire responses on patient | Lets you share a **Response** that does not belong to an encounter. You need it through a role on the patient. |
+| Can Read Diagnostic Report | Lets you share a **Diagnostic report**, or a **File** from **Diagnostic report**. You need it for the report's service request, as described below. |
+| Can Read Specimen | Lets you share a **Specimen**. You need it for the specimen's service request, as described below. |
+| Can Read Service Request | Lets you share a **File** from **Service request**. You need it for the service request, as described below. |
+
+At the sending end, the place depends on where the referral was sent from:
+
+- From an encounter: you need the permission through a role in a department of the encounter or a department above it, or in the facility's root department, Administration. A role in the department of the encounter's current location also counts.
+- From the patient's page: you need it through a role on the patient.
+
+At the receiving end, you need the permission through a role in the place that published the referral availability:
+
+- For a facility, through a role in the Administration department.
+- For a department, through a role in that department or a department above it. A role only in the Administration department does not count for a department.
+- For an organization, through a role in that organization or an organization above it.
+
+A role on the patient comes from the organizations of the patient's open encounters and their current locations. It also comes from the patient's own organizations, or from a direct link to the patient.
+
+A permission on a service request counts in the same places as for the encounter of the service request. It also counts in a department of one of the service request's locations.
+
+You need no other permission to share a file that you upload to the referral.
+
+## Steps
+
+### 1. Open the referral
+
+Open the referral page from a referral list. See [Find a referral](./find-a-referral.mdx).
+
+If the request part of the page is hidden, select **Show request**.
+
+![A referral page with its title, status, assignees and request](/media/clinical/referral/share-records-with-a-referral-1.png)
+
+### 2. Choose a record to share
+
+Under **Shared records**, select **Add record**. It is the green button at the right of the section, next to **Upload file**.
+
+![The Add record button next to Upload file in the Shared records section](/media/clinical/referral/share-records-with-a-referral-add-record.png)
+
+Care opens the **Add record** dialog: "Choose an accessible record belonging to this patient. People with access to this referral can view the shared record."
+
+In **Record type**, select the kind of record.
+
+![The Record type list in the Add record dialog](/media/clinical/referral/share-records-with-a-referral-4.png)
+
+| Record type | What Care lists |
+| --- | --- |
+| **Diagnosis** | The patient's diagnoses. |
+| **Response** | The patient's form responses. |
+| **Diagnostic report** | The patient's diagnostic reports. A report without a service request cannot be shared. |
+| **File** | Files from the place that you choose in **Files from**. |
+| **Specimen** | The specimens of a service request of the patient. A specimen without a service request cannot be shared. |
+| **Related referral** | The patient's other referrals. |
+
+The dialog does not offer other kinds of records, such as observations, allergies, immunizations, service requests or appointments.
+
+In **Share as**, choose **Source records** or **Supporting records**. If only one choice is allowed, Care shows it as text.
+
+### 3. Find the record
+
+For a **File**, choose where the file is in **Files from**:
+
+| Files from | What to do next |
+| --- | --- |
+| **Patient record** | Care lists the patient's own files. |
+| **Patient encounter** | Choose the encounter first. |
+| **Consent** | Choose the consent first. |
+| **This referral** | Care lists the files uploaded to this referral. |
+| **Diagnostic report** | Choose the diagnostic report first. |
+| **Service request** | Select a **Facility**, then choose the service request. |
+
+Care lists only files whose upload is complete and that are not archived.
+
+For a **Specimen**, select a **Facility** from your facilities. Then choose a service request of the patient. Care lists the specimens of that service request.
+
+For a **Diagnosis**, **Response** or **Diagnostic report**, **Records from** is shown when there is a receiving encounter.
+
+The receiving encounter is the patient's visit at the receiving end.
+
+In **Records from**, choose **Receiving encounter** or **All patient records**.
+
+For a **Related referral**, Care lists the patient's referrals. You need Can Read Referrals through a role on the patient.
+
+### 4. Share the record
+
+Care lists the records. A record in the list has a **Select** button at the right of its row.
+
+A record that is already shared shows **Already shared**. You cannot share it again.
+
+Select **Select** on the row of the record. Care marks the row. This does not share the record yet.
+
+![A record in the Add record dialog with its Select button](/media/clinical/referral/share-records-with-a-referral-5.png)
+
+Select **Add record** at the bottom right of the dialog. The button is available only after you select a record.
+
+![A selected record and the dialog's Add record button](/media/clinical/referral/share-records-with-a-referral-confirm.png)
+
+Care closes the dialog and shows the message "Record shared with referral". The record is listed under **Shared records**.
+
+![The message Record shared with referral and the shared record under Shared records](/media/clinical/referral/share-records-with-a-referral-shared.png)
+
+If you do not have the read permission for the record, Care does not share it.
+
+### 5. Upload a file
+
+Under **Shared records**, select **Upload file**.
+
+Care opens the **Upload File** dialog: "Upload a file and share it with people who can access this referral."
+
+In **Share as**, check the category.
+
+Select **Upload From Device** and choose one file.
+
+Care shows the file and an empty **File Name** field. Enter a name for the file.
+
+Select **Upload and share**.
+
+Care uploads the file to the referral and shares it with the referral.
+
+### 6. Remove a shared record
+
+Open the actions menu of the shared record. It is the ... button at the bottom right of the record.
+
+Select **Remove**.
+
+Care asks "Remove shared record?" and explains "This removes the record from this referral. The original clinical record or file is kept."
+
+Confirm the removal.
+
+A shared record cannot be changed. To correct one, remove it and share the correct record.
+
+### 7. Add request information
+
+In the **Request** section, select **Add request information**.
+
+Care opens a dialog with the request forms of the referral.
+
+If there is more than one form, choose the form in **Form**.
+
+If there is no form, Care shows "No active forms are configured for this referral."
+
+Answer the questions of the form.
+
+Select **Save request information**.
+
+## Expected Outcome
+
+- The records that you share are listed under **Shared records** on the referral page.
+- Everyone who can open the referral can open the shared records. They need no access to the patient or encounter of the original record.
+- The answers that you add are shown in the **Request** section.
+- A record that you remove is no longer shared, and the original record or file is kept.
+- A shared record cannot be changed.
+
+## Related
+
+Concepts:
+
+- [Referral](../../../concepts/clinical/referral.mdx)
+- [Files](../../../concepts/clinical/files.mdx)
+- [Condition](../../../concepts/clinical/condition.mdx)
+- [Diagnostic report](../../../concepts/clinical/diagnostic-report.mdx)
+- [Specimen](../../../concepts/clinical/specimen.mdx)
+- [Questionnaire response](../../../concepts/clinical/questionnaire-response.mdx)
+
+Flows:
+
+- [Send a referral](./send-a-referral.mdx)
+- [Find a referral](./find-a-referral.mdx)
+- [Respond to a referral](./respond-to-a-referral.mdx)
+- [Mark a referral form as entered in error](./mark-a-referral-form-entered-in-error.mdx)

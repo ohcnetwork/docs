@@ -1,0 +1,112 @@
+---
+sidebar_position: 9
+---
+
+# Change a referral's status
+
+## Overview
+
+<video src="/media/clinical/referral/change-a-referral-status.mp4" poster="/media/clinical/referral/change-a-referral-status.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/referral/change-a-referral-status.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to change the status of a [referral](../../../concepts/clinical/referral.mdx). You can set a referral to Pending, In progress, Completed, Cancelled or Rejected.
+
+## Pre-requisites
+
+- You can open the referral. [Find a referral](./find-a-referral.mdx) describes how.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Update Referrals | Lets you change the status of the referral. By default, the Admin, Administrator, Doctor, Facility Admin, Nurse, Staff, Manager and Member roles have this permission. |
+| Can Read Referrals | Lets you open the referral. By default, the same roles have this permission. |
+
+Note: You need each permission at one end of the referral, the sending end or the receiving end.
+
+- At the sending end, if the referral came from an encounter: you need the permission through a role in a department of the encounter or a department above it, or in the facility's root department, Administration. A role in the department of the encounter's current location also counts.
+- At the sending end, if the referral was sent from the patient's page: you need the permission through a role on the patient.
+- At the receiving end, if a facility published the referral availability: you need the permission through a role in the facility's root department, Administration.
+- At the receiving end, if a department published it: you need the permission through a role in that department or a department above it. A role only in the Administration department does not count for a department.
+- At the receiving end, if an organization published it: you need the permission through a role in that organization or an organization above it.
+
+A role on the patient comes from the organizations of the patient's open encounters and their current locations, from the patient's own organizations, or from a direct link to the patient.
+
+## Steps
+
+### 1. Open the referral
+
+Open the referral page. [Find a referral](./find-a-referral.mdx) describes how.
+
+### 2. Open the actions menu
+
+Select the ... button at the right end of the bar with the patient's name. While the referral is Pending, it is to the right of the green **Start referral** button. Screen readers announce it as **Referral actions**.
+
+The menu has **Edit referral**, the statuses under **Change status**, and **Copy link**.
+
+![The ... button at the right of the patient's name bar, with the referral's actions menu open](/media/clinical/referral/change-a-referral-status-actions-button.png)
+
+If you cannot update the referral, the menu does not show **Edit referral** or **Change status**.
+
+### 3. Select the new status
+
+Under **Change status**, select the new status. The menu lists every status except the current status.
+
+| Menu entry | Status after the change |
+| --- | --- |
+| **Mark as pending** | Pending |
+| **Start referral** | In progress. The menu shows this entry when the referral is Pending. |
+| **Reopen referral** | In progress. The menu shows this entry when the referral is Completed, Cancelled or Rejected. |
+| **Complete referral** | Completed |
+| **Cancel referral** | Cancelled |
+| **Reject referral** | Rejected |
+
+Care shows **Cancel referral** and **Reject referral** in red.
+
+![Reject referral selected under Change status in the referral's actions menu](/media/clinical/referral/change-a-referral-status-3.png)
+
+You can change a referral from any status to any other status. People at the sending end and at the receiving end can both do this.
+
+Note: If the referral is Pending, the page also shows a **Start referral** button. This button sets the status to In progress without a confirmation dialog. [Start a referral and assign the team](./start-and-assign-a-referral.mdx) describes it.
+
+### 4. Confirm the change
+
+Care opens a confirmation dialog. The dialog title and the confirm button show the name of the entry that you selected.
+
+![The Reject referral dialog with Cancel and the Reject referral confirm button](/media/clinical/referral/change-a-referral-status-4.png)
+
+Read the text in the dialog:
+
+- If you complete a referral that has a completed response, the dialog says: "Confirm that the consultation is finished and the response and any supporting records have been shared with the referring team."
+- If you complete a referral that has no completed response, the dialog says: "No completed response form has been recorded. Make sure the outcome has been shared with the referring team before completing this referral."
+- For the other entries, the dialog asks "Change this referral to" and names the new status.
+
+Select the confirm button, for example **Reject referral**.
+
+Care shows the message "Referral updated". The referral shows the new status.
+
+![The message Referral updated and the referral with the status Rejected](/media/clinical/referral/change-a-referral-status-toast.png)
+
+If another person changed the status while you had the referral open, Care does not save your change. Care shows the message "The referral status changed. Review its latest status and try again."
+
+## Expected Outcome
+
+- The referral has the new status.
+- The progress line on the referral shows Pending, In progress and Completed. Care hides the progress line when the referral is Cancelled or Rejected.
+- Referral lists show the new status in the Status column.
+- If you complete a referral that has a response, the **Responses** section shows "This referral is completed."
+
+## Related
+
+Concepts:
+
+- [Referral](../../../concepts/clinical/referral.mdx)
+
+Flows:
+
+- [Find a referral](./find-a-referral.mdx)
+- [Start a referral and assign the team](./start-and-assign-a-referral.mdx)
+- [Respond to a referral](./respond-to-a-referral.mdx)
+- [Edit a referral's title or note](./edit-a-referral.mdx)
