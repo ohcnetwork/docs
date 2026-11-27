@@ -6,101 +6,195 @@ sidebar_position: 1
 
 ## Overview
 
-This flow describes how to record an [allergy or intolerance](../../../concepts/clinical/allergy-intolerance.mdx) for a patient during an encounter in Care.
+This flow describes how to record an allergy for a patient in Care. You record the allergy in an encounter of the patient, with the allergy form of that encounter.
+
+For what an allergy is in Care, see [Allergy intolerance](../../../concepts/clinical/allergy-intolerance.mdx).
+
+<video src="/media/clinical/allergy-intolerance/record-allergy.mp4" poster="/media/clinical/allergy-intolerance/record-allergy.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/allergy-intolerance/record-allergy.vtt" srcLang="en" label="English" default />
+</video>
 
 ## Pre-requisites
 
-- The patient has an open encounter at the facility, and you record the allergy from that encounter.
-- The encounter is not Completed, Cancelled, Discontinued, or Entered in Error. In these states, all add and edit controls are read-only.
-- You have the permissions listed below.
+- The patient has an open encounter at your facility, and you record the allergy in that encounter. An encounter is open when its status is **In Progress**, **On Hold**, **Planned** or **Discharged**.
+- If the encounter status is **Completed**, **Cancelled**, **Discontinued** or **Entered in error**, the encounter is closed. Care then does not show the controls that open the allergy form.
+- You have the permissions listed below. If the patient already has a saved allergy, you need one more permission.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can submit questionnaire about patient encounters | Lets you submit the allergy screen of the encounter. |
-| Can Update a Patient's data | Lets you record a new allergy for the patient. |
-| Can view clinical data about patients | Lets you see the allergies of the patient. |
+| Can Update a Patient's data | Lets you record a new allergy. You need it through a role on the patient. By default, the Staff, Doctor, Nurse, Administrator, Admin and Facility Admin roles hold it. |
+| Update Encounter related clinical data | Needed only if the patient already has a saved allergy, of any verification status. This includes an allergy marked as entered in error, which the **Allergies** panel does not show. When you save, Care saves every saved allergy in the form again, so you need this permission in the encounter. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. By default, the Staff role does not hold it. In Care 3.1, a user with only the Staff role can record an allergy only for a patient with no saved allergy. |
+| Can view clinical data about patients | Lets the form load the saved allergies of the patient. You need it through a role on the patient. With this permission, Care also shows you the **Allergy** quick action. "Can Read encounter related clinical data" in the encounter also shows it. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. The Administrator role does not hold it, so Care does not show the **Allergy** quick action to that role. |
+| Can list patients | Lets you open the encounter. You need it through a role on the patient. You need this permission or "Can Read encounter". By default, the Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer and Pharmacist roles hold it. |
+| Can Read encounter | Lets you open the encounter. You need it in the encounter. You need this permission or "Can list patients". By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+
+You have a role on the patient when you hold a role in one of these places:
+
+- An organization of an open encounter of the patient, or of the current location of that encounter.
+- An organization that the patient belongs to.
+- The patient itself, when you were given a role directly on the patient.
+
+You hold a permission in the encounter when a role in an organization of the encounter gives it to you. The organizations of its current location also count.
+
+The organizations of an encounter are the organizations it is assigned to, their parent organizations, and the root organization of the facility, "Administration".
+
+By default, if you hold the Doctor, Nurse, Admin or Facility Admin role in an organization of this encounter, you have all these permissions.
+
+Note: Your deployment can make "Can Update a Patient's data" in any organization apply to every patient. This setting is off by default.
 
 ## Steps
 
-### 1. Open the allergy screen
+### 1. Open the allergy form
 
-Open the encounter. Go to the **Overview** tab. Select the **Allergy** quick action.
+Open the encounter of the patient in one of these ways:
 
-You can also press the keyboard shortcut **a** on any encounter screen.
+- In the facility sidebar, under **Encounters & Locations**, select the encounters entry. It reads **All Encounters**, or the name of the encounter class that your deployment sets. Select the row of the encounter, or select **View Encounter**.
+- Open the patient's profile, as [View a patient's profile](../patient/view-patient-profile.mdx) describes. Go to the **Encounters** tab. Select **View Encounter** on the card of the encounter.
 
-You can also find the **Allergies** section and select the edit (pencil) icon.
+Care opens the encounter on its **Overview** tab. If you are on another tab of the encounter, select **Overview**, or press G, then G.
 
-The allergy screen shows the allergies that the patient already has.
+Select the **Allergy** quick action.
 
-### 2. Search for the substance
+Care opens the allergy form, titled **Allergy Intolerance**.
 
-Select **Add Allergy**. For each further allergy, the control reads **Add another Allergy**.
+The allergy form is a built-in questionnaire, so its messages say "questionnaire".
 
-Type the name of the substance that the patient reacts to.
+If the patient already has saved allergies, the form shows them. To change a saved allergy, see [Update an allergy](./update-allergy.mdx).
 
-The results come from a standard SNOMED CT allergy terminology.
+You can also open the same form in these ways:
 
-Note: Your administrator sets the clinical terminology for your deployment. Your administrator can also change it.
+- Press A while the **Allergy** quick action is on the screen.
+- Press Shift+E to open the command dialog. Under **Encounter Actions**, select **Add Allergy**.
+- If the **Overview** tab shows the **Allergies** panel, select the **Edit** pencil on the panel. The panel shows only when the patient has an allergy that is not marked as entered in error.
 
-### 3. Select the term
+In this flow, a small screen is a browser window narrower than 1024 pixels. The allergy form then uses its small-screen layout.
 
-Select a term. A new row appears with these default values:
+![The Overview tab of an in-progress encounter, with the Allergy quick action outlined](/media/clinical/allergy-intolerance/record-allergy-1.png)
 
-| Component | Default |
+### 2. Search for the allergen
+
+On a large screen, select the search box. It reads **Add Allergy**, or **Add another Allergy** when the form already has allergies.
+
+On a small screen, select the **Add Allergy** or **Add another Allergy** button. Care opens the **Select Allergy** drawer, with the **Search** and **Starred** tabs.
+
+Type the name of the allergen.
+
+Note: The search uses the allergen terminology of your deployment, which is SNOMED CT by default. Your deployment or your facility can use a different allergen list.
+
+![The allergen search open under Add Allergy with penicillin typed, and Penicillin outlined in the results](/media/clinical/allergy-intolerance/record-allergy-2.png)
+
+### 3. Select the allergen
+
+Select the allergen in the results.
+
+On a large screen, Care adds a new row to the form at once.
+
+On a small screen, Care opens a second drawer, titled with the name of the allergen. This drawer holds the fields of the new allergy.
+
+![The allergy form with a new Penicillin row set to Low, Confirmed and Pick a date, outlined](/media/clinical/allergy-intolerance/record-allergy-3.png)
+
+### 4. Set the values of the allergy
+
+On a large screen, each allergy is a row in a table. On a small screen, you set the values of a new allergy in the drawer from step 3.
+
+The new allergy starts with the default values below. Change the values if you need to.
+
+| Components | What it captures |
 | --- | --- |
-| Category | Medication |
-| Criticality | Low |
-| Status | Confirmed |
-| Clinical Status | Active |
+| Category | **Food**, **Medication**, **Environment** or **Biologic**. The default is **Medication**. On a large screen, the column has no label and shows only the category icon. On a small screen, the field is **Category**. You can change the category only before the allergy is saved. |
+| **Substance** | The allergen that you selected. You cannot change it in the row. |
+| **Criticality** | **Low**, **High** or **Unable to Assess**. The default is **Low**. |
+| **Status** (verification status) | **Unconfirmed**, **Confirmed**, **Refuted** or **Presumed**. The default is **Confirmed**. **Entered in Error** is not offered for a new allergy. |
+| **Occurrence** | The date of the last occurrence. This value is optional, and it starts empty with "Pick a date". You cannot pick a future date. After you pick a date, you cannot clear it. |
+| Clinical status | **Active**, **Inactive** or **Resolved**. The default is **Active**. The form has no field for it. See the steps after this table. |
+| **Note** | Free text. This value is optional, and it starts empty. |
 
-### 4. Change the values
+To change the clinical status on a large screen, select the icon with three vertical dots in the **Action** column. This icon opens the row menu. Select **Mark Inactive** or **Mark Resolved**.
 
-Change the values of the row if you need to.
+On a small screen, select **Mark Inactive** or **Mark Resolved**. Care shows a button only for a clinical status that the allergy does not have.
 
-| Component | Options |
-| --- | --- |
-| Category | Food, Medication, Environment, Biologic |
-| Criticality | Low, High, Unable to Assess |
-| Status | Unconfirmed, Presumed, Confirmed, Refuted |
-| Occurrence | Any date up to today |
+In the form, an **Inactive** row is faded and a **Resolved** row is struck through.
 
-To change the clinical state, open the more-options (**⋮**) menu of the row. Select **Mark Inactive** or **Mark Resolved**.
+To add a note on a large screen, open the row menu. Select **Add notes**. Type the note in the **Note** field.
 
-Note: Care does not offer Entered in Error for a new allergy.
+To show or hide the note, select **Show notes** or **Hide notes** in the row menu.
 
-### 5. Add a note
+On a small screen, type the note in the **Note** field.
 
-To add a note, open the more-options (**⋮**) menu of the row. Select **Add notes**. Type the note.
+On a small screen, when the values are set, select **Done** at the top of the drawer. Care adds the allergy to the form and closes both drawers.
 
-Select **Show notes** to open the note text. Select **Hide notes** to close the note text.
+To go back to the search without adding the allergy, select **Back**.
 
-### 6. Add more allergies
+On a small screen, each allergy in the form is a card. Select the header of a card to open or close it. Only one card is open at a time.
 
-Repeat from step 2 for each further allergy.
+When you add an allergy, its card opens, so you can still change its values there.
 
-### 7. Submit
+Under the allergen name, a closed card shows the category, criticality and verification status. It also shows the occurrence date, if one is set.
 
-Select **Submit**.
+The icon with two chevrons at the right of the card header only shows whether the card is open. You cannot select it.
+
+To take out a new row that you added by mistake on a large screen, open the row menu. Select **Remove Allergy**. Care takes the row out of the form at once.
+
+On a small screen, open the card. Select the red icon with a minus sign in a circle, in the card header.
+
+Note: When you save, Care marks a saved allergy that you took out as entered in error. See [Mark an allergy as entered in error](./allergy-entered-in-error.mdx).
+
+![The Criticality list of the Penicillin row open with Low, High and Unable to Assess, and High outlined](/media/clinical/allergy-intolerance/record-allergy-4.png)
+
+### 5. Add more allergies
+
+To record another allergy, repeat steps 2 to 4. The search now reads **Add another Allergy**.
+
+![The allergy form with Penicillin set to High and a new Peanut row with the Food category icon, Peanut outlined](/media/clinical/allergy-intolerance/record-allergy-5.png)
+
+### 6. Save the allergies
+
+Select **Save Changes**. You can also press Shift+Enter.
+
+Care saves all the allergies of the form together. If one allergy fails, Care saves none of them.
+
+When you save the form, Care links every saved allergy in the form to this encounter, whether you changed it or not. If an allergy was linked to another encounter, Care keeps a copy of it, as it was, on that encounter. Care is designed so that you re-confirm the patient's allergy list at every encounter.
+
+To close the form without saving, select **Cancel**. If you made changes, Care asks "Close and discard draft". Select **Discard** to close the form.
+
+![The Save Changes button at the top right of the allergy form, outlined](/media/clinical/allergy-intolerance/record-allergy-6.png)
 
 ## Expected Outcome
 
-- Care shows the confirmation "Questionnaire submitted successfully".
-- Care returns you to the **Overview** tab of the encounter.
-- The allergy appears in the **Allergies** section of the encounter **Overview** tab.
-- The allergy appears in the allergy history of the patient.
+- Care shows the message "Questionnaire submitted successfully".
+- Care returns you to the page where you opened the form. By default, this is the **Overview** tab of the encounter.
+- The allergy shows in the **Allergies** panel on the **Overview** tab. If the panel was not shown before, it shows now.
+- The allergy shows in the **Allergies** tab of the clinical history of the patient. See [View a patient's allergies](./view-allergy-history.mdx).
 
-When the patient has no allergy, the encounter shows no **Allergies** section.
+![The encounter Overview with the message Questionnaire submitted successfully, and the Allergies panel listing Peanut with Low and Penicillin with High, outlined](/media/clinical/allergy-intolerance/record-allergy-7.png)
+
+When Care refuses the save, it shows the message "Failed to submit questionnaire". It also shows a red panel with the same title above the form.
+
+The panel lists a message for the failed request. The same message shows in red under the allergy question. Care does not show which allergy failed.
+
+If Care refused the save for lack of permission, both show "Validation failed", not the missing permission.
+
+| If you see | What it means | What to do |
+| --- | --- | --- |
+| "No Results Found" in the search | Care found no allergen with that name. | Check the spelling, or type another name for the allergen. |
+| "Validation failed", and "This field is required" under the allergy question | The form has no allergy to save. Care sent nothing. | Add an allergen. Then select **Save Changes** again. |
+| "Failed to submit questionnaire", with "Validation failed" in the red panel | The patient already has a saved allergy, and you do not have "Update Encounter related clinical data" in the encounter. By default, a user with only the Staff role is in this case. Care saved nothing. | Ask a user with the Doctor, Nurse, Admin or Facility Admin role in the encounter to record the allergy. |
+| "Failed to submit questionnaire", with "Validation failed" in the red panel | You do not have "Can Update a Patient's data" through a role on the patient. Care saved nothing. | Ask your administrator for this permission. See [Permissions](#permissions). |
+| "Failed to submit questionnaire", with "Validation failed" in the red panel | The encounter is closed, and the patient has a saved allergy. Care saved nothing. | Record the allergy in an open encounter of the patient. |
+| "Failed to submit questionnaire" | The patient has 100 or more saved allergies, of any verification status. Care saved nothing. | In Care 3.1, you cannot add another allergy for this patient with the allergy form. |
+| "Failed to submit questionnaire", with "Code does not exist in the valueset" in the red panel | Your facility uses its own allergen list, and the allergen is only in that list. Care saved nothing. | Select a different allergen. |
 
 ## Related
 
 Concepts:
 
-- [Allergy](../../../concepts/clinical/allergy-intolerance.mdx)
+- [Allergy intolerance](../../../concepts/clinical/allergy-intolerance.mdx)
 
 Flows:
 
 - [Update an allergy](./update-allergy.mdx)
 - [Mark an allergy as entered in error](./allergy-entered-in-error.mdx)
-- [View allergy history](./view-allergy-history.mdx)
+- [View a patient's allergies](./view-allergy-history.mdx)
+- [View a patient's profile](../patient/view-patient-profile.mdx)
