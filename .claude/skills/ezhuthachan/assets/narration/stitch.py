@@ -194,7 +194,8 @@ def frames(slug, plan):
 def encode(slug, plan, vlen, shift):
     cues = PLAN["flows"][slug]
     n = len(plan)
-    total = vlen + shift
+    # Round to a whole frame at the 30 fps output, so picture and sound can end together.
+    total = round((vlen + shift) * 30) / 30
     args = ["ffmpeg", "-y", "-i", os.path.join(SRC, f"{slug}.mp4")]
     for p in plan:
         args += ["-i", p["wav"]]
@@ -216,11 +217,15 @@ def encode(slug, plan, vlen, shift):
             if at > 0:
                 piece(a, a + at)
             piece(a + at, b, f",tpad=start_mode=clone:start_duration={p['hold']:.3f}")
-    parts.append("".join(pieces) + f"concat=n={len(pieces)}:v=1:a=0[v]")
+    # Pad, then trim the picture to the exact total: cuts round to whole frames and can leave
+    # the video a frame or two shorter than the sound.
+    parts.append("".join(pieces) + f"concat=n={len(pieces)}:v=1:a=0,fps=30,"
+                 f"tpad=stop_mode=clone:stop_duration=0.2,trim=end={total:.3f}[v]")
     for i, p in enumerate(plan):
         parts.append(f"[{i + 1}:a]adelay={int(round(p['voice_at'] * 1000))}:all=1[a{i}]")
+    # 0.5 dB of headroom: clips peak near -1 dB and the AAC encode adds about 0.1 dB.
     parts.append("".join(f"[a{i}]" for i in range(n))
-                 + f"amix=inputs={n}:normalize=0:dropout_transition=0,apad,atrim=end={total:.3f}[a]")
+                 + f"amix=inputs={n}:normalize=0:dropout_transition=0,volume=-0.5dB,apad,atrim=end={total:.3f}[a]")
     os.makedirs(OUT, exist_ok=True)
     mp4 = os.path.join(OUT, f"{slug}.mp4")
     run(args + ["-filter_complex", ";".join(parts), "-map", "[v]", "-map", "[a]",
