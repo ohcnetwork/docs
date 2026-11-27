@@ -134,7 +134,7 @@ A flow is one thing a user sets out to do, from where they start to the result: 
 
 1. List the screens of the module from the routes and the navigation.
 2. For each screen, list every action a user can take.
-3. Group the actions into user goals. A goal that needs several screens is still one flow. Two goals on one screen are two flows.
+3. Group the actions into user goals. A goal that needs several screens is still one flow. Two goals on one screen are two flows. But steps that only continue one goal stay in its flow, even when they open their own panel: building a design and then setting up each section of it is one goal. On 27 November 2026 the product team merged "Design what a workspace shows on encounters" and "Set what a section shows and when" into one flow, because a user does them in one sitting.
 4. For each flow note: where the user starts and how they get there, each step with the labels involved, what must already be true (a status, another record), the variants (the same goal reached from two places), and the result.
 5. Order the flows the way a user meets them: create first, then what depends on it.
 
