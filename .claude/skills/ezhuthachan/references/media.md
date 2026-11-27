@@ -160,7 +160,7 @@ ffmpeg -loglevel error -y -ss 4 -i out/<slug>.mp4 -frames:v 1 out/check.png
 
 Check that the cursor is visible, the right element is outlined, nothing is half-loaded, and no real-looking personal data is on screen.
 
-An empty `api.json` after a flow that clearly loaded data means the app is calling a backend other than `EZ_API_URL`. Stop and find out which.
+An empty `api.json` after a flow that clearly loaded data means the app is calling a backend other than `EZ_API_URL`. Stop and find out which. The kit recognises API calls by the `EZ_API_URL` prefix, as text, so `127.0.0.1` and `localhost` do not match each other: set `EZ_API_URL` to exactly the URL the frontend build calls (its `REACT_CARE_API_URL`). On 27 November 2026 a build that called `http://localhost:9200`, recorded with `EZ_API_URL=http://127.0.0.1:9200`, gave empty logs for the same server.
 
 ## Finish: speed up, zoom and frame
 

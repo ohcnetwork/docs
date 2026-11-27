@@ -2,172 +2,482 @@
 sidebar_position: 4
 ---
 
-# Allergy Intolerance
+# Allergy intolerance
 
-`AllergyIntolerance` records a patient's allergy or intolerance to a substance, scoped to the encounter where it was captured. Care aligns it to FHIR `AllergyIntolerance`. You touch this resource when recording a known allergy during an encounter or reading a patient's allergy list.
-
-The Django model is the storage layer. Several of its fields are opaque `JSONField`s whose real structure lives only in the Pydantic resource specs, which also define the enums, validation, the bound value set, and the read/write API schemas.
+Technical reference for the `AllergyIntolerance` module in Care EMR. For the plain-language view, see the [Allergy intolerance concept](../../concepts/clinical/allergy-intolerance.mdx).
 
 **Source:**
+
 - Model: [`care/emr/models/allergy_intolerance.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/allergy_intolerance.py)
 - Specs: [`care/emr/resources/allergy_intolerance/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/allergy_intolerance/spec.py) · [`valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/allergy_intolerance/valueset.py)
-- Base resource: [`care/emr/resources/base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)
+- Viewset: [`care/emr/api/viewsets/allergy_intolerance.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/allergy_intolerance.py)
+- Shared bases: [`care/emr/resources/base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py) · [`care/emr/api/viewsets/base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/base.py)
+
+The Django model is the storage layer. It stores the allergen (`code`) and the onset (`onset`) as JSON fields, and the coded fields as text columns.
+
+The Pydantic resource specs give the JSON fields their shape. They also define the enums, the required fields, the bound value set, and the read and write schemas.
+
+The viewset defines the API actions, the authorization checks, and the copy that Care keeps on the old encounter when an update moves an allergy.
 
 ## Models
 
 | Model | Purpose |
 | --- | --- |
-| `AllergyIntolerance` | Records a patient's allergy or intolerance to a substance, scoped to an encounter |
+| `AllergyIntolerance` | One allergy of one patient. It is linked to one encounter: the encounter named in its create request or in its latest update. A copy stays on the encounter that the original was linked to before an update moved it. |
 
-`AllergyIntolerance` extends [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base that provides `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON.
+`AllergyIntolerance` extends [`EMRBaseModel`](../foundation/base-model.mdx). Through it, each allergy has `external_id`, `created_date`, `modified_date`, the soft-delete flag `deleted`, `created_by`, `updated_by`, `history` and `meta`.
 
 ## `AllergyIntolerance` fields
 
-### Clinical classification
+### Coded fields
 
-| Field | Type (storage) | Spec type / values | Notes |
-| --- | --- | --- | --- |
-| `clinical_status` | `CharField(100)`, null | `ClinicalStatusChoices` | Active / inactive / resolved (FHIR `clinical-status`). Required on write. |
-| `verification_status` | `CharField(100)`, null | `VerificationStatusChoices` | Confirmation level. Required on write. |
-| `category` | `CharField(100)`, null | `CategoryChoices` | Allergy category. Required on **create** only; not accepted on update. |
-| `criticality` | `CharField(100)`, null | `CriticalityChoices` | Potential clinical harm. Required on write. |
-| `allergy_intolerance_type` | `CharField(20)`, default `"allergy"` | `AllergyIntoleranceTypeOptions` | Allergy vs intolerance. Defaults to `allergy`. |
+| Field | Storage | Null / default | Spec type | Notes |
+| --- | --- | --- | --- | --- |
+| `clinical_status` | `CharField(100)` | `null=True`, `blank=True` | `ClinicalStatusChoices` on write, `str` on read | Required on create and on update |
+| `verification_status` | `CharField(100)` | `null=True`, `blank=True` | `VerificationStatusChoices` on write, `str` on read | Required on create and on update |
+| `category` | `CharField(100)` | `null=True`, `blank=True` | `CategoryChoices` on create, `str` on read | Required on create. Not in the update spec, so it cannot change after creation |
+| `criticality` | `CharField(100)` | `null=True`, `blank=True` | `CriticalityChoices` on write, `str` on read | Required on create and on update |
+| `allergy_intolerance_type` | `CharField(20)` | `default="allergy"` | `AllergyIntoleranceTypeOptions` on write, `str` on read | Optional on create and on update; the spec default is `allergy` |
 
-### Substance & coding
+### Allergen
 
-| Field | Type (storage) | Spec type / shape | Notes |
-| --- | --- | --- | --- |
-| `code` | `JSONField` (`default=dict`, not null/blank) | `Coding` bound to value set `system-allergy-code` | The allergen/substance. Required. On write it is a `ValueSetBoundCoding` validated against the bound value set; on read it is a plain `Coding`. |
-
-`Coding` shape: `{ system?: str, version?: str, code: str (required), display?: str }` (`extra="forbid"`).
+| Field | Storage | Null / default | Spec type | Notes |
+| --- | --- | --- | --- | --- |
+| `code` | `JSONField` | `default=dict`, `null=False`, `blank=False` | `ValueSetBoundCoding` bound to `system-allergy-code` on create, `Coding` on read | Required on create. Not in the update spec, so it cannot change after creation. Shape and value set below |
 
 ### Timing
 
-| Field | Type (storage) | Spec type / shape | Notes |
-| --- | --- | --- | --- |
-| `onset` | `JSONField` (`default=dict`) | `AllergyIntoleranceOnSetSpec` | Defaults to `{}`; accepted on create only. When supplied, `note` is required. Shape below. |
-| `recorded_date` | `DateTimeField`, null | `datetime \| None` | When first asserted. Optional; accepted on **create** only. |
-| `last_occurrence` | `DateTimeField`, null | `datetime \| None` | Most recent known reaction. Optional on both create and update. |
+| Field | Storage | Null / default | Spec type | Notes |
+| --- | --- | --- | --- | --- |
+| `onset` | `JSONField` | `default=dict` | `AllergyIntoleranceOnSetSpec` | Optional on create, default `{}`. Not in the update spec, so it cannot change after creation. Shape below |
+| `recorded_date` | `DateTimeField` | `null=True`, `blank=True` | `datetime \| None` | Optional on create. Not in the update spec, so it cannot change after creation |
+| `last_occurrence` | `DateTimeField` | `null=True`, `blank=True` | `datetime \| None` | Optional on create and on update |
 
-`AllergyIntoleranceOnSetSpec` shape:
+### Links, note and copies
 
-| Sub-field | Type | Required | Default |
-| --- | --- | --- | --- |
-| `onset_datetime` | `datetime` | No | `None` |
-| `onset_age` | `int` | No | `None` |
-| `onset_string` | `str` | No | `None` |
-| `note` | `str` | **Yes** | — |
+| Field | Storage | Null / default | Spec type | Notes |
+| --- | --- | --- | --- | --- |
+| `patient` | `FK → emr.Patient` | `on_delete=CASCADE` | Not in any spec | Set on create to the patient of the encounter in the request |
+| `encounter` | `FK → emr.Encounter` | `on_delete=CASCADE` | `UUID4` (the encounter's `external_id`) | Required on create and on update. The encounter must exist. An update links the allergy to the encounter in the request |
+| `note` | `TextField` | `null=True`, `blank=True` | `str \| None` | Optional on create and on update |
+| `copied_from` | `BigIntegerField` | `default=None`, `null=True`, `blank=True` | Not in any spec | Internal ID of the original allergy when this row is a copy; null for an original. Set by Care when an update moves an allergy to another encounter |
 
-### Context & notes
+### Inherited from `EMRBaseModel`
 
-| Field | Type (storage) | Spec type | Notes |
-| --- | --- | --- | --- |
-| `patient` | `FK → Patient` (`CASCADE`) | excluded from specs | Subject of the allergy. Derived server-side from the encounter on create; clients never set it. |
-| `encounter` | `FK → Encounter` (`CASCADE`) | `UUID4` | Encounter the allergy was recorded in. Sent as `external_id`, required on write, validated to exist. |
-| `note` | `TextField`, null | `str \| None` | Free-text clinical note. Optional. |
-| `copied_from` | `BigIntegerField`, null (`default=None`) | not exposed | Source record ID when this entry is a maintained copy. Platform-maintained; never accepted from clients. |
+| Field | Storage | Notes |
+| --- | --- | --- |
+| `external_id` | `UUIDField(default=uuid4, unique=True, db_index=True)` | The allergy's public ID. Returned as `id` |
+| `created_date`, `modified_date` | `DateTimeField` | Returned on read |
+| `deleted` | `BooleanField(default=False, db_index=True)` | Soft-delete flag. Normal queries hide soft-deleted rows |
+| `created_by`, `updated_by` | `FK → users.User`, `on_delete=SET_NULL` | `created_by`: the user who created the allergy. `updated_by`: the user who last created or updated it. Both returned on read |
+| `history` | `JSONField(default=dict)` | Updates do not write to it |
+| `meta` | `JSONField(default=dict)` | Every spec carries `meta`, default `{}` |
 
 ## Enum values
 
-### `ClinicalStatusChoices`
+The specs accept only these values on write. The second column is the label that the Care frontend shows for the value.
 
-| Value |
-| --- |
-| `active` |
-| `inactive` |
-| `resolved` |
+### `ClinicalStatusChoices` values
 
-### `VerificationStatusChoices`
+| Value | Label in the Care frontend |
+| --- | --- |
+| `active` | **Active** |
+| `inactive` | **Inactive** |
+| `resolved` | **Resolved** |
 
-| Value |
-| --- |
-| `unconfirmed` |
-| `presumed` |
-| `confirmed` |
-| `refuted` |
-| `entered_in_error` |
+### `VerificationStatusChoices` values
 
-### `CategoryChoices`
+| Value | Label in the Care frontend |
+| --- | --- |
+| `unconfirmed` | **Unconfirmed** |
+| `presumed` | **Presumed** |
+| `confirmed` | **Confirmed** |
+| `refuted` | **Refuted** |
+| `entered_in_error` | **Entered in Error** |
 
-| Value |
-| --- |
-| `food` |
-| `medication` |
-| `environment` |
-| `biologic` |
+### `CategoryChoices` values
 
-### `CriticalityChoices`
+| Value | Label in the Care frontend |
+| --- | --- |
+| `food` | **Food** |
+| `medication` | **Medication** |
+| `environment` | **Environment** |
+| `biologic` | **Biologic** |
 
-| Value |
-| --- |
-| `low` |
-| `high` |
-| `unable_to_assess` |
+### `CriticalityChoices` values
 
-### `AllergyIntoleranceTypeOptions`
+| Value | Label in the Care frontend |
+| --- | --- |
+| `low` | **Low** |
+| `high` | **High** |
+| `unable_to_assess` | **Unable to Assess** |
 
-| Value |
-| --- |
-| `allergy` (default) |
-| `intolerance` |
+### `AllergyIntoleranceTypeOptions` values
 
-## Bound value set
+| Value | Notes |
+| --- | --- |
+| `allergy` | Spec default on create and on update |
+| `intolerance` | |
 
-| Value set | Slug | System | Status |
+The Care frontend never sends a type or an onset. Every allergy recorded from the Care UI has type `allergy` and no onset.
+
+## Nested JSON shapes
+
+### `code`: `Coding`
+
+`code` is one `Coding`. Its `code` key is required; `system`, `version` and `display` are optional. Care rejects any other key.
+
+```text
+Coding
+{
+  "system":  str | null,   optional
+  "version": str | null,   optional
+  "code":    str,          required
+  "display": str | null    optional
+}
+```
+
+### Bound value set
+
+| Name | Slug | Status | Default content |
 | --- | --- | --- | --- |
-| `CARE_ALLERGY_CODE_VALUESET` ("Allergy") | `system-allergy-code` | SNOMED CT (`http://snomed.info/sct`) | `active` |
+| Allergy | `system-allergy-code` | `active` | SNOMED CT (`http://snomed.info/sct`) concepts that are `is-a` descendants of the eight concepts below |
 
-On write, `code` binds to this value set via `ValueSetBoundCoding[...slug]`, which validates the submitted `Coding` against the value set (`validate_valueset`). The compose admits SNOMED CT concepts that are `is-a` descendants of: `105590001`, `418038007`, `267425008`, `29736007`, `340519003`, `190753003`, `413427002`, `716186003`. The value set is also registered as a system (`register_as_system()`).
+| SNOMED CT code | Display name |
+| --- | --- |
+| `105590001` | Substance |
+| `418038007` | Propensity to adverse reactions to substance |
+| `267425008` | Lactose intolerance |
+| `29736007` | Syndrome of carbohydrate intolerance |
+| `340519003` | Lysine intolerance |
+| `190753003` | Sucrose intolerance |
+| `413427002` | Acquired fructose intolerance |
+| `716186003` | No known allergy |
+
+- On create, Care checks `code` against a value set with the slug `system-allergy-code`. A code outside it fails with "Code does not exist in the valueset".
+- If the value set is not in the database, the error is "Valueset does not exist in care, Resync valuesets".
+- Value sets with the slug `system-allergy-code` can exist once instance-wide, and again per facility, per facility organization and per user.
+- On save, Care checks the code against the first value set it finds with that slug, without regard to facility.
+- The allergen search (`POST /api/v1/valueset/expand_slug/`) passes the current facility. It uses the user's preferred value set for that facility if there is one.
+- Otherwise the search chooses among that facility's value sets and the instance-wide ones with the slug.
+- So the search and the save can use different value sets. When a facility has its own allergen list, the search offers its codes.
+- Saving an allergen that is only in the facility's list fails with "Code does not exist in the valueset".
+- It is a system value set. The sync command writes it to the database and leaves an existing copy unchanged unless told to overwrite it.
+- The stored value set can be edited after the sync, so a deployment's content can differ from the default above.
+- `105590001` (Substance) is also the only root of Care's "Substance" value set, slug `system-substance`.
+- Every signed-in user can read the system value set.
+
+### `onset`: `AllergyIntoleranceOnSetSpec`
+
+Onset is optional on create and defaults to `{}`. When an onset object is sent, its `note` is required. The update spec has no `onset`.
+
+```text
+AllergyIntoleranceOnSetSpec
+{
+  "onset_datetime": datetime,   optional, default null
+  "onset_age":      int,        optional, default null
+  "onset_string":   str,        optional, default null
+  "note":           str         required, no default
+}
+```
+
+## Related models
+
+`AllergyIntolerance` links to other models as follows. `copied_from` holds an internal ID, not a foreign key.
+
+```text
+AllergyIntolerance
+  patient     → FK emr.Patient     (CASCADE)
+  encounter   → FK emr.Encounter   (CASCADE)
+  created_by  → FK users.User      (SET_NULL)
+  updated_by  → FK users.User      (SET_NULL)
+  copied_from → BigIntegerField: internal ID of the original AllergyIntolerance
+```
+
+Each create and each update through the API also writes a questionnaire response entry for the allergy. See "Methods & save behaviour" below.
 
 ## Resource specs (API schema)
 
-Every spec extends `EMRResource` (`care/emr/resources/base.py`), which provides `serialize` (DB object → pydantic, via `model_construct`) and `de_serialize` (pydantic → DB object), plus the `perform_extra_serialization` / `perform_extra_deserialization` hooks. `BaseAllergyIntoleranceSpec` sets `__model__ = AllergyIntolerance` and `__exclude__ = ["patient", "encounter"]`; those two fields skip auto-mapping and are wired by the hooks instead. The base also carries `meta` on every spec.
+Every spec extends `EMRResource`. `BaseAllergyIntoleranceSpec` ties the specs to `AllergyIntolerance` and leaves `patient` and `encounter` out of the automatic field mapping.
 
-| Spec class | Role | Fields exposed |
+The viewset uses the write spec for create, the update spec for update, and the read spec for reads. It sets no retrieve spec, so one allergy and the list return the same fields.
+
+| Spec | Role | Fields |
 | --- | --- | --- |
-| `BaseAllergyIntoleranceSpec` | shared base | `id: UUID4` |
-| `AllergyIntoleranceWriteSpec` | write · create | `clinical_status`, `verification_status`, `category`, `criticality`, `last_occurrence?`, `recorded_date?`, `encounter` (UUID4), `code` (bound Coding), `onset` (default `{}`), `allergy_intolerance_type` (default `allergy`), `note?` |
-| `AllergyIntoleranceUpdateSpec` | write · update | `clinical_status`, `verification_status`, `criticality`, `last_occurrence?`, `note?`, `encounter` (UUID4), `allergy_intolerance_type` (default `allergy`) |
-| `AllergyIntoleranceReadSpec` | read · list & detail | `id`, `clinical_status`, `verification_status`, `category`, `criticality`, `code` (Coding), `encounter` (UUID4), `onset`, `last_occurrence?`, `recorded_date?`, `note?`, `allergy_intolerance_type`, `created_by?`, `updated_by?`, `created_date`, `modified_date` |
-| `AllergyIntoleranceOnSetSpec` | nested (shape of `onset` JSON) | `onset_datetime?`, `onset_age?`, `onset_string?`, `note` (required) |
+| `BaseAllergyIntoleranceSpec` | shared base | `id` (`UUID4`, optional), `meta` (`dict`, default `{}`) |
+| `AllergyIntoleranceWriteSpec` | write · create | `clinical_status`, `verification_status`, `category`, `criticality`, `encounter`, `code`, `last_occurrence?`, `recorded_date?`, `onset?`, `allergy_intolerance_type?`, `note?` |
+| `AllergyIntoleranceUpdateSpec` | write · update | `clinical_status`, `verification_status`, `criticality`, `encounter`, `last_occurrence?`, `note?`, `allergy_intolerance_type?` |
+| `AllergyIntoleranceReadSpec` | read · list and detail | `id`, `clinical_status`, `verification_status`, `category`, `criticality`, `code`, `encounter`, `onset`, `last_occurrence`, `recorded_date`, `note`, `allergy_intolerance_type`, `created_by`, `updated_by`, `created_date`, `modified_date`, `meta` |
+| `AllergyIntoleranceOnSetSpec` | nested · shape of `onset` | `onset_datetime?`, `onset_age?`, `onset_string?`, `note` |
 
-- `category`, `code`, `onset`, and `recorded_date` are accepted only on create (`AllergyIntoleranceWriteSpec`) and absent from `AllergyIntoleranceUpdateSpec` — once set, the update path cannot change them.
-- `AllergyIntoleranceReadSpec` types the coded fields as plain `str` and `code` as `Coding`, and skips value-set re-validation, relying on `model_construct` for speed.
+### Create: `AllergyIntoleranceWriteSpec`
+
+The body of a create request, and of an upsert entry without `id`.
+
+```text
+{
+  "encounter":                UUID,                           required; the encounter must exist
+  "code":                     Coding,                         required; in value set system-allergy-code
+  "clinical_status":          ClinicalStatusChoices,          required
+  "verification_status":      VerificationStatusChoices,      required
+  "category":                 CategoryChoices,                required
+  "criticality":              CriticalityChoices,             required
+  "last_occurrence":          datetime | null,                optional, default null
+  "recorded_date":            datetime | null,                optional, default null
+  "onset":                    AllergyIntoleranceOnSetSpec,    optional, default {}
+  "allergy_intolerance_type": AllergyIntoleranceTypeOptions,  optional, default "allergy"
+  "note":                     str | null                      optional, default null
+}
+```
+
+- No spec has a `patient` or a `copied_from` field. Care sets `patient` from the encounter on create, and sets `copied_from` only on copies.
+- Care does not write `id` or `external_id` from the body.
+- A successful create answers HTTP 200, not 201, with the new allergy in the read format.
+
+### Update: `AllergyIntoleranceUpdateSpec`
+
+The body of an update request, and of an upsert entry with `id`.
+
+```text
+{
+  "encounter":                UUID,                           required; the encounter must exist
+  "clinical_status":          ClinicalStatusChoices,          required
+  "verification_status":      VerificationStatusChoices,      required
+  "criticality":              CriticalityChoices,             required
+  "last_occurrence":          datetime | null,                optional, default null
+  "note":                     str | null,                     optional, default null
+  "allergy_intolerance_type": AllergyIntoleranceTypeOptions   optional, default "allergy"
+}
+```
+
+- `code`, `category`, `onset` and `recorded_date` are not in the update spec, so they cannot change after creation.
+- The update keeps `encounter` from the request body, so every update names an encounter.
+- The allergy is linked to the encounter in the request. If that is a different encounter, Care keeps a copy on the old one.
+- PUT and PATCH run the same update code. A successful update answers HTTP 200 with the updated allergy in the read format.
+- Care does not write a value that equals the field's default. See "Methods & save behaviour" below.
+
+### Read: `AllergyIntoleranceReadSpec`
+
+The list and the detail route return each allergy in this shape.
+
+```text
+{
+  "id":                       UUID (the allergy's external_id),
+  "code":                     Coding,
+  "clinical_status":          str,
+  "verification_status":      str,
+  "category":                 str,
+  "criticality":              str,
+  "encounter":                UUID (the encounter's external_id),
+  "onset":                    AllergyIntoleranceOnSetSpec, default {},
+  "last_occurrence":          datetime | null,
+  "recorded_date":            datetime | null,
+  "note":                     str | null,
+  "allergy_intolerance_type": str,
+  "created_by":               UserSpec | null,
+  "updated_by":               UserSpec | null,
+  "created_date":             datetime,
+  "modified_date":            datetime,
+  "meta":                     object
+}
+```
+
+- The read spec types the coded fields as `str`. Reads build the spec with `model_construct`, which does not validate the values again.
+- Care adds `created_by` and `updated_by` when it reads the allergy. Each is a user object (`UserSpec`, read from the user cache), or null when not set.
+- A `UserSpec` carries `id`, `first_name`, `last_name`, `phone_number`, `prefix`, `suffix`, `last_login`, `profile_picture_url`, `gender`, `username`, `mfa_enabled`, `deleted`, `role_orgs`, `communication` and `qualification`.
+- The response has no `patient` and no `copied_from`.
 
 ### Validation
 
-- `encounter` (both write specs): `validate_encounter_exists` rejects with `"Encounter not found"` when no `Encounter` has that `external_id`.
-- `code` (create): validated against value set `system-allergy-code` — must be a permitted SNOMED CT allergy concept.
-- `onset.note` is required whenever an `onset` object is supplied.
-- `datetime` fields are stored as-is. The base enforces tz-aware handling for period-style values through `PeriodSpec` (start ≤ end, both tz-aware), but `AllergyIntolerance` uses scalar datetimes rather than a `PeriodSpec`.
+- `encounter`, on create and on update: no encounter with that ID gives "Encounter not found".
+- `code`, on create: the code must be in `system-allergy-code`. The errors are listed under "Bound value set".
+- `onset`: when it is sent, `onset.note` is required.
+- `clinical_status`, `verification_status`, `category`, `criticality` and `allergy_intolerance_type` accept only the enum values above.
 
-### Server-side side effects
+A failed validation answers HTTP 400 with an `errors` list. Each error names the field path in `loc` and gives a `msg`.
 
-- **Create** (`AllergyIntoleranceWriteSpec.perform_extra_deserialization`): resolves `encounter` by `external_id`, sets `obj.encounter`, then sets `obj.patient = obj.encounter.patient`. The client never sends `patient` directly.
-- **Update** (`AllergyIntoleranceUpdateSpec.perform_extra_deserialization`): when `encounter` is present, re-resolves it and sets `obj.encounter`.
-- **Read** (`AllergyIntoleranceReadSpec.perform_extra_serialization`): sets `mapping["id"] = obj.external_id`, sets `encounter` to `obj.encounter.external_id`, and serializes audit users (`created_by` / `updated_by`) via `serialize_audit_users`.
+```text
+HTTP 400
+{
+  "errors": [
+    { "loc": ["clinical_status"], "msg": "Input should be 'active', 'inactive' or 'resolved'" },
+    { "loc": ["criticality"],     "msg": "Field required" },
+    { "loc": ["onset", "note"],   "msg": "Field required" }
+  ]
+}
+```
+
+The three errors above are separate examples: a wrong clinical status, a missing criticality, and an onset without a note.
 
 ## Methods & save behaviour
 
-- `serialize` / `de_serialize` are inherited from `EMRResource`. `de_serialize` maps only DB fields that are neither in `__exclude__` nor `id`/`external_id`, then calls `perform_extra_deserialization` for the encounter/patient wiring above.
-- `patient` is always derived from the encounter on create; no client payload can set it.
-- `copied_from` is platform-maintained for propagated/copied records and belongs to no spec.
-- `patient` and `encounter` both `CASCADE`-delete, so an allergy record never outlives its patient or encounter.
+### Create
+
+- Care checks that the encounter exists, links the allergy to it, and sets `patient` to that encounter's patient.
+- Care sets both `created_by` and `updated_by` to the user who sent the request.
+- Care writes a questionnaire response entry with submit type `CREATE`. It holds the allergy's ID, the type `allergy_intolerance`, and the user.
+
+### Update
+
+- Care links the allergy to the encounter in the request.
+- If that encounter differs from the stored one, Care first saves a copy of the allergy as it was. The copy stays on the old encounter, and its `copied_from` holds the original's internal ID.
+- If the new encounter already holds an earlier copy of this allergy, Care deletes that copy.
+- Care sets `updated_by` to the user who sent the request.
+- Care writes a questionnaire response entry with submit type `UPDATE`. It holds the allergy's ID, the type `allergy_intolerance`, and the user.
+- Care does not keep a field-by-field history of changes. The code marks this as a to-do.
+
+### Copies on earlier encounters
+
+- Reads with patient-level access return only original allergies, never the copies left on old encounters.
+- Without patient-level access, a list must name an encounter with `?encounter=`. It then returns the allergies linked to that encounter, copies included.
+- On each save, the Care frontend's allergy form sends every saved allergy it loaded (up to 100) as an update, with the current encounter.
+- So each save of the form links those allergies to the current encounter. Care keeps a copy of each one that was linked to another encounter.
+- This is by design: users re-confirm the patient's allergy list at every encounter where they save the allergy form.
+
+### Care skips values equal to a default
+
+- When Care saves a spec, it writes only the fields whose values differ from the field's default. It skips a value that equals the default.
+- It writes only database fields that are not excluded and are not `id` or `external_id`. Then it runs the spec's extra save step.
+- In the update spec, the defaults are `null` for `note` and `last_occurrence`, and `allergy` for `allergy_intolerance_type`. An update that sends one of these values does not write that field.
+- Care accepts such an update, but keeps the stored value. Setting the type back to `allergy`, or `note` or `last_occurrence` to empty, leaves the old value.
+
+### No delete
+
+- Care has no action that deletes an allergy.
+- The Care frontend marks an allergy as entered in error with an update that sets `verification_status` to `entered_in_error`.
+- The allergy lists of the Care frontend leave those allergies out with `exclude_verification_status=entered_in_error`.
 
 ## API integration notes
 
-- API field names follow the spec classes above. `encounter` is sent and returned as a UUID `external_id`, not a numeric FK.
-- Submit `code` as a `Coding` drawn from the bound value set `system-allergy-code`, not free text, so allergies can be matched against medications and other business logic.
-- The coded status fields (`clinical_status`, `verification_status`, `category`, `criticality`) accept only the enum values listed above; anything else is rejected on write.
-- Never send `patient` or `copied_from` — both are server-maintained.
+### Routes
+
+All routes are under `/api/v1/`, nested under the patient. `{patient}` is the patient's external ID. Every request needs a signed-in user.
+
+| Action | Method and path | Request body | Success response |
+| --- | --- | --- | --- |
+| List | `GET /api/v1/patient/{patient}/allergy_intolerance/` | None | `count` and `results` (read format) |
+| View one | `GET /api/v1/patient/{patient}/allergy_intolerance/{id}/` | None | The allergy (read format) |
+| Create | `POST /api/v1/patient/{patient}/allergy_intolerance/` | Write spec | HTTP 200, the new allergy (read format) |
+| Update | `PUT` or `PATCH /api/v1/patient/{patient}/allergy_intolerance/{id}/` | Update spec | HTTP 200, the updated allergy (read format) |
+| Upsert | `POST /api/v1/patient/{patient}/allergy_intolerance/upsert/` | `datapoints`: write or update spec, for each entry | HTTP 200, a list of the created or updated allergies, in request order |
+| Delete | None | None | None |
+
+- `{id}` is the allergy's `id`, as reads return it.
+- The list, view and update routes reach only allergies of the patient in the URL.
+- In an upsert, Care looks up the allergy to update by its `id` among all allergies, not only those of the patient in the URL.
+
+### List filters, ordering and pages
+
+| Query parameter | Effect |
+| --- | --- |
+| `encounter` | Encounter external ID. Returns only allergies linked to that encounter |
+| `clinical_status` | Comma-separated values. Returns only these clinical statuses |
+| `exclude_clinical_status` | Comma-separated values. Leaves out these clinical statuses |
+| `verification_status` | Comma-separated values. Returns only these verification statuses |
+| `exclude_verification_status` | Comma-separated values. Leaves out these verification statuses |
+| `name` | Case-insensitive search for part of `code.display` |
+| `limit` | Records per page. Default 14, at most 200 |
+| `offset` | Records to skip |
+| `ordering` | `created_date` or `modified_date`. A leading minus, as in `-created_date`, reverses the order |
+
+- Without `ordering`, the list shows the most recently modified first.
+- Pages use `CareLimitOffsetPagination`. The list answers with `count` (the total) and `results` only; it has no `next` or `previous` fields.
+
+### Upsert
+
+The upsert takes a batch of entries in `datapoints`.
+
+```text
+POST /api/v1/patient/{patient}/allergy_intolerance/upsert/
+{
+  "datapoints": [
+    { "id": "<allergy id>", ...AllergyIntoleranceUpdateSpec fields },
+    { ...AllergyIntoleranceWriteSpec fields }
+  ]
+}
+```
+
+- An entry with `id` updates that allergy. An entry without `id` creates a new one.
+- An upsert takes 1 to 100 entries by default. The setting `MAX_DATAPOINTS_PER_UPSERT` changes the limit.
+- No entries gives "No datapoints provided". Too many gives "Too many datapoints provided".
+- All or nothing: if any entry fails, Care saves none of them and returns 400 with a result for each entry.
+- A permission refusal inside an upsert does not answer 403. The refused entry's result is `{"detail": "<message>"}`, and the upsert answers 400.
+- On success, the upsert answers 200 with each created or updated allergy, in request order.
+- Each entry needs the permission of its action: create or update, as in the table below.
+
+### Authorization
+
+The table uses these terms:
+
+- "Closed": the encounter status is `completed`, `cancelled`, `entered_in_error` or `discontinued`. Any other status is open.
+- "A role on the patient": a role the user holds in an organization of an open encounter of the patient, or of its current location.
+- A role on the patient can also come from an organization the patient belongs to, or be given directly on the patient. Closed encounters give no roles on the patient.
+- "In the encounter": in one of the encounter's facility organizations, or in an organization of its current location.
+- The encounter's facility organizations include the organizations it is assigned to, their parents, and the facility's root organization "Administration".
+
+| Action | Permission (display name) | Held where | Refusal message |
+| --- | --- | --- | --- |
+| List, view one | "Can view clinical data about patients" | A role on the patient. Copies on old encounters are left out | None: Care tries the next row |
+| List, view one, with `encounter` and without the permission above | "Can Read encounter related clinical data" | In the encounter named in `encounter`. Returns only that encounter's allergies, copies included | "Permission denied to user" when neither row applies |
+| Create, and upsert entries without `id` | "Can Update a Patient's data" | A role on the patient in the URL | "You do not have permission to create" |
+| Update, and upsert entries with `id` | "Update Encounter related clinical data" | In the encounter named in the request body. Refused when that encounter is closed | "You do not have permission to update encounter" |
+| Update (PUT, PATCH): finding the allergy | The read access of the first two rows | Without patient-level access, `?encounter=` must name an encounter whose clinical data the user can read and to which the allergy is linked | As for list and view |
+
+- Outside an upsert, a refusal answers HTTP 403 with the body `{"detail": "<message>"}`, for example `{"detail": "You do not have permission to create"}`.
+- Create and upsert do not use the list's query, so neither needs the list's read access.
+- When the setting `PATIENT_GLOBAL_EDIT_ACCESS_ENABLED` is on, "Can Update a Patient's data" in any facility organization or organization is enough to write to every patient. The setting is off by default.
+- The Care frontend's allergy form re-sends every saved allergy as an update. So once the patient has a saved allergy, a save from the form needs "Update Encounter related clinical data" in the current encounter. New rows also need "Can Update a Patient's data".
+
+Default roles per permission:
+
+| Permission (display name) | Slug | Default roles |
+| --- | --- | --- |
+| Can view clinical data about patients | `can_view_clinical_data` | Staff, Doctor, Nurse, Admin, Facility Admin |
+| Can Read encounter related clinical data | `can_read_encounter_clinical_data` | Admin, Doctor, Nurse, Facility Admin |
+| Can Update a Patient's data | `can_write_patient` | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
+| Update Encounter related clinical data | `can_write_encounter_clinical_data` | Admin, Doctor, Nurse, Facility Admin |
+
+These role lists are the defaults in code. Each permission sync resets the built-in roles to them.
+
+### Errors
+
+- Validation errors return HTTP 400 with an `errors` list. See "Validation" above.
+- Permission refusals return HTTP 403 with a `detail` message. Inside an upsert they return 400, with the `detail` in the entry's result.
+- An allergy or patient that cannot be found returns HTTP 404 with type `object_not_found`.
+- An encounter in the request body that does not exist fails validation: HTTP 400, "Encounter not found".
+- Without patient-level access, an `encounter` value that names no encounter with readable clinical data gets HTTP 403, "Permission denied to user".
+
+### Other routes and features that carry allergies
+
+- Batch requests: `POST /api/v1/batch_requests/` runs its requests in one transaction. If any request fails, it returns 400 and saves none of them.
+- A batch holds at most 20 requests by default (setting `MAX_REQUESTS_PER_BATCH_REQUEST`).
+- The batch endpoint checks only sign-in. Each request in it is authorized as if it were sent alone.
+- The Care frontend saves the allergy form as one batch request that carries one allergy upsert.
+- Questionnaires: the viewset is registered as the built-in questionnaire type `allergy_intolerance`, titled "Allergy Intolerance", with the patient as subject.
+- A custom questionnaire cannot use `allergy_intolerance` as its slug. The error is "Slug cannot shadow internal question types".
+- When a questionnaire is submitted, the backend skips answer validation for structured questions such as the allergy question.
+- Questionnaire responses: `/api/v1/patient/{patient}/questionnaire_response` lists the `CREATE` and `UPDATE` entries. The `only_unstructured` parameter leaves them out.
+- Reading those entries for an encounter needs patient-level clinical-data access, or clinical-data access on that encounter.
+- Referrals: an allergy can be attached to a referral as a resource of type `allergy_intolerance`.
+- To attach it, the user must be able to view the patient's clinical data, or the clinical data of the allergy's encounter.
+- Reports: encounter report templates offer an "Allergy Intolerances" field that lists the allergies of the encounter.
+- Its columns include Name, Clinical Status, Category, Verification Status, Criticality, Note, Occurrence and Allergy Intolerance Type.
 
 ## Related
 
+- Concept: [Allergy intolerance](../../concepts/clinical/allergy-intolerance.mdx)
+- Flow: [Record an allergy](../../flows/clinical/allergy-intolerance/record-allergy.mdx)
+- Flow: [Update an allergy](../../flows/clinical/allergy-intolerance/update-allergy.mdx)
+- Flow: [Mark an allergy as entered in error](../../flows/clinical/allergy-intolerance/allergy-entered-in-error.mdx)
+- Flow: [View a patient's allergies](../../flows/clinical/allergy-intolerance/view-allergy-history.mdx)
 - Reference: [Patient](../clinical/patient)
 - Reference: [Encounter](../clinical/encounter.mdx)
-- Reference: [Condition](../clinical/condition.mdx)
-- Reference: [Observation](../clinical/observation.mdx)
-- Base: [EMRBaseModel](../foundation/base-model.mdx)
+- Reference: [Questionnaire Response](../clinical/questionnaire-response.mdx)
+- Reference: [Value Set](../definitions/valueset.mdx)
+- Reference: [Permission](../access-governance/permission.mdx)
+- Reference: [Role](../access-governance/role.mdx)
+- Reference: [Report & Templates](../platform/report.mdx)
+- Base: [Base models & conventions](../foundation/base-model.mdx)
 - Source (model): [allergy_intolerance.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/allergy_intolerance.py)
-- Source (spec): [resources/allergy_intolerance/spec.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/allergy_intolerance/spec.py)
-- Source (value set): [resources/allergy_intolerance/valueset.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/allergy_intolerance/valueset.py)
+- Source (specs): [resources/allergy_intolerance on GitHub](https://github.com/ohcnetwork/care/tree/develop/care/emr/resources/allergy_intolerance)
+- Source (viewset): [api/viewsets/allergy_intolerance.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/allergy_intolerance.py)

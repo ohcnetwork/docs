@@ -2,47 +2,218 @@
 sidebar_position: 4
 ---
 
-# View allergy history
+# View a patient's allergies
 
 ## Overview
 
-This flow describes how to view a patient's [allergy](../../../concepts/clinical/allergy-intolerance.mdx) history across their encounters in Care.
+This flow describes how to view a patient's allergies in Care. During an encounter, you use the **Allergies** panel on the **Overview** tab. Across encounters, you use the **Allergies** tab of the patient's clinical history.
+
+For what an allergy is in Care, see [Allergy intolerance](../../../concepts/clinical/allergy-intolerance.mdx).
+
+<video src="/media/clinical/allergy-intolerance/view-allergy-history.mp4" poster="/media/clinical/allergy-intolerance/view-allergy-history.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/allergy-intolerance/view-allergy-history.vtt" srcLang="en" label="English" default />
+</video>
 
 ## Pre-requisites
 
-- The patient is registered in Care.
-- You have the permission listed below.
+- The patient has at least one allergy recorded in Care that is not marked as entered in error. To record one, see [Record an allergy](./record-allergy.mdx).
+- You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can view clinical data about patients | Lets you view a patient's allergies. |
+| Can view clinical data about patients | Lets you see the patient's allergies on the **Allergies** panel and on the clinical history **Allergies** tab. You must hold it through a role on the patient. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Read encounter related clinical data | On a **Completed** encounter, lets you see the allergies linked to that encounter without a role on the patient. You must hold it in the encounter. It does not open the clinical history. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can list patients | Lets you open the patient's encounter when you hold it through a role on the patient. Held in an organization the patient belongs to, it also lets Care load the patient's details on the encounter and clinical history pages. By default, the Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer and Pharmacist roles hold it. |
+| Can Read encounter | Lets you open the encounter when you hold it in the encounter. You need it when a **Completed** encounter is your only link to the patient. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+
+You have a role on the patient when you hold a role in one of these places:
+
+- An organization of an open encounter of the patient, or of the current location of that encounter.
+- An organization that the patient belongs to.
+- The patient itself, when you were given a role directly on the patient.
+
+A closed encounter (**Completed**, **Cancelled**, **Discontinued** or **Entered in error**) gives no role on the patient.
+
+You hold a permission in the encounter when a role in an organization of the encounter gives it to you. The organizations of its current location also count.
+
+The organizations of an encounter are the organizations it is assigned to, their parent organizations, and the root organization of the facility, "Administration".
+
+What this means for each part of the flow:
+
+- On an open encounter, one role in an organization of the encounter is enough for the whole flow. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles are enough.
+- By default, on a **Completed** encounter, the Doctor, Nurse, Admin or Facility Admin role in an organization of the encounter lets you see the panel.
+- By default, the Staff role sees the panel of a **Completed** encounter only through a role on the patient. That encounter does not give one.
+- On a **Cancelled**, **Discontinued** or **Entered in error** encounter, the panel needs a role on the patient. That encounter does not give you one, and without another role on the patient Care refuses the panel's list.
+- The clinical history needs "Can view clinical data about patients" through a role on the patient. A permission held only in the encounter does not count.
+- If your only link to the patient is a closed encounter, you cannot see the clinical history. On a **Completed** encounter, the panel still shows you the **View History** icon.
 
 ## Steps
 
-### 1. Open the allergy section
+### 1. Open the encounter Overview
 
-On the encounter's Overview tab, or on the patient's record, find the Allergies panel.
+Open the patient's encounter in one of these ways:
 
-### 2. Open the history
+- In the facility sidebar, under **Encounters & Locations**, select the encounters entry. Its name is the encounter class it lists, for example **All Encounters**. In the list, select the row of the encounter, or select **View Encounter**.
+- Open the patient's profile, as [View a patient's profile](../patient/view-patient-profile.mdx) describes. Select the **Encounters** tab. Then select **View Encounter** on the card of the encounter.
 
-Select the history icon on the Allergies panel.
+If **View Encounter** is disabled on a card, you cannot open the encounter from that card.
 
-### 3. Review the history
+The encounter opens on its **Overview** tab.
 
-Care shows every allergy recorded for the patient, grouped by date.
+If you are on another tab of the encounter, select the **Overview** tab. You can also press G, then G.
+
+![The Encounters tab of a patient's profile, with View Encounter outlined on the card of the in-progress Ambulatory encounter](/media/clinical/allergy-intolerance/view-allergy-history-1.png)
+
+### 2. Find the Allergies panel
+
+Find the **Allergies** panel in the clinical part of the tab, before the symptoms, the diagnoses and the procedures.
+
+If the patient has no allergy to list, the tab does not show the panel. Allergies marked as entered in error are not listed.
+
+The panel header has these controls:
+
+| Control | What it does |
+| --- | --- |
+| Number of allergies, for example "3 recorded" | Shows how many allergies the panel lists. |
+| **View History** icon | Opens the patient's clinical history on the **Allergies** tab. When the panel is wide enough, the icon also shows the text **History**. |
+| **Edit** pencil | Opens the allergy form. It shows only on an open encounter, when you can read clinical data for it. The pencil can show even if you cannot save changes. To change an allergy, see [Update an allergy](./update-allergy.mdx). |
+| **Collapse** or **Expand** | Hides or shows the list of allergies. |
+
+![The Allergies panel outlined on the encounter Overview, with 3 recorded, History, the Edit pencil and Collapse in its header](/media/clinical/allergy-intolerance/view-allergy-history-2.png)
+
+### 3. Read the allergies in the panel
+
+If the encounter is **Completed**, the panel lists only the allergies linked to that encounter.
+
+An allergy is linked to the encounter where the allergy form was last saved for the patient.
+
+For every other encounter status, the panel lists all of the patient's allergies.
+
+The panel does not list allergies marked as entered in error.
+
+The panel shows the allergies in a table with these columns:
+
+| Column | What it shows |
+| --- | --- |
+| **Allergen** | The name of the allergen. |
+| **Status** | The clinical status: **Active**, **Inactive** or **Resolved**. |
+| **Criticality** | The criticality: **Low**, **High** or **Unable to Assess**. |
+| **Verification** | The verification status: **Unconfirmed**, **Confirmed**, **Refuted** or **Presumed**. |
+
+The clinical status, the criticality and the verification status show as colored badges. For example, **High** criticality is red and **Confirmed** is green.
+
+The table shows only when the list area of the panel is at least about 768 pixels wide. The width of the panel decides this, not the width of the browser window.
+
+On a very wide window, a summary column at the right of the **Overview** leaves less space for the panel.
+
+If the panel is narrow, it shows a short summary of each allergy instead of the table:
+
+- An allergy whose clinical status is not **Active** is dimmed.
+- The criticality shows as **High criticality** or **Low criticality**. **Unable to Assess** shows no criticality text.
+- **Last seen** shows how long ago the last occurrence was.
+- The verification status shows only when it is not **Confirmed**.
+- The clinical status shows only when it is not **Active**.
+
+The panel loads 14 allergies at a time. If more allergies exist, select **Load More**.
+
+![The table of the Allergies panel outlined, with the columns Allergen, Status, Criticality and Verification for Latex, Shellfish and Aspirin](/media/clinical/allergy-intolerance/view-allergy-history-3.png)
+
+### 4. Open the menu of an allergy
+
+In the table, select the info button on the row of the allergy, named **More Actions**.
+
+If the allergy has a note, the button name also says **Has Note**.
+
+The menu shows these items:
+
+- **See Note** shows the note of the allergy. **Hide note** hides it again. These items show only when the allergy has a note.
+- **Reported by** shows the person who recorded the allergy.
+
+![The More Actions menu of Aspirin on the panel, outlined, with See Note and Reported by Dr. Arjun Rao](/media/clinical/allergy-intolerance/view-allergy-history-4.png)
+
+![The note of Aspirin shown under the panel's table, outlined, with Hide note beside it](/media/clinical/allergy-intolerance/view-allergy-history-5.png)
+
+On the encounter page, the menu does not show **Go to Encounter**.
+
+### 5. Open the clinical history
+
+Use one of these ways:
+
+- On the **Allergies** panel, select the **View History** icon. The clinical history opens on the **Allergies** tab.
+- On the **Overview** tab, select **Clinical History**, or press H. Then select the **Allergies** tab.
+- On the patient's profile, select the **Clinical History** tab. Then select the **Allergies** tab.
+
+The **Clinical History** link and tab open the clinical history on the **Responses** tab.
+
+The title of the clinical history page shows the name of the patient.
+
+If you fill in a form for the encounter, the form page has a **Patient Clinical History** tab. Its **Allergies** tab shows the same list, and you cannot change the allergies there.
+
+![The View History icon, labelled History, outlined in the header of the Allergies panel](/media/clinical/allergy-intolerance/view-allergy-history-6.png)
+
+### 6. Read the Allergies tab
+
+The tab groups the patient's allergies by year.
+
+Inside each year, the tab groups the allergies by the date each allergy was created.
+
+Each group shows the same columns as the panel: **Allergen**, **Status** (clinical status), **Criticality** and **Verification** (verification status).
+
+In a narrow browser window, each allergy shows as a card, with the category under the allergen. The **More Actions** button is beside the clinical status badge of the card.
+
+The tab does not list allergies marked as entered in error.
+
+Care keeps no change history of an allergy: the tab shows each allergy as it is now.
+
+The tab loads 30 allergies at a time. If more allergies exist, select **Load More**.
+
+If the patient has no allergies, the tab shows "No Allergies" and "No Allergies have been recorded".
+
+Each allergy has the same **More Actions** menu as on the panel, with **See Note** and **Reported by**. On this tab the menu also shows **Go to Encounter**.
+
+![The Allergies tab of the patient's clinical history, outlined, with the allergies grouped under the year 2026 and the date 27 November, 2026](/media/clinical/allergy-intolerance/view-allergy-history-7.png)
+
+### 7. Leave the clinical history
+
+Choose one of these ways to leave:
+
+- If you opened the clinical history from an encounter, select **Back to Encounter**.
+- If you did not open it from an encounter, select **Back to Patient**.
+- To open the encounter of one allergy, open its **More Actions** menu on the **Allergies** tab. Select **Go to Encounter**.
+
+![The More Actions menu of Aspirin on the Allergies tab of the clinical history, outlined, with See Note, Go to Encounter and Reported by](/media/clinical/allergy-intolerance/view-allergy-history-8.png)
+
+**Go to Encounter** opens the **Overview** tab of the encounter that the allergy is linked to.
+
+This is the encounter where the allergy form was last saved for the patient. It is not always the encounter where the allergy was first recorded.
 
 ## Expected Outcome
 
-- You see the patient's full allergy history, across every encounter.
+- You see the patient's allergies on the **Allergies** panel of the encounter's **Overview** tab.
+- For each allergy, the panel shows its clinical status, criticality and verification status.
+- You see all of the patient's allergies on the clinical history **Allergies** tab.
+- The tab groups the allergies by year and by the date each allergy was created.
+- Neither list shows allergies marked as entered in error.
+- The clinical history **Allergies** tab shows no change history of an allergy.
+
+If you see one of these messages, use this table.
+
+| If you see | What it means | What to do |
+| --- | --- | --- |
+| "You do not have permission to view clinical data for this encounter" on the **Overview** tab | You do not hold "Can view clinical data about patients" through a role on the patient. You also do not hold "Can Read encounter related clinical data" in the encounter. | Ask your administrator for the permissions listed above. |
+| "You do not have permission to view this patient's clinical history" | You do not hold "Can view clinical data about patients" through a role on the patient. A permission held only in the encounter does not count. | Ask your administrator for that permission through a role on the patient. |
 
 ## Related
 
 Concepts:
 
-- [Allergy](../../../concepts/clinical/allergy-intolerance.mdx)
+- [Allergy intolerance](../../../concepts/clinical/allergy-intolerance.mdx)
 
 Flows:
 
 - [Record an allergy](./record-allergy.mdx)
+- [Update an allergy](./update-allergy.mdx)
+- [Mark an allergy as entered in error](./allergy-entered-in-error.mdx)
+- [View a patient's profile](../patient/view-patient-profile.mdx)

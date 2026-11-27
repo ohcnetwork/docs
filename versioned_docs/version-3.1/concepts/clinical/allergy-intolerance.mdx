@@ -2,111 +2,112 @@
 sidebar_position: 3
 ---
 
-# Allergy Intolerance
+# Allergy intolerance
 
 ## Definition
 
-An **[allergy or intolerance](https://build.fhir.org/allergyintolerance.html)** in Care is a substance that causes a reaction in a patient. The substance is a food, a medication, an environmental substance, or a biologic substance. Every allergy belongs to one patient. You record it from an encounter of that patient.
+An **[allergy](https://build.fhir.org/allergyintolerance.html)** in Care is the record of one allergen, such as a food or a medication, for one patient.
+
+Every allergy belongs to one patient and stays with that patient across encounters. You record it from an encounter of the patient, in the allergy form. Care links the allergy to the encounter where the allergy form was last saved for the patient.
 
 ## Key Attributes
 
 | Components | What it captures |
 | --- | --- |
-| Substance | The substance that the patient reacts to. You select it from a standard SNOMED CT allergy terminology. There is no default, so you must select one. |
-| Category | The type of the substance. The default is Medication. |
-| Criticality | The risk of a serious reaction. The default is Low. |
-| Status | How certain the record is. The default is Confirmed. |
-| Clinical Status | The current clinical state of the allergy. The default is Active. |
-| Occurrence | The date when the patient last reacted to the substance. Care does not accept a future date. The default is empty. |
-| Note | Free text about the allergy. The default is empty. |
+| Allergen | The allergen, which you choose from the allergen terminology your deployment uses (SNOMED CT by default). The default list covers substances, propensity to adverse reactions to a substance, some named intolerances such as lactose intolerance, and "No known allergy". It is required. You cannot change it after you save the allergy. On a large screen, the allergy form shows it in the **Substance** column. Allergy lists shown as a table show it in the **Allergen** column. |
+| Category | The category of the allergen: **Food**, **Medication**, **Environment** or **Biologic**. A new allergy starts as **Medication**. You cannot change the category after you save the allergy. |
+| Criticality | The criticality of the allergy: **Low**, **High** or **Unable to Assess**. A new allergy starts as **Low**. |
+| Verification status | One of five values, described under "Status" below. The allergy form labels it **Status**. Allergy lists shown as a table label its column **Verification**. |
+| Clinical status | One of three values, described under "Status" below. Allergy lists shown as a table label its column **Status**. |
+| Last occurrence | Care describes it as "The last occurrence date and time of the allergy or intolerance". It is optional. The form labels it **Occurrence** and does not accept a future date. |
+| Note | Free text about the allergy. It is optional. |
+| Encounter | The encounter that the allergy is linked to, described under "Encounter" below. |
 
-### Category
+### Encounter
 
-The Category shows the type of the substance. Select one of these values:
+Care is designed so that you re-confirm the patient's allergy list at every encounter.
 
-- Food
-- Medication
-- Environment
-- Biologic
+The allergy form shows the patient's saved allergies as rows, so you add new allergies and change saved ones in the same form.
 
-Note: You cannot change the Category after you save the allergy.
+When you save the form, Care links every saved allergy in the form to the current encounter, whether you changed it or not.
 
-### Criticality
+If an allergy was linked to another encounter, Care keeps a copy of it, as it was, on that encounter.
 
-The Criticality shows the risk of a serious reaction. Select one of these values:
+Care keeps no change history of an allergy: the lists show each allergy as it is now.
 
-- Low
-- High
-- Unable to Assess
+So an allergy is linked to the encounter where the allergy form was last saved for the patient. This is not always the encounter where the allergy was first recorded.
 
 ### Status
 
-The **Status** column shows how certain the record is. Select one of these values:
+An allergy has two statuses, the verification status and the clinical status. Each one changes on its own.
 
 | Status | Description |
 | --- | --- |
-| Unconfirmed | Care has no confirmation of the allergy. |
-| Presumed | The allergy is likely, but nobody confirmed it. |
-| Confirmed | Somebody confirmed the allergy. |
-| Refuted | Somebody ruled out the allergy. |
-| Entered in Error | Somebody recorded the allergy by mistake. |
+| Verification status: **Confirmed**, **Unconfirmed**, **Refuted** or **Presumed** | A new allergy starts as **Confirmed**. From an open encounter of the patient, you can change it to another of these four values, and back. |
+| Verification status: **Entered in Error** | The value that an allergy gets when you mark it as entered in error. Care offers this value only for a saved allergy. |
+| Clinical status: **Active**, **Inactive** or **Resolved** | A new allergy starts as **Active**. From an open encounter of the patient, you can change it to another of these three values, and back. In the allergy form, you use **Mark Active**, **Mark Inactive** and **Mark Resolved**. |
 
-Note: Care offers Entered in Error only for a saved allergy.
+Care has no action that deletes an allergy. If an allergy was recorded by mistake, you mark it as entered in error. Care then keeps the allergy, with the verification status **Entered in Error**.
 
-### Clinical Status
+Care leaves an allergy marked as entered in error out of every allergy list. The allergy form still shows it, faded.
 
-The Clinical Status shows the current clinical state of the allergy. Set it from the more-options (**⋮**) menu of the row.
+On a large screen, you cannot select it in the form to change it back. If you marked an allergy by mistake, record the allergy again.
 
-| Clinical Status | Description | Menu item |
-| --- | --- | --- |
-| Active | The allergy still applies to the patient. | **Mark Active** |
-| Inactive | The allergy no longer applies to the patient. | **Mark Inactive** |
-| Resolved | The allergy is over. | **Mark Resolved** |
+## Where you see allergies
 
-Care shows an inactive allergy in a lighter shade. Care strikes through a resolved allergy.
+You record and change allergies in the allergy form, a built-in questionnaire titled "Allergy Intolerance". You open it from the **Overview** tab of an open encounter, with the **Allergy** quick action or the **Edit** pencil of the **Allergies** panel.
 
-### Terminology
+You see allergies in these places:
 
-The substances come from a standard SNOMED CT allergy terminology.
-
-Note: Your deployment's administrator can change the available terminology.
-
-## Lifecycle
-
-You record and change allergies from the **Overview** tab of the encounter. Use the **Allergies** section, or use the **Allergy** quick action.
-
-While the encounter is open, you can change the Criticality, the Status, the Clinical Status, the Occurrence, and the Note of a saved allergy. You cannot change the Substance or the Category after you save the allergy.
-
-All add and edit controls are read-only when the encounter status is Completed, Cancelled, Discontinued, or Entered in Error.
-
-Care never deletes a saved allergy. To retract one, set its Status to Entered in Error. Care then leaves the allergy out of the **Allergies** section and out of the allergy history.
-
-Care links each allergy to the encounter where you last recorded or changed it. If you change an allergy from a later encounter, Care keeps the earlier version with the first encounter.
-
-Allergies stay with the patient. The allergy history of the patient shows them across all encounters.
+- The **Allergies** panel on the **Overview** tab of an encounter. The panel shows only when it has at least one allergy to list. On a **Completed** encounter, it lists the allergies linked to that encounter. On every other encounter, it lists all of the patient's allergies. When the panel is at least 768 pixels wide, it shows a table with the columns **Allergen**, **Status** (clinical status), **Criticality** and **Verification** (verification status). A narrower panel shows a short summary of each allergy instead.
+- The **Allergies** tab of the patient's clinical history. It lists the patient's allergies across encounters, grouped by year and by the date each allergy was created. You reach it from the **Clinical History** tab of the patient's profile (see [View a patient's profile](../../flows/clinical/patient/view-patient-profile.mdx)), or with the **View History** icon on the **Allergies** panel.
+- The **Allergies:** badge in the header of a questionnaire that you fill in an encounter. It lists up to 14 of the patient's **Confirmed** allergies. On a **Completed** encounter, Care does not load it.
+- The **Patient Clinical History** tab of a questionnaire that you fill in an encounter. Its **Allergies** tab shows the patient's allergies, and you cannot change them there.
+- The patient's questionnaire responses. Each save of the allergy form adds an entry titled "Allergy Intolerance" for each allergy that the save sends.
+- The default Discharge Summary report template. Its allergies section leaves out allergies marked as entered in error.
+- A referral, to which you can attach allergies.
 
 ## Permissions
 
-Your role controls what you can do with an allergy.
+Care controls access to allergies with patient and encounter permissions. Where you hold a permission matters.
 
-| Permission | What it allows |
-| --- | --- |
-| Can submit questionnaire about patient encounters | Submit the allergy screen of an encounter. |
-| Can Update a Patient's data | Record a new allergy for the patient. |
-| Update Encounter related clinical data | Change or retract an allergy of an encounter. |
-| Can view clinical data about patients | View the allergies of a patient. |
-| Can Read encounter related clinical data | View the allergies of one encounter. |
+You have a role on the patient when you hold a role in one of these places:
 
-By default, doctors, nurses, administrators, and facility administrators can record and change allergies. Staff can view patient clinical data, but staff do not have encounter clinical-data access.
+- An organization of an open encounter of the patient, or of the current location of that encounter.
+- An organization that the patient belongs to.
+- The patient itself, when you were given a role directly on the patient.
 
-## FHIR R5 alignment
+A closed encounter (**Completed**, **Cancelled**, **Discontinued** or **Entered in error**) gives no role on the patient.
 
-Care follows FHIR R5 for allergies. The substance, the category, the criticality, the verification status, the clinical status, the last occurrence, and the note map to the FHIR AllergyIntolerance resource.
+You hold a permission in the encounter when a role in an organization of the encounter gives it to you. The organizations of its current location also count.
+
+The organizations of an encounter are the organizations it is assigned to, their parent organizations, and the root organization of the facility, "Administration".
+
+The roles below are the default roles. Admin is the Admin role of a facility or a government organization, not the Admin role of a role organization.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Update a Patient's data | Record a new allergy. You must hold it through a role on the patient. Your deployment can make it apply to every patient when held in any organization; this setting is off by default. The Administrator role holds it too. That role does not hold "Can view clinical data about patients", so Care does not show it the **Allergy** quick action. | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
+| Can view clinical data about patients | See the patient's allergies on the **Allergies** panel, on the clinical history **Allergies** tab and in the allergy form. You must hold it through a role on the patient. For the clinical history and the allergy form, no other permission counts. | Staff, Doctor, Nurse, Admin, Facility Admin |
+| Can Read encounter related clinical data | See the **Allergies** panel of a **Completed** encounter without a role on the patient. You must hold it in the encounter. | Doctor, Nurse, Admin, Facility Admin |
+| Update Encounter related clinical data | Change a saved allergy, which includes marking it as entered in error. The allergy form sends every saved allergy again with each save. So you also need it to record an allergy for a patient who already has one. You must hold it in the encounter, and the encounter must be open. | Doctor, Nurse, Admin, Facility Admin |
+| Can list patients | Open the encounter, if you hold it through a role on the patient. Held in an organization the patient belongs to, it also lets you open the patient. You need this permission or "Can Read encounter". | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer, Pharmacist |
+| Can Read encounter | Open the encounter, if you hold it in the encounter. You need it when a **Completed** encounter is your only link to the patient. | Doctor, Nurse, Admin, Facility Admin |
+
+A role in an organization of an open encounter counts both as a role on the patient and as held in the encounter. So by default, the Doctor, Nurse, Admin or Facility Admin role in such an organization lets you view, record and change allergies from that encounter.
+
+Note: In Care 3.1, the Staff role can save the allergy form only for a patient with no saved allergy. On an open encounter, Staff sees the **Allergy** quick action and can fill the form. If the patient already has a saved allergy of any verification status, Care refuses the save. Staff does not hold "Update Encounter related clinical data", which that save needs. The form then shows "Failed to submit questionnaire".
+
+Note: On a closed encounter, Care does not show the **Allergy** quick action or the **Edit** pencil. Care refuses every change to a saved allergy on a closed encounter, for every user. Because the allergy form sends every saved allergy again, a save there fails whenever the patient has a saved allergy.
 
 ## Related
 
 - Flow: [Record an allergy](../../flows/clinical/allergy-intolerance/record-allergy.mdx)
 - Flow: [Update an allergy](../../flows/clinical/allergy-intolerance/update-allergy.mdx)
 - Flow: [Mark an allergy as entered in error](../../flows/clinical/allergy-intolerance/allergy-entered-in-error.mdx)
-- Flow: [View allergy history](../../flows/clinical/allergy-intolerance/view-allergy-history.mdx)
-- Concept: [Condition](../../concepts/clinical/condition.mdx)
+- Flow: [View a patient's allergies](../../flows/clinical/allergy-intolerance/view-allergy-history.mdx)
+- Concept: [Patient](../clinical/patient)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Questionnaire Response](../clinical/questionnaire-response.mdx)
+- Concept: [Valueset](../definitions/valueset.mdx)
+- Reference: [Allergy intolerance](../../references/clinical/allergy-intolerance.mdx)
