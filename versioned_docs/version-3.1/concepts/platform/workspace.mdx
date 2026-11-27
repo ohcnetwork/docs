@@ -1,0 +1,133 @@
+---
+sidebar_position: 3
+---
+
+# Workspace
+
+## Definition
+
+A workspace in Care is a saved design of the tabs and sections that people see when they open an encounter. A workspace can also set the tabs of a patient's clinical history.
+
+A user who manages workspaces, by default a user with the Facility Admin role, creates and designs the workspace. Doctors, nurses and other staff then choose a workspace on the encounter page, and see their encounters in that design.
+
+## Key Attributes
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the workspace. People see this name when they choose a workspace on an encounter. |
+| Description | An optional note on when to use the workspace. The workspace picker shows it with the name. |
+| Status | Whether the workspace is **Active**, **Draft** or **Archived**. Only an **Active** workspace is offered on encounters. |
+| Workspace ownership | Whether the workspace belongs to the facility, to one department, or to the person who created it. You cannot change the ownership after the workspace is created. |
+| Owner department | For a department workspace, the department that owns it. You cannot change it after the workspace is created. |
+| Departments with access | For a facility workspace, the departments that can use it. You choose them after the workspace is created. |
+| Design | The tabs and sections of the Encounter screen and, if you set it up, of the Clinical history screen. |
+
+### Workspace ownership
+
+When you create a workspace in a facility, you choose one of three kinds of ownership. The ownership decides who can see the workspace and who can change it.
+
+- **Facility workspace**: The workspace belongs to the facility. People who hold Can Read Workspaces in a department that the workspace is shared with, or in a department above one, can see and use it. Until you share it, only people with Can Create/Update Workspaces in the facility's Administration can see it.
+- **Department workspace**: The workspace belongs to one department, its owner department. People who hold Can Read Workspaces in the owner department, or in a department above it, can see and use it. A role in a department below the owner department does not count. A role in Administration does not count either, because Administration is never above a department. It counts only when Administration itself is the owner department.
+- **Personal workspace**: Only the person who created the workspace can see it, use it and change it. No role makes it visible to anyone else, including people who manage workspaces.
+
+Your workspace picker can also offer a deployment-wide workspace. It is set up for the whole deployment, not in a facility's settings, and it can be shared with any organization. When it is **Active**, the picker offers it if you hold Can Read Workspaces in an organization it is shared with, or in an organization above one.
+
+### Design
+
+A design is a list of tabs. A built-in tab shows a standard Care tab. Any other tab holds sections, such as Vitals or Diagnoses, in one of the designer's layouts of one or two columns. The built-in Overview tab can also be customised to hold sections.
+
+To begin a design, you can pick a starter, such as Standard encounter, Ward rounds or Outpatient visit, or start from a blank tab.
+
+When you use a workspace, the encounter shows the workspace's visible tabs in their order. When you open an encounter at its **Overview** tab, Care moves to the first visible tab of the workspace. The **Go to** group in **Encounter Actions** shows the same tabs.
+
+Some sections hide when they do not apply. A section that needs an active encounter is hidden after the encounter is closed. A design can also show a section only for certain encounter statuses. When every section of a column is hidden, the column collapses and the other columns widen.
+
+A workspace changes how the screens are arranged. It does not give anyone access to records or actions that their roles do not allow.
+
+A section that a person may not read shows a message that they do not have permission. Sections that change the encounter are hidden from people who cannot change it. A built-in tab stays hidden from a person who may not see that standard tab.
+
+A workspace can also have its own Clinical history screen. If it has one, the patient's clinical history shows those tabs. If not, clinical history shows the standard tabs. Sections on clinical history are always read-only.
+
+The Clinical history screen of a workspace applies to the patient's clinical history page, and to the clinical history that you see while you fill in a form.
+
+### Choosing a workspace
+
+Each person chooses their own workspace with the workspace picker at the top right of the encounter page. The picker shows the name of the workspace in use, or **Standard encounter** when there is none.
+
+Your choice applies to all your encounters and to clinical history. It belongs to you alone, so it does not change what other people see.
+
+The picker offers every **Active** workspace that you can see, not only the workspaces of the current facility.
+
+**Reset to standard workspace** in the picker clears your choice, and the encounter shows the standard screens again.
+
+If your chosen workspace is later set to **Draft** or **Archived**, or you can no longer see it, Care stops using it and shows the standard screens.
+
+### Status
+
+| Status | Description |
+| --- | --- |
+| Active | Offered on encounters to everyone who can see the workspace. A new workspace starts as **Active**. |
+| Draft | Not offered on encounters yet. Use it while you set up the design. |
+| Archived | No longer offered on encounters. People who chose it see the standard encounter screens again. |
+
+Note: A new workspace starts as **Active**, with an empty design. Set it to **Draft** until the design is ready, so that nobody chooses it too early.
+
+Note: The status decides whether the workspace picker offers the workspace. It does not change who can see the workspace in the workspace list.
+
+Note: Deleting a workspace is not the same as archiving it. A deleted workspace leaves the list, and you cannot undo the delete.
+
+## Permissions
+
+Care checks two things: which permission your role holds, and where you hold that role. You can hold a role in a department of the facility, in an organization, or in Administration, the organization Care creates with every facility. The roles below are the defaults.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create/Update Workspaces | For a facility workspace: create, design, rename, change the status of, and delete it, and choose its departments with access. Hold it in the facility's Administration. With it, you also see every facility workspace of the facility, shared or not. | Facility Admin |
+| Can Create/Update Workspaces | For a department workspace: create, design, rename, change the status of, and delete it. Hold it in the owner department or a department above it. A role only in Administration is not enough, unless Administration is the owner department. | Facility Admin |
+| Can Create/Update Workspaces | For a personal workspace: create it. Hold it in any department or team of the facility, or in its Administration. Only the creator can design, rename, change the status of, or delete the workspace, and the creator still needs this permission. | Facility Admin |
+| Can Read Workspaces | For a facility workspace: see and use it. Hold it in a department that the workspace is shared with, or in a department above one. | Facility Admin, Administrator, Doctor, Nurse, Pharmacist, Staff, Volunteer |
+| Can Read Workspaces | For a department workspace: see and use it. You also need it to open a department workspace that you want to change. Hold it in the owner department or a department above it. Administration counts only when it is the owner department. | Facility Admin, Administrator, Doctor, Nurse, Pharmacist, Staff, Volunteer |
+| Can Read Workspaces | For a deployment-wide workspace: see and use it. Hold it in an organization that the workspace is shared with, or in an organization above one. The workspace can be shared with any organization. | Admin, Manager and Member, in a role organization. Administrator, Doctor, Nurse, Staff and Volunteer, in a government organization. |
+| Can View Facility Organizations | List the facility's departments when you choose an owner department or the departments with access. Hold it in any department of the facility. To list Administration too, hold it in Administration. Your own departments are always listed. | Facility Admin, Administrator, Doctor, Nurse, Staff, Volunteer |
+
+Note: Seeing a personal workspace needs no permission. Only its creator sees it.
+
+Note: To reach the workspace list, you need a role anywhere in the facility. The list checks no permission, so it shows **Create workspace** to everyone who opens it. If you do not hold Can Create/Update Workspaces where the ownership needs it, Care refuses the save with "You are not authorized to create a workspace".
+
+Note: The person who creates a facility gets the Facility Admin role in its Administration. That role covers facility workspaces. It does not cover department workspaces, unless the person also has the role in the owner department or a department above it, or Administration is the owner department.
+
+Note: To use a workspace on an encounter, you must also be able to open the encounter. See [Encounter](../clinical/encounter.mdx).
+
+## Where to find it
+
+In a facility, select **Settings** in the facility sidebar, then **Workspaces** under **Advanced**. Everyone who can open the facility settings sees this entry.
+
+The workspace list shows the facility, department and personal workspaces that you can see.
+
+The list shows **Active** workspaces until you choose another status with the **Active**, **Draft** and **Archived** tabs. On a phone, select the status in the list that replaces the tabs.
+
+To find a workspace by name, type part of its name in **Search**.
+
+To open a workspace, select its name or **Edit**.
+
+On an encounter, the workspace picker is at the top right of the page.
+
+## Related
+
+- Flow: [Create a workspace](../../flows/platform/workspace/create-a-workspace.mdx)
+- Flow: [Design what a workspace shows on encounters](../../flows/platform/workspace/design-a-workspace-encounter-screen.mdx)
+- Flow: [Set what a section shows and when](../../flows/platform/workspace/set-what-a-section-shows.mdx)
+- Flow: [Design a workspace's clinical history screen](../../flows/platform/workspace/design-a-workspace-clinical-history.mdx)
+- Flow: [Share a facility workspace with departments](../../flows/platform/workspace/share-a-workspace-with-departments.mdx)
+- Flow: [Publish, hold back or archive a workspace](../../flows/platform/workspace/publish-or-archive-a-workspace.mdx)
+- Flow: [Choose the workspace you use on encounters](../../flows/platform/workspace/choose-your-encounter-workspace.mdx)
+- Flow: [Go back to the standard encounter screens](../../flows/platform/workspace/return-to-the-standard-encounter-screens.mdx)
+- Flow: [Rename a workspace or change its description](../../flows/platform/workspace/rename-a-workspace.mdx)
+- Flow: [Delete a workspace](../../flows/platform/workspace/delete-a-workspace.mdx)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Patient](../clinical/patient)
+- Concept: [Department](../facility/department.mdx)
+- Concept: [Facility Organization](../access-governance/facility-organization.mdx)
+- Concept: [Facility](../facility/facility.mdx)
+- Concept: [Roles and Permission](../access-governance/access-control.mdx)
+- Concept: [Organisation](../access-governance/organization.mdx)

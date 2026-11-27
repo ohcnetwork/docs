@@ -1,0 +1,109 @@
+---
+sidebar_position: 7
+---
+
+# Choose the workspace you use on encounters
+
+## Overview
+
+This flow describes how to choose the [workspace](../../../concepts/platform/workspace.mdx) that sets the tabs and sections you see on an [encounter](../../../concepts/clinical/encounter.mdx).
+
+<video src="/media/platform/workspace/choose-your-encounter-workspace.mp4" poster="/media/platform/workspace/choose-your-encounter-workspace.poster.png" controls width="720">
+  <track kind="captions" src="/media/platform/workspace/choose-your-encounter-workspace.vtt" srcLang="en" label="English" default />
+</video>
+
+## Pre-requisites
+
+- You can open the encounter of the patient. See [Encounter](../../../concepts/clinical/encounter.mdx) for who can open an encounter.
+- The workspace that you want has the status **Active**. Care does not offer **Draft** or **Archived** workspaces.
+- If the workspace is a facility workspace, one of these is true:
+  - It is shared with your department or a department under it. See [Share a facility workspace with departments](./share-a-workspace-with-departments.mdx).
+  - You hold Can Create/Update Workspaces in the facility's Administration.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Read Workspaces | See a workspace in the workspace picker, and choose it. Where you must hold it depends on the workspace, as step 2 shows. By default, the Facility Admin, Administrator, Doctor, Nurse, Pharmacist, Staff and Volunteer roles have it in a facility. In a role organization, the Admin, Manager and Member roles have it by default. In a government organization, the Administrator, Doctor, Nurse, Staff and Volunteer roles have it by default. |
+| Can Create/Update Workspaces | Optional. In the facility's Administration, it lets you see and choose every **Active** facility workspace, shared or not. By default, only the Facility Admin role has it in a facility. |
+
+Note: You also need the permissions to open the encounter, where the workspace picker is. See [Encounter](../../../concepts/clinical/encounter.mdx) for who can open an encounter.
+
+## Steps
+
+### 1. Open the workspace picker
+
+Open the encounter of the patient.
+
+After the encounter loads, Care shows the workspace picker at the top right of the encounter page. **Back** is at the top left.
+
+The workspace picker shows **Standard encounter** when you have no workspace chosen. Otherwise, it shows the name of your workspace.
+
+Select the workspace picker.
+
+Care opens the **Workspace** panel. The panel shows your current choice and "Your choice applies to all your encounters and clinical history."
+
+![The encounter of Demo Patient Ravi Kumar, with the workspace picker at the top right, reading Standard encounter, outlined](/media/platform/workspace/choose-your-encounter-workspace-1.png)
+
+### 2. Find the workspace
+
+The panel lists each **Active** workspace that you can see, with its name and description. The list is not limited to the current facility.
+
+To find a workspace by its name, type the name in **Search workspaces by name**.
+
+If no workspace matches, Care shows "No workspaces found".
+
+The list can show these workspaces:
+
+| Workspace | It is in your list when |
+| --- | --- |
+| Facility workspace | You hold Can Read Workspaces in a department that the workspace is shared with, or in a department above it. If you hold Can Create/Update Workspaces in the facility's Administration, you see every facility workspace of that facility. |
+| Department workspace | You hold Can Read Workspaces in the owner department, or in a department above it. |
+| Personal workspace | You created the workspace. Nobody else sees it. |
+| Deployment-wide workspace | You hold Can Read Workspaces in an organization that the workspace is shared with, or in an organization above it. |
+
+If the list cannot load, Care shows "Unable to load available workspaces. You can continue using the current encounter pages." Select **Try Again**.
+
+![The Workspace panel, outlined, with General typed in the search box and General Medicine rounds listed](/media/platform/workspace/choose-your-encounter-workspace-2.png)
+
+### 3. Choose the workspace
+
+Select the workspace in the list.
+
+Care saves the workspace as your choice. Care then opens the first visible tab of the workspace.
+
+If you select the workspace that is already your choice, Care closes the panel.
+
+If Care shows "Could not select this workspace. Please try again.", select the workspace again.
+
+![The encounter after choosing: the picker reads General Medicine rounds, outlined, and the Ward rounds tab shows the patient's vitals, diagnosis and symptom, with the Medications, Notes and Files tabs beside it](/media/platform/workspace/choose-your-encounter-workspace-3.png)
+
+## Expected Outcome
+
+- The workspace picker shows the name of the workspace.
+- The encounter shows the tabs of the workspace. A built-in tab shows the standard Care tab. The other tabs show the sections of the workspace.
+- In **Encounter Actions**, the **Go to** group lists only the visible tabs of the workspace.
+- The choice applies to all your encounters, in every facility. When you open an encounter at its **Overview** tab, Care moves to the first visible tab of the workspace.
+- Clinical history uses the Clinical history tabs of the workspace. If the workspace has no Clinical history tabs, clinical history shows its standard tabs.
+- Care saves the choice on the server with your user account.
+- If the workspace later gets the status **Draft** or **Archived**, or you lose access to it, Care stops using it on your encounters.
+- If a workspace that you chose earlier becomes **Active** again, Care can show it in the picker instead of your latest choice. If this happens, choose your workspace again.
+- You can choose another workspace later, or [go back to the standard encounter screens](./return-to-the-standard-encounter-screens.mdx).
+- If the workspace has no visible tabs, the encounter shows "This workspace has no visible pages."
+- If parts of the workspace are not valid, the encounter shows "Some parts of this workspace configuration are invalid. Valid pages and widgets are still shown."
+- In both of these cases, you can choose another workspace, or go back to the standard encounter screens.
+- If Care cannot load your choice, the encounter shows "Unable to load your default workspace. The standard encounter pages are shown." It also shows **Try Again**.
+
+## Related
+
+Concepts:
+
+- [Workspace](../../../concepts/platform/workspace.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [Go back to the standard encounter screens](./return-to-the-standard-encounter-screens.mdx)
+- [Share a facility workspace with departments](./share-a-workspace-with-departments.mdx)
+- [Publish, hold back or archive a workspace](./publish-or-archive-a-workspace.mdx)

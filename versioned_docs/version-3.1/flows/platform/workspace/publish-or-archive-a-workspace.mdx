@@ -1,0 +1,105 @@
+---
+sidebar_position: 6
+---
+
+# Publish, hold back or archive a workspace
+
+## Overview
+
+This flow describes how to change the status of a [workspace](../../../concepts/platform/workspace.mdx) to **Active**, **Draft** or **Archived**. The status decides whether Care offers the workspace on encounters.
+
+<video src="/media/platform/workspace/publish-or-archive-a-workspace.mp4" poster="/media/platform/workspace/publish-or-archive-a-workspace.poster.png" controls width="720">
+  <track kind="captions" src="/media/platform/workspace/publish-or-archive-a-workspace.vtt" srcLang="en" label="English" default />
+</video>
+
+## Pre-requisites
+
+- You have a role in one of the facility's departments or teams. A role in Administration, the organization Care creates with every facility, also counts.
+- Someone has created the workspace in the facility. See [Create a workspace](./create-a-workspace.mdx).
+- If the workspace is a **Personal workspace**, you created it. Only the person who created a personal workspace can see or change it.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create/Update Workspaces | For a **Facility workspace**: save the new status. You need this permission through a role in the facility's Administration. With it, you also see every facility workspace of the facility in the workspace list, shared or not. By default, only the Facility Admin role has it in a facility. |
+| Can Create/Update Workspaces | For a **Department workspace**: save the new status. You need this permission through a role in the owner department or in a department above it. A role only in Administration is not enough, unless Administration is the owner department. By default, only the Facility Admin role has it in a facility. |
+| Can Create/Update Workspaces | For a **Personal workspace**: save the new status. You need this permission through a role in any department or team of the facility, or in its Administration. You must also be the person who created the workspace. By default, only the Facility Admin role has it in a facility. |
+| Can Read Workspaces | For a **Department workspace**: see and open the workspace in the workspace list. You need this permission through a role in the owner department or in a department above it. A role only in Administration is not enough, unless Administration is the owner department. By default, the Facility Admin, Administrator, Doctor, Nurse, Pharmacist, Staff and Volunteer roles have it in a facility. |
+
+## Steps
+
+### 1. Open the workspace list
+
+Open the facility from the home page, or from the facility switcher in the header.
+
+In the facility sidebar, select **Settings**.
+
+In the settings sidebar, under **Advanced**, select **Workspaces**. Care shows the workspace list of the facility.
+
+### 2. Open the workspace
+
+The workspace list shows **Active** workspaces until you choose another status. To see other workspaces, select the **Draft** or **Archived** tab.
+
+On a phone, select the status in the list that replaces the tabs.
+
+To find a workspace by name, type part of its name in **Search**.
+
+Select the name of the workspace, or select **Edit** in its row. Care opens the **Edit workspace** page. The header shows the current status.
+
+Note: The workspace list shows only the workspaces that you can see.
+
+![The Workspaces list with the Draft tab outlined, listing Night shift](/media/platform/workspace/publish-or-archive-a-workspace-1.png)
+
+### 3. Select the new status
+
+Select **General settings** to open the panel.
+
+In **Status**, select the new status. Care shows a hint below the field for each status.
+
+| Option | What it means |
+| --- | --- |
+| **Active** | Publish the workspace. Care shows "Available on encounters to everyone with access." |
+| **Draft** | Hold the workspace back. Care shows "Not offered on encounters yet. Keep it here while you set it up." |
+| **Archived** | Stop offering the workspace. Care shows "No longer offered on encounters. People who chose it see the standard encounter again." |
+
+![The Status list open in General settings, with Active outlined](/media/platform/workspace/publish-or-archive-a-workspace-2.png)
+
+### 4. Save the change
+
+Select **Save Changes**. **Save Changes** is available only after you change a field.
+
+If a section in the design has invalid settings, Care does not let you save. Correct the section first.
+
+If you leave the page before you save, Care asks "You have unsaved changes. Leave without saving?"
+
+If Care cannot save the change, it shows "Unable to save the workspace. Your changes are still here. Please try again."
+
+If Care also shows "You are not authorized to create a workspace", you lack the permission where it is needed. Care uses this message for changes too. Check the Permissions section.
+
+![The Status field set to Active after saving, outlined, with the message Workspace updated and the Active badge in the header](/media/platform/workspace/publish-or-archive-a-workspace-3.png)
+
+## Expected Outcome
+
+- Care shows the message "Workspace updated".
+- In the workspace list, the workspace shows under the tab of its new status.
+- If the status is **Active**, people who can see the workspace can choose it in the workspace picker on encounters.
+- If the status is **Draft** or **Archived**, Care no longer offers the workspace on encounters. Care stops using it for the people who chose it.
+- The status does not change who can see the workspace in the workspace list.
+- Who can see a **Facility workspace** depends on its **Departments with access**. See [Share a facility workspace with departments](./share-a-workspace-with-departments.mdx).
+
+## Related
+
+Concepts:
+
+- [Workspace](../../../concepts/platform/workspace.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [Create a workspace](./create-a-workspace.mdx)
+- [Share a facility workspace with departments](./share-a-workspace-with-departments.mdx)
+- [Choose the workspace you use on encounters](./choose-your-encounter-workspace.mdx)
+- [Go back to the standard encounter screens](./return-to-the-standard-encounter-screens.mdx)
+- [Delete a workspace](./delete-a-workspace.mdx)

@@ -1,0 +1,99 @@
+---
+sidebar_position: 10
+---
+
+# Delete a workspace
+
+## Overview
+
+This flow describes how to delete a [workspace](../../../concepts/platform/workspace.mdx) that is no longer needed. You cannot undo a delete.
+
+<video src="/media/platform/workspace/delete-a-workspace.mp4" poster="/media/platform/workspace/delete-a-workspace.poster.png" controls width="720">
+  <track kind="captions" src="/media/platform/workspace/delete-a-workspace.vtt" srcLang="en" label="English" default />
+</video>
+
+## Pre-requisites
+
+- You have a role in one of the facility's departments or teams. A role in Administration, the organization Care creates with every facility, also counts.
+- Someone has created the workspace in the facility. See [Create a workspace](./create-a-workspace.mdx).
+- If the workspace is a **Personal workspace**, you created it. Only the person who created a personal workspace can see or delete it.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create/Update Workspaces | For a **Facility workspace**: delete the workspace. You need this permission through a role in the facility's Administration. With it, you also see every facility workspace of the facility in the workspace list, shared or not. By default, only the Facility Admin role has it in a facility. |
+| Can Create/Update Workspaces | For a **Department workspace**: delete the workspace. You need this permission through a role in the owner department or in a department above it. A role only in Administration is not enough, unless Administration is the owner department. By default, only the Facility Admin role has it in a facility. |
+| Can Create/Update Workspaces | For a **Personal workspace**: delete the workspace. You need this permission through a role in any department or team of the facility, or in its Administration. You must also be the person who created the workspace. By default, only the Facility Admin role has it in a facility. |
+| Can Read Workspaces | For a **Department workspace**: see and open the workspace in the workspace list. You need this permission through a role in the owner department or in a department above it. A role only in Administration is not enough, unless Administration is the owner department. By default, the Facility Admin, Administrator, Doctor, Nurse, Pharmacist, Staff and Volunteer roles have it in a facility. |
+
+## Steps
+
+### 1. Open the workspace list
+
+Open the facility from the home page, or from the facility switcher in the header.
+
+In the facility sidebar, select **Settings**.
+
+In the settings sidebar, under **Advanced**, select **Workspaces**. Care shows the workspace list of the facility.
+
+### 2. Open the workspace
+
+The workspace list shows **Active** workspaces until you choose another status. To see other workspaces, select the **Draft** or **Archived** tab.
+
+On a phone, select the status in the list that replaces the tabs.
+
+To find a workspace by name, type part of its name in **Search**.
+
+Select the name of the workspace, or select **Edit** in its row. Care opens the **Edit workspace** page.
+
+Note: The workspace list shows only the workspaces that you can see.
+
+![The Workspaces list with the Edit button of Trial layout outlined](/media/platform/workspace/delete-a-workspace-1.png)
+
+### 3. Select Delete workspace
+
+Go to the bottom of the **Edit workspace** page. Care shows "Delete this workspace configuration when it is no longer needed."
+
+Note: You cannot undo a delete. If you only want to stop offering the workspace on encounters, archive it. See [Publish, hold back or archive a workspace](./publish-or-archive-a-workspace.mdx).
+
+Select **Delete workspace**.
+
+Note: Care shows **Delete workspace** for every workspace that you can open. Care checks your permission only when you confirm.
+
+![The bottom of the Edit workspace page, with Delete workspace outlined](/media/platform/workspace/delete-a-workspace-2.png)
+
+### 4. Confirm the delete
+
+Care opens the **Delete workspace** dialog. The dialog names the workspace and says "This removes its configuration and access assignments. This action cannot be undone."
+
+To delete the workspace, select **Delete**.
+
+To keep the workspace, select **Cancel**.
+
+If Care cannot delete the workspace, the dialog shows "Unable to delete the workspace. Please try again."
+
+If Care also shows "You are not authorized to create a workspace", you lack the permission where it is needed. Care uses this message for a delete too. Check the Permissions section.
+
+![The Delete workspace dialog asking to delete Trial layout, with Cancel and Delete](/media/platform/workspace/delete-a-workspace-3.png)
+
+## Expected Outcome
+
+- Care shows the message "Workspace deleted".
+- Care opens the workspace list. The deleted workspace does not show under any status tab.
+- Care no longer offers the workspace on encounters. Care stops using it for the people who chose it.
+
+![The Workspaces list after the delete, with the message Workspace deleted and Trial layout no longer listed](/media/platform/workspace/delete-a-workspace-4.png)
+
+## Related
+
+Concepts:
+
+- [Workspace](../../../concepts/platform/workspace.mdx)
+
+Flows:
+
+- [Publish, hold back or archive a workspace](./publish-or-archive-a-workspace.mdx)
+- [Create a workspace](./create-a-workspace.mdx)
+- [Rename a workspace or change its description](./rename-a-workspace.mdx)

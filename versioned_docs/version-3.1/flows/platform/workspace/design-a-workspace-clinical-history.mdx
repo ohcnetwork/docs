@@ -1,0 +1,159 @@
+---
+sidebar_position: 4
+---
+
+# Design a workspace's clinical history screen
+
+## Overview
+
+This flow describes how to design the clinical history screen of a [workspace](../../../concepts/platform/workspace.mdx). Clinical history shows the past records of a [patient](../../../concepts/clinical/patient), without an active encounter.
+
+<video src="/media/platform/workspace/design-a-workspace-clinical-history.mp4" poster="/media/platform/workspace/design-a-workspace-clinical-history.poster.png" controls width="720">
+  <track kind="captions" src="/media/platform/workspace/design-a-workspace-clinical-history.vtt" srcLang="en" label="English" default />
+</video>
+
+## Pre-requisites
+
+- The workspace has a design for the **Encounter** screen. The **Encounter** and **Clinical history** buttons show only after the workspace has a design. See [Design what a workspace shows on encounters](./design-a-workspace-encounter-screen.mdx).
+- You have a role in one of the facility's departments or teams. A role in Administration, the organization Care creates with every facility, also counts.
+- If the workspace is a **Personal workspace**, you created it. Nobody else can open or change a personal workspace.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create/Update Workspaces | For a **Facility workspace**: save the design. You need this permission through a role in the facility's Administration. It also lets you open every facility workspace of the facility, shared or not. By default, only the Facility Admin role has it in a facility. |
+| Can Create/Update Workspaces | For a **Department workspace**: save the design. You need this permission through a role in the owner department or in a department above it. A role only in Administration is not enough, unless Administration is the owner department. By default, only the Facility Admin role has it in a facility. |
+| Can Create/Update Workspaces | For a **Personal workspace**: save the design. You need this permission through a role in any department or team of the facility, or in its Administration. You must also be the person who created the workspace. By default, only the Facility Admin role has it in a facility. |
+| Can Read Workspaces | For a **Department workspace**: open the workspace. You need this permission through a role in the owner department or in a department above it. A role only in Administration is not enough, unless Administration is the owner department. By default, the Facility Admin, Administrator, Doctor, Nurse, Pharmacist, Staff and Volunteer roles have it in a facility. |
+| Can View Organizations | For a Questionnaire Responses section: choose an **Author role**. The list shows a role organization only if you hold this permission through a role in it. A role in an organization above it also counts. A role in a department of the facility does not count. Without such a role, the list is empty. By default, the Admin, Manager and Member roles of role organizations have it. |
+
+With the default roles, this means:
+
+- A Facility Admin in Administration can design a Facility workspace.
+- A Facility Admin in the owner department, or in a department above it, can design a Department workspace.
+- A Doctor in the owner department can open a Department workspace, but Care refuses to save changes to it.
+- A Facility Admin whose only role is in Administration cannot open a Department workspace that another department owns.
+- Only the person who created a Personal workspace can design it. That person also needs Can Create/Update Workspaces somewhere in the facility.
+
+## Steps
+
+### 1. Open the clinical history screen
+
+Open the workspace. See [Design what a workspace shows on encounters](./design-a-workspace-encounter-screen.mdx).
+
+Find the **Design** area below the **General settings** panel.
+
+In the **Design** area, select the **Clinical history** button.
+
+Each of the two buttons shows its number of tabs, or **Standard**.
+
+The hint reads "The patient's past records. Opens without an active encounter, so encounter-only sections are unavailable here."
+
+![The Screen being designed switch with Encounter and Clinical history, outlined; Clinical history reads Standard](/media/platform/workspace/design-a-workspace-clinical-history-1.png)
+
+### 2. Choose a starter
+
+While the screen has no design, it shows "Clinical history uses the standard tabs". People who choose the workspace see the standard clinical history.
+
+Select one of the starters in the table below.
+
+| Starter | What it gives you |
+| --- | --- |
+| **Standard history** | Marked **Recommended**. "Responses, reports, symptoms, diagnoses, allergies, and medications as separate tabs." |
+| **My forms** | A new tab. Its Questionnaire Responses section shows only the forms that the person viewing submitted. Current medication and Recent encounters are beside it. The standard history tabs follow. |
+| **Blank** | "One empty history tab. Add the sections you need." |
+
+If a starter takes the workspace over 200 sections, Care does not add it.
+
+![The clinical history starters Standard history, My forms and Blank, with My forms outlined](/media/platform/workspace/design-a-workspace-clinical-history-2.png)
+
+### 3. Arrange the tabs and their layouts
+
+Add, hide, move and remove tabs as on the **Encounter** screen. See [Design what a workspace shows on encounters](./design-a-workspace-encounter-screen.mdx).
+
+On this screen, **Built-in tabs** lists the standard clinical history tabs. They include **Responses**, **Past Symptoms**, **Past Diagnoses**, **Past Procedures** and **Past Medications**.
+
+To change the columns of a tab, use **Layout**, as on the **Encounter** screen.
+
+![The Tabs list of the clinical history screen, outlined; Past Procedures is marked hidden and its switch reads Hidden from users](/media/platform/workspace/design-a-workspace-clinical-history-3.png)
+
+### 4. Add sections
+
+At the bottom of a column, select **Add a section**.
+
+On this screen, the **Patient history** group comes first in the list.
+
+You cannot add a section that needs an encounter. Care shows "This section needs an encounter, so it can't be used on a patient history screen."
+
+You can add these sections:
+
+- Allergies, Symptoms, Diagnoses, Procedures, Vitals, Questionnaire Responses and Observation chart. Here they show the records of the patient.
+- Current medication and Recent encounters. These sections show the records of the patient and need no encounter.
+- A section from an installed app, if the app supports patient history.
+
+Sections on clinical history never let people make changes.
+
+A workspace holds at most 200 sections across the **Encounter** and **Clinical history** screens.
+
+![The Add a section dialog on the clinical history screen, with the Patient history group outlined at the top of the list](/media/platform/workspace/design-a-workspace-clinical-history-4.png)
+
+### 5. Set what each section shows
+
+To change the title or options of a section, select its title or its settings button (sliders icon). See [Set what a section shows and when](./set-what-a-section-shows.mdx).
+
+This screen has no **When to show** choice.
+
+If a section still has an encounter status filter, the panel shows a warning. Select **Always show this section**.
+
+### 6. Check the design
+
+To check the design at desktop size, select the desktop button (monitor icon) in the toolbar.
+
+To check the design at phone size, select the mobile button (phone icon).
+
+The **Active encounter** and **Closed encounter** buttons and **Preview with access level** are only on the **Encounter** screen.
+
+![The Preview size buttons, outlined, with the canvas shown at Mobile size](/media/platform/workspace/design-a-workspace-clinical-history-5.png)
+
+### 7. Go back to the standard clinical history (optional)
+
+To remove your clinical history tabs, select the more options button (⋯) in the toolbar.
+
+Then select **Use standard clinical history**.
+
+### 8. Save the design
+
+Select **Save Changes**.
+
+Care does not save the workspace if a clinical history tab has a section that needs an encounter.
+
+Care does not save the workspace if a section on a clinical history tab has an encounter status filter.
+
+If you do not have Can Create/Update Workspaces in the place that the Permissions table names, Care shows "You are not authorized to create a workspace".
+
+![The Screen being designed switch after saving, with Clinical history showing 9 tabs, and the message Workspace updated](/media/platform/workspace/design-a-workspace-clinical-history-6.png)
+
+## Expected Outcome
+
+- Care saves the design and shows "Workspace updated".
+- If the workspace is **Active**, people who chose it see your tabs in the clinical history of a patient.
+- If you chose **Use standard clinical history**, people who chose the workspace see the standard clinical history.
+- One choice of workspace applies to encounters and to clinical history.
+- The clinical history tab on the page where you fill in a form uses the same design.
+- A link to a standard history tab opens that tab, even if the workspace hides it or leaves it out.
+- If the workspace cannot load, people see "Your workspace could not be loaded, so standard clinical history is shown."
+
+## Related
+
+Concepts:
+
+- [Workspace](../../../concepts/platform/workspace.mdx)
+- [Patient](../../../concepts/clinical/patient)
+
+Flows:
+
+- [Design what a workspace shows on encounters](./design-a-workspace-encounter-screen.mdx)
+- [Set what a section shows and when](./set-what-a-section-shows.mdx)
+- [Choose the workspace you use on encounters](./choose-your-encounter-workspace.mdx)

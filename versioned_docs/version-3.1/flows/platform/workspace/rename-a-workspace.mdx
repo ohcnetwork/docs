@@ -1,0 +1,107 @@
+---
+sidebar_position: 9
+---
+
+# Rename a workspace or change its description
+
+## Overview
+
+This flow describes how to change the name or the description of a [workspace](../../../concepts/platform/workspace.mdx). People see the name and the description in the workspace list and in the workspace picker on encounters.
+
+<video src="/media/platform/workspace/rename-a-workspace.mp4" poster="/media/platform/workspace/rename-a-workspace.poster.png" controls width="720">
+  <track kind="captions" src="/media/platform/workspace/rename-a-workspace.vtt" srcLang="en" label="English" default />
+</video>
+
+## Pre-requisites
+
+- You have a role in one of the facility's departments or teams. A role in Administration, the organization Care creates with every facility, also counts.
+- Someone has created the workspace in the facility. See [Create a workspace](./create-a-workspace.mdx).
+- If the workspace is a **Personal workspace**, you created it. Only the person who created a personal workspace can see or change it.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create/Update Workspaces | For a **Facility workspace**: save the new name or description. You need this permission through a role in the facility's Administration. With it, you also see every facility workspace of the facility in the workspace list, shared or not. By default, only the Facility Admin role has it in a facility. |
+| Can Create/Update Workspaces | For a **Department workspace**: save the new name or description. You need this permission through a role in the owner department or in a department above it. A role only in Administration is not enough, unless Administration is the owner department. By default, only the Facility Admin role has it in a facility. |
+| Can Create/Update Workspaces | For a **Personal workspace**: save the new name or description. You need this permission through a role in any department or team of the facility, or in its Administration. You must also be the person who created the workspace. By default, only the Facility Admin role has it in a facility. |
+| Can Read Workspaces | For a **Department workspace**: see and open the workspace in the workspace list. You need this permission through a role in the owner department or in a department above it. A role only in Administration is not enough, unless Administration is the owner department. By default, the Facility Admin, Administrator, Doctor, Nurse, Pharmacist, Staff and Volunteer roles have it in a facility. |
+
+## Steps
+
+### 1. Open the workspace list
+
+Open the facility from the home page, or from the facility switcher in the header.
+
+In the facility sidebar, select **Settings**.
+
+In the settings sidebar, under **Advanced**, select **Workspaces**. Care shows the workspace list of the facility.
+
+### 2. Open the workspace
+
+The workspace list shows **Active** workspaces until you choose another status. To see other workspaces, select the **Draft** or **Archived** tab.
+
+On a phone, select the status in the list that replaces the tabs.
+
+To find a workspace by name, type part of its name in **Search**.
+
+Select the name of the workspace, or select **Edit** in its row. Care opens the **Edit workspace** page.
+
+Note: The workspace list shows only the workspaces that you can see.
+
+![The Workspaces list searched for Day, with the workspace Day ward outlined](/media/platform/workspace/rename-a-workspace-1.png)
+
+### 3. Change the name or the description
+
+Select **General settings** to open the panel.
+
+Change one or both fields.
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the workspace. This field is required. Use 255 characters or fewer. Care removes spaces at the start and at the end. |
+| Description | A short text that says when to use the workspace. This field is optional. If you leave it empty, the workspace list shows "No Description". |
+
+If the name is empty, Care shows "Enter a workspace name."
+
+If the name is too long, Care shows "Use 255 characters or fewer for the workspace name."
+
+Note: **Workspace ownership** does not show on this page. You cannot change the ownership after you create the workspace.
+
+![General settings with Day care ward entered in Name and a new description](/media/platform/workspace/rename-a-workspace-2.png)
+
+### 4. Save the change
+
+Select **Save Changes**. **Save Changes** is available only after you change a field.
+
+If a field in **General settings** has an error when you save, Care opens that panel.
+
+If a section in the design has invalid settings, Care does not let you save. Correct the section first.
+
+If you leave the page before you save, Care asks "You have unsaved changes. Leave without saving?"
+
+If Care cannot save the change, it shows "Unable to save the workspace. Your changes are still here. Please try again."
+
+If Care also shows "You are not authorized to create a workspace", you lack the permission where it is needed. Care uses this message for changes too. Check the Permissions section.
+
+![The page header showing Edit workspace / Day care ward, outlined, with the message Workspace updated](/media/platform/workspace/rename-a-workspace-3.png)
+
+## Expected Outcome
+
+- Care shows the message "Workspace updated".
+- The workspace list shows the new name and description.
+- If the workspace is **Active**, the workspace picker on encounters shows the new name and description.
+
+## Related
+
+Concepts:
+
+- [Workspace](../../../concepts/platform/workspace.mdx)
+
+Flows:
+
+- [Create a workspace](./create-a-workspace.mdx)
+- [Publish, hold back or archive a workspace](./publish-or-archive-a-workspace.mdx)
+- [Design what a workspace shows on encounters](./design-a-workspace-encounter-screen.mdx)
+- [Delete a workspace](./delete-a-workspace.mdx)
