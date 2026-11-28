@@ -6,97 +6,221 @@ sidebar_position: 1
 
 ## Overview
 
-This flow describes how to record a [consent](../../../concepts/clinical/consent.mdx) against an encounter of a patient. You can also attach the signed consent form and other supporting documents.
+<video src="/media/clinical/consent/record-a-consent.mp4" poster="/media/clinical/consent/record-a-consent.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/consent/record-a-consent.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to record a [consent](../../../concepts/clinical/consent.mdx) for an [encounter](../../../concepts/clinical/encounter.mdx) of a patient. In the same form, you can attach files to the consent.
 
 ## Pre-requisites
 
-- The patient is registered in Care, and you open an encounter of that patient.
-- You open the encounter from the facility, and the encounter is active.
-- You have the permission listed below. Care hides the **Add Consent** button from the users who cannot write to the encounter.
+- You sign in with a staff account.
+- The patient has an encounter, and you open that encounter from the facility.
+- If you open the encounter from an organization, Care does not show **Add Consent**. Open the encounter from the facility instead.
+- The encounter is not closed: its status is not **Completed**, **Cancelled**, **Discontinued** or **Entered in error**. On a closed encounter, Care hides **Add Consent** and refuses to save a consent. A **Discharged** encounter still accepts new consents.
+- You stay on the encounter that you opened. If you select a different encounter on the encounter page, Care hides **Add Consent**.
+- If the active encounter workspace hides the Consents page, Care does not show the **Consents** tab.
+- You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Update Encounter related clinical data | Lets you record a consent against an encounter. Admin, Doctor, Nurse, and Facility Admin have this permission. |
+| Update Encounter related clinical data | Lets you save the consent and attach its files. You hold it in the encounter. Care refuses the save on a closed encounter, even with this permission. By default, the Admin, Doctor, Nurse and Facility Admin roles hold it. |
+| Can list encounters | Lets you find the encounter in the encounter list of the facility. You hold it in the encounter. Care also uses it to show the encounter list in the sidebar. For this, you hold it in a team, a department or the root organization of the facility. By default, the Admin, Doctor, Nurse and Facility Admin roles hold it. |
+| Can Read encounter | Lets you open the encounter page. You hold it in the encounter. By default, the Admin, Doctor, Nurse and Facility Admin roles hold it. |
+| Can list patients | Lets you open the encounter page without "Can Read encounter". Care also checks it to list the encounters of the patient in **Encounter History** on the encounter page. For both, you hold it through a role on the patient. By default, the Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer and Pharmacist roles hold it. |
+| Can view clinical data about patients | Lets you see the consents on the **Consents** tab and open the consent details. You hold it through a role on the patient. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Read encounter related clinical data | Lets you see the consents on the **Consents** tab. It does not open the consent details. You hold it in the encounter. By default, the Admin, Doctor, Nurse and Facility Admin roles hold it. |
+
+A permission held in the encounter comes from a role in an organization of the encounter or its current location. These include their parent organizations and the root organization of the facility, "Administration".
+
+A role on the patient is a role in one of these places:
+
+- An organization of an encounter of the patient that is not closed, or of its current location.
+- An organization that the patient belongs to.
+- A direct link between you and the patient.
+
+To open the encounter page, you need "Can Read encounter". Without it, you need "Can list patients" and one of the two permissions that let you see consents.
+
+Care also loads the facility. Care shows a facility only to a member of one of its organizations, or of its geo organization or a parent organization of it. This is a membership, not a permission.
+
+By default, the Doctor, Nurse, Admin and Facility Admin roles hold all these permissions. For example, a Doctor role in a department of the encounter gives all of them, while the encounter is not closed.
+
+Note: Care shows **Add Consent** also to users who do not have "Update Encounter related clinical data". For these users, Care refuses the save and shows "Error creating consent".
+
+With the default roles, Staff cannot record a consent. The Staff role does not hold "Update Encounter related clinical data".
+
+Admin in this table is the Admin role of a facility or a government organization. Roles can be created and edited, so the roles in your deployment can differ.
 
 ## Steps
 
 ### 1. Open the Consents tab
 
-1. Open the encounter of the patient.
-2. Select the **Consents** tab.
+1. In the sidebar of the facility, under **Encounters & Locations**, select the encounter list.
+2. Find the encounter of the patient. Select **View Encounter** on its card.
+3. Select the **Consents** tab.
 
-### 2. Start the consent form
+![The All Encounters list in cards view, with View Encounter outlined on an encounter card](/media/clinical/consent/record-a-consent-1.png)
 
-Select **Add Consent**. Care opens the **Add Consent** sheet.
+The encounter list item in the sidebar shows the name of your default list, such as **All Encounters**.
 
-The sheet holds these fields.
+By default, the **All Encounters** list shows only the encounters that were created in Care today. Its date filter shows **Today**.
+
+If the encounter was created on an earlier day, select **Today**. Then select a longer range, or select **Custom Date Range** and choose the dates.
+
+In the list view, select the row of the encounter in place of **View Encounter**.
+
+Care opens the encounter on the **Overview** tab.
+
+On a narrow screen, select **Consents** in the **Encounter section** list.
+
+You can also open the tab in these ways:
+
+- On the encounter page, press `g c`.
+- Select **Encounter Actions**, or press `Shift+E`. Then select **Consents** under **Go to**.
+- On the **Overview** tab, select **Actions**. Then select **Manage Consents**.
+
+If Care shows "You do not have permission to view this encounter" and goes back, you cannot open the encounter. Ask your administrator for the permissions in the table above.
+
+### 2. Open the Add Consent form
+
+Select **Add Consent**. Care opens the **Add Consent** form.
+
+![The empty Consents tab of an encounter showing No Consents found, with Add Consent outlined](/media/clinical/consent/record-a-consent-2.png)
+
+![The Add Consent form with its defaults: Consent Given On and Consent Valid From set to the current time, Consent Valid Until empty, and Permit, Treatment and Active selected](/media/clinical/consent/record-a-consent-3.png)
+
+If **Add Consent** is not shown, check the pre-requisites. Care hides it when you opened the encounter from an organization, chose a different encounter, or the encounter is closed.
+
+The form has these fields. Care fills in some of them for you.
 
 | Components | What it captures |
 | --- | --- |
-| Consent Given On | The date and time when the patient gives the consent. This field is mandatory. |
-| Consent Valid From | The date and time from which the consent is valid. This field is optional. |
-| Consent Valid Until | The date and time until which the consent is valid. This field is optional. |
-| Consent Decision | The answer of the patient: **Permit** or **Deny**. |
-| Category | The subject of the consent. |
-| Status | The current state of the consent: Draft, Active, Inactive, Not Done, or Entered in Error. Care sets **Active** as the default value. |
+| Consent Given On | The date and time that the consent was given. This field is mandatory. Care fills in the current date and time. |
+| Consent Valid From | The date and time from which the consent is valid. This field is optional. Care fills in the current date and time. |
+| Consent Valid Until | The date and time until which the consent is valid. This field is optional and starts empty. |
+| Consent Decision | The decision: Permit or Deny. Care selects Permit. |
+| Category | What the consent is about. Care selects Treatment. |
+| Status | The status of the consent: **Active**, **Inactive**, **Draft**, **Not Done** or **Entered in Error**. Care selects **Active**. |
 | Note | Free text about the consent. This field is optional. |
+| Supporting Documents | One or more files of the types jpg, jpeg, png or pdf. |
 
-### 3. Enter the consent details
+### 3. Check the dates
 
-1. Enter the date and time in **Consent Given On**.
-2. Enter **Consent Valid From** and **Consent Valid Until** for a consent with a validity period.
-3. Select **Permit** or **Deny** for **Consent Decision**.
-4. Select the **Status** of the consent.
-5. Enter a **Note** about the consent.
+1. Check **Consent Given On**. If the consent was given at another time, change the date and time.
+2. Check **Consent Valid From**. If the consent is valid from another time, change the date and time.
+3. If the consent has an end, enter the date and time in **Consent Valid Until**.
 
-### 4. Select the category
+![The Add Consent form with the Consent Given On field outlined](/media/clinical/consent/record-a-consent-4.png)
 
-Open the **Category** list. Care shows a short description under each option.
+The dates must follow these rules:
+
+- **Consent Valid From** cannot be earlier than **Consent Given On**. The same date and time is allowed.
+- **Consent Valid From** cannot be later than **Consent Valid Until**.
+
+If you move **Consent Given On** to a time later than **Consent Valid From**, change **Consent Valid From** too.
+
+### 4. Select the decision
+
+When the form opens, **Permit** is already selected in **Consent Decision**.
+
+![Consent Decision in the Add Consent form, with Permit selected and outlined](/media/clinical/consent/record-a-consent-5.png)
+
+If the patient permits, keep **Permit**. If the patient denies, select **Deny**.
+
+Note: If you select the option that is already selected, Care clears the decision. Then Care does not save the consent.
+
+### 5. Select the category
+
+1. Open the **Category** list. Each option shows a short description.
+2. Select the category of the consent. Care shows its description under the field.
+
+![The open Category list in the Add Consent form: six categories, each with its description, and Treatment ticked](/media/clinical/consent/record-a-consent-6.png)
+
+The **Category** list has these options.
 
 | Category | Description |
 | --- | --- |
-| Research | Consent to take part in a research protocol and to share information. |
-| Privacy Consent | Consent to collect, access, use, or share information. |
-| Treatment | Consent to undergo a specific treatment. |
-| Do Not Resuscitate | Consent to not receive CPR or resuscitation in a cardiac event. |
-| Advance Directive | Consent that the patient gives before a possible need for medical treatment. |
-| Advance Care Directive | Consent for the actions to take if the patient can no longer decide. |
+| **Research** | Consent to participate in research protocol and information sharing |
+| **Privacy Consent** | Consent to collect, access, use or disclose (share) information |
+| **Treatment** | Consent to undergo a specific treatment |
+| **Do Not Resuscitate** | Consent to not receive CPR or resuscitation initiated in case of a cardiac event |
+| **Advance Directive** | Consent given in anticipation of a potential need for medical treatment |
+| **Advance Care Directive** | Consent for actions to be taken if they are no longer able to make decisions for themselves |
 
-Select the category of the consent.
+### 6. Select the status
 
-Note: Care also holds a **Comfort Care** category, but this form has no option for it. You cannot select Comfort Care. This is a known gap in the product.
+Select the **Status** of the consent.
 
-### 5. Attach the supporting documents
+### 7. Enter a note
 
-You can attach one or more files to the consent in the **Supporting Documents** section.
+If necessary, enter a **Note** about the consent.
 
-1. Choose a file. Care accepts these file types: jpg, jpeg, png, and pdf.
-2. Enter a name for the file. The name is mandatory.
-3. Repeat these steps for each more file.
+### 8. Add the files
 
-Note: Care uploads the files after it saves the consent record.
+In **Supporting Documents**, you can add one or more files to the consent. Care accepts jpg, jpeg, png and pdf files.
 
-### 6. Save the consent
+1. Select **Select Files**.
+2. To choose a file on your device, select **Upload From Device**. To use the camera, select **Open Camera**.
+3. Enter a name for the file in its **File Name** box. Each file needs a name.
+4. To remove a file, select the delete button on its row.
+5. To add another file, repeat steps 1 to 3.
 
-Select **Save**.
+![The Select Files menu under Supporting Documents, with Upload From Device and Open Camera](/media/clinical/consent/record-a-consent-7.png)
+
+![A file row under Supporting Documents: the File Name box filled in, the original file name, and the delete button](/media/clinical/consent/record-a-consent-8.png)
+
+Note: Care refuses a file larger than 100 MB, or a file that is not jpg, jpeg, png or pdf. The **Add Consent** form does not show the reason.
+
+Note: Care uploads the files only after it saves the consent.
+
+### 9. Save the consent
+
+Select **Save**. While Care saves the consent and uploads the files, the button reads **Saving...**.
+
+![The Consents tab after saving, with the Consent created successfully and File Uploaded Successfully messages and the new consent card outlined](/media/clinical/consent/record-a-consent-9.png)
+
+If Care shows one of these messages, do as the table says.
+
+| Message | What to do |
+| --- | --- |
+| "Valid from date cannot be before the given date of the consent" | **Consent Valid From** is earlier than **Consent Given On**. Set **Consent Valid From** to the same time or later. |
+| "Valid From must be before Valid Until" | **Consent Valid From** is later than **Consent Valid Until**. Change one of the two dates. |
+| "Invalid option: expected one of "permit"\|"deny"" | No decision is selected. In **Consent Decision**, select **Permit** or **Deny**. Then select **Save**. |
+| "Enter File Name" | A file has no name. Enter a name in its **File Name** box. |
+| "Error creating consent" | Care did not save the consent. Care can also show "You do not have permission to update encounter". Then you do not have "Update Encounter related clinical data" in this encounter, or the encounter is closed. Ask your administrator for the permission in an organization of the encounter. |
+
+### 10. Check the files
+
+If you added files, check that Care uploaded each one. The **Add Consent** form does not show file errors. Care can show "Consent created successfully" even when it could not add a file.
+
+1. On the card of the new consent, select **See Details**.
+2. In **Supporting Documents**, check that each file shows **Uploaded**.
+3. If a file is missing, or it shows **Error uploading file**, select **Add Files** and upload it again. See [Add files to a consent](./add-files-to-a-consent.mdx).
+
+![The consent details page, with the file under Supporting Documents marked Uploaded and outlined](/media/clinical/consent/record-a-consent-10.png)
+
+To open the consent details, you need "Can view clinical data about patients". Without it, Care shows "Consent not found".
 
 ## Expected Outcome
 
-- Care shows the message "Consent created successfully".
-- Care shows the new consent as a card on the **Consents** tab.
-- Care uploads the attached files to the new consent.
+- Care shows "Consent created successfully" and closes the **Add Consent** form.
+- For each file that Care uploads, it shows "File Uploaded Successfully".
+- The new consent shows as a card on the **Consents** tab of this encounter. The newest consent comes first.
+- The consent does not show on the **Consents** tab of the other encounters of the patient.
 
 ## Related
 
 Concepts:
 
 - [Consent](../../../concepts/clinical/consent.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
 - [Files](../../../concepts/clinical/files.mdx)
 
 Flows:
 
 - [View consents](./view-consents.mdx)
+- [Add files to a consent](./add-files-to-a-consent.mdx)
 - [Update a consent](./update-a-consent.mdx)
-- [Verify a consent](./verify-a-consent.mdx)
+- [Create an encounter](../encounter/create-encounter.mdx)

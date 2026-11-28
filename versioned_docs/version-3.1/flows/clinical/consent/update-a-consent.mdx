@@ -1,78 +1,180 @@
 ---
-sidebar_position: 3
+sidebar_position: 4
 ---
 
 # Update a consent
 
 ## Overview
 
-This flow describes how to change the status or the note of an existing [consent](../../../concepts/clinical/consent.mdx) in Care.
+<video src="/media/clinical/consent/update-a-consent.mp4" poster="/media/clinical/consent/update-a-consent.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/consent/update-a-consent.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to change the status or the note of a [consent](../../../concepts/clinical/consent.mdx) in Care. It also describes how to mark a consent as entered in error, which you do by changing its status.
 
 ## Pre-requisites
 
-- A member of staff recorded the consent against an encounter of the patient.
-- You open the encounter from the facility, and the encounter is active. Care hides the **Edit** button on a completed or cancelled encounter.
-- You have the permission listed below.
+- You sign in with a staff account.
+- The consent is recorded on an encounter of the patient. See [Record a consent](./record-a-consent.mdx).
+- You open the encounter from the facility. If you open it from an organization, the consent details are read-only and Care does not show **Edit**.
+- The encounter is not closed: its status is not **Completed**, **Cancelled**, **Discontinued** or **Entered in error**. On a closed encounter, Care does not show **Edit** and refuses changes to the consents.
+- If the encounter is **Discharged**, it is not closed, and you can still update its consents.
+- You stay on the encounter that you opened. If you select a different encounter on the encounter page, Care hides **Edit**.
+- You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Update Encounter related clinical data | Lets you change the clinical data of an encounter, which includes consents. Admin, Doctor, Nurse, and Facility Admin have this permission. |
+| Update Encounter related clinical data | Lets you save the changes to the consent. You hold it in the encounter. Care refuses the change on a closed encounter, even with this permission. By default, the Admin, Doctor, Nurse and Facility Admin roles hold it. |
+| Can list encounters | Lets you find the encounter in the encounter list of the facility. You hold it in the encounter. Care also uses it to show the encounter list in the sidebar. For this, you hold it in a team, a department or the root organization of the facility. By default, the Admin, Doctor, Nurse and Facility Admin roles hold it. |
+| Can Read encounter | Lets you open the encounter page. You hold it in the encounter. By default, the Admin, Doctor, Nurse and Facility Admin roles hold it. |
+| Can list patients | Lets you open the encounter page without "Can Read encounter". Care also checks it to list the encounters of the patient in **Encounter History** on the encounter page. For both, you hold it through a role on the patient. By default, the Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer and Pharmacist roles hold it. |
+| Can view clinical data about patients | Lets you see the consents on the **Consents** tab and open the consent details, where **Edit** is. Care also checks it when you save. You hold it through a role on the patient. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Read encounter related clinical data | Lets you see the consents on the **Consents** tab. It does not open the consent details. You hold it in the encounter. By default, the Admin, Doctor, Nurse and Facility Admin roles hold it. |
+
+A permission held in the encounter comes from a role in an organization of the encounter or its current location. These include their parent organizations and the root organization of the facility, "Administration".
+
+A role on the patient is a role in one of these places:
+
+- An organization of an encounter of the patient that is not closed, or of its current location.
+- An organization that the patient belongs to.
+- A direct link between you and the patient.
+
+To open the encounter page, you need "Can Read encounter". Without it, you need "Can list patients" and one of the two permissions that let you see consents.
+
+Care also loads the facility. Care shows a facility only to a member of one of its organizations, or of its geo organization or a parent organization of it. This is a membership, not a permission.
+
+By default, the Doctor, Nurse, Admin and Facility Admin roles hold all these permissions. For example, a Doctor role in a department of the encounter gives all of them, while the encounter is not closed.
+
+Care shows **Edit** whether or not you have "Update Encounter related clinical data". If you do not have it, Care refuses the change when you select **Save**.
+
+With the default roles, Staff cannot update a consent. The Staff role does not hold "Update Encounter related clinical data".
+
+Admin in this table is the Admin role of a facility or a government organization. Roles can be created and edited, so the roles in your deployment can differ.
 
 ## Steps
 
-### 1. Open the consent
+### 1. Open the consent details
 
-1. Open the encounter.
-2. Select the **Consents** tab.
-3. Select **See Details** on the consent that you want to change. Care opens the consent record.
+1. In the sidebar of the facility, under **Encounters & Locations**, select the encounter list.
+2. Find the encounter of the patient. Select **View Encounter** on its card.
+3. Select the **Consents** tab.
+4. Select **See Details** on the card of the consent.
 
-### 2. Start the edit form
+![The Consents tab with a consent card outlined and the pointer on See Details](/media/clinical/consent/update-a-consent-1.png)
 
-Select **Edit**. Care opens the **Edit Consent** form.
+The encounter list item in the sidebar shows the name of your default list, such as **All Encounters**.
 
-The form keeps the values that you gave when you recorded the consent. You can change these fields:
+By default, the **All Encounters** list shows only the encounters that were created in Care today. Its date filter shows **Today**.
+
+If the encounter was created on an earlier day, select **Today**. Then select a longer range, or select **Custom Date Range** and choose the dates.
+
+In the list view, select the row of the encounter in place of **View Encounter**.
+
+Care opens the encounter on the **Overview** tab. On the **Consents** tab, Care shows the consents of the encounter as cards.
+
+On a narrow screen, select **Consents** in the **Encounter section** list. You can also press `g c` on the encounter page.
+
+When you select **See Details**, Care opens the consent details.
+
+If you do not have "Can view clinical data about patients" for this patient, Care shows "Consent not found".
+
+### 2. Open the edit form
+
+Select **Edit** beside the **Consent Details** heading. Care opens the **Edit Consent** form.
+
+![The consent details page with Edit beside Consent Details outlined](/media/clinical/consent/update-a-consent-2.png)
+
+![The Edit Consent form with only the Status and Note fields, showing the current values](/media/clinical/consent/update-a-consent-3.png)
+
+If Care does not show **Edit**, check the encounter. You must open it from a facility, and it must not be closed. It must also be the encounter that you opened, not another selected encounter.
+
+The form shows the current values of the consent. You can change these fields:
 
 | Components | What it captures |
 | --- | --- |
-| Status | The current state of the consent: Draft, Active, Inactive, Not Done, or Entered in Error. |
-| Note | Free text about the consent. |
+| Status | The status of the consent: **Active**, **Inactive**, **Draft**, **Not Done** or **Entered in Error**. |
+| Note | Free text about the consent. This field is optional. |
 
-The form does not show these fields. Care keeps the values that you gave at creation:
+The form does not show **Category**, **Consent Decision**, **Consent Given On**, **Consent Valid From** or **Consent Valid Until**. You cannot change them in this form. When you save, Care sends their saved values again unchanged.
 
-- Consent Decision
-- Category
-- Consent Given On
-- Consent Valid From and Consent Valid Until
-
-Note: The edit form has no file upload. To attach one more file, use the **Supporting Documents** section of the consent record.
+The form has no file upload, although its description mentions supporting documents. To add a file, see [Add files to a consent](./add-files-to-a-consent.mdx).
 
 ### 3. Change the status or the note
 
-1. Select the new **Status**.
-2. Enter or change the **Note**.
+Select the new status in **Status**. You can select any status, whatever the current status is.
 
-Note: Care accepts a change from any status to any other status. Care does not ask you to confirm the change.
+![The open Status list in the Edit Consent form: Active (ticked), Inactive, Draft, Not Done and Entered in Error, outlined](/media/clinical/consent/update-a-consent-4.png)
 
-### 4. Save the consent
+To mark the consent as entered in error, select **Entered in Error**. See [Mark a consent as entered in error](#mark-a-consent-as-entered-in-error).
 
-Select **Save**.
+Enter or change the text in **Note**.
+
+### 4. Save the changes
+
+Select **Save**. While Care saves, the button shows **Saving...**.
+
+Care saves the change at once. It does not ask you to confirm.
+
+![The Edit Consent form with Status set to Inactive and a new note, and the pointer on Save](/media/clinical/consent/update-a-consent-5.png)
+
+![The consent details after saving, with the Consent updated successfully message, the new note, and Status Inactive in the Consent Details card outlined](/media/clinical/consent/update-a-consent-6.png)
+
+To close the form without saving, select **Cancel**.
+
+If Care cannot save the change, it shows "Error updating consent".
+
+If you do not have "Update Encounter related clinical data", Care also shows "You do not have permission to update encounter".
+
+### Mark a consent as entered in error
+
+<video src="/media/clinical/consent/update-a-consent-entered-in-error.mp4" poster="/media/clinical/consent/update-a-consent-entered-in-error.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/consent/update-a-consent-entered-in-error.vtt" srcLang="en" label="English" default />
+</video>
+
+You mark a consent as entered in error by setting its status to **Entered in Error**.
+
+1. Open the **Edit Consent** form, as in steps 1 and 2.
+2. In **Status**, select **Entered in Error**.
+
+   ![The Status list in the Edit Consent form with Entered in Error outlined](/media/clinical/consent/update-a-consent-entered-in-error-1.png)
+
+3. Select **Save**.
+
+After you save, the status of the consent is **Entered in Error**. Its card on the **Consents** tab and the **Consent Details** card show it.
+
+![The consent details after saving, with the Consent updated successfully message and Status Entered in Error in the Consent Details card outlined](/media/clinical/consent/update-a-consent-entered-in-error-2.png)
+
+To go back from the consent details to the **Consents** tab, select **Back**.
+
+![The Consents tab after going back, with the consent card still listed and showing the Denied and Entered in Error badges, outlined](/media/clinical/consent/update-a-consent-entered-in-error-3.png)
+
+Care has no special rule for this status. It does not delete or hide the consent. The consent stays on the **Consents** tab, and you can still edit it.
+
+You can change the status again later, to any other status.
+
+Care has no screen to delete a consent.
+
+Note: This consent status is not the same as the encounter status **Entered in error**. If the encounter has that status, Care refuses changes to its consents.
 
 ## Expected Outcome
 
-- Care shows the message "Consent updated successfully".
-- Care refreshes the consent record and the **Consents** tab.
-- The consent shows the new status and the new note.
+- Care shows the message "Consent updated successfully" and closes the form.
+- Care refreshes the consent details and the **Consents** tab.
+- The **Consent Details** card shows the new status.
+- If the consent has a note, the consent details show it in a **Note** section.
+- The consent keeps its category, decision, date and validity period.
 
 ## Related
 
 Concepts:
 
 - [Consent](../../../concepts/clinical/consent.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
 
 Flows:
 
 - [Record a consent](./record-a-consent.mdx)
 - [View consents](./view-consents.mdx)
-- [Verify a consent](./verify-a-consent.mdx)
+- [Add files to a consent](./add-files-to-a-consent.mdx)

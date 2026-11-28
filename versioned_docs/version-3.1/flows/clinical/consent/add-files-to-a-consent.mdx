@@ -1,0 +1,148 @@
+---
+sidebar_position: 3
+---
+
+# Add files to a consent
+
+## Overview
+
+<video src="/media/clinical/consent/add-files-to-a-consent.mp4" poster="/media/clinical/consent/add-files-to-a-consent.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/consent/add-files-to-a-consent.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to add a file to a [consent](../../../concepts/clinical/consent.mdx) that is already recorded, from the consent details. You upload a file from your device or take a photo with the camera.
+
+## Pre-requisites
+
+- You sign in with a staff account.
+- The consent is recorded on an encounter of the patient. See [Record a consent](./record-a-consent.mdx).
+- You open the encounter from the facility. If you open it from an organization, the consent details are read-only.
+- The encounter is not closed: its status is not **Completed**, **Cancelled**, **Discontinued** or **Entered in error**. A **Discharged** encounter still accepts files.
+- The encounter on the screen is the encounter that you opened. If you select a different encounter of the patient on the encounter page, Care hides **Add Files**.
+- You have the permissions listed below. Care also shows **Add Files** to users who do not have them, and then refuses the upload.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Update Encounter related clinical data | Lets you upload a file to the consent. You hold it in the encounter. Care refuses the upload on a closed encounter, even with this permission. By default, the Admin, Doctor, Nurse and Facility Admin roles hold it. |
+| Can list encounters | Lets you find the encounter in the encounter list of the facility. You hold it in the encounter. Care also uses it to show the encounter list in the sidebar. For this, you hold it in a team, a department or the root organization of the facility. By default, the Admin, Doctor, Nurse and Facility Admin roles hold it. |
+| Can Read encounter | Lets you open the encounter page. You hold it in the encounter. By default, the Admin, Doctor, Nurse and Facility Admin roles hold it. |
+| Can list patients | Lets you open the encounter page without "Can Read encounter". Care also checks it to list the encounters of the patient in **Encounter History** on the encounter page. For both, you hold it through a role on the patient. By default, the Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer and Pharmacist roles hold it. |
+| Can view clinical data about patients | Lets you see the consents on the **Consents** tab and open the consent details, where **Add Files** is. You hold it through a role on the patient. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Read encounter related clinical data | Lets you see the consents on the **Consents** tab. It does not open the consent details. You hold it in the encounter. By default, the Admin, Doctor, Nurse and Facility Admin roles hold it. |
+
+A permission held in the encounter comes from a role in an organization of the encounter or its current location. These include their parent organizations and the root organization of the facility, "Administration".
+
+A role on the patient is a role in one of these places:
+
+- An organization of an encounter of the patient that is not closed, or of its current location.
+- An organization that the patient belongs to.
+- A direct link between you and the patient.
+
+To open the encounter page, you need "Can Read encounter". Without it, you need "Can list patients" and one of the two permissions that let you see consents.
+
+Care also loads the facility. Care shows a facility only to a member of one of its organizations, or of its geo organization or a parent organization of it. This is a membership, not a permission.
+
+By default, the Doctor, Nurse, Admin and Facility Admin roles hold all these permissions. For example, a Doctor role in a department of the encounter gives all of them, while the encounter is not closed.
+
+With the default roles, Staff cannot add files. The Staff role does not hold "Update Encounter related clinical data".
+
+Admin in this table is the Admin role of a facility or a government organization. Roles can be created and edited, so the roles in your deployment can differ.
+
+## Steps
+
+### 1. Open the Consents tab
+
+1. In the sidebar of the facility, under **Encounters & Locations**, select the encounter list.
+2. Find the encounter of the patient. Select **View Encounter** on its card.
+3. Select the **Consents** tab.
+
+![The Consents tab of an encounter with three consent cards, and Consents in the encounter navigation outlined](/media/clinical/consent/add-files-to-a-consent-1.png)
+
+The encounter list item in the sidebar shows the name of your default list, such as **All Encounters**.
+
+By default, the **All Encounters** list shows only the encounters that were created in Care today. Its date filter shows **Today**.
+
+If the encounter was created on an earlier day, select **Today**. Then select a longer range, or select **Custom Date Range** and choose the dates.
+
+In the list view, select the row of the encounter in place of **View Encounter**.
+
+Care opens the encounter on the **Overview** tab.
+
+On a narrow screen, select **Consents** in the **Encounter section** list. You can also press `g c` on the encounter page.
+
+### 2. Open the consent details
+
+Select **See Details** on the card of the consent. Care opens the consent details.
+
+The **Supporting Documents** section lists the files that the consent already has. If the consent has no files, Care shows "No files attached" and "Attach supporting documents to the consent."
+
+![The Supporting Documents section of a consent with no files, showing No files attached, outlined](/media/clinical/consent/add-files-to-a-consent-2.png)
+
+### 3. Choose the file source
+
+1. In the **Supporting Documents** section, select **Add Files**.
+2. Select **Upload From Device** to choose a file on your device, or **Open Camera** to take a photo.
+
+![The Add Files menu on the consent details, with Upload From Device and Open Camera, outlined](/media/clinical/consent/add-files-to-a-consent-3.png)
+
+You can add one file at a time. Care accepts jpg, jpeg, png and pdf files.
+
+The file must be 100 MB or smaller.
+
+Note: You can also attach files when you record the consent, in the **Add Consent** form. The **Edit Consent** form has no file section.
+
+### 4. Name the file
+
+When you choose a file or take a photo, Care opens the **Upload File** dialog.
+
+Enter a name in **File Name**. The name is mandatory. Care does not use the original file name in place of a blank name.
+
+![The Upload File dialog: the file thumbnail and original file name, the File Name box filled in, and the Discard and Upload buttons](/media/clinical/consent/add-files-to-a-consent-4.png)
+
+### 5. Upload the file
+
+Select **Upload**. While the file uploads, the dialog shows the progress as a percentage.
+
+![The File Uploaded Successfully message, and the new file in Supporting Documents marked Uploaded, with View and Download, outlined](/media/clinical/consent/add-files-to-a-consent-5.png)
+
+Note: Care checks your permission when you select **Upload**, not when it shows **Add Files**.
+
+Note: Care cannot delete a file after the upload. Make sure that you chose the correct file before you select **Upload**.
+
+If Care does not add the file, find your case in this table.
+
+| When | What to do |
+| --- | --- |
+| **Add Files** is not on the consent details, and the encounter is **Completed**, **Cancelled**, **Discontinued** or **Entered in error**. | You cannot add files. Care refuses changes to the consents of a closed encounter. |
+| **Add Files** is not on the consent details, and you opened the encounter from an organization. | Open the encounter from the facility, then open the consent again. |
+| Care shows "Consent not found" when you select **See Details**. | Ask your administrator for "Can view clinical data about patients" through a role on the patient. "Can Read encounter related clinical data" alone does not open the consent details. |
+| The file does not appear in **Supporting Documents** after you select **Upload**. | Make sure that you have "Update Encounter related clinical data" in the encounter. Then check your network connection and upload the file again. |
+| The file is larger than 100 MB. | Care refuses it. Use a file of 100 MB or smaller. |
+| The file is not a jpg, jpeg, png or pdf file. | Care refuses it. Use a jpg, jpeg, png or pdf file. |
+| The **File Name** box is empty. | Care refuses the upload. Enter a name in **File Name**, then select **Upload**. |
+| A file in **Supporting Documents** shows **Error uploading file**. | The upload of that file did not complete. Add the file again. By default, Care deletes an incomplete upload after 24 hours. |
+| You cannot find the file on the **Files** tab of the encounter. | Open the consent details. The **Files** tab of the encounter shows only encounter files, not consent files. |
+
+## Expected Outcome
+
+- Care shows the message "File Uploaded Successfully".
+- Care closes the **Upload File** dialog and reloads the consent details.
+- The file appears in **Supporting Documents** with its number, its name and the **Uploaded** badge. It also shows the date and time of the upload.
+- Each file has a **View** button to preview it and a **Download** button to save it.
+- On the **Consents** tab, the card of the consent shows its first file name and the number of other files.
+
+## Related
+
+Concepts:
+
+- [Consent](../../../concepts/clinical/consent.mdx)
+- [Files](../../../concepts/clinical/files.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [Record a consent](./record-a-consent.mdx)
+- [View consents](./view-consents.mdx)
+- [Update a consent](./update-a-consent.mdx)
