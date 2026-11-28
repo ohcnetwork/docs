@@ -1,0 +1,197 @@
+---
+sidebar_position: 1
+---
+
+# How to add actions to a questionnaire
+
+## Overview
+
+<video src="/media/platform/action/add-actions-to-a-questionnaire.mp4" poster="/media/platform/action/add-actions-to-a-questionnaire.poster.png" controls width="720">
+  <track kind="captions" src="/media/platform/action/add-actions-to-a-questionnaire.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to add [actions](../../../concepts/platform/action.mdx) to an encounter [questionnaire](../../../concepts/definitions/questionnaire.mdx) in the question editor. Each action runs after staff submit the questionnaire, and does what its instructions say when its conditions are true.
+
+## Pre-requisites
+
+- You are a member of an organization of the facility, for example a department, so the facility sidebar shows **Settings**.
+- The questionnaire is an encounter questionnaire of your facility. See [Create a questionnaire](../../definitions/questionnaire/create-questionnaire.mdx). Patient questionnaires exist only for the whole Care instance, and only a superuser of the Care instance can change them.
+- You change the current version of the questionnaire. A past version cannot be changed.
+- If the questionnaire has actions, you are allowed to use each of its actions.
+- If you add a tag instruction, an active tag for encounters or for patients exists. See [Create a tag](../tagging/create-a-tag.mdx).
+- Your screen is at least 768 pixels wide. On a narrower screen, the question editor hides the outline that holds the **Actions** row.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create/Update Questionnaires | Shows **Edit Questions** and lets you add, change and save actions. You must hold it in the facility's root organization (**Administration**). Without it, the question editor opens in preview only. By default, the Facility Admin role holds it. |
+| Can Apply Tag Config to Resources | Needed only for **Tag the encounter** and **Tag the patient**. Care saves a tag instruction only if you are allowed to apply its tag. For a tag that a department manages, hold it in that department or in a department above it. For a tag that an organization outside the facility manages, hold it in that organization or in one above it. For a facility tag that no organization manages, hold it in any organization of the facility. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold it. |
+| Can Read Questionnaires | Lets you find the questionnaire in the list and open it. You must hold it in **Administration**, in a department that the questionnaire is shared with, or in a department above one. By default, the Facility Admin, Administrator, Doctor, Nurse, Staff, Pharmacist and Volunteer roles hold it. |
+| Can Read Tag Config | Needed only for **Tag the encounter** and **Tag the patient**. Lets you see the tags of the facility in the **Tag** list. You can hold it in any organization of the facility. By default, the Facility Admin, Administrator, Doctor, Nurse, Staff, Pharmacist and Volunteer roles hold it. |
+
+If you hold the Facility Admin role in **Administration**, you have every permission that this flow needs, with one exception. For a tag that a department or an organization outside the facility manages, you also need Can Apply Tag Config to Resources where that tag is managed. A role in **Administration** does not reach a department.
+
+## Steps
+
+### 1. Open the questionnaire
+
+In the facility sidebar, select **Settings**. In the settings sidebar, under **Forms**, select **Questionnaires**.
+
+Select the questionnaire in the list.
+
+![The questionnaire row selected in the facility's questionnaire list](/media/platform/action/add-actions-to-a-questionnaire-1.png)
+
+### 2. Open the question editor
+
+Select **Edit Questions**. Care opens the question editor.
+
+Note: Care shows **Edit Questions** only if you hold Can Create/Update Questionnaires in **Administration**.
+
+![The Edit Questions button on the questionnaire](/media/platform/action/add-actions-to-a-questionnaire-2.png)
+
+### 3. Open the Actions panel
+
+In the outline on the left, below **Form Settings**, select **Actions**.
+
+Care opens the **Actions** panel on the right. The panel says "Run after this form is submitted."
+
+The number on the **Actions** row is the number of actions. A red warning on the row means "Some actions need attention".
+
+Note: Care shows the **Actions** row for patient and encounter questionnaires. For other questionnaires, Care shows the row only if the questionnaire already has actions. The panel then says "Actions run only for patient and encounter forms." You cannot add an action there.
+
+![The Actions row in the outline of the question editor](/media/platform/action/add-actions-to-a-questionnaire-3.png)
+
+### 4. Add an action
+
+Select **Add action**.
+
+Care adds a card named "Action 1" and opens it. Care names the next cards "Action 2", "Action 3", and so on.
+
+The card has two sections. **When** holds the conditions. **Then** holds the instructions. Under the card title, Care describes the action in plain words.
+
+![A new action card, Action 1, with When and Then sections](/media/platform/action/add-actions-to-a-questionnaire-4.png)
+
+### 5. Choose when the action runs
+
+A new action has no conditions, so it runs on every submission. Care shows **Runs on every submission**.
+
+To run the action only in some cases, select **Add a condition** under **When**. Care adds the row "Condition 1".
+
+Fill in the row. Care fills a new row with the first answer that you can use. Change each control as needed.
+
+| Components | What it captures |
+| --- | --- |
+| **Field** | The answer or the detail that the condition tests. **Answers** lists the questions of the questionnaire. **Patient details** lists the patient's age, gender, name, phone number, date of birth, year of birth, blood group, and whether the patient is deceased. It also lists the encounter's status, class and priority. Each detail shows as a path, for example **Patient › Age** or **Encounter › Priority**. |
+| **Operator** | How Care compares the field with the value, for example **Equals**, **Greater Than** or **Contains**. The choices depend on the field. |
+| **Value** | The value that Care compares the field with. The control fits the field: a Yes/No list, a number, a list of the question's options, a date, or text. |
+
+Note: Some questions are in the **Field** list, but you cannot select them. Care shows the reason with the question, for example "no answer" or "inside a repeating section".
+
+If you add two or more conditions, use **Run when** to combine them. Select **All conditions are true (AND)** or **Any condition is true (OR)**.
+
+To remove a condition, select the bin button on its row.
+
+Read the warnings under the conditions:
+
+- If the field is a question that Care shows only in some cases, Care shows a red warning. An action cannot depend on such a question. Select another field.
+- If the field is a question that is not required, Care shows an amber warning. When staff fill in the questionnaire, Care does not save it while that question is blank.
+- To make that question required, select the link in the amber warning. For a question titled "Fever", the link is "Mark “Fever” required".
+
+Note: You can also select **Edit as expression** to write the condition as text. To go back to the rows, select **Back to conditions**.
+
+![A condition row with the field, operator and value filled in](/media/platform/action/add-actions-to-a-questionnaire-5.png)
+
+### 6. Choose what the action does
+
+Under **Then**, select **Add instruction**.
+
+In **Instruction**, select what the action does. The list shows only the instructions that can run for this questionnaire.
+
+Select one of these instructions:
+
+- **Show a message**: Care shows a message to the person who submits the questionnaire. Type the text in **Message**.
+- **Set encounter priority**: Care changes the priority of the encounter. Select the new priority in **Priority**.
+- **Tag the encounter**: Care adds a tag to the encounter. Select the tag in **Tag**.
+- **Tag the patient**: Care adds a tag to the patient. Select the tag in **Tag**.
+
+Care marks a required input with "*".
+
+To add an answer to a message, select **Insert an answer or patient detail** in **Message**. Select the answer or the patient detail. Care shows the result in the **Preview:** line.
+
+When the action runs, Care puts the answer from that submission into the message.
+
+The **Tag** list shows the active tags for encounters or for patients. A tag that has child tags is a heading in the list, and you cannot select it.
+
+Note: If you are not allowed to apply the tag, Care does not save the questionnaire.
+
+Note: When the action runs, Care applies the tag as the person who submits the questionnaire. If the record already has the tag, Care skips it.
+
+Note: If the person who submits is not allowed to apply the tag, Care saves the submission without the tag. The result message says that the person does not have permission to apply the tag.
+
+If an instruction changes a related record, Care names that record under the instruction, for example "Applies to: Patient".
+
+To add another instruction to the same action, select **Add instruction** again. Care runs the instructions of an action in order. To remove an instruction, select **Remove step**.
+
+Note: Each action needs at least one instruction.
+
+![The Then section with the instructions added to the action](/media/platform/action/add-actions-to-a-questionnaire-6.png)
+
+### 7. Add more actions
+
+To add another action, select **Add action** below the cards. Do steps 5 and 6 for the new action.
+
+Care checks the actions in order. For each action whose conditions are true, Care runs its instructions.
+
+Note: To remove an action, select the bin button on its card. Then select **Remove**. Care removes the action from the questionnaire when you save the changes.
+
+### 8. Check the actions
+
+At the top of the question editor, Care shows **Ready to save** or a button such as "1 to fix".
+
+If you see the button with the number of issues, select it. Under **Before you save**, select an issue. Care opens the action that has the issue.
+
+Fix the issue. A card with an issue shows a red warning icon and the message.
+
+| Message | What to do |
+| --- | --- |
+| "An action needs at least one step" | Under **Then**, select **Add instruction**. |
+| "Choose what each action step does" | Select an instruction in each **Instruction** list. |
+| "Fill in the required inputs of the action's steps" | Fill in each input that has "*". |
+| "Actions can't use a question that is only shown in some cases" | Change the **Field** of the condition to another answer. |
+| "An action refers to a question that no longer exists" | Change or remove the condition that uses the deleted question. |
+
+![Ready to save shown at the top of the question editor](/media/platform/action/add-actions-to-a-questionnaire-7.png)
+
+### 9. Save the changes
+
+Select **Save Changes**.
+
+Note: **Save Changes** is available only after you make a change. If an action still has an issue, Care does not save. Care shows the issue and opens that action.
+
+![The success message after saving the questionnaire](/media/platform/action/add-actions-to-a-questionnaire-8.png)
+
+## Expected Outcome
+
+- Care shows "Questionnaire updated successfully".
+- Care saves the actions with the questionnaire.
+- If you changed only the actions, Care does not make a new version of the questionnaire.
+- When staff submit the questionnaire, Care runs the actions. See [Submit a form that has actions](./submit-a-form-that-has-actions.mdx).
+- If the conditions of an action are false, Care saves the submission and does not run the instructions of that action.
+- If an action fails when it runs, Care saves nothing from that submission, and staff see an error message.
+
+## Related
+
+Concepts:
+
+- [Action](../../../concepts/platform/action.mdx)
+- [Questionnaire](../../../concepts/definitions/questionnaire.mdx)
+- [Tag](../../../concepts/platform/tagging.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [Submit a form that has actions](./submit-a-form-that-has-actions.mdx)
+- [Add and edit questions](../../definitions/questionnaire/add-and-edit-questions.mdx)
+- [Create a tag](../tagging/create-a-tag.mdx)
