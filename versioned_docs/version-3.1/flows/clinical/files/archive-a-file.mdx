@@ -1,52 +1,104 @@
 ---
-sidebar_position: 4
+sidebar_position: 8
 ---
 
 # Archive a file
 
 ## Overview
 
-This flow describes how to archive a [file](../../../concepts/clinical/files.mdx) in Care. Care has no permanent delete for files. Archiving is the only way to remove a file from the active list.
+<video src="/media/clinical/files/archive-a-file.mp4" poster="/media/clinical/files/archive-a-file.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/files/archive-a-file.vtt" srcLang="en" label="English" default />
+</video>
 
-Note: Archiving is irreversible. You cannot restore an archived file.
+This flow describes how to archive a [file](../../../concepts/clinical/files.mdx) on the **Files** tab of a patient or of an encounter. Care has no way to delete a file, and you cannot undo an archive.
 
 ## Pre-requisites
 
-- The file is uploaded to the patient or the encounter that you work with.
-- You know the reason for the archive. Care asks you to type the reason.
+- The file is on the **Files** tab of the patient or of the encounter. Patient files and encounter files are in separate lists.
+- The file is not archived. An archived file has an **Archived** badge and no **More Actions** button.
+- You know why you archive the file. Care asks you to type the reason.
+- If you need the content of the file later, download it first. After you archive it, you cannot open or download it from the **Files** tab. See [Download a file](./download-a-file.mdx).
+- If the file is on an encounter, you opened the encounter from a facility, not from an organization.
+- If the file is on an encounter, you look at the encounter that you opened. If you select another encounter of the patient on that page, Care does not show **Archive**.
+- If the file is on an encounter, the encounter is not closed. Care treats an encounter as closed when its status is Completed, Cancelled, Entered in error or Discontinued.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Write access to the patient or the encounter that the file belongs to | Lets you archive the file. |
+| Can Update a Patient's data | Archive patient files. Care shows **Archive** on the patient's **Files** tab only with this permission. Hold it through [a role on the patient](../../../concepts/clinical/files.mdx#permissions). By default, Staff, Doctor, Nurse, Administrator, Admin and Facility Admin hold it. |
+| Update Encounter related clinical data | Archive encounter files. Hold it in a [department](../../../concepts/facility/department.mdx) of the encounter or of its current location. Nobody can archive the files of a closed encounter. By default, Admin, Doctor, Nurse and Facility Admin hold it. |
+| Update Encounter non clinical | Care shows **Archive** on the encounter's **Files** tab only with this permission. Hold it through a role on the encounter. By default, Admin, Doctor, Nurse and Facility Admin hold it. |
+| Can view clinical data about patients | Shows the patient's **Files** tab and lists the patient files. Hold it through [a role on the patient](../../../concepts/clinical/files.mdx#permissions). By default, Staff, Doctor, Nurse, Admin and Facility Admin hold it. |
+| Can Read encounter related clinical data | Shows the encounter's **Files** tab and lists the encounter files. Hold it in a department of the encounter or of its current location. By default, Admin, Doctor, Nurse and Facility Admin hold it. |
+
+Note: By default, the Administrator role holds "Can Update a Patient's data" but not "Can view clinical data about patients". So a user who has only the Administrator role cannot open the patient's **Files** tab, and cannot archive files there.
 
 ## Steps
 
-### 1. Open the file action menu
+### 1. Open the Files tab
 
-Go to the file that you want to archive.
+Open the patient or the encounter that the file belongs to.
 
-Click the **...** menu for the file.
+Select the **Files** tab. In an encounter, you can also press `g` and then `f`.
 
-### 2. Select Archive
+Make sure that the **Files** sub-tab is selected. Care selects it when you open the tab.
 
-Select **Archive**.
+For help to find the file in the list, see [Find a file](./find-a-file.mdx).
 
-Care opens a confirmation dialog. The dialog warns you that this action is irreversible.
+![The row of Duplicate lab report.pdf in the Files list](/media/clinical/files/archive-a-file-1.png)
 
-### 3. Enter the reason
+### 2. Open the More Actions menu
 
-Enter the reason for the archive in the text box.
+In the row of the file, select **More Actions**. This is the button with three vertical dots.
 
-Confirm the archive.
+The menu shows **Download**. If you can change the files here, the menu also shows **Rename** and **Archive**.
+
+If the menu shows only **Download**, you cannot change the files here. Check the pre-requisites and the permissions on this page.
+
+![The More Actions menu of a file with Download, Rename and Archive](/media/clinical/files/archive-a-file-2.png)
+
+### 3. Select Archive
+
+Select **Archive**. Care opens the **Archive File** dialog.
+
+The dialog shows this warning: **This action is irreversible. Once a file is archived it cannot be unarchived.**
+
+![The Archive File dialog with the warning that the action is irreversible](/media/clinical/files/archive-a-file-3.png)
+
+### 4. Enter the reason
+
+The dialog asks for the reason to archive the file. The question shows the name of the file.
+
+Type the reason in the box. The box shows **Type the reason...** until you type.
+
+The reason is required. If the reason has only spaces, Care shows **Please enter a valid reason!**
+
+![The reason Uploaded twice by mistake typed in the Archive File dialog](/media/clinical/files/archive-a-file-4.png)
+
+### 5. Archive the file
+
+Select **Proceed**.
+
+To close the dialog without archiving the file, select **Cancel**.
+
+![The message File archived successfully, and the Archived badge on Duplicate lab report.pdf](/media/clinical/files/archive-a-file-5.png)
 
 ## Expected Outcome
 
-- Care greys out the file in the list and adds an **Archived** badge.
-- Care hides the file from the default list. To see the file again, set the filter on the **Files** tab to **Archived**.
-- For an archived file, the **View** option opens the details dialog. The dialog shows who uploaded the file and when. The dialog also shows who archived the file, when, and why.
+- Care shows **File archived successfully** and refreshes the list.
+- If no status is selected, or **Status** is set to **Archived**, the file stays in the list.
+- If **Status** is set to **Active**, the file leaves the list.
+- The row of the file has muted colors and an **Archived** badge.
+- The **Archived** badge shows the archive details when you point to it or tap it.
+- The details are the reason, who archived the file, and when.
+- The row has a **View** button. **View** opens the **Archived file** dialog with **Archived reason**, **Archived by**, and **Archived at**.
+- On a small screen, a tap on the row opens the same dialog.
+- The **Archived file** dialog does not show the content of the file.
+- The row has no **More Actions** button. You cannot download, rename, or archive the file again from the **Files** tab.
+- To see only archived files, set **Status** to **Archived**.
+- Care has no way to restore an archived file.
 
 ## Related
 
@@ -56,7 +108,8 @@ Concepts:
 
 Flows:
 
-- [Upload a file](./upload-a-file.mdx)
+- [Find a file](./find-a-file.mdx)
+- [Download a file](./download-a-file.mdx)
 - [View or preview a file](./view-or-preview-a-file.mdx)
 - [Rename a file](./rename-a-file.mdx)
-- [Download a file](./download-a-file.mdx)
+- [Upload a file](./upload-a-file.mdx)

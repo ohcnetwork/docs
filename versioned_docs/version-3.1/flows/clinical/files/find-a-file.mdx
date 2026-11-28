@@ -1,0 +1,162 @@
+---
+sidebar_position: 1
+---
+
+# Find a file
+
+## Overview
+
+<video src="/media/clinical/files/find-a-file.mp4" poster="/media/clinical/files/find-a-file.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/files/find-a-file.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to find a [file](../../../concepts/clinical/files.mdx) on the **Files** tab of a patient or of an encounter, and how to see why a file was archived. The patient and each encounter have separate lists of files.
+
+## Pre-requisites
+
+- The patient is registered in Care.
+- If you look for a file of an encounter, the encounter workspace layout does not hide the **Files** tab.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can view clinical data about patients | Shows the patient's **Files** tab and lists the patient files. With Can Read encounter, also lists the encounter files. Hold it through [a role on the patient](../../../concepts/clinical/files.mdx#permissions). By default, Staff, Doctor, Nurse, Admin and Facility Admin hold it. |
+| Can Read encounter related clinical data | Shows the encounter's **Files** tab and lists the encounter files, also after the encounter is closed. Hold it in a [department](../../../concepts/facility/department.mdx) of the encounter or of its current location. By default, Admin, Doctor, Nurse and Facility Admin hold it. |
+| Can Read encounter | Lists the encounter files, together with Can view clinical data about patients. Hold it through a role on the encounter. By default, Admin, Doctor, Nurse and Facility Admin hold it. |
+
+On the encounter page, Care shows the **Files** tab if you hold "Can view clinical data about patients" or "Can Read encounter related clinical data".
+
+Care loads the list of the encounter's files only if you hold "Can Read encounter related clinical data" or "Can Read encounter". Otherwise the list shows **No files found**.
+
+By default, the Staff role holds neither of these two permissions. So Care does not list the files of an encounter for a user who has only the Staff role.
+
+By default, the Administrator role does not hold "Can view clinical data about patients". So a user who has only the Administrator role cannot open the patient's **Files** tab.
+
+## Steps
+
+### 1. Open the Files tab
+
+Open the patient page or the encounter page.
+
+Select the **Files** tab.
+
+![The Files tab among the tabs of the Patient Details page](/media/clinical/files/find-a-file-1.png)
+
+Note: On the encounter page, press `g` then `f` to go to the **Files** tab.
+
+### 2. Select the Files sub-tab
+
+Care opens the **Files** sub-tab first.
+
+If another sub-tab is open, select **Files**.
+
+The **Reports** sub-tab lists generated reports, not uploaded files. To work with these reports, see [Generate and view a report](../../platform/report-template/generate-and-view-a-report.mdx).
+
+![The Files sub-tab selected next to Reports, above the list of files](/media/clinical/files/find-a-file-2.png)
+
+### 3. Search by name
+
+Type a part of the file name in **Search files**.
+
+Care lists the files whose name contains that text. Upper case and lower case letters give the same result.
+
+![Search files with x-ray typed, and the list showing only Chest X-ray.jpg](/media/clinical/files/find-a-file-3.png)
+
+### 4. Filter by status
+
+By default, the **Status** menu has **All** selected. The list then shows the active files and the archived files together.
+
+Select **Status**.
+
+Select **Active** to show only the active files. Select **Archived** to show only the archived files.
+
+To show all the files again, select **All**.
+
+![The Status menu open with All, Active and Archived](/media/clinical/files/find-a-file-4.png)
+
+![Status set to Archived, with only the archived files in the list](/media/clinical/files/find-a-file-5.png)
+
+Note: If you change between the **Files** and **Reports** sub-tabs, Care clears the search text, the status filter and the page.
+
+### 5. Read the list
+
+Care shows the newest files first, with 15 files on each page.
+
+The list has these columns.
+
+| Column | What it shows |
+| --- | --- |
+| File Name | The name of the file, followed by its extension. |
+| File Type | Audio, Document, Image, Presentation, Video or Other. Care sets the type from the extension of the file. |
+| Shared By | The user who uploaded the file. |
+| Date | The date of the upload. Move the pointer over the date to see the full date and time. |
+
+The last column has no heading. It holds the actions for the file, such as **View**, **Play** and **More Actions**.
+
+Below the list, Care shows which files are on the page and the total number of files.
+
+If there are more than 15 files, use the page buttons below the list to go to the next page.
+
+On a small screen, such as a phone, Care hides the **File Type** and **Date** columns. The type and the date of each file show under its name.
+
+The **Shared By** column shows only on a large screen.
+
+On a small screen, tap a row to view or play the file. For an archived file, the tap opens the archive details. For a file that Care cannot preview or play, the tap does nothing.
+
+![The list of files with the File Name, File Type, Shared By and Date columns, and the full date and time over a date](/media/clinical/files/find-a-file-6.png)
+
+Note: The list shows only the files whose upload is complete.
+
+Note: The **Files** tab lists only the files of the patient or of the encounter. The files of a consent, a diagnostic report, a service request or a referral do not show in this list.
+
+### 6. Check an empty list
+
+If no file matches, Care shows **No files found**.
+
+Without a search text or a status filter, Care also shows **Upload a file to keep it alongside this record.**
+
+With a search text or a status filter, Care shows **Try adjusting your filters or search** instead.
+
+Clear the search text, or set **Status** to **All**.
+
+### 7. See why a file was archived
+
+An archived file has the **Archived** badge, and its row looks muted.
+
+Move the pointer over the **Archived** badge, or tap it. Care shows the reason, who archived the file, and when.
+
+To see the same details in a dialog, select **View** in the row of the archived file. On a small screen, tap the row.
+
+Care opens the **Archived file** dialog, with the name of the file. The dialog shows **Archived reason**, **Archived by** and **Archived at**.
+
+Select **Close** to close the dialog.
+
+![The Archived badge of a file, with the archived reason, who archived the file and when](/media/clinical/files/find-a-file-7.png)
+
+![The Archived file dialog for Old referral letter.pdf, with the archived reason, Archived by and Archived at](/media/clinical/files/find-a-file-8.png)
+
+Note: You cannot open or download an archived file from the **Files** tab. The **Archived file** dialog does not show the content of the file.
+
+## Expected Outcome
+
+- Care lists the files of the patient or the encounter that match your search text and your status filter.
+- You see the name, the type, the uploader and the upload date of each file.
+- For an archived file, you see the reason, who archived the file, and when.
+- From the row of an active file, you can download the file. For some types of file, you can also view or play the file.
+
+## Related
+
+Concepts:
+
+- [Files](../../../concepts/clinical/files.mdx)
+
+Flows:
+
+- [View or preview a file](./view-or-preview-a-file.mdx)
+- [Download a file](./download-a-file.mdx)
+- [Upload a file](./upload-a-file.mdx)
+- [Rename a file](./rename-a-file.mdx)
+- [Archive a file](./archive-a-file.mdx)
+- [Generate and view a report](../../platform/report-template/generate-and-view-a-report.mdx)

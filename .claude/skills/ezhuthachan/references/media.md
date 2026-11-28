@@ -62,6 +62,15 @@ curl -s -m 15 -o /dev/null -w '%{http_code}\n' "<SNOWSTORM_DEPLOYMENT_URL>/metad
 
 If it does not, record the other flows and come back to these later.
 
+A third dependency is file storage. An upload goes from the browser straight to an S3-compatible bucket through a signed link; the `BUCKET_*`, `FILE_UPLOAD_BUCKET` and `FACILITY_S3_BUCKET` settings in `config/settings/base.py` say where. Care's Docker setup provides that bucket with MinIO. A stack started without Docker has none: creating a file fails with a 500, and no flow that uploads a file, or needs one already uploaded, can be recorded. Two sessions on 27 and 28 November 2026 hit this. What worked:
+
+- Ask the user before installing MinIO (from Homebrew, `brew install minio`); it is a download.
+- Run it bound to `127.0.0.1` on a port of the session's own, with its data folder inside the session: `minio server "$S/stack/minio-data" --address 127.0.0.1:<port> --console-address 127.0.0.1:<port+1>`.
+- Give the backend `BUCKET_PROVIDER=MINIO`, `BUCKET_ENDPOINT` and `BUCKET_EXTERNAL_ENDPOINT` set to that address, the key and secret MinIO runs with, and bucket names of the session's own in `FILE_UPLOAD_BUCKET` and `FACILITY_S3_BUCKET`. Create both buckets with `boto3` from Care's virtual environment.
+- Before recording, check one upload end to end through the API: create the file, PUT to its `signed_url`, call `mark_upload_completed`, list it, and open its `read_signed_url`.
+
+`manage.py load_fixtures` prints the fixture users' password. Do not keep its output in a session file; send it to `/dev/null`, or remove the password from the log.
+
 ### One recording at a time per environment
 
 Two sessions recording against the same database spoil each other's data. Take a lock before recording and release it after:
@@ -131,6 +140,7 @@ Name it `<flow-slug>.demo.ts`. Start from `example.demo.ts`.
 - Each flow creates what it changes. Do not rely on what another recording left behind.
 - Respect the data policy. Under "create allowed", name records so they are recognisably yours.
 - Use invented people, the same small cast in every recording. If `$EZ/personas.md` exists, use it. If not, propose a few clearly fictional names that suit the deployment's region, get the user's agreement, and save them there.
+- Give every cast patient two patient tags before recording any patient page, for example "Regular follow-up" and "Outpatient clinic" (a facility tag of resource "patient", set with the patient's `set_facility_tags` action). Without tags, the patient header in 3.1 wraps the name one syllable per line at 1440 by 900 ("Rav / i / Ku / mar"); one tag is not enough. Two sessions recorded with the broken header before this was written down (26 and 28 November 2026). Look at the header in the first screenshot of every run.
 
 **Keep it watchable.** Aim for under a minute per flow; split a longer flow into two pages. Assert only what you need in order to wait for the screen to settle.
 

@@ -1,79 +1,122 @@
 ---
-sidebar_position: 2
+sidebar_position: 5
 ---
 
 # View or preview a file
 
 ## Overview
 
-This flow describes how to find a file in the **Files** tab and open its preview in Care. Some file types open a preview. Other file types need a download.
+<video src="/media/clinical/files/view-or-preview-a-file.mp4" poster="/media/clinical/files/view-or-preview-a-file.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/files/view-or-preview-a-file.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to open a [file](../../../concepts/clinical/files.mdx) in the **File Preview** of the **Files** tab, and how to play an audio file. For the types of file that have no preview, see [Download a file](./download-a-file.mdx).
 
 ## Pre-requisites
 
-- The file is uploaded to the patient or the encounter that you work with.
-- If you look for an archived file, set the filter to **Archived**.
+- The file is uploaded to the patient or to the encounter that you work with.
+- If you want to see the content of the file, the file is not archived.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| The permission to view clinical data for the patient or the encounter that the file belongs to | Lets you list, preview, and open the files of that patient or encounter. |
+| Can view clinical data about patients | Open and play the patient files. With Can Read encounter, also open and play the encounter files. Hold it through [a role on the patient](../../../concepts/clinical/files.mdx#permissions). By default, Staff, Doctor, Nurse, Admin and Facility Admin hold it. |
+| Can Read encounter related clinical data | Open and play the encounter files, also after the encounter is closed. Hold it in a [department](../../../concepts/facility/department.mdx) of the encounter or of its current location. By default, Admin, Doctor, Nurse and Facility Admin hold it. |
+| Can Read encounter | Lists the encounter files, together with Can view clinical data about patients. Hold it through a role on the encounter. By default, Admin, Doctor, Nurse and Facility Admin hold it. |
+
+To open a file, you must first see it in the list. For the rules of the list, see [Find a file](./find-a-file.mdx).
+
+To view or play a file, you need only these read permissions.
 
 ## Steps
 
-### 1. Open the Files tab
+### 1. Find the file
 
-Open the patient or the encounter that holds the file. Select the **Files** tab. On a large screen, Care shows the files in a table. The table has these columns.
+Open the **Files** tab of the patient or of the encounter.
 
-| Column | What it shows |
+Find the file in the list. For the full steps, see [Find a file](./find-a-file.mdx).
+
+![The row of Chest X-ray.jpg in the Files list, with its View button](/media/clinical/files/view-or-preview-a-file-1.png)
+
+### 2. Open the file
+
+The button in the row depends on the type of the file.
+
+| Type of file | Button in the row |
 | --- | --- |
-| File Name | The name of the file |
-| File Type | The type of the file |
-| Date | The date of the file |
-| Shared By | The person who uploaded the file |
-| Actions menu | The actions that you can do on the file |
+| PDF: .pdf | **View** |
+| Image: .jpg, .jpeg, .png, .gif and .webp | **View** |
+| Video: .mp4, .mov, .avi, .wmv and .ogg | **View** |
+| Audio: .mp3 and .wav | **Play**. See step 6. |
+| Other files, such as .bmp, .txt, .csv, .rtf, .doc, .odt, .xls, .xlsx and .ods | No **View** and no **Play**. Download the file instead. See [Download a file](./download-a-file.mdx). |
 
-On a small screen, Care shows each file as a card.
+Select **View** in the row of the file.
 
-### 2. Filter the list
+On a small screen, such as a phone, tap the row of the file.
 
-Use the filter to select **Active** files or **Archived** files. Care shows only the files that match the filter.
+Care opens the **File Preview**. The preview shows the name of the file, and **Created On** with the upload date.
 
-### 3. Open the preview
+If the file is archived, **View** opens only the **Archived file** dialog. The dialog shows why, by whom and when the file was archived, but not its content.
 
-Find the file in the list. Open the actions menu for the file. Select **View**. Care opens the preview of the file.
+![The File Preview of Chest X-ray.jpg, with Created On and the upload date](/media/clinical/files/view-or-preview-a-file-2.png)
 
-Note: Care shows the **View** option only for a file that it can preview.
-
-### 4. Work with the preview
+### 3. Use the preview controls
 
 The controls in the preview depend on the type of the file.
 
-| File type | What you can do |
+| Type of file | What you can do |
 | --- | --- |
-| Image | Pinch, zoom, and pan the image |
-| PDF | Read the file in the preview. Select **Print**, or select **Open in browser** |
-| Video | Play the video in the preview |
-| HTML | Read the page in a sandboxed frame |
+| Image | Select **Zoom In** or **Zoom Out**. Select **Rotate Left** or **Rotate Right**. Select **Reset** to undo the zoom and the rotation. You can also zoom with the mouse wheel, a pinch or a double click. Drag the image to move it. You can zoom from a quarter of the fitted size up to two times the fitted size. |
+| PDF | Select **Previous** or **Next** to go to another page. Care shows the page number and the total number of pages. Select **Print** to print the file. Select **Open in browser** to open the file in a new browser tab. |
+| Video | Care opens the video in the video player of your browser. Use the controls of that player. |
 
-Note: A .mov video does not play in a browser other than Safari. For a .mov video, Care offers a download instead.
+![The image controls Zoom In, Reset, Zoom Out, Rotate Left and Rotate Right under a rotated image](/media/clinical/files/view-or-preview-a-file-3.png)
 
-For an audio file, Care shows a **Play** button. Select **Play**. Care opens the audio player.
+Note: The **Print** button shows after the PDF loads. You can also press `p` to print. If printing fails, Care shows **Print failed**.
 
-### 5. Step to another file
+Note: Outside the Safari browser, Care does not play a .mov video. Care shows **MOV file not supported in this browser** and a **Download to play locally** button.
 
-If the patient or the encounter has more than one file, you can step through the files in the preview. Press the Left arrow key for the previous file. Press the Right arrow key for the next file.
+Note: If your browser cannot play videos, Care shows **Your browser does not support video playback.**
 
-### 6. Open a file that has no preview
+### 4. Download the file
 
-Care cannot preview some file types, for example a Word document or an Excel document. For these files, Care shows a message that it cannot preview the file. Download the file, then open it on your device.
+To save the file on your device, select **Download** in the preview.
+
+If the download fails, Care shows **Failed to download file**.
+
+### 5. Move to another file
+
+If the page of the list has more than one active file, the preview shows two arrows.
+
+Select an arrow to open the previous file or the next file.
+
+The arrows move only through the active files on the current page. They go from the oldest file to the newest.
+
+If you move to a file that Care cannot show, the preview shows **Can't preview this file. Try downloading it.** Select **Download** to save that file.
+
+![The arrow to the previous file on the left of the File Preview](/media/clinical/files/view-or-preview-a-file-4.png)
+
+![The File Preview of Blood test report.pdf, with Previous, the page number and Next](/media/clinical/files/view-or-preview-a-file-5.png)
+
+### 6. Play an audio file
+
+If the file is an .mp3 or .wav file, select **Play** in the row of the file. On a small screen, tap the row.
+
+Care opens the **Play Audio** dialog.
+
+Use the play and pause button, the seek bar and the mute button. The dialog shows the time played and the total time.
+
+![The Play Audio dialog with the play and pause button, the time, the seek bar and the mute button](/media/clinical/files/view-or-preview-a-file-6.png)
 
 ## Expected Outcome
 
-- Care shows the content of the file in the preview.
-- You step between the files of the patient or the encounter with the arrow keys.
-- For a file that has no preview, Care tells you to download the file.
+- Care shows the image or the PDF file in the **File Preview**.
+- For a video, Care opens the video player of your browser in the **File Preview**.
+- Care plays an .mp3 or .wav file in the **Play Audio** dialog.
+- For an archived file, Care shows why, by whom and when the file was archived. Care does not show the content.
+- For a file that has no **View** or **Play**, you download the file and open it on your device.
 
 ## Related
 
@@ -83,7 +126,8 @@ Concepts:
 
 Flows:
 
+- [Find a file](./find-a-file.mdx)
+- [Download a file](./download-a-file.mdx)
 - [Upload a file](./upload-a-file.mdx)
 - [Rename a file](./rename-a-file.mdx)
 - [Archive a file](./archive-a-file.mdx)
-- [Download a file](./download-a-file.mdx)

@@ -1,0 +1,134 @@
+---
+sidebar_position: 3
+---
+
+# Take a photo and upload it
+
+## Overview
+
+<video src="/media/clinical/files/take-a-photo.mp4" poster="/media/clinical/files/take-a-photo.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/files/take-a-photo.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to take a photo with the camera of your device and upload it as a [file](../../../concepts/clinical/files.mdx) to a patient or to an encounter in Care.
+
+After you keep the photo, Care opens the same upload dialog as in [Upload a file](./upload-a-file.mdx).
+
+## Pre-requisites
+
+- Your device has a camera, and you can let your browser use it.
+- The patient is registered in Care, and you can open the patient's page or the encounter.
+- If you upload to an encounter, you opened the encounter from a facility. Outside a facility, for example from an organization, the encounter's **Files** tab is read-only.
+- If you upload to an encounter, you look at the encounter that you opened, not another encounter of the patient.
+- If you upload to an encounter, its status is not Completed, Cancelled, Entered in error or Discontinued.
+- If you upload to an encounter, the encounter workspace layout does not hide the **Files** tab.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Update a Patient's data | Upload a photo to the patient. Care shows **Add Files** on the patient's **Files** tab only with this permission. Hold it through [a role on the patient](../../../concepts/clinical/files.mdx#permissions). By default, Staff, Doctor, Nurse, Administrator, Admin and Facility Admin hold it. |
+| Update Encounter related clinical data | Upload a photo to an encounter. Hold it in a [department](../../../concepts/facility/department.mdx) of the encounter or of its current location. Nobody can upload files to a closed encounter. By default, Admin, Doctor, Nurse and Facility Admin hold it. |
+| Update Encounter non clinical | Care shows **Add Files** on the encounter's **Files** tab only with this permission. Hold it through a role on the encounter. By default, Admin, Doctor, Nurse and Facility Admin hold it. |
+| Can view clinical data about patients | Shows the patient's **Files** tab and lists the patient files. Also shows the encounter's **Files** tab. Hold it through [a role on the patient](../../../concepts/clinical/files.mdx#permissions). By default, Staff, Doctor, Nurse, Admin and Facility Admin hold it. |
+| Can Read encounter related clinical data | Shows the encounter's **Files** tab and lists the encounter files. Hold it in a department of the encounter or of its current location. By default, Admin, Doctor, Nurse and Facility Admin hold it. |
+
+Note: By default, the Administrator role holds "Can Update a Patient's data" but not "Can view clinical data about patients". So a user who has only the Administrator role cannot open the patient's **Files** tab, and cannot upload files there.
+
+## Steps
+
+### 1. Open the Files tab
+
+To upload to the patient, open the patient's page. Select the **Files** tab.
+
+To upload to an encounter, open the encounter. Select the **Files** tab, or press `g` and then `f`.
+
+Care opens the **Files** sub-tab.
+
+![The Files tab of the Patient Details page, with Add Files](/media/clinical/files/take-a-photo-1.png)
+
+### 2. Open the camera
+
+Select **Add Files**. Select **Open Camera**.
+
+Care opens the camera. The camera fills the height of the screen.
+
+![Open Camera in the Add Files menu](/media/clinical/files/take-a-photo-2.png)
+
+### 3. Allow access to the camera
+
+While the browser asks for access, Care shows **Requesting Camera Access** and **Please allow camera permissions in your browser**.
+
+Allow the browser to use the camera.
+
+If access to the camera is denied, Care shows **Camera permission denied** and two steps.
+
+Select the settings icon in the address bar of the browser. Clear the blocked camera permission.
+
+### 4. Choose the camera
+
+Care starts with the back camera.
+
+On a large screen with more than one camera, select a camera in the **Select Camera** menu.
+
+On a small screen, select the switch button to change between the back camera and the front camera.
+
+If the device has no back camera, Care shows **Switch camera is not available.**
+
+### 5. Take the photo
+
+Take the photo. Care shows the photo with three buttons. The buttons show an icon and no text.
+
+| Button | What it does |
+| --- | --- |
+| Check (confirm) | Keeps the photo, closes the camera, and opens the upload dialog. |
+| Retake | Removes the photo and goes back to the camera, so that you can take the photo again. |
+| Close | Closes the camera and removes the photo. |
+
+![The camera view with the shutter button and the close button](/media/clinical/files/take-a-photo-3.png)
+
+:::caution
+
+The retake button and the close button remove all the files that you chose, not only the photo.
+
+:::
+
+### 6. Keep the photo
+
+Select the check button.
+
+Care closes the camera and opens the upload dialog with the photo.
+
+![The photo taken, with the retake, check and close buttons](/media/clinical/files/take-a-photo-4.png)
+
+### 7. Name and upload the photo
+
+Enter a name in the **File Name** field. The field is required, and it starts empty.
+
+Select **Upload**.
+
+For the other options in the dialog and for the messages that Care can show, see [Upload a file](./upload-a-file.mdx).
+
+![The Upload File dialog with the photo and Wound photo in the File Name field](/media/clinical/files/take-a-photo-5.png)
+
+![The message File Uploaded Successfully, and Wound photo.png at the top of the Files list](/media/clinical/files/take-a-photo-6.png)
+
+## Expected Outcome
+
+- Care shows **File Uploaded Successfully**.
+- The photo shows in the **Files** list of the patient or of the encounter, with the name that you entered.
+- The photo is at the top of the list, unless a search or a filter hides it.
+
+## Related
+
+Concepts:
+
+- [Files](../../../concepts/clinical/files.mdx)
+
+Flows:
+
+- [Upload a file](./upload-a-file.mdx)
+- [Record audio and upload it](./record-audio.mdx)
+- [Find a file](./find-a-file.mdx)
+- [View or preview a file](./view-or-preview-a-file.mdx)
