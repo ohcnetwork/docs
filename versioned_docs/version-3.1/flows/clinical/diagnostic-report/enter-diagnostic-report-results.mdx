@@ -6,83 +6,125 @@ sidebar_position: 1
 
 ## Overview
 
-This flow describes how to create a [diagnostic report](../../../concepts/clinical/diagnostic-report.mdx) for a service request. You record the result of each observation, and you set the report status.
+This flow describes how to create a [diagnostic report](../../../concepts/clinical/diagnostic-report.mdx) for a service request. You record the result of each test, and you approve the results when they are complete.
 
 ## Pre-requisites
 
 - The patient has a service request at the facility, and you record the diagnostic report for that service request.
-- If the service request needs a specimen, the laboratory staff collect and process the specimen first.
-- If an external laboratory sends the result as a document, you have that file on your device.
+- The status of the service request is **Draft** or **Active**.
+- If the service request needs a specimen, the specimen is collected and available. See [Collect a specimen](../specimen/collect-a-specimen.mdx).
+- If you have the result as a file, for example from an external laboratory, the file is on your device.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create Diagnostic Report on Facility | Lets you create a diagnostic report and enter its observations. Facility Admin, Admin, Doctor, and Nurse have this permission. |
+| Can Create Diagnostic Report on Facility | Lets you create the report, save its results, upload a result file and approve the results. You must hold it in a department of the encounter of the service request, or of that encounter's current location. A department of one of the locations of the service request also counts. By default, Facility Admin, Admin, Doctor and Nurse hold it. |
+| Can Read Service Request | Lets you open the service request page. You must hold it in the same departments as "Can Create Diagnostic Report on Facility". By default, Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it. |
+| Can Read Activity Definition | Lets the service request page load the activity definition of the service request. You can hold it in any department of the facility. By default, Facility Admin, Administrator, Admin, Staff, Doctor, Nurse and Volunteer hold it. |
+| Can Read Diagnostic Report | Lets you open the report card and its results. You must hold it in the same departments as "Can Read Service Request". By default, Facility Admin, Administrator, Admin, Staff, Doctor, Nurse and Volunteer hold it. |
+| Can Read Observation Definition | Lets you search for a test with **Add observation**, and lets Care find the test of a new result when you save. You can hold it in any department of the facility. By default, Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it. |
+
+Admin and Administrator are two different default roles.
+
+Care shows **Create Report**, **Save Results** and **Approve Results** to every user who can open the page. If you do not hold "Can Create Diagnostic Report on Facility" in one of those departments, Care refuses the action. Care then shows the message "You do not have permission to write this diagnostic report".
+
+By default, this happens to Staff, Administrator and Volunteer. They can open the page, but Care refuses to create the report, save results or approve them.
 
 ## Steps
 
 ### 1. Open the service request
 
-Open the detail page of the service request. The page shows the specimen section, the processing section, and the diagnostic report form together.
+Open the detail page of the service request. See [View service requests](../service-request/view-service-requests.mdx).
+
+The page shows the details of the service request, the specimen section and the test results area together.
 
 ### 2. Start the diagnostic report
 
-Open the diagnostic report form on the service request page.
+If the service request has more than one report type, select the type in **Select Diagnostic Report Type**.
 
-| Components | What it captures |
-| --- | --- |
-| Category | The type of diagnostic service that produces the result. |
-| Code | The test or panel that the report covers. |
+In **Test Results Entry**, select **Create Report**.
 
-### 3. Enter the observation values
+Care creates the report with the status **Preliminary** and shows **Diagnostic report created successfully**.
 
-The form shows one row for each observation that the service request requires.
+You do not enter the category or the status. Care sets the category to Laboratory. If you selected a report type, Care uses it as the code of the report.
+
+Note: **Create Report** stays unavailable until each specimen that the service request needs is collected and available.
+
+### 3. Enter the test results
+
+The report card shows one row for each test that the service request asks for. It also shows the tests with saved results and the tests that you add.
 
 Enter the values for each row.
 
 | Components | What it captures |
 | --- | --- |
-| Value | The measured result of the observation. |
-| Unit | The unit of measurement for the value. |
-| Interpretation | The reading of the value, such as High, Low, or Normal. Enter it where it applies. |
+| **Result value** | The measured result of the test. Care shows the unit of the test beside the box. You cannot change the unit. |
+| Component boxes | If the test has components, one box for each component, with the unit of that component. |
+
+If you want, enter a summary in **Conclusion**: the findings and anything the requesting doctor should act on.
+
+You do not enter an interpretation or a reference range. Care computes them from the definition of the test when you save.
+
+To enter a second result for the same test, select the button with three vertical dots beside the result ("Result actions"). Select **Add Another Result**.
+
+To add a test that the service request does not ask for, select **Add observation**. Then find the test in **Search observations**.
 
 ### 4. Attach a file
 
-Attach a file to the report when an external laboratory sends the result as a document.
+If you have the result as a file, attach it to the report.
 
-Choose a file from your device, or capture an image with the camera.
+In **Result Document**, select **Upload Files** to choose a file from your device.
 
-### 5. Set the status
+To capture an image with the camera, select **Take Photo**.
 
-A new report starts with the status Registered.
+Enter a **File Name**.
 
-Set the status to Preliminary or Partial when you record the first results.
+Select **Upload**.
 
-Set the status to Final when all results are complete.
+### 5. Save the results
 
-Note: You cannot change the observation rows after you set the status to Final.
+Select **Save Results**.
 
-### 6. Save the report
+Care shows **Test results saved successfully** and collapses the report card.
 
-Save the diagnostic report.
+The report stays **Preliminary**. You can still change its results. See [Correct or remove a test result](../observation/correct-or-remove-a-test-result.mdx).
+
+If the service request asks for tests and you entered no result, Care shows **Please fill all results**. If you also wrote a conclusion, Care shows **Cannot add conclusion without results** instead.
+
+If Care cannot find the definition of a test that you added, it shows **Error loading observation definition**.
+
+### 6. Approve the results
+
+In **Review Test Results**, select **Approve Results**.
+
+Care asks you to confirm: **Are you sure you want to approve these diagnostic results? This action cannot be undone.**
+
+Select **Approve**. Care sets the status of the report to Final and shows **Diagnostic report approved successfully**.
+
+Note: Select **Save Results** before you approve. **Approve Results** does not send the values in the result boxes.
+
+Note: **Approve Results** is available after the report has a result, a conclusion or an uploaded file. After approval, you cannot change the results on screen.
 
 ## Expected Outcome
 
 - Care creates the diagnostic report for the service request.
-- The report shows the observation values, the units, and the interpretations that you entered.
-- The report shows the status that you set.
+- The report shows the results in a table with the columns **Test**, **Result** and **Reference Range**. If a result has an interpretation, the table also has the column **Interpretation**.
+- Care computes the interpretation and the reference range from the definition of each test.
+- After you approve the results, the status of the report is Final, and the report leaves **Test Result Entries**.
 
 ## Related
 
 Concepts:
 
 - [Diagnostic Report](../../../concepts/clinical/diagnostic-report.mdx)
+- [Observation](../../../concepts/clinical/observation.mdx)
 
 Flows:
 
 - [View a diagnostic report](./view-a-diagnostic-report.mdx)
 - [Update a diagnostic report](./update-a-diagnostic-report.mdx)
 - [Print a diagnostic report](./print-a-diagnostic-report.mdx)
+- [Correct or remove a test result](../observation/correct-or-remove-a-test-result.mdx)
 - [Create a service request](../../../flows/clinical/service-request/create-a-service-request.mdx)

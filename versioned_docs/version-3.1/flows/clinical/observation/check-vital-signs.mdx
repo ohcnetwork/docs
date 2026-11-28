@@ -1,0 +1,155 @@
+---
+sidebar_position: 2
+---
+
+# Check a patient's vital signs
+
+## Overview
+
+This flow describes how to check a patient's latest vital signs in Care, on the **Vitals** panel of the encounter's **Overview** tab. Each value in the panel is an [observation](../../../concepts/clinical/observation.mdx) recorded in the [encounter](../../../concepts/clinical/encounter.mdx).
+
+<video src="/media/clinical/observation/check-vital-signs.mp4" poster="/media/clinical/observation/check-vital-signs.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/observation/check-vital-signs.vtt" srcLang="en" label="English" default />
+</video>
+
+## Pre-requisites
+
+- At least one vital sign is recorded in the encounter. If none is recorded, the **Overview** tab does not show the **Vitals** panel. To record vital signs, see [Record observations with a form](./record-observations-with-a-form.mdx).
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can view clinical data about patients | Lets you see the **Vitals** panel and its values. You must hold it through a role on the patient. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Read encounter related clinical data | Lets you see the **Vitals** panel of this encounter without a role on the patient. You must hold it in the encounter. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+
+You need one of the two permissions, not both.
+
+You have a role on the patient when you have a role in one of these places:
+
+- A department of an open encounter of the patient, or a department of that encounter's current location.
+- A geographic organization of the patient.
+- The patient itself, when someone gave you a role directly on the patient.
+
+A closed encounter gives no role on the patient. An encounter is closed when its status is **Completed**, **Cancelled**, **Discontinued** or **Entered in error**.
+
+You hold a permission in the encounter when you have a role in a department of the encounter. These are the departments the encounter is assigned to, their parent departments, the facility's root department "Administration", and the departments of the encounter's current location.
+
+What this means for the default roles:
+
+- A Doctor, Nurse, Admin or Facility Admin role in a department of the encounter is enough, whatever the status of the encounter.
+- The Staff role holds only the permission on the patient. On an open encounter, a Staff role in a department of the encounter is enough.
+- On a closed encounter, the Staff role sees the panel only through another role on the patient. Examples are a role in a department of another open encounter of the patient, or a direct role on the patient.
+
+## Steps
+
+### 1. Open the Vitals panel
+
+Open the patient's encounter.
+
+If the encounter shows another tab, select the **Overview** tab.
+
+Find the **Vitals** panel on the **Overview** tab.
+
+A workspace of your deployment can give the panel another title. It can also give the panel its own list of observation codes.
+
+![The Vitals panel on the Overview tab, with a row for each vital sign and a column for each of the four latest times](/media/clinical/observation/check-vital-signs-1.png)
+
+### 2. Read the latest values
+
+Read the values in the table of the **Vitals** panel.
+
+Each row is a vital sign. Each column is a time when vital signs were recorded, to the minute.
+
+The panel shows the four latest times, newest first. The newest column is marked.
+
+The first column of each day shows **Today**, **Yesterday** or the day and month, followed by the time. The other columns of that day show only the time.
+
+A "-" means that the vital sign has no value at that time.
+
+The line above the table names the user who entered the newest value. It reads, for example, "Latest 4 readings · last entered by" and a name.
+
+By default, the panel has a row for each of these vital signs, in this order. On a default installation, the rows carry the names in quotes.
+
+- Systolic blood pressure ("Systolic")
+- Diastolic blood pressure ("Diastolic")
+- Heart rate ("Pulse")
+- Body temperature ("Temperature")
+- Respiratory rate ("Respiratory Rate")
+- Oxygen saturation ("SpO2")
+
+The row names come from the Primary Parameters chart set of your deployment's chart configuration. If that chart set does not chart a vital sign, the panel leaves out its row.
+
+The panel leaves out observations marked as entered in error.
+
+![The newest column of the Vitals panel, marked with a dot and headed Today and the time; the next column of the same day shows only the time](/media/clinical/observation/check-vital-signs-2.png)
+
+### 3. Check the normal range and the flags
+
+Check the range next to the name of each vital sign.
+
+Next to the name of a vital sign, the panel shows the normal range and unit of its newest value.
+
+The panel flags a value when the interpretation of that value is marked to be highlighted. The flag depends on the interpretation code:
+
+| Flag | When the panel shows it |
+| --- | --- |
+| **Above normal range** | The interpretation code starts with H (high). |
+| **Below normal range** | The interpretation code starts with L (low). |
+| **Abnormal** | The interpretation is highlighted and its code starts with another letter or is empty. |
+
+Only a test result entered on a diagnostic report can have a normal range and an interpretation. Care computes them from the test's [observation definition](../../../concepts/definitions/observation-definition.mdx) when the result is saved.
+
+A vital sign recorded with a questionnaire has no normal range and no interpretation. Its row shows no range, and its values are never flagged.
+
+![The Temperature row of the Vitals panel, with its unit next to the name and no normal range](/media/clinical/observation/check-vital-signs-3.png)
+
+### 4. Show only the flagged vital signs
+
+If at least one value in the panel is flagged, the panel shows the **Abnormal only** switch.
+
+Turn on **Abnormal only** to show only the rows with a flagged value.
+
+### 5. Open the history of a vital sign
+
+To see the history of all the vital signs in the panel, select **All readings**.
+
+To see the history of one vital sign, select its name.
+
+Care opens the history panel. To read it, see [Chart observations over time](./chart-observations-over-time.mdx).
+
+![The Vitals history panel opened with All readings, showing All Encounters, 48 recordings, the Plots and Table tabs, and a chart for each vital sign](/media/clinical/observation/check-vital-signs-4.png)
+
+![The Temperature history panel opened from the name of the vital sign, showing All Encounters, 8 recordings and a chart of Body temperature](/media/clinical/observation/check-vital-signs-5.png)
+
+## Expected Outcome
+
+- You see the vital signs of the encounter at up to four times, newest first.
+- Where the newest value of a vital sign has a normal range, the row shows it with the unit.
+- Flagged values show **Above normal range**, **Below normal range** or **Abnormal**.
+- You can open the history panel of one vital sign or of all of them.
+
+If you see one of these situations, use this table.
+
+| If you see | What it means | What to do |
+| --- | --- | --- |
+| The **Overview** tab has no **Vitals** panel | No vital sign is recorded in this encounter yet. | Record the vital signs. See [Record observations with a form](./record-observations-with-a-form.mdx). |
+| "You do not have permission to view clinical data for this encounter" on the **Overview** tab | You hold neither permission listed above in the right place. | Ask the person who manages user roles in your facility for one of the permissions listed above. |
+| "You do not have permission to view this encounter", and Care goes back | You can neither read the clinical data of this encounter nor read the encounter. | Ask the person who manages user roles in your facility for one of the permissions listed above. |
+| A vital sign has no normal range and no flag | The values were recorded with a questionnaire, or the test's definition gave them no range. | Compare the value with the normal range yourself. A missing flag does not mean that the value is normal. |
+
+## Related
+
+Concepts:
+
+- [Observation](../../../concepts/clinical/observation.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+- [Observation definition](../../../concepts/definitions/observation-definition.mdx)
+
+Flows:
+
+- [Record observations with a form](./record-observations-with-a-form.mdx)
+- [View the observations of an encounter](./view-encounter-observations.mdx)
+- [Chart observations over time](./chart-observations-over-time.mdx)
+- [Correct or remove a test result](./correct-or-remove-a-test-result.mdx)

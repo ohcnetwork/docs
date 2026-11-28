@@ -1,0 +1,210 @@
+---
+sidebar_position: 4
+---
+
+# Chart observations over time
+
+## Overview
+
+This flow describes how to follow a patient's [observations](../../../concepts/clinical/observation.mdx) over time in an [encounter](../../../concepts/clinical/encounter.mdx) in Care, on the **Plots** tab and in the history panel. The history panel shows observations as a chart and a table, for this encounter or all encounters of the patient.
+
+<video src="/media/clinical/observation/chart-observations-over-time.mp4" poster="/media/clinical/observation/chart-observations-over-time.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/observation/chart-observations-over-time.vtt" srcLang="en" label="English" default />
+</video>
+
+## Pre-requisites
+
+- Observations are recorded in the encounter. The charts plot only values that are numbers.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can view clinical data about patients | Lets you see the **Plots** tab, its charts and the history panel. In the history panel, it also lets you see the observations of all the patient's encounters. You must hold it through a role on the patient. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Read encounter related clinical data | Lets you see the **Plots** tab and the history panel for this encounter only, without a role on the patient. You must hold it in the encounter. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+
+You need one of the two permissions to see the **Plots** tab and the history panel. To see the observations of all encounters, you need "Can view clinical data about patients" through a role on the patient.
+
+You have a role on the patient when you have a role in one of these places:
+
+- A department of an open encounter of the patient, or a department of that encounter's current location.
+- A geographic organization of the patient.
+- The patient itself, when someone gave you a role directly on the patient.
+
+A closed encounter gives no role on the patient. An encounter is closed when its status is **Completed**, **Cancelled**, **Discontinued** or **Entered in error**.
+
+You hold a permission in the encounter when you have a role in a department of the encounter. These are the departments the encounter is assigned to, their parent departments, the facility's root department "Administration", and the departments of the encounter's current location.
+
+What this means for the default roles:
+
+- A Doctor, Nurse, Admin or Facility Admin role in a department of the encounter is enough for the charts and the history panel. This is true whatever the status of the encounter.
+- On an open encounter, that role also gives you a role on the patient, so the history panel can show all encounters. If the encounter is closed and that role is your only link to the patient, the history panel shows only this encounter.
+- The Staff role holds only the permission on the patient. On an open encounter, a Staff role in a department of the encounter is enough, and the history panel can show all encounters.
+- On a closed encounter, the Staff role sees the charts only through another role on the patient. Examples are a role in a department of another open encounter of the patient, or a direct role on the patient.
+
+## Steps
+
+### 1. Open the Plots tab
+
+Open the patient's encounter.
+
+Open the **Plots** tab in one of these ways:
+
+- Select the **Plots** tab.
+- Press `g`, then `p`.
+- Select **Encounter Actions**, or press `Shift+E`. Under **Go to**, select **Plots**.
+
+A workspace of your deployment can hide the **Plots** tab.
+
+![The Plots tab in the encounter menu](/media/clinical/observation/chart-observations-over-time-1.png)
+
+### 2. Select a chart set
+
+The **Plots** tab has one sub-tab for each chart set. The first chart set opens by default.
+
+Select the sub-tab of the chart set that you want to see.
+
+On a default installation, the chart sets are Primary Parameters, ABG Analysis, Respiratory Support, Nutrition and Dialysis.
+
+Your deployment can set up other chart sets, so the sub-tabs that you see can be different.
+
+On a default installation, Primary Parameters has these charts:
+
+- Blood Pressure
+- Pulse
+- Temperature
+- GRBS
+- Body height
+- Body weight
+- Respiratory Rate
+- SpO2
+- FiO2
+- Girth
+
+![The Plots tab with the sub-tabs Primary Parameters, ABG Analysis, Respiratory Support, Nutrition and Dialysis, and the Primary Parameters charts on Graph](/media/clinical/observation/chart-observations-over-time-2.png)
+
+### 3. Read a chart
+
+Each chart has three tabs. The chart opens on **Graph**.
+
+| Tab | What it shows |
+| --- | --- |
+| **Graph** | One line for each code of the chart, with time along the horizontal axis. Only values that are numbers are plotted. |
+| **Recent Data** | A table of the recent values, with the columns "Time", "Values", "Entered By" and "Notes". |
+| **Full History** | All the values of the chart's codes in this encounter, with the columns **Time**, **Code**, **Value**, **Entered by** and **Notes**. It loads 30 values at a time. |
+
+Select **Recent Data** or **Full History** to see the values as a table.
+
+**Graph** and **Recent Data** show up to 10 observations of each code in this encounter. These are the observations entered or changed most recently. Both tabs leave out observations marked as entered in error.
+
+**Full History** can include observations marked as entered in error, and it shows no marker for them.
+
+A row of **Recent Data** can hold values of several codes, but it shows only one name under "Entered By". To see who entered each value, use **Full History**.
+
+The info icon next to the title of a chart lists the codes that the chart uses.
+
+![The Blood Pressure chart on Recent Data, with the columns Time, Values, Entered By and Notes](/media/clinical/observation/chart-observations-over-time-3.png)
+
+![The Blood Pressure chart on Full History, with the columns Time, Code, Value, Entered by and Notes, newest first](/media/clinical/observation/chart-observations-over-time-4.png)
+
+### 4. Open the history panel
+
+Select the title of a chart. Care opens the history panel for the codes of that chart.
+
+You can also open the history panel from these places:
+
+- On the **Observations** tab, select an entry. See [View the observations of an encounter](./view-encounter-observations.mdx).
+- On the **Overview** tab, in the **Vitals** panel, select **All readings** or the name of a vital sign. See [Check a patient's vital signs](./check-vital-signs.mdx).
+- On the **Diagnostic Reports** tab, select the name of a test in the results. See [View a diagnostic report](../diagnostic-report/view-a-diagnostic-report.mdx).
+
+Under its title, the history panel shows **Current Encounter** or **All Encounters**. It also shows the count, for example "12 recordings".
+
+The history panel leaves out observations marked as entered in error.
+
+![The Blood Pressure history panel, with All Encounters and 14 recordings under its title](/media/clinical/observation/chart-observations-over-time-5.png)
+
+### 5. Choose the encounters to show
+
+With "Can view clinical data about patients" through a role on the patient, the panel opens on all encounters. It also shows the **Show current encounter recordings** checkbox.
+
+Select **Show current encounter recordings** to show only the observations of this encounter.
+
+Clear **Show current encounter recordings** to show the observations of all the patient's encounters again.
+
+If you do not hold that permission through a role on the patient, the panel has no checkbox. It shows only the observations of this encounter.
+
+![Show current encounter recordings selected; the panel now shows Current Encounter and 12 recordings](/media/clinical/observation/chart-observations-over-time-6.png)
+
+### 6. Read the Plots tab of the history panel
+
+The history panel opens on its **Plots** tab.
+
+The tab draws one line chart for each code.
+
+If one code was recorded in more than one unit, the tab draws one chart for each unit. The unit is added to the chart heading.
+
+For an observation with components, such as a blood pressure panel, each component is shown under its own code.
+
+The tab plots only values that are numbers. If a code has no such values, its chart shows **No plottable values**.
+
+Point at a value in the chart to see its details. These are the value and unit, the date and time, the user who entered it, and the note.
+
+Scroll the chart to the left to load older values.
+
+Select **Newest** to go back to the newest value.
+
+When all values are loaded, the last value has the label **Latest**.
+
+![A chart on the Plots tab of the history panel, with the details of one value: the value and unit, the date and time, and the user who entered it](/media/clinical/observation/chart-observations-over-time-7.png)
+
+### 7. Read the Table tab of the history panel
+
+Select the **Table** tab of the history panel.
+
+The tab has the heading **Observation History** and the count, for example "Showing all 12 recordings".
+
+The table has one row for each code. The first column is **Component**.
+
+Each other column is one time, newest first. The newest column stays in view when you scroll.
+
+A column heading shows **Today** or the day and month, and the time.
+
+Each cell shows the value and its unit. A "-" means that the code has no value at that time.
+
+A choice answer shows the text of the chosen answer.
+
+![The Table tab of the history panel, with the heading Observation History, Showing all 14 recordings, and one row for each code under Component](/media/clinical/observation/chart-observations-over-time-8.png)
+
+## Expected Outcome
+
+- You see the charts of the chosen chart set for this encounter.
+- In the history panel, you see one or more observations over time, as a chart and as a table.
+- With "Can view clinical data about patients" through a role on the patient, the history panel can show all encounters.
+
+If you see one of these situations, use this table.
+
+| If you see | What it means | What to do |
+| --- | --- | --- |
+| **No data available** on every chart of a chart set | The encounter has no values for these codes, or Care could not load the chart set. The charts show the same message in both cases. | Open **Full History**, or select the title of a chart to open the history panel. These load the values separately. |
+| **No data available** in the history panel | The encounters shown have no values for these codes. | If the panel shows the checkbox, clear **Show current encounter recordings** to include all encounters. |
+| "Could not load this clinical information. Try again." in the history panel | Care could not load the values. | Select **Try Again**. |
+| **No plottable values** | The code has values, but none of them is a number. | Select the **Table** tab of the history panel to see the values. |
+| **No plots configured** | Your deployment has no chart sets set up. | Ask the team that runs your deployment. |
+| The **Plots** tab keeps showing the loading indicator | Care shows it while the chart configuration loads. Care also shows it when the configuration could not load. | Ask the team that runs your deployment to check its chart configuration. |
+| The encounter has no **Plots** tab | You hold neither permission listed above in the right place, or your deployment hides the tab. | Ask the person who manages user roles in your facility, or the team that runs your deployment. |
+
+## Related
+
+Concepts:
+
+- [Observation](../../../concepts/clinical/observation.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [Check a patient's vital signs](./check-vital-signs.mdx)
+- [View the observations of an encounter](./view-encounter-observations.mdx)
+- [Record observations with a form](./record-observations-with-a-form.mdx)
+- [Correct or remove a test result](./correct-or-remove-a-test-result.mdx)
+- [View a diagnostic report](../diagnostic-report/view-a-diagnostic-report.mdx)

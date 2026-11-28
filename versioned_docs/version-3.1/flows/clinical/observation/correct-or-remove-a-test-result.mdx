@@ -1,0 +1,132 @@
+---
+sidebar_position: 5
+---
+
+# Correct or remove a test result
+
+## Overview
+
+This flow describes how to correct or remove a test result, an [observation](../../../concepts/clinical/observation.mdx) recorded on a [diagnostic report](../../../concepts/clinical/diagnostic-report.mdx). You can do this only until a user selects **Approve Results**; after that, the results cannot be changed on screen.
+
+<video src="/media/clinical/observation/correct-or-remove-a-test-result.mp4" poster="/media/clinical/observation/correct-or-remove-a-test-result.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/observation/correct-or-remove-a-test-result.vtt" srcLang="en" label="English" default />
+</video>
+
+## Pre-requisites
+
+- A user entered test results on a diagnostic report of a service request. See [Enter diagnostic report results](../diagnostic-report/enter-diagnostic-report-results.mdx).
+- The results are not approved yet: the report card shows the status **Preliminary**.
+- The status of the service request is **Draft** or **Active**.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Diagnostic Report on Facility | Lets you save corrections and removals with **Save Results**. You must hold it in a department of the encounter of the service request, or of that encounter's current location. A department of one of the locations of the service request also counts. By default, Facility Admin, Admin, Doctor and Nurse hold it. |
+| Can Read Service Request | Lets you open the service request page. You must hold it in the same departments as "Can Create Diagnostic Report on Facility". By default, Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it. |
+| Can Read Activity Definition | Lets the service request page load the activity definition of the service request. You can hold it in any department of the facility. By default, Facility Admin, Administrator, Admin, Staff, Doctor, Nurse and Volunteer hold it. |
+| Can Read Diagnostic Report | Lets you open the report card with its results, and the results marked as entered in error in **View Observation History**. You must hold it in the same departments as "Can Read Service Request". By default, Facility Admin, Administrator, Admin, Staff, Doctor, Nurse and Volunteer hold it. |
+
+Admin and Administrator are two different default roles.
+
+While the report is **Preliminary**, Care shows **Save Results** to every user who can open the report card. If you do not hold "Can Create Diagnostic Report on Facility" in one of those departments, Care refuses the save. Care then shows the message "You do not have permission to write this diagnostic report".
+
+By default, this happens to Staff, Administrator and Volunteer: they can open the report but cannot save changes.
+
+## Steps
+
+### 1. Open the report card
+
+Open the service request page. See [View service requests](../service-request/view-service-requests.mdx).
+
+Under **Test Result Entries**, find the card of the report.
+
+If the card is collapsed, select its title to expand it.
+
+The card lists the tests that the service request asks for and the tests that have saved results.
+
+![The report card CBC panel - Blood by Automated count under Test Result Entries, expanded, with the saved results in boxes](/media/clinical/observation/correct-or-remove-a-test-result-1.png)
+
+### 2. Correct a value
+
+In the box of the result, change the value.
+
+If the test has components, change the value in the box of that component.
+
+Note: If you clear the value of a saved result, Care does not send it, and the saved value stays. To take a result off the report, do step 3.
+
+![The Platelets value of the first result changed to 254](/media/clinical/observation/correct-or-remove-a-test-result-2.png)
+
+### 3. Remove a result
+
+Beside the result, select the button with three vertical dots ("Result actions").
+
+Select **Remove observation**.
+
+- If the result is not saved yet, Care deletes the row.
+- If the result is saved, Care greys out the row and shows **Marked for deletion. Click save results to delete.**
+
+**Remove observation** is not available for the first unsaved row of a test that the service request asks for. It is also not available for a result that is already marked for deletion.
+
+Note: The **Conclusion** box keeps the saved conclusion of the report. If the service request asks for tests, you cannot remove every result while the report has a conclusion. Care then shows **Cannot add conclusion without results** and does not save.
+
+![The menu of the second result, opened with the button with three vertical dots, with Add Another Result and Remove observation](/media/clinical/observation/correct-or-remove-a-test-result-3.png)
+
+![The second result greyed out under the message Marked for deletion. Click save results to delete.](/media/clinical/observation/correct-or-remove-a-test-result-4.png)
+
+### 4. Save the changes
+
+Select **Save Results**.
+
+Care saves the corrections and the removals of the report in one save.
+
+Care shows **Test results saved successfully** and collapses the report card.
+
+![The message Test results saved successfully, and the report card collapsed under Test Result Entries](/media/clinical/observation/correct-or-remove-a-test-result-5.png)
+
+### 5. Review the results marked as entered in error
+
+On the report card, select the button with three vertical dots in the header.
+
+Select **View Observation History**.
+
+Care lists the results of the report that are marked as entered in error. Each one has the badge **Entered in Error**.
+
+Each result in the list shows the information in the table below.
+
+| Component | What it shows |
+| --- | --- |
+| **Value** | The value of the result. |
+| **Modified Date** | The time when the removal was saved. |
+| **Interpretation** | The interpretation of the result. |
+| **Recorded by** | The user who last updated the result. |
+| **Components** | The values of the components, if the test has components. |
+| **Notes** | The note on the result. |
+
+If no result of the report is marked as entered in error, Care shows **No Deleted Observation**.
+
+![The Observation History panel with the removed Complete Blood Count result, the badge Entered In Error, Modified Date, Interpretation, Recorded by and the values of its Components](/media/clinical/observation/correct-or-remove-a-test-result-6.png)
+
+## Expected Outcome
+
+- A corrected result shows the new value and keeps the status Final. Care replaces the saved value with the new value.
+- Each time a user selects **Save Results**, Care sets the time of every saved result that has a value to the moment of the save. This includes results that nobody changed.
+- A removed result has the status entered in error. Care leaves it out of the result editor, the review card and the report views.
+- The **Observations** tab of the encounter can still list a removed result. See [View the observations of an encounter](./view-encounter-observations.mdx).
+- **View Observation History** lists only the results marked as entered in error. A corrected result does not appear there.
+- After a user selects **Approve Results**, the report is Final, and its results cannot be changed on screen.
+
+## Related
+
+Concepts:
+
+- [Observation](../../../concepts/clinical/observation.mdx)
+- [Diagnostic Report](../../../concepts/clinical/diagnostic-report.mdx)
+
+Flows:
+
+- [Enter diagnostic report results](../diagnostic-report/enter-diagnostic-report-results.mdx)
+- [View a diagnostic report](../diagnostic-report/view-a-diagnostic-report.mdx)
+- [View service requests](../service-request/view-service-requests.mdx)
+- [View the observations of an encounter](./view-encounter-observations.mdx)

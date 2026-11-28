@@ -1,0 +1,145 @@
+---
+sidebar_position: 1
+---
+
+# Record observations with a form
+
+## Overview
+
+This flow describes how to record [observations](../../../concepts/clinical/observation.mdx) for an encounter by filling a [questionnaire](../../../concepts/definitions/questionnaire.mdx). When you save, Care records observations of the encounter from your answers to coded questions.
+
+<video src="/media/clinical/observation/record-observations-with-a-form.mp4" poster="/media/clinical/observation/record-observations-with-a-form.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/observation/record-observations-with-a-form.vtt" srcLang="en" label="English" default />
+</video>
+
+## Pre-requisites
+
+- The patient has an open [encounter](../../../concepts/clinical/encounter.mdx) in your facility. An encounter is closed when its status is **Completed**, **Cancelled**, **Discontinued** or **Entered in error**.
+- You open the encounter from your facility.
+- You work on the current encounter, not on a past encounter that you selected from the encounter history.
+- An active questionnaire for encounters is available at your facility. It is shared with your department or with a department below it, as described under Permissions.
+- Each question that must record an observation has an observation code. The code is added in the questionnaire builder with **Search for observation codes**. The builder is described in [Add and edit questions](../../definitions/questionnaire/add-and-edit-questions.mdx).
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can submit questionnaire about patient encounters | Lets you save the answers, which records the observations. You need it in a department of the encounter. By default, Staff, Doctor, Nurse, Admin and Facility Admin hold it. |
+| Can Read Questionnaires | Lets you find and open the questionnaire. For your facility's questionnaires, you need it in a department that the questionnaire is shared with. A department above that one also counts, and so does the facility's root department "Administration". By default, Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer and Pharmacist hold it. |
+| Can view clinical data about patients | Lets you open the encounter, and shows **Forms**. You hold it through a role on the patient. A role in a department of the patient's open encounter counts. By default, Staff, Doctor, Nurse, Admin and Facility Admin hold it. |
+| Can Read encounter related clinical data | Gives the same access as "Can view clinical data about patients" when you hold it in a department of the encounter. By default, Admin, Doctor, Nurse and Facility Admin hold it. |
+
+Note: A department of the encounter is a department that the encounter belongs to, or a department above it. The facility's root department "Administration" and the departments of the encounter's current location also count.
+
+Note: These role lists are the defaults. Your deployment can change them.
+
+## Steps
+
+### 1. Open the encounter
+
+Open the patient's encounter from your facility.
+
+Go to the **Overview** tab.
+
+![The Overview tab selected in the encounter menu, with the quick actions and the Vitals panel](/media/clinical/observation/record-observations-with-a-form-1.png)
+
+### 2. Open Forms
+
+In the quick actions on the **Overview** tab, select **Forms**. You can also press `f`.
+
+Care opens a list of questionnaires with the search box **Search Forms**.
+
+You can also start from **Encounter Actions**. Select **Encounter Actions**, or press `Shift+E`. In the **Questionnaire** group, select a questionnaire of your facility. Care opens the questionnaire, as in step 3. Then continue with step 4.
+
+![The Search Forms box over the encounter, with the Vital Signs questionnaire in the list](/media/clinical/observation/record-observations-with-a-form-2.png)
+
+### 3. Choose the questionnaire
+
+Find the questionnaire in the list. To search, type part of its title in **Search Forms**.
+
+Select the questionnaire. Care opens it.
+
+![Vital typed in Search Forms, with the Vital Signs questionnaire in the list](/media/clinical/observation/record-observations-with-a-form-3.png)
+
+### 4. Answer the questions
+
+Answer the questions. A question with * after its text is required.
+
+If a question has a unit, the unit shows in brackets after the question.
+
+| Components | What it captures |
+| --- | --- |
+| Number box | A number. If the question takes whole numbers, Care removes the decimal part. |
+| Number box with **Unit** | A quantity: a number and a unit. The question's own unit is selected first. |
+| Unit buttons under the number box | The unit of a quantity, when the question offers only a few units. |
+
+Note: Care shows a quantity with the unit that is set on the question, even if you select another unit. If the question shows a unit in brackets, enter the number in that unit.
+
+![The Vital Signs questionnaire with its six required questions answered, each with its unit in brackets after the question](/media/clinical/observation/record-observations-with-a-form-4.png)
+
+### 5. Save the answers
+
+Select **Save Changes**.
+
+![The Save Changes button at the top of the questionnaire](/media/clinical/observation/record-observations-with-a-form-5.png)
+
+![The Overview tab after saving, with the message Questionnaire submitted successfully and the new values in the newest column of the Vitals panel](/media/clinical/observation/record-observations-with-a-form-6.png)
+
+## Expected Outcome
+
+- Care shows "Questionnaire submitted successfully".
+- Care returns you to the **Overview** tab, or to the encounter tab where you started.
+- For each coded question that you answered, Care records one observation.
+- For a group of questions set up as components, Care records one observation for the whole group. The answers are stored inside it as components, not as observations of their own.
+- Each observation belongs to the encounter and links to the questionnaire response.
+- Each observation has the time when you saved, not a time that you enter. Care names you as the person who entered it.
+
+The observations then appear in these places:
+
+- The **Observations** tab lists the encounter's observations by date, with **filed by** and your name. A group set up as components, and the answers inside it, are not listed there. See [View the observations of an encounter](./view-encounter-observations.mdx).
+- For an answer chosen from a list, the **Observations** tab shows no value. Select the entry. Then select the **Table** tab of the history panel to see the answer. See [Chart observations over time](./chart-observations-over-time.mdx).
+- If the question's code is a vital sign of the **Vitals** panel on the **Overview** tab, the observation appears there. Observations from a questionnaire show no normal range and no flag there. See [Check a patient's vital signs](./check-vital-signs.mdx).
+- If a chart set of the **Plots** tab charts the question's code, the observation appears in that chart. The chart plots only numbers. See [Chart observations over time](./chart-observations-over-time.mdx).
+
+These answers do not become observations:
+
+- An answer to a question without an observation code.
+- Answers to a questionnaire about the patient rather than an encounter. Care saves the questionnaire response, but records no observations.
+
+To correct a mistake, use the questionnaire response. Care has no control to change or remove one observation that a questionnaire recorded.
+
+- Mark the whole questionnaire response as entered in error. See [Mark a response as entered in error](../questionnaire-response/mark-a-response-as-entered-in-error.mdx).
+- Do this within 120 minutes after you save the questionnaire. This is the default limit, and your deployment can set another.
+- You need "Can submit questionnaire about patient encounters", and the encounter must be open.
+- Care then marks every observation of that response as entered in error.
+
+After this, the **Vitals** panel, the history panel, and the **Graph** and **Recent Data** tabs of the charts leave out these observations. The **Observations** tab and the **Full History** tab of a chart still list them, with no marker.
+
+If you see one of these situations, use this table.
+
+| If you see | What it means | What to do |
+| --- | --- | --- |
+| **Forms** is not in the quick actions. | The encounter is closed, or you did not open the current encounter from your facility. Or you lack a permission listed above. | Open the current encounter from your facility. If **Forms** is still missing, ask the person who manages user roles in your facility for the permissions listed above. |
+| "You do not have permission to view this encounter" | You have no permission that opens this encounter. | Ask the person who manages user roles in your facility for "Can view clinical data about patients" or "Can Read encounter related clinical data". |
+| The questionnaire is not in the list. | The list shows at most 15 active questionnaires that are shared with you. | Type part of its title in **Search Forms**. If it is still missing, ask the person who manages questionnaires in your facility to share it with your department. |
+| "This field is required" | A required question has no answer. | Answer each question marked with *. Then select **Save Changes** again. |
+| "Nothing to submit yet — answer at least one question" | You did not answer any question. | Answer at least one question. Then select **Save Changes** again. |
+| "Failed to submit questionnaire" | The submission failed. Care marks the questions that it rejected. | Correct the marked answers. Check that the encounter is still open. Check that you have the permissions listed above. Then select **Save Changes** again. |
+
+## Related
+
+Concepts:
+
+- [Observation](../../../concepts/clinical/observation.mdx)
+- [Questionnaire](../../../concepts/definitions/questionnaire.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [Check a patient's vital signs](./check-vital-signs.mdx)
+- [View the observations of an encounter](./view-encounter-observations.mdx)
+- [Chart observations over time](./chart-observations-over-time.mdx)
+- [Correct or remove a test result](./correct-or-remove-a-test-result.mdx)
+- [Mark a response as entered in error](../questionnaire-response/mark-a-response-as-entered-in-error.mdx)
+- [Add and edit questions](../../definitions/questionnaire/add-and-edit-questions.mdx)
