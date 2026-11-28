@@ -1,0 +1,366 @@
+---
+sidebar_position: 16
+---
+
+# Procedure
+
+Technical reference for the `Procedure` module in Care EMR. For what a procedure is, see the [Procedure](../../concepts/clinical/procedure.mdx) concept.
+
+A `Procedure` row records one procedure for a patient. Every row belongs to one encounter, and the API serves procedures under the patient.
+
+**Source:**
+
+- Model: [`care/emr/models/procedure.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/procedure.py)
+- Resource specs: [`spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/procedure/spec.py) · [`valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/procedure/valueset.py)
+- Viewset: [`care/emr/api/viewsets/procedure.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/procedure.py) · authorization base [`encounter_authz_base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/encounter_authz_base.py)
+- Shared types: [`care/emr/resources/base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py) · [`common/coding.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/common/coding.py) · [`medication/valueset/body_site.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/valueset/body_site.py)
+
+The Django model stores the data. Six of its own fields are JSON fields, and the Pydantic resource specs define their shape. The specs also define the enums, the value set bindings, the validation and the read and write schemas.
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `Procedure` | One procedure recorded for a patient, against an encounter |
+
+`Procedure` extends [`EMRBaseModel`](../foundation/base-model.mdx). From it, the model inherits `external_id`, `created_date`, `modified_date`, `deleted` (soft delete), `created_by`, `updated_by`, `history` and `meta`. The model file defines no other class.
+
+## `Procedure` fields
+
+Each table gives the storage type from the Django model and the API shape from the specs.
+
+### Context
+
+| Field | Storage type | API shape | Notes |
+| --- | --- | --- | --- |
+| `patient` | `FK → emr.Patient` (`CASCADE`), required | Excluded from the specs | Set on create from the encounter's patient. An update drops `patient` from the request |
+| `encounter` | `FK → emr.Encounter` (`CASCADE`), required | `UUID4` on create; the encounter's `external_id` in single-record responses, not in the list | Required on create. Must exist, else 400 "Encounter not found". Must belong to the patient in the URL. An update ignores it, so a procedure never moves to another encounter |
+
+### Status and outcome
+
+| Field | Storage type | API shape | Notes |
+| --- | --- | --- | --- |
+| `status` | `CharField(100)` | `ProcedureStatus` | Required on create, optional on update |
+| `status_reason` | `JSONField`, nullable | `Coding` bound to `system-procedure-status-reason`, optional | No rule ties it to `status`. On update, `null` clears it |
+| `outcome` | `CharField(32)`, nullable | `ProcedureOutcome`, optional | No rule ties it to `status`. On update, `null` clears it |
+
+### Coded concepts
+
+| Field | Storage type | API shape | Notes |
+| --- | --- | --- | --- |
+| `code` | `JSONField` (`default=dict`) | `Coding` bound to `system-procedure-code` | Required on create, optional on update. One `Coding`, not a list. The `name` list filter searches its `display` |
+| `category` | `JSONField` (`default=list`) | List of `Coding` bound to `system-procedure-category` | Optional. Default is an empty list |
+| `body_site` | `JSONField` (`default=list`) | List of `Coding` bound to `system-body-site` | Optional. Default is an empty list |
+| `reason` | `JSONField` (`default=list`) | List of `Coding` bound to `system-procedure-reason` | Optional. Default is an empty list |
+
+### Timing
+
+| Field | Storage type | API shape | Notes |
+| --- | --- | --- | --- |
+| `occurrence` | `JSONField` (`default=dict`) | `ProcedureOccurrenceSpec` | Optional on create. Default is an empty occurrence. Shape below |
+| `recorded_date` | `DateTimeField`, nullable | `AwareDatetime \| None` (write), `datetime \| None` (read) | Optional. If a create leaves it empty, the server sets it to the time of saving. On update, `null` clears it. A list ordering field |
+
+### Provenance and note
+
+| Field | Storage type | API shape | Notes |
+| --- | --- | --- | --- |
+| `is_primary_source` | `BooleanField` (`default=False`) | `bool`, read only | A create always saves `False`. No write spec accepts it, so an update keeps the stored value |
+| `note` | `TextField`, nullable | `str \| None` | Optional. On update, `null` clears it |
+
+### Inherited fields
+
+| Field | Storage type | API shape | Notes |
+| --- | --- | --- | --- |
+| `external_id` | `UUIDField`, unique | Returned as `id` | Path key for retrieve, update and delete |
+| `created_date` | `DateTimeField`, set on first save | `datetime` (read) | A list ordering field |
+| `modified_date` | `DateTimeField`, set on every save | `datetime` (read) | A list ordering field |
+| `deleted` | `BooleanField` (`default=False`) | Not exposed | Delete sets it to `True`. The default manager hides deleted rows |
+| `created_by` | `FK → users.User` (`SET_NULL`), nullable | `dict \| None`, not in the list response | Set on create to the requesting user. Returned as a cached `UserSpec` |
+| `updated_by` | `FK → users.User` (`SET_NULL`), nullable | `dict \| None`, not in the list response | Set on create and on every update. Returned as a cached `UserSpec` |
+| `history` | `JSONField` (`default=dict`) | Not exposed | The update path does not write it |
+| `meta` | `JSONField` (`default=dict`) | Not returned, not writable | Responses leave out `meta`. Care discards a `meta` sent in a request |
+
+## Enum values
+
+### `ProcedureStatus` values
+
+`status` accepts only these five values. A create with a workflow status such as `preparation`, `in_progress`, `on_hold` or `planned` fails with 400.
+
+| Value |
+| --- |
+| `completed` |
+| `not_done` |
+| `stopped` |
+| `entered_in_error` |
+| `unknown` |
+
+A create accepts every value, `entered_in_error` included. The update path has no status-transition rule, so it accepts any value, also on an `entered_in_error` record.
+
+### `ProcedureOutcome` values
+
+| Value |
+| --- |
+| `successful` |
+| `unsuccessful` |
+| `partially_successful` |
+
+## Nested JSON shapes
+
+### `occurrence` (`ProcedureOccurrenceSpec`)
+
+`occurrence` holds at most one of three forms. An empty object is valid. The spec refuses keys that it does not declare.
+
+| Key | Type | Default | Validation |
+| --- | --- | --- | --- |
+| `occurrence_datetime` | `AwareDatetime \| None` | `None` | Not in the future |
+| `occurrence_period` | `PeriodSpec \| None` | `None` | Neither `start` nor `end` in the future |
+| `occurrence_string` | `str \| None`, `min_length=1` | `None` | An empty string fails the `min_length` check. A whitespace-only string fails with "Occurrence description cannot be blank" |
+
+Two or more forms fail with "Only one occurrence type can be supplied". A date in the future fails with "Procedure occurrence cannot be in the future".
+
+### `occurrence_period` (`PeriodSpec`)
+
+| Key | Type | Default | Validation |
+| --- | --- | --- | --- |
+| `start` | `datetime \| None` | `None` | Must carry a time zone: "Start Date must be timezone aware" |
+| `end` | `datetime \| None` | `None` | Must carry a time zone: "End Date must be timezone aware" |
+
+`start` cannot be after `end`: "Start Date cannot be greater than End Date".
+
+### `Coding`
+
+`code`, `status_reason` and each item of `category`, `body_site` and `reason` is a `Coding`. `Coding` refuses keys that it does not declare.
+
+| Key | Type | Required |
+| --- | --- | --- |
+| `system` | `str \| None` | No |
+| `version` | `str \| None` | No |
+| `code` | `str` | Yes |
+| `display` | `str \| None` | No |
+
+On write, each coded field is a `ValueSetBoundCoding`. Care parses the input as a `Coding` and checks it against the bound value set. On read, the specs use a plain `Coding` and run no value set check.
+
+## Related models
+
+`Procedure` has two foreign keys to clinical records, plus the two audit links from the base model.
+
+| Field | Target | On delete |
+| --- | --- | --- |
+| `patient` | `emr.Patient` | `CASCADE` |
+| `encounter` | `emr.Encounter` | `CASCADE` |
+| `created_by` | `users.User` | `SET_NULL` |
+| `updated_by` | `users.User` | `SET_NULL` |
+
+`Procedure` has no link to a facility, a service request, an activity definition or a questionnaire response. A service request, by contrast, belongs to a facility and can link to an activity definition.
+
+Each create and update writes a [questionnaire response](../clinical/questionnaire-response.mdx) that names the procedure's `id` inside `structured_responses`. This link is a value in JSON, not a foreign key.
+
+## Resource specs (API schema)
+
+`ProcedureCreateSpec`, `ProcedureUpdateSpec` and `ProcedureReadSpec` extend `BaseProcedureSpec`, which extends `EMRResource`. `ProcedureRetrieveSpec` extends `ProcedureReadSpec`.
+
+`BaseProcedureSpec` sets `__model__ = Procedure` and `__exclude__ = ["patient", "encounter"]`, and declares `id: UUID4 | None`. These specs also inherit `meta` from `EMRResource`, but Care discards a `meta` sent in a request and leaves it out of responses.
+
+The nested `ProcedureOccurrenceSpec` and `PeriodSpec` extend pydantic's `BaseModel`, not `EMRResource`.
+
+`EMRResource.de_serialize` copies only the model columns that are not excluded and are not `id` or `external_id`. The create spec's hook sets `patient` and `encounter`. The update spec has no hook, so an update keeps the stored values.
+
+| Spec class | Role | Fields and behaviour |
+| --- | --- | --- |
+| `BaseProcedureSpec` | Shared base | `id` |
+| `ProcedureCreateSpec` | Write: create (`POST`, and upsert datapoints without `id`) | Required: `encounter` (UUID4), `status`, `code`. Optional: `status_reason`, `category`, `occurrence`, `recorded_date`, `body_site`, `reason`, `outcome`, `note`. On deserialization, sets `encounter`, `patient` and `is_primary_source = False` |
+| `ProcedureUpdateSpec` | Write: update (`PUT`, `PATCH`, and upsert datapoints with `id`) | The same fields without `encounter`, each optional (`MISSING` default). An omitted field keeps its value. Only `status_reason`, `recorded_date`, `outcome` and `note` accept `null`, which clears them. `null` for any other field fails with 400. Send `[]` to empty a list. Same value set bindings as create |
+| `ProcedureReadSpec` | Read: list | `id`, `status`, `status_reason`, `category`, `code`, `occurrence`, `recorded_date`, `is_primary_source`, `body_site`, `reason`, `outcome`, `note`, `created_date`, `modified_date`. Coded fields as plain `Coding` |
+| `ProcedureRetrieveSpec` | Read: retrieve, and the response of create, update and each successful upsert datapoint | All of `ProcedureReadSpec`, plus `encounter` (UUID4), `created_by` and `updated_by` |
+| `ProcedureOccurrenceSpec` | Nested: shape of `occurrence` | `occurrence_datetime`, `occurrence_period`, `occurrence_string`; at most one |
+| `PeriodSpec` | Nested: shape of `occurrence_period` | `start`, `end` |
+
+The list returns `ProcedureReadSpec`, which has no `encounter`, `created_by` or `updated_by`. Retrieve, create and update return `ProcedureRetrieveSpec`, which adds those three fields.
+
+### Bound value sets
+
+The write specs bind the coded fields to these value sets. All five are SNOMED CT (`http://snomed.info/sct`) value sets with status `active`.
+
+| Field | Value set | Constant | Slug | Default composition |
+| --- | --- | --- | --- | --- |
+| `code` | Procedure | `CARE_PROCEDURE_CODE_VALUESET` | `system-procedure-code` | SNOMED CT concepts `is-a` `71388002` |
+| `category` | Procedure Category | `CARE_PROCEDURE_CATEGORY_VALUESET` | `system-procedure-category` | Seven listed SNOMED CT concepts (table below) |
+| `reason` | Procedure Reason | `CARE_PROCEDURE_REASON_VALUESET` | `system-procedure-reason` | SNOMED CT concepts `is-a` `404684003`, plus concepts `is-a` `71388002` |
+| `status_reason` | Procedure Status Reason | `CARE_PROCEDURE_STATUS_REASON_VALUESET` | `system-procedure-status-reason` | SNOMED CT concepts `is-a` any of eight codes (below), plus the concept `410536001` (Contraindicated) |
+| `body_site` | Body Site | `CARE_BODY_SITE_VALUESET` | `system-body-site` | SNOMED CT concepts `is-a` `91723000`. Defined in `care/emr/resources/medication/valueset/body_site.py` |
+
+The default `category` concepts:
+
+| Code | Display |
+| --- | --- |
+| `24642003` | Psychiatry procedure or service |
+| `409063005` | Counseling |
+| `409073007` | Education |
+| `387713003` | Surgical procedure (procedure) |
+| `103693007` | Diagnostic procedure |
+| `46947000` | Chiropractic manipulation |
+| `410606002` | Social service procedure (procedure) |
+
+The eight `is-a` codes of the status reason value set are `183932001`, `416406003`, `416237000`, `428119001`, `416064006`, `416432009`, `183944003` and `394908001`.
+
+Each of these value sets registers as a system value set. The `sync_valueset` management command writes the system value sets to the database.
+
+The command skips a value set that already exists, unless you give its `--overwrite` option a value. The option takes an argument, and any non-empty value, `False` included, turns overwriting on.
+
+So the compositions above are defaults. A superuser can edit a stored instance-level value set.
+
+Validation reads the stored value set by slug and takes the first match. If no value set has the slug, the request fails with "Valueset does not exist in care, Resync valuesets". A code outside the value set fails with "Code does not exist in the valueset".
+
+Service requests and activity definitions bind their `code` to a different value set, `activity-definition-procedure-code`. Its default rule is the same (`is-a` `71388002`), but Care stores it as a separate value set.
+
+### Validation
+
+- `encounter`, `status` and `code` are required on create.
+- The encounter in the request must exist. Otherwise the request fails with 400 "Encounter not found".
+- The encounter must belong to the patient in the URL. Otherwise the request fails with "Patient does not match the encounter's patient".
+- `status` must be a `ProcedureStatus` value, and `outcome` must be a `ProcedureOutcome` value.
+- Each coded field must hold a code from its bound value set, on create and on update.
+- `occurrence` takes at most one form, cannot be in the future, and refuses an empty or blank `occurrence_string`. A period needs time zones, and `start` must not be after `end`.
+- The specs type `occurrence_datetime` and `recorded_date` as `AwareDatetime`.
+- Care does not check `recorded_date` against the current time or against the occurrence.
+- No rule ties `status_reason` or `outcome` to `status`. The specs accept a status reason on a `completed` procedure.
+- No rule controls status changes. An update can set any status, also on an `entered_in_error` record.
+- On update, `null` clears `status_reason`, `recorded_date`, `outcome` or `note`. For any other field, `null` fails with 400.
+- Care ignores `is_primary_source` in a create or update request.
+
+### Server-side behaviour
+
+- Create: Care takes `patient` from the encounter and saves `is_primary_source` as `False`.
+- Create: if `recorded_date` is empty, Care sets it to the time of saving.
+- Create: Care sets `created_by` and `updated_by` to the requesting user.
+- Update: Care drops `id`, `external_id`, `patient` and `encounter` from the request before validation.
+- Update: Care sets `updated_by` to the requesting user. It does not write `history`.
+- Read: Care returns `external_id` as `id`. Retrieve also returns the encounter's `external_id`, and the audit users as cached `UserSpec` objects.
+- Read: the specs build the response with `model_construct`, so no validator runs on read.
+
+## Methods & save behaviour
+
+- The `Procedure` model defines no methods and no `save()` override. It uses the base model behaviour.
+- Delete is a soft delete. Care sets `deleted = True` and saves only that column. Deleted procedures disappear from every query.
+- `patient` and `encounter` use `on_delete=CASCADE`.
+- Each create and update writes a `QuestionnaireResponse` in the same transaction as the procedure save.
+- The questionnaire response has `structured_response_type` set to `procedure`. It links the patient and the encounter of the procedure.
+- Its `structured_responses` is `{"procedure": {"submit_type": "CREATE", "id": "<procedure id>"}}` on create. On update, `UPDATE` replaces `CREATE`.
+- A delete writes no questionnaire response.
+- On create, a request can send `form_submission`. It must be a draft form submission for the same patient and encounter, else the request fails with 404. Care attaches it to the questionnaire response.
+- Care reads `form_submission` from the top level of the request body. An update never attaches one.
+
+## API integration notes
+
+### Endpoints
+
+The base path is `/api/v1/patient/{patient_id}/procedure/`, where `{patient_id}` is the patient's `external_id`. An unknown patient gives 404.
+
+Care finds a single procedure by its `external_id`, inside the patient in the URL.
+
+| Method and path | Action | Request | Response |
+| --- | --- | --- | --- |
+| `GET /` | list | Filters below | Paginated `ProcedureReadSpec` |
+| `GET /{id}/` | retrieve | None | `ProcedureRetrieveSpec` |
+| `POST /` | create | `ProcedureCreateSpec` | 200 (not 201), `ProcedureRetrieveSpec` |
+| `PUT /{id}/`, `PATCH /{id}/` | update | `ProcedureUpdateSpec` (the same for both methods) | 200, `ProcedureRetrieveSpec` |
+| `DELETE /{id}/` | delete (soft delete) | None | 204 No Content |
+| `POST /upsert/` | bulk create and update | `datapoints` list | 200 or 400, with a list of per-datapoint results |
+
+The viewset adds no actions of its own.
+
+If a request sends `encounter` as a query parameter, Care also limits retrieve, update and delete to that encounter. The encounter must belong to the patient, else the request fails with 404.
+
+### Upsert
+
+- The body is a JSON object with a `datapoints` list. A body that is not a JSON object fails with "Invalid request data".
+- An object without `datapoints`, or with an empty list, fails with "No datapoints provided". More than `MAX_DATAPOINTS_PER_UPSERT` datapoints (default 100) fail with "Too many datapoints provided".
+- A datapoint with `id` updates that procedure through `ProcedureUpdateSpec`. A datapoint without `id` creates a procedure through `ProcedureCreateSpec`.
+- An update datapoint must belong to the patient in the URL and match the `encounter` filter, if one is sent.
+- Each datapoint goes through the same validation and authorization as a single create or update.
+- Each datapoint writes its own questionnaire response of type `procedure`.
+- A top-level `form_submission` applies to each created procedure. A `form_submission` inside a datapoint has no effect.
+- The upsert is all-or-nothing. Care processes the datapoints in order, in one transaction. If one datapoint fails, Care rolls back every change, questionnaire responses included.
+- The response is a list with one result per datapoint: 200 when all succeed, 400 when any fails.
+- A successful result is a `ProcedureRetrieveSpec` object. In a 400 response, these results stay in the list, but Care has rolled them back.
+- A failed result holds its error body: `errors` for a validation error, or `detail` for a permission refusal.
+- If Care cannot turn an exception into an error body, it raises the exception again, and the upsert fails with a server error.
+
+### Filters and ordering
+
+| Parameter | Behaviour |
+| --- | --- |
+| `encounter` | Encounter `external_id`. Returns only that encounter's procedures. The encounter must belong to the patient, else 404 |
+| `status` | One or more statuses, comma-separated |
+| `exclude_status` | Leaves out one or more statuses, comma-separated |
+| `name` | Case-insensitive partial match on `code.display` |
+| `ordering` | `created_date`, `modified_date` or `recorded_date`. A leading `-` sorts in descending order |
+| `limit`, `offset` | Page size and start position. Default page size 14, maximum `limit` 200 |
+
+Without `ordering`, the list returns the most recently created procedures first. The response has `count` and `results`.
+
+The list hides no status by default. To leave out procedures entered in error, send `exclude_status=entered_in_error`.
+
+### Authorization
+
+Every call needs a signed-in user. The viewset checks clinical-data permissions for each action, as the table shows.
+
+| Action | Care checks | Permission (slug) | Refusal |
+| --- | --- | --- | --- |
+| list, no `encounter` | Patient clinical-data read on the patient in the URL | "Can view clinical data about patients" (`can_view_clinical_data`), through a role on the patient | 403 "Permission denied to user" |
+| list with `encounter` | Patient clinical-data read. If that fails, encounter clinical-data read on the given encounter | As above, or "Can Read encounter related clinical data" (`can_read_encounter_clinical_data`) in the encounter's organizations | 403 "Permission denied to user" |
+| retrieve | Patient clinical-data read. If that fails, encounter clinical-data read on the procedure's own encounter | As for list with `encounter` | 403 "You do not have permission to view clinical data" |
+| create | Encounter clinical-data update on the encounter in the request | "Update Encounter related clinical data" (`can_write_encounter_clinical_data`) in the encounter's organizations. The encounter must not be closed | 403 "You do not have permission to update encounter" |
+| update | The same check, on the procedure's own encounter | As for create | As for create |
+| delete | The same check, on the procedure's own encounter | As for create | As for create |
+| upsert | The create or update check for each datapoint | As for create and update | The whole upsert fails with 400. The failed result holds `detail` with the message |
+
+- Care counts these organizations for an encounter: the organizations linked to the encounter, their parents, and the facility's root organization, Administration. It also counts the organizations of the encounter's current location.
+- A user gets a role on the patient through three routes. These are the organizations of the patient's open encounters, an organization the patient belongs to, and a direct assignment on the patient.
+- An encounter is closed when its status is `completed`, `cancelled`, `entered_in_error` or `discontinued`. On a closed encounter, create, update and delete fail with the same 403 message. `discharged` is not closed.
+- The encounter clinical-data read check does not look at the encounter status.
+- By default, Admin, Doctor, Nurse and Facility Admin hold both encounter clinical-data permissions. Staff, Doctor, Nurse, Admin and Facility Admin hold "Can view clinical data about patients". These role lists are defaults.
+- The write permission alone allows create, update and delete, but not list or retrieve. The patient read permission alone allows retrieve, but not writes.
+- Create and update return `ProcedureRetrieveSpec` without a read check.
+- The write permission in one encounter's organizations does not allow writes to the procedures of another encounter.
+- Patient and encounter permissions that do not cover clinical data give no access to procedures.
+- Create and update validate the request before the permission check. So a user without permission can get a 400 or a 404 before a 403.
+
+### Errors
+
+| Case | Status and body |
+| --- | --- |
+| A spec validation fails, such as a body `encounter` that does not exist | 400. `errors` holds the pydantic errors. The `msg` of a validator error starts with "Value error, " |
+| Another validation error, such as the patient mismatch | 400. `errors` holds one item of type `validation_error` |
+| The patient in the URL, the procedure, the `encounter` query parameter, a `form_submission` or an upsert `id` is not found, or its id is malformed | 404. `errors` holds one item of type `object_not_found` |
+| A permission check fails | 403. The body is `{"detail": "<message>"}`, with the message from the authorization table. It has no `errors` key |
+| The call has no valid authentication | 403, with a `detail` body |
+
+### Other notes
+
+- Send each coded field as a `Coding` from its bound value set, not as free text.
+- Do not send `patient`. Care takes it from `encounter` on create and ignores it on update.
+- Care serves procedures under the patient, not under a facility. It serves service requests under a facility.
+- The viewset registers `procedure` as an internal questionnaire type. Its title is "Procedure", its description is "Historical procedure", and its subject type is `patient`.
+- A questionnaire cannot use the slug `procedure`. Care refuses it with "Slug cannot shadow internal question types".
+- A questionnaire can hold a `structured` question, which names the resource it records in `structured_type`. The backend does not validate `structured_type`, and answer validation skips structured questions.
+- Care's web frontend saves the procedure rows of a form as one upsert, inside one `POST /api/v1/batch_requests/`.
+- To combine procedure writes with other requests, use `POST /api/v1/batch_requests/`. A batch holds up to 20 requests by default, and Care rolls back the whole batch if any request fails.
+
+## Related
+
+- Concept: [Procedure](../../concepts/clinical/procedure.mdx)
+- Flow: [Record a procedure](../../flows/clinical/procedure/record-a-procedure.mdx)
+- Flow: [Update a procedure](../../flows/clinical/procedure/update-a-procedure.mdx)
+- Flow: [Mark a procedure as entered in error](../../flows/clinical/procedure/mark-a-procedure-as-entered-in-error.mdx)
+- Flow: [View a patient's procedures](../../flows/clinical/procedure/view-a-patients-procedures.mdx)
+- Reference: [Encounter](../clinical/encounter.mdx)
+- Reference: [Patient](../clinical/patient)
+- Reference: [Questionnaire Response](../clinical/questionnaire-response.mdx)
+- Reference: [Service Request](../clinical/service-request.mdx)
+- Reference: [Activity Definition](../definitions/activity-definition.mdx)
+- Reference: [Value Set](../definitions/valueset.mdx)
+- Reference: [User](../access-governance/user.mdx) (the `UserSpec` shape of `created_by` and `updated_by`)
+- Base: [EMRBaseModel](../foundation/base-model.mdx)
+- FHIR: [Procedure](https://build.fhir.org/procedure.html)
+- Source: [procedure.py (model)](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/procedure.py) · [spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/procedure/spec.py) · [valueset.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/procedure/valueset.py) · [procedure.py (viewset)](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/procedure.py)

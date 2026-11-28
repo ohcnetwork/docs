@@ -1,0 +1,190 @@
+---
+sidebar_position: 4
+---
+
+# View a patient's procedures
+
+## Overview
+
+<video src="/media/clinical/procedure/view-a-patients-procedures.mp4" poster="/media/clinical/procedure/view-a-patients-procedures.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/procedure/view-a-patients-procedures.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to view a patient's [procedures](../../../concepts/clinical/procedure.mdx) in Care. You use the **Procedures** panel on the **Overview** tab for one encounter, and the **Past Procedures** tab of the clinical history for all encounters.
+
+## Pre-requisites
+
+- The patient has at least one procedure in Care that is not marked as entered in error. To record one, see [Record a procedure](./record-a-procedure.mdx).
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can view clinical data about patients | Lets Care load the patient on the encounter page. It also lets you see the procedures on the **Procedures** panel and on the **Past Procedures** tab. You need it through a role on the patient. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Read encounter related clinical data | Lets you see the **Procedures** panel of this encounter. You need it in the encounter. It does not load the patient, and it does not open the clinical history. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can list patients | Lets Care load the encounter. You need it through a role on the patient. If you hold it in an organization that the patient belongs to, it also loads the patient. By default, the Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer and Pharmacist roles hold it. |
+| Can Read encounter | Lets Care load the encounter. You need it in the encounter. It does not load the patient. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+
+The encounter page loads the patient and the encounter. Until both load, the page shows only its loading state. For this flow, you need all of these:
+
+- To load the patient, you need one of three things. The first is "Can view clinical data about patients" through a role on the patient. The second is "Can list patients" in an organization that the patient belongs to. The third is a role given directly on the patient.
+- To load the encounter, you need "Can list patients" through a role on the patient. "Can Read encounter" in the encounter also works.
+- To see the **Procedures** panel, you need "Can view clinical data about patients" through a role on the patient. "Can Read encounter related clinical data" in the encounter also works.
+- To see **Past Procedures**, you need "Can view clinical data about patients" through a role on the patient. A permission held only in the encounter does not count.
+
+You have a role on the patient when you hold a role in one of these places:
+
+- An organization of an open encounter of the patient, or of the current location of that encounter.
+- An organization that the patient belongs to.
+- The patient itself, when you were given a role directly on the patient.
+
+A closed encounter (**Completed**, **Cancelled**, **Discontinued** or **Entered in error**) gives no role on the patient.
+
+You hold a permission in the encounter when a role in an organization of the encounter gives it to you. The organizations of its current location also count.
+
+The organizations of an encounter are the organizations it is assigned to, their parent organizations, and the root organization of the facility, "Administration".
+
+What this means for each part of the flow:
+
+- On an open encounter, a role in an organization of the encounter can be enough for the whole flow. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles are enough.
+- If a closed encounter is your only link to the patient, Care cannot load the patient. The encounter page then keeps showing its loading state.
+- If Care can load the patient in another way, "Can Read encounter related clinical data" in a closed encounter still shows its **Procedures** panel. These encounter permissions do not depend on the encounter status.
+
+"Admin" in this table is the facility role, not the role with the same name that administers a role organization.
+
+Note: Your deployment can let every user open every patient. This setting is off by default.
+
+## Steps
+
+### 1. Open the encounter Overview
+
+Open the patient's encounter. To find the patient, see [View a patient's profile](../patient/view-patient-profile.mdx).
+
+If another tab of the encounter is open, select the **Overview** tab.
+
+### 2. Find the Procedures panel
+
+Find the **Procedures** panel on the **Overview** tab.
+
+If the encounter has no procedure to list, the tab does not show the panel. Procedures marked as entered in error are not listed.
+
+The panel header has these controls:
+
+| Control | What it does |
+| --- | --- |
+| **History** link | Opens the patient's clinical history on the **Past Procedures** tab. The link has a clock icon. When the panel has room, it also shows the text **History**. Screen readers name it **View History**. |
+| **Edit** pencil | Opens the Procedure form. It shows only on an open encounter that you open from your facility. You must also be able to read its clinical data. The pencil can show even if you cannot save changes. To change a procedure, see [Update a procedure](./update-a-procedure.mdx). |
+| **Collapse** button | Collapses the panel. |
+
+![The Procedures panel on the encounter Overview, outlined](/media/clinical/procedure/view-a-patients-procedures-2.png)
+
+### 3. Read the procedures in the panel
+
+The panel lists the procedures of this encounter, with the newest recorded procedure first.
+
+The panel shows the procedures in a table with these columns:
+
+| Column | What it shows |
+| --- | --- |
+| **Procedure** | The name of the procedure. |
+| **Status** | The status of the procedure: **Completed**, **Not Done**, **Stopped** or **Unknown**. |
+| **Outcome** | **Successful**, **Partially Successful** or **Unsuccessful**. A dash shows when no outcome is recorded. |
+| **Date Performed** | The approximate date, if one is recorded. Otherwise the date, for example 05 Mar 2026. A dash shows when no date is recorded. |
+
+The status and the outcome show as colored badges. **Completed** and **Successful** are green. **Stopped** and **Partially Successful** are yellow. **Unsuccessful** is red. **Not Done** is gray, and **Unknown** has only an outline.
+
+The panel loads 14 procedures at a time. If more procedures exist, select **Load More**.
+
+### 4. Read the note of a procedure
+
+Each row has an info icon. Screen readers name it **More Actions**. When the procedure has a note, the icon shows a green dot.
+
+If a procedure has a note, select the info icon on its row. Then select **See Note**.
+
+To hide the note again, select **Hide note**.
+
+![The info icon menu of the Appendectomy row open, with See Note outlined](/media/clinical/procedure/view-a-patients-procedures-4.png)
+
+![The note of the Appendectomy row shown under the row, with Hide note](/media/clinical/procedure/view-a-patients-procedures-note.png)
+
+### 5. Open Past Procedures
+
+Use one of these ways:
+
+- On the **Procedures** panel, select the **History** link. The clinical history opens on the **Past Procedures** tab.
+- On the **Overview** tab, select **Clinical History**. Then select the **Past Procedures** tab.
+- On the patient's profile, select the **Clinical History** tab. Then select the **Past Procedures** tab.
+
+The **Clinical History** tab of the profile needs "Can view clinical data about patients" through a role on the patient.
+
+While you fill in a form for the encounter, the form page has a **Patient Clinical History** tab. Its **Past Procedures** tab shows the same list, and you cannot change procedures there.
+
+![The History link in the header of the Procedures panel, outlined](/media/clinical/procedure/view-a-patients-procedures-6.png)
+
+### 6. Read Past Procedures
+
+The title of the clinical history page shows the name of the patient.
+
+The tab has the heading **Past Procedures**.
+
+The tab lists the patient's procedures from every encounter.
+
+The tab groups the procedures by year. Inside each year, it groups them by the day when each procedure was recorded in Care, for example 28 November, 2026. This is not the day when the procedure was performed.
+
+Each procedure shows the same columns as in the **Procedures** panel.
+
+The tab does not list procedures marked as entered in error.
+
+The tab loads 30 procedures at a time. If more procedures exist, select **Load More**.
+
+The tab has no filter and no search.
+
+If the patient has no procedures to list, the tab shows "No Procedures" and "No procedures have been recorded".
+
+To read the note of a procedure, select the info icon on its row. Then select **See Note**.
+
+![The Past Procedures tab of the patient's clinical history, with the heading outlined and procedures from two encounters grouped under 28 November, 2026](/media/clinical/procedure/view-a-patients-procedures-7.png)
+
+### 7. Leave Past Procedures
+
+If you opened the clinical history from an encounter, select **Back to Encounter**.
+
+If you opened it from the patient's profile, select **Back to Patient**.
+
+![The Back to Encounter button at the top of the clinical history page, outlined](/media/clinical/procedure/view-a-patients-procedures-8.png)
+
+## Expected Outcome
+
+- You see the procedures of the encounter on the **Procedures** panel of the **Overview** tab.
+- For each procedure, the panel shows its status, outcome and date performed.
+- You see all the procedures of the patient on the **Past Procedures** tab.
+- The tab groups the procedures by year and by the day when each procedure was recorded.
+- Neither list shows procedures marked as entered in error.
+
+If you see one of these messages or results, use this table.
+
+| If you see | What it means | What to do |
+| --- | --- | --- |
+| The encounter page keeps showing its loading state | Care cannot load the patient or the encounter. A closed encounter alone does not let Care load the patient. | Ask your administrator for "Can view clinical data about patients" through a role on the patient. |
+| "You do not have permission to view clinical data for this encounter" on the **Overview** tab | You do not hold "Can view clinical data about patients" through a role on the patient. You also do not hold "Can Read encounter related clinical data" in the encounter. | Ask your administrator for the permissions listed above. |
+| "You do not have permission to view this encounter", and Care takes you back | Care found no permission that lets you read this encounter or its clinical data. | Ask your administrator for the permissions listed above. |
+| "You do not have permission to view this patient's clinical history" | You do not hold "Can view clinical data about patients" through a role on the patient. You also cannot view the patient's questionnaire responses. | Ask your administrator for "Can view clinical data about patients" through a role on the patient. |
+| No **Past Procedures** tab in the clinical history | You do not hold "Can view clinical data about patients" through a role on the patient. | Ask your administrator for that permission through a role on the patient. |
+| No **Procedures** panel on the **Overview** tab | The encounter has no procedure, or each procedure is marked as entered in error. | Open **Past Procedures** to see the procedures of other encounters. |
+| A procedure is not in the **Procedures** panel | The procedure was recorded in another encounter, or it is marked as entered in error. | Open **Past Procedures**. |
+
+## Related
+
+Concepts:
+
+- [Procedure](../../../concepts/clinical/procedure.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+- [Patient](../../../concepts/clinical/patient)
+
+Flows:
+
+- [Record a procedure](./record-a-procedure.mdx)
+- [Update a procedure](./update-a-procedure.mdx)
+- [Mark a procedure as entered in error](./mark-a-procedure-as-entered-in-error.mdx)
+- [View a patient's profile](../patient/view-patient-profile.mdx)
