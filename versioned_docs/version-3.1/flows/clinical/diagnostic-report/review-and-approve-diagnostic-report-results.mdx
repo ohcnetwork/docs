@@ -1,0 +1,191 @@
+---
+sidebar_position: 2
+---
+
+# Review and approve diagnostic report results
+
+## Overview
+
+<video src="/media/clinical/diagnostic-report/review-and-approve-diagnostic-report-results.mp4" poster="/media/clinical/diagnostic-report/review-and-approve-diagnostic-report-results.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/diagnostic-report/review-and-approve-diagnostic-report-results.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to review the results of a [diagnostic report](../../../concepts/clinical/diagnostic-report.mdx) on the service request page (the page that **See Details** opens), and how to approve them. Approval is the only action in Care's screens that makes a diagnostic report **Final**.
+
+## Pre-requisites
+
+- You or another user created the diagnostic report and entered its results, as described in [Enter diagnostic report results](./enter-diagnostic-report-results.mdx). The diagnostic report is **Preliminary**.
+- The diagnostic report has at least one result, a conclusion, or a file that finished uploading and is not archived.
+- The service request is **Draft** or **Active**.
+- If you start from the encounter, the encounter is open and you opened it from your facility. An encounter that is **Completed**, **Cancelled**, **Discontinued** or **Entered in error** is closed.
+- If the encounter is closed, start from the **Service Requests** list of the location that the service request is for.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| "Can Create Diagnostic Report on Facility" | Lets you approve the diagnostic report. It is the same permission that you need to enter results. Care has no separate approval permission. You need it on the service request. By default, the Facility Admin, Admin, Doctor and Nurse roles hold it. |
+| "Can Read Diagnostic Report" | Lets the review card load the diagnostic report and its files. Without it, the diagnostic report does not load, and **Approve Results** stays disabled. You need it on the service request. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse and Volunteer roles hold it. |
+| "Can Read Service Request" | Lets you see the list of service requests and open the service request page. From the encounter, you need it in the encounter to see the list. From a location, you need it in a department of that location. To open the page, you need it on the service request. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| "Can Read Activity Definition" | Lets the service request page load its activity definition. You need it in any department of the facility. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse and Volunteer roles hold it. The Pharmacist role does not hold it. |
+| "Can view clinical data about patients" | Needed only when you start from the encounter. With this permission, or with "Can Read encounter related clinical data", Care shows the **Service Requests** tab of the encounter and its **See Details** button. You need this permission through a role on the patient. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| "Can Read encounter related clinical data" | Needed only when you start from the encounter and do not have "Can view clinical data about patients". You need it in the encounter. By default, the Admin, Doctor, Nurse and Facility Admin roles hold it. |
+| "Can list patients" | Needed only when you start from the encounter. Lets you open the encounter. You need this permission through a role on the patient, or "Can Read encounter" in the encounter. By default, the Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer and Pharmacist roles hold it. |
+| "Can Read encounter" | Needed only when you start from the encounter and do not have "Can list patients" on the patient. Lets you open the encounter. You need it in the encounter. By default, the Admin, Doctor, Nurse and Facility Admin roles hold it. |
+| "Can Read Healthcare Service" | Needed only when you reach the location through **Services**. Lets you see the services of the facility. You need it in any department of the facility. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+
+A permission is "on the service request" when you have a role with that permission in one of these places:
+
+- A department of the encounter, or a department of the current location of the encounter.
+- If neither, a department of the location that the service request is for, for example the laboratory.
+
+A permission is "in the encounter" when you have a role with it in a department of the encounter or of its current location.
+
+The departments of an encounter include their parent departments and the root organization of the facility, "Administration".
+
+You have a role on the patient when you hold a role in one of these places:
+
+- A department of an open encounter of the patient, or of the current location of that encounter.
+- An organization that the patient belongs to.
+- The patient itself, when a role was given to you directly on the patient.
+
+"Admin" in this section is the role of a facility or a government organization. It is not the Admin role of a role organization.
+
+By default, the Facility Admin, Admin, Doctor and Nurse roles hold every permission in this table.
+
+Care shows **Approve Results** also to users who do not hold "Can Create Diagnostic Report on Facility". Care then refuses the approval. By default, this applies to the Staff role, and from a location also to the Administrator and Volunteer roles.
+
+## Steps
+
+### 1. Open the service request page
+
+Open the service request page from the encounter or from a location.
+
+- From the encounter: Open the encounter. Select the **Service Requests** tab. Select **See Details** in the row of the service request.
+- From a location: Select **Services** in the sidebar of the facility. Select the service. For a laboratory service, each card under **Available Locations** shows **View Requests**. Select **View Requests** on the card of the location that the service request is for. Select **See Details** in the row of the service request.
+- If you are already in that location, select **Service Requests** in the sidebar of the location. Then select **See Details** in the row of the service request.
+
+If you just selected **Save Results**, the review card of that diagnostic report is already open. Go to step 3.
+
+![The Service Requests tab of an encounter, with See Details outlined on the row of the service request](/media/clinical/diagnostic-report/review-and-approve-diagnostic-report-results-1.png)
+
+### 2. Open the review card
+
+Go to the **Review Test Results** section, below the **Test Result Entries** section.
+
+Each diagnostic report of the service request has its own review card. The title of the card is the report type, or else the title of the service request.
+
+Select the header of the review card to open it.
+
+![The collapsed review card of a Preliminary report outlined under Review Test Results, below the entry card](/media/clinical/diagnostic-report/review-and-approve-diagnostic-report-results-2.png)
+
+### 3. Review the results
+
+Check each result in the results table of the review card.
+
+| Column | What it shows |
+| --- | --- |
+| **Test** | The name of the test. |
+| **Result** | The value that was entered, with its unit. |
+| **Reference Range** | The expected range for the result. Care takes it from the observation definition. |
+| **Interpretation** | The interpretation of the result, for example normal or high. Care computes it from the ranges of the observation definition. Care shows this column only when a result has an interpretation. |
+
+If a result has several parts, the table shows one indented row for each part, with the name of that part.
+
+Results that were removed are left out of the table. If no other result is left, the card shows "No observations entered".
+
+The card also lists the files attached to the diagnostic report. Before approval, you can archive or rename a file here.
+
+If a result is wrong, correct it before you approve. After approval, you cannot change the results.
+
+To correct a result:
+
+1. Select the header of the entry card of the diagnostic report, in the **Test Result Entries** section.
+2. Change the result.
+3. Select **Save Results**. Care opens the review card again.
+
+For the details, see [Enter diagnostic report results](./enter-diagnostic-report-results.mdx). Care has no other screen to change a diagnostic report. Care's screens do not let you change its category, report type or note. The only status change is approval.
+
+![The results table of the review card outlined, with the Test, Result, Reference Range and Interpretation columns and an indented row for each part of the result](/media/clinical/diagnostic-report/review-and-approve-diagnostic-report-results-3.png)
+
+### 4. Check the conclusion
+
+The review card shows the conclusion of the diagnostic report in the **Conclusion** editor.
+
+If the conclusion needs a change, edit it in the review card.
+
+:::caution
+
+The review card has no save button for the conclusion. Care keeps a changed conclusion only when you approve the diagnostic report.
+
+If you leave the page without approving, Care does not keep the change. To save a conclusion without approving, enter it in the entry card. Then select **Save Results**.
+
+:::
+
+![The Conclusion editor of the review card outlined, with the conclusion in it, above the Approve Results button](/media/clinical/diagnostic-report/review-and-approve-diagnostic-report-results-4.png)
+
+### 5. Select Approve Results
+
+Select **Approve Results** in the review card.
+
+If **Approve Results** is disabled, see [If something goes wrong](#if-something-goes-wrong).
+
+![The Approve Results button outlined at the bottom of the review card](/media/clinical/diagnostic-report/review-and-approve-diagnostic-report-results-5.png)
+
+### 6. Confirm the approval
+
+Care opens the **Confirm** dialog. The dialog says "Are you sure you want to approve these diagnostic results? This action cannot be undone."
+
+Care's screens have no action to undo an approval. Make sure that the results and the conclusion are correct.
+
+Select **Approve**. You can also press Shift+Enter.
+
+To stop without approving, select **Cancel**.
+
+Care sets the diagnostic report to **Final**. Care also saves the conclusion that the review card shows.
+
+Care shows "Diagnostic report approved successfully".
+
+If the service request has several diagnostic reports, repeat steps 2 to 6 for each one.
+
+![The Confirm dialog with the text Are you sure you want to approve these diagnostic results? This action cannot be undone, and the Cancel and Approve buttons](/media/clinical/diagnostic-report/review-and-approve-diagnostic-report-results-6.png)
+
+![The message Diagnostic report approved successfully, and the report card under the Diagnostic Report heading with the Final badge, the conclusion as read-only text, and the Print Report and View Report buttons](/media/clinical/diagnostic-report/review-and-approve-diagnostic-report-results-7.png)
+
+## Expected Outcome
+
+- The diagnostic report is **Final**.
+- The header of the review card shows the **Final** status and your name, as the last user who changed the diagnostic report.
+- The diagnostic report leaves the **Test Result Entries** section. You can no longer change its results on the service request page.
+- The review card shows the conclusion as read-only text. If the diagnostic report has no conclusion, the card shows none.
+- You can no longer archive or rename the files in the review card.
+- The review card shows **Print Report** and **View Report**, and no longer shows **Approve Results**. **Print Report** opens the print preview of this diagnostic report. **View Report** opens the report page.
+- The page header shows **View Full Report**. It opens one print preview for all **Final** reports of the service request.
+- When every diagnostic report of the service request is **Final**, the section heading changes from **Review Test Results** to **Diagnostic Report** or **Diagnostic Reports**.
+- If the **Complete Service Request** bar was not shown before, it appears now. **Mark as Complete** stays disabled until every diagnostic report of the service request is **Final**. See [Complete a service request](../service-request/complete-a-service-request.mdx).
+
+## If something goes wrong
+
+| If you see | It means | What to do |
+| --- | --- | --- |
+| **Approve Results** is disabled. | The diagnostic report has no content: no result, no conclusion, and no file that finished uploading. Removed results and archived files do not count. | Enter a conclusion in the review card. Or enter results in the entry card, and select **Save Results**. |
+| **Approve Results** is disabled, but the diagnostic report has content. | The service request is not **Draft** or **Active**, or Care could not load the diagnostic report. Care cannot load it if you do not hold "Can Read Diagnostic Report" on the service request. | Check the status of the service request. If it is **Draft** or **Active**, ask your administrator for "Can Read Diagnostic Report". |
+| "You do not have permission to write this diagnostic report" after you select **Approve**. | You do not hold "Can Create Diagnostic Report on Facility" on the service request. Care did not approve the diagnostic report. | Ask your administrator for "Can Create Diagnostic Report on Facility" on the service request. |
+| The page shows only "Error loading service request or activity definition details." | Care could not load the service request or its activity definition. One cause is that you do not hold "Can Read Service Request" or "Can Read Activity Definition". | Ask your administrator for the permission that you do not have. |
+
+## Related
+
+Concepts:
+
+- [Diagnostic Report](../../../concepts/clinical/diagnostic-report.mdx)
+- [Service Request](../../../concepts/clinical/service-request.mdx)
+- [Observation](../../../concepts/clinical/observation.mdx)
+- [Observation Definition](../../../concepts/definitions/observation-definition.mdx)
+
+Flows:
+
+- [Enter diagnostic report results](./enter-diagnostic-report-results.mdx)
+- [View a diagnostic report](./view-a-diagnostic-report.mdx)
+- [Print a diagnostic report](./print-a-diagnostic-report.mdx)
+- [Complete a service request](../service-request/complete-a-service-request.mdx)

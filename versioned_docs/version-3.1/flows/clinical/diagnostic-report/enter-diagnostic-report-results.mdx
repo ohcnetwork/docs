@@ -6,83 +6,272 @@ sidebar_position: 1
 
 ## Overview
 
-This flow describes how to create a [diagnostic report](../../../concepts/clinical/diagnostic-report.mdx) for a service request. You record the result of each observation, and you set the report status.
+<video src="/media/clinical/diagnostic-report/enter-diagnostic-report-results.mp4" poster="/media/clinical/diagnostic-report/enter-diagnostic-report-results.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/diagnostic-report/enter-diagnostic-report-results.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to create a [diagnostic report](../../../concepts/clinical/diagnostic-report.mdx) for a service request and enter its results. You do all of it on the service request page (the page that **See Details** opens).
+
+You create the diagnostic report, type a value for each result, write a conclusion, attach files, and save. The report then stays **Preliminary** until a user approves it.
 
 ## Pre-requisites
 
-- The patient has a service request at the facility, and you record the diagnostic report for that service request.
-- If the service request needs a specimen, the laboratory staff collect and process the specimen first.
-- If an external laboratory sends the result as a document, you have that file on your device.
+- A user created a service request for the patient at your facility. You enter the results for that request.
+- The activity definition of the service request lists required results or **Diagnostic Report Codes**. If it lists neither, the service request page has no section to enter results.
+- If the service request needs specimens, every required specimen is collected and has the status **Available**. See [Collect a specimen](../specimen/collect-a-specimen.mdx).
+- The service request is in **Draft** or **Active** status. In any other status, you cannot create a report or enter results.
+- If you start from the encounter, the encounter is open and you opened it from your facility. An encounter that is **Completed**, **Cancelled**, **Discontinued** or **Entered in error** is closed.
+- If the encounter is closed, start from the **Service Requests** list of the location that the service request is for.
+- If you attach files, the files are on your device, or you can take photos with its camera.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create Diagnostic Report on Facility | Lets you create a diagnostic report and enter its observations. Facility Admin, Admin, Doctor, and Nurse have this permission. |
+| "Can Create Diagnostic Report on Facility" | Lets you create the diagnostic report, save the results and the conclusion, and add, rename or archive its files. You need it on the service request. By default, the Facility Admin, Admin, Doctor and Nurse roles hold it. |
+| "Can Read Diagnostic Report" | Lets the entry card load the diagnostic report and its files. You need it on the service request. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse and Volunteer roles hold it. |
+| "Can Read Service Request" | Lets you see the list of service requests and open the service request page. From the encounter, you need it in the encounter to see the list. You also need it on the service request to open the page. From a location, you need it in a department of that location. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| "Can Read Activity Definition" | Lets the service request page load its activity definition. You need it in any department of the facility. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse and Volunteer roles hold it. The Pharmacist role does not hold it. |
+| "Can Read Observation Definition" | Needed only to add an observation definition that the service request does not require. You also need it to enter a new result for an observation definition that was added in an earlier save. You need it in any department of the facility. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| "Can view clinical data about patients" | Needed only when you start from the encounter. With this permission, or with "Can Read encounter related clinical data", Care shows the **Service Requests** tab of the encounter. You also need one of them for the **See Details** button in that tab. You need this permission through a role on the patient. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| "Can Read encounter related clinical data" | Needed only when you start from the encounter and do not have "Can view clinical data about patients". You need it in the encounter. By default, the Admin, Doctor, Nurse and Facility Admin roles hold it. |
+| "Can list patients" | Needed only when you start from the encounter. Lets you open the encounter. You need this permission or "Can Read encounter". You need it through a role on the patient. By default, the Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer and Pharmacist roles hold it. |
+| "Can Read encounter" | Needed only when you start from the encounter and do not have "Can list patients". Lets you open the encounter. You need it in the encounter. By default, the Admin, Doctor, Nurse and Facility Admin roles hold it. |
+| "Can Read Healthcare Service" | Needed only when you start from a location through **Services**. Lets you open the list of services and one service. You need it in any department of the facility. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+
+In these role lists, "Admin" is the role of a facility or a government organization, not the Admin role of a role organization.
+
+A permission is "on the service request" when you have a role with that permission in one of these places:
+
+- A department of the encounter, or a department of the current location of the encounter.
+- If neither, a department of the location that the service request is for, for example the laboratory.
+
+A permission is "in the encounter" when you have a role with it in a department of the encounter or of its current location.
+
+The departments of an encounter include their parent departments and the root organization of the facility, "Administration".
+
+You have a role on the patient when you hold a role in one of these places:
+
+- A department of an open encounter of the patient, or of the current location of that encounter.
+- An organization that the patient belongs to.
+- A role given to you directly on the patient.
+
+By default, the Facility Admin, Doctor and Nurse roles, held in a department of the encounter, give you every permission in this flow. The Admin role holds the same permissions.
+
+From a location, the Facility Admin, Doctor and Nurse roles held in a department of that location are enough.
+
+Care does not hide **Create Report** or **Save Results** from users without "Can Create Diagnostic Report on Facility". By default, a user with the Staff role can open the page and select them, but Care refuses the save. From a location, the Administrator and Volunteer roles get the same refusal.
+
+By default, the Administrator and Volunteer roles hold neither clinical-data permission. Care does not show them the **Service Requests** tab of the encounter.
 
 ## Steps
 
-### 1. Open the service request
+### 1. Open the service request page
 
-Open the detail page of the service request. The page shows the specimen section, the processing section, and the diagnostic report form together.
+To start from the encounter, open the encounter of the patient. Select the **Service Requests** tab. Select **See Details** on the row of the service request.
 
-### 2. Start the diagnostic report
+Care shows **See Details** in the encounter only while the encounter is open.
 
-Open the diagnostic report form on the service request page.
+To start from a location, select **Services** in the sidebar of the facility. Select the laboratory service.
 
-| Components | What it captures |
-| --- | --- |
-| Category | The type of diagnostic service that produces the result. |
-| Code | The test or panel that the report covers. |
+Under **Available Locations**, select **View Requests** on the card of the location. Care opens the service request list of that location.
 
-### 3. Enter the observation values
+The sidebar now shows the menu of the location. If you are already on a page of the location, select **Service Requests** in that menu.
 
-The form shows one row for each observation that the service request requires.
+Select **See Details** on the row of the service request. This way also works after the encounter is closed.
 
-Enter the values for each row.
+Care opens the service request page. It shows the request details. Below them, it shows the specimens, the results entry and the review of the results, when they apply.
 
-| Components | What it captures |
-| --- | --- |
-| Value | The measured result of the observation. |
-| Unit | The unit of measurement for the value. |
-| Interpretation | The reading of the value, such as High, Low, or Normal. Enter it where it applies. |
+On a phone, the page shows its sections as tabs. Select the **Results** tab to enter results.
 
-### 4. Attach a file
+![The Service Requests tab of an encounter, with See Details outlined on the row of the Complete Blood Count (CBC) Panel service request](/media/clinical/diagnostic-report/enter-diagnostic-report-results-1.png)
 
-Attach a file to the report when an external laboratory sends the result as a document.
+### 2. Create the diagnostic report
 
-Choose a file from your device, or capture an image with the camera.
+Find the **Test Results Entry** card on the service request page.
 
-### 5. Set the status
+If the card says "Please collect the required specimen before creating a report", collect the specimens first. See [Collect a specimen](../specimen/collect-a-specimen.mdx).
 
-A new report starts with the status Registered.
+When the specimens are collected, the card says "No test results have been recorded yet. Click 'Create Report' to add test results".
 
-Set the status to Preliminary or Partial when you record the first results.
+If the activity definition of the service request has no **Diagnostic Report Codes**, select **Create Report**.
 
-Set the status to Final when all results are complete.
+If the activity definition lists **Diagnostic Report Codes**, the service request can have one diagnostic report for each code. Each code is a report type.
 
-Note: You cannot change the observation rows after you set the status to Final.
+If the activity definition has report types, the card says "Select a diagnostic report type to create a new report". Do these steps:
 
-### 6. Save the report
+1. Select the report type in **Select Diagnostic Report Type**. The list shows each remaining report type with its name and code.
+2. Select **Create Report**.
 
-Save the diagnostic report.
+If only one report type remains, Care selects it for you. To clear your choice, select **Clear**.
+
+Care creates the diagnostic report with the status **Preliminary** and the category Laboratory. You do not choose the status or the category.
+
+Care shows "Diagnostic report created successfully".
+
+The diagnostic report shows as an entry card under **Test Result Entries**. The card header shows the status badge and the name of the user who last updated the report.
+
+The card title is the name of the report type. If the activity definition has no report types, the title is the service request title.
+
+To create the next report type while this report is not approved, select **Another Diagnostic Report** under the reports.
+
+Select the report type. Then select **Create Report**.
+
+If report types remain and every diagnostic report is approved, the **Test Results Entry** card shows again.
+
+![The Test Results Entry card on the service request page outlined, with the report type already selected in Select Diagnostic Report Type and the Create Report button below it](/media/clinical/diagnostic-report/enter-diagnostic-report-results-2.png)
+
+### 3. Enter the results
+
+Find the **Observations** section in the entry card. It has one group for each observation definition that the service request requires.
+
+Each group shows the title of its observation definition.
+
+Type the value of each result in the field that shows **Result value**.
+
+If the observation definition has a decimal or integer type, the field is a number field. For all other types, such as a date or a yes or no answer, the field is a text box.
+
+The unit shows at the end of the field. It comes from the observation definition, and you cannot change it.
+
+If the observation definition has components, the group shows one labelled field for each component. Type a value in each field.
+
+Each result has a menu. To open it, select the button with three vertical dots next to the result.
+
+To enter one more result for the same observation definition, open the menu of a result. Select **Add Another Result**.
+
+Care adds an empty result with the same unit. When an observation definition has more than one result, Care numbers them.
+
+When you save, Care leaves out a result that has no value.
+
+Note: Care keeps the results that you type only in the open page. If you leave the page before you save, Care does not keep them.
+
+![The Observations section of a Preliminary entry card, with a value typed in each field of the Complete Blood Count group and the unit at the end of each field](/media/clinical/diagnostic-report/enter-diagnostic-report-results-3.png)
+
+### 4. Add an observation definition or remove a result
+
+To add an observation definition that the service request does not require, select **Add observation**.
+
+Type a name in **Search observations**. Select the observation definition.
+
+The list shows the active observation definitions of the facility that the diagnostic report does not have yet. If nothing matches, the list shows "No observation definitions found".
+
+Care adds a group for that observation definition. Type its result as in step 3.
+
+To remove a result, open the menu of the result. Select **Remove observation**.
+
+- If the result is not saved yet, Care takes it out of the form.
+- If the result is saved, it stays on the screen with "Marked for deletion. Click save results to delete." Its fields are disabled.
+- When you save, Care marks the removed result as **Entered in Error**.
+
+You cannot remove the first unsaved result of a required observation definition.
+
+To see the removed results later, select the button with three dots in the header of the entry card. Select **View Observation History**.
+
+![A Fasting Blood Glucose group, added with Add observation, outlined below the Complete Blood Count results, with an empty Result value field and its menu button](/media/clinical/diagnostic-report/enter-diagnostic-report-results-4.png)
+
+### 5. Write the conclusion
+
+The conclusion is optional. To add one, type it in the **Conclusion** box.
+
+The box shows the hint "Summarise the findings and anything the requesting doctor should act on."
+
+If the service request requires results, you cannot save a conclusion without a result value.
+
+![The Conclusion box of the entry card outlined, with a conclusion typed in it](/media/clinical/diagnostic-report/enter-diagnostic-report-results-5.png)
+
+### 6. Attach files
+
+Use the **Result Document** area to attach files to the diagnostic report, such as photos or printouts of the result.
+
+To take a photo, select **Take Photo**. Care opens the camera in a sheet that fills the height of the screen.
+
+If your browser asks for access to the camera, allow it.
+
+Select the large round button to take the photo.
+
+Select the check mark to keep the photo. To take it again, select the circular arrow. To close the camera without a photo, select the X.
+
+To use another camera, select the switch-camera button.
+
+To attach files from your device, select **Upload Files**. You can choose more than one file at a time.
+
+Care opens the upload dialog with your photo or files. Enter a **File Name** for each file.
+
+If you chose more than one file, you can select **Combine Files To PDF**. Care then puts the files into one PDF with one file name. This works only with JPG, JPEG and PNG files.
+
+Select **Upload**.
+
+Care saves the files when you select **Upload**, not when you select **Save Results**. Care shows "File Uploaded Successfully".
+
+To remove the chosen files from the dialog without saving them, select **Discard**.
+
+Care accepts these file types:
+
+- Images: JPG, JPEG, PNG, GIF, BMP and TIFF.
+- Videos: MP4, MOV, AVI and WMV.
+- Audio: MP3, WAV and OGG.
+- Documents: TXT, CSV, RTF, DOC, ODT, PDF, XLS, XLSX and ODS.
+
+The files show under **Uploaded files**, with a count. Each file has **Download**. Until the report is approved, each file also has **Rename** and **Archive**.
+
+Note: Care does not print every file type that you can attach. See [Print a diagnostic report](./print-a-diagnostic-report.mdx).
+
+### 7. Save the results
+
+Select **Save Results**.
+
+Care saves the results and the conclusion together. If one part fails, Care saves none of them.
+
+The diagnostic report keeps the status **Preliminary**. The entry card has no control to change the status.
+
+Care shows "Test results saved successfully". If you changed only the conclusion, Care shows "Diagnostic report saved successfully".
+
+The entry card collapses. The review card of the report opens under **Review Test Results**.
+
+![The Save Results button outlined at the bottom of the entry card, below the results and the conclusion](/media/clinical/diagnostic-report/enter-diagnostic-report-results-6.png)
+
+![The message Test results saved successfully over the collapsed entry card, and the review card open under Review Test Results with the results table and the conclusion](/media/clinical/diagnostic-report/enter-diagnostic-report-results-7.png)
 
 ## Expected Outcome
 
-- Care creates the diagnostic report for the service request.
-- The report shows the observation values, the units, and the interpretations that you entered.
-- The report shows the status that you set.
+- The service request has a diagnostic report with the status **Preliminary**. The report holds your results, your conclusion and your files.
+- Care works out the interpretation and the reference range of each result from its observation definition. You do not enter them.
+- The diagnostic report shows in the **Review Test Results** section of the service request page.
+- Until the diagnostic report is approved, you can change it. Select the header of its entry card under **Test Result Entries** to open the card. Change the results or the conclusion. Select **Save Results** again.
+- The review card also has a conclusion box. A change there is saved only when you approve the report.
+- Next, a user approves the results, and the diagnostic report becomes **Final**. After approval, you can no longer change its results or its conclusion on screen. See [Review and approve diagnostic report results](./review-and-approve-diagnostic-report-results.mdx).
+
+## If something goes wrong
+
+| If you see | It means | What to do |
+| --- | --- | --- |
+| "Please fill all results" | The service request requires results, and no result has a value. Care saves nothing. | Enter the result values. Then select **Save Results** again. |
+| "Cannot add conclusion without results" | You wrote a conclusion, but no result has a value. The service request requires results. | Enter the result values. Then select **Save Results** again. |
+| "Error loading observation definition" | You entered a new result for an observation definition that was added in an earlier save. Care cannot find that observation definition in the facility. Care saves nothing. | Your entries stay in the form. To save the other results, remove the new result of that observation definition. Then select **Save Results** again. |
+| "An error occurred while validating the form" | Care could not check the observation definitions before the save. Care saves nothing. | Your entries stay in the form. Select **Save Results** again. |
+| "You do not have permission to write this diagnostic report", after you select **Save Results** | You do not have "Can Create Diagnostic Report on Facility" on the service request. Care saves nothing. By default, a user with the Staff role is in this case. | Ask a user who has "Can Create Diagnostic Report on Facility" on the service request to save the results. |
+| "Please give a name for the file" | A file in the upload dialog has no **File Name**. Care does not upload the files. | Enter a **File Name** for each file. Then select **Upload** again. |
+| "Camera permission denied" | Your browser does not let Care use the camera. The camera sheet has no button to take a photo. | Follow the steps that the camera sheet shows. Or select **Upload Files** to attach a file instead. |
+| "Error loading service request or activity definition details." | Care cannot load the service request or its activity definition, so the page shows only this message. | Ask your administrator for "Can Read Service Request" and "Can Read Activity Definition". By default, the Pharmacist role does not hold "Can Read Activity Definition". |
 
 ## Related
 
 Concepts:
 
 - [Diagnostic Report](../../../concepts/clinical/diagnostic-report.mdx)
+- [Service Request](../../../concepts/clinical/service-request.mdx)
+- [Specimen](../../../concepts/clinical/specimen.mdx)
+- [Observation](../../../concepts/clinical/observation.mdx)
+- [Activity Definition](../../../concepts/definitions/activity-definition.mdx)
+- [Observation Definition](../../../concepts/definitions/observation-definition.mdx)
+- [Files](../../../concepts/clinical/files.mdx)
 
 Flows:
 
+- [Review and approve diagnostic report results](./review-and-approve-diagnostic-report-results.mdx)
 - [View a diagnostic report](./view-a-diagnostic-report.mdx)
-- [Update a diagnostic report](./update-a-diagnostic-report.mdx)
 - [Print a diagnostic report](./print-a-diagnostic-report.mdx)
-- [Create a service request](../../../flows/clinical/service-request/create-a-service-request.mdx)
+- [Collect a specimen](../specimen/collect-a-specimen.mdx)
+- [View service requests](../service-request/view-service-requests.mdx)
+- [Create a service request](../service-request/create-a-service-request.mdx)

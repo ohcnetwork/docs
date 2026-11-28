@@ -6,60 +6,204 @@ sidebar_position: 4
 
 ## Overview
 
-This flow describes how to open the print-formatted version of a [diagnostic report](../../../concepts/clinical/diagnostic-report.mdx) in Care and print it.
+<video src="/media/clinical/diagnostic-report/print-a-diagnostic-report.mp4" poster="/media/clinical/diagnostic-report/print-a-diagnostic-report.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/diagnostic-report/print-a-diagnostic-report.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to print a [diagnostic report](../../../concepts/clinical/diagnostic-report.mdx) in Care. You can print one diagnostic report, or all **Final** reports of a [service request](../../../concepts/clinical/service-request.mdx) in one printout.
+
+Care opens a print preview first. You print from the **Print** button of the print preview.
 
 ## Pre-requisites
 
-- A user entered the diagnostic report in Care, and you print that report.
-- You are a member of the facility that holds the report.
+- A user created the diagnostic report on the service request page, as [Enter diagnostic report results](./enter-diagnostic-report-results.mdx) describes.
+- If you print from the service request page or the report page, the diagnostic report is approved (**Final**). To approve it, see [Review and approve diagnostic report results](./review-and-approve-diagnostic-report-results.mdx).
+- If you print from a report card in the encounter or the clinical history, the status does not matter.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Read Diagnostic Report | Lets you open a diagnostic report and its print-formatted version. Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, and Volunteer hold this permission. |
+| "Can Read Diagnostic Report" | Lets you open the diagnostic report, its files and its print preview. You need it for every way of printing on this page. You must hold it in a department of the diagnostic report's encounter, or of its current location. A department of the location that the service request is for also counts. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse and Volunteer roles hold it. |
+| "Can view clinical data about patients" | Shows the **Diagnostic Reports** tab in the encounter and in the patient's **Clinical History**, and lists the diagnostic reports there. In the encounter, it also shows the **Service Requests** tab and, while the encounter is open, its **See Details** button. You must hold it through a role on the patient. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| "Can Read encounter related clinical data" | Does the same as the permission above, but in the encounter only. It does not open the patient's **Clinical History**. You must hold it in a department of the encounter, or of its current location. By default, the Admin, Doctor, Nurse and Facility Admin roles hold it. |
+| "Can list patients" | Lets you open the patient's encounter, when you hold it through a role on the patient. By default, the Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer and Pharmacist roles hold it. |
+| "Can Read encounter" | Lets you open the encounter without "Can list patients" on the patient. You must hold it in a department of the encounter, or of its current location. By default, the Admin, Doctor, Nurse and Facility Admin roles hold it. |
+| "Can Read Service Request" | Lets you list the service requests and open the service request page. To list the service requests of an encounter, hold it in a department of the encounter or its current location. To list the service requests of a location, hold it in a department of that location. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| "Can Read Activity Definition" | Lets the service request page load the activity definition of the service request. A role that holds it in any department of the facility is enough. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse and Volunteer roles hold it. |
+| "Can Read Healthcare Service" | Lets you open **Services** and the locations of a service, to reach the service requests of a location. A role that holds it in any department of the facility is enough. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+
+What the places in this table mean:
+
+- The departments of an encounter include their parent departments and the facility's root organization, "Administration".
+- A role in a department of an open encounter of the patient gives you a role on the patient. A department of that encounter's current location also counts. A role in an organization of the patient, or a role given to you directly on the patient, also counts.
+- "Admin" on this page is the Admin role of a facility or a government organization. It is not the Admin role of a role organization.
+
+What each way of printing needs:
+
+- The **Print** icon in the encounter needs "Can Read Diagnostic Report" and one of the two clinical-data permissions. To open the encounter, it also needs "Can list patients" or "Can Read encounter". By default, the Facility Admin, Admin, Doctor and Nurse roles hold all of them. The Staff role is enough only while one of the patient's encounters in your departments is open. The Volunteer and Administrator roles do not see the tab.
+- In the clinical history, the **Print** icon needs "Can view clinical data about patients" on the patient and "Can Read Diagnostic Report". By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold both. One role gives you both if you hold it in a department of the report's encounter while that encounter is open.
+- **Print Report**, **View Report** and **View Full Report** are on the service request page. From an open encounter, you need the permissions that the **Print** icon in the encounter needs. You also need "Can Read Service Request" and "Can Read Activity Definition". By default, the Facility Admin, Admin, Doctor, Nurse and Staff roles hold all of them.
+- From the service requests of a location, you need four permissions: "Can Read Healthcare Service", "Can Read Service Request", "Can Read Activity Definition" and "Can Read Diagnostic Report". By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse and Volunteer roles hold all of them.
+- The Pharmacist role can list service requests, but the service request page shows only "Error loading service request or activity definition details."
 
 ## Steps
 
-### 1. Open the diagnostic report
+### 1. Choose what to print
 
-Open the detail view of the diagnostic report. You can also start from the report's entry in the diagnostic reports list.
+| To print | Start from | Select |
+| --- | --- | --- |
+| One diagnostic report, in any status | The report card in the encounter's **Diagnostic Reports** tab, or in the patient's **Clinical History** | The **Print** icon |
+| One **Final** report | The review card of the diagnostic report on the service request page | **Print Report** |
+| One **Final** report | The report page, which **View Report** opens | **Print** |
+| All **Final** reports of the service request, in one printout | The header of the service request page | **View Full Report** |
 
-### 2. Open the print-formatted version
+Steps 3 to 5 are the same for one diagnostic report and for several.
 
-Select the print action for the report. Care opens the print-formatted version of the report.
+![The encounter page with the Diagnostic Reports tab outlined in the encounter menu on the left](/media/clinical/diagnostic-report/print-a-diagnostic-report-1.png)
 
-### 3. Check the report content
+### 2. Open the print preview
 
-Check the print-formatted version before you print it. The print-formatted version shows the following content:
+#### From the encounter
 
-| Content | What it shows |
+1. Open the patient's encounter. Select the **Diagnostic Reports** tab. You can also press G, then D.
+2. On a phone, select **Diagnostic Reports** to open the list of diagnostic reports.
+3. Select the diagnostic report in the list. Its report card shows beside the list.
+4. Look at the status badge in the header of the report card.
+5. In the header of the report card, select the **Print** icon. You can also press P.
+
+:::caution
+The **Print** icon prints the diagnostic report in any status, also before a user approves the results. The printout does not show the status. If the badge does not say **Final**, the results are not approved yet.
+:::
+
+![The report card of the selected diagnostic report in the Diagnostic Reports tab, with the Final status badge outlined beside the Print icon](/media/clinical/diagnostic-report/print-a-diagnostic-report-2.png)
+
+#### From the clinical history
+
+1. Open the patient's clinical history in one of these ways:
+   - Open the patient. Select the **Clinical History** tab.
+   - In the encounter, select **Clinical History** beside the **Overview** heading. You can also press H.
+   - In the encounter, open the **Encounter Actions** menu. Select **See Clinical History**.
+2. Select the **Diagnostic Reports** tab.
+3. Select the diagnostic report in the list. Its report card shows beside the list.
+4. In the header of the report card, select the **Print** icon.
+
+The caution above applies here too. Look at the status badge in the header of the report card before you print.
+
+If you see the clinical history inside a questionnaire, the print preview opens in a new browser tab.
+
+#### From the service request page
+
+1. Open the service request page (the page that **See Details** opens). Use one of these ways:
+   - In the encounter, select the **Service Requests** tab. Select **See Details** on the row of the service request. This button shows only while the encounter is open.
+   - In the facility sidebar, select **Services**. Select the card of a laboratory service. On the card of the location, select **View Requests**. Select **See Details** on the row of the service request.
+   - If you are on a page of the location, select **Service Requests** in the location's sidebar. Select **See Details** on the row of the service request.
+2. Find the **Review Test Results** section. When every diagnostic report of the service request is **Final**, the section is headed **Diagnostic Report** or **Diagnostic Reports**.
+3. On a phone, select the **Review** tab to go to that section.
+4. Select the header of the review card to expand it.
+5. Select **Print Report**. It shows only when the diagnostic report is **Final**.
+
+The ways through a location also work after the encounter is closed.
+
+For more about the service request page, see [View service requests](../service-request/view-service-requests.mdx).
+
+#### From the report page
+
+1. On the service request page, expand the review card of a **Final** report.
+2. Select **View Report**. The report page opens.
+3. On the report page, select **Print**. You can also press P.
+
+#### All Final reports of a service request
+
+1. Open the service request page, as described above.
+2. In the page header, select **View Full Report**. It shows when at least one diagnostic report of the service request is **Final**. If the activity definition requires specimens, you can also press R.
+
+The print preview shows every **Final** report of the service request. It leaves out the diagnostic reports that are not **Final**.
+
+### 3. Check the print preview
+
+The title of the print preview is "Diagnostic Report -" followed by the service request title. For several diagnostic reports, the title starts with "Diagnostic Reports -".
+
+The printout has these parts:
+
+| Part | What it shows |
 | --- | --- |
-| Category | The category of the diagnostic report. |
-| Code | The code of the diagnostic report. |
-| Conclusion | The clinical conclusion for the report. |
-| Note | The notes recorded on the report. |
-| Results | The table of observation results for the report. |
-| Requester | The user who requested the report. |
+| Header | The header image of your facility's print template for diagnostic reports, or of its default print template. Without a header image, the facility's name, address and phone number, with the template's logo, or else the logo of your Care deployment, beside them. The logo is on the right unless the print template sets it to the left or the centre. |
+| Heading | The service request title, or "Diagnostic Report". Under it, the patient's name, "Age / Sex", and the patient's identifiers whose use is set to "official". Other identifiers are not printed. |
+| Patient header | A patient header on every printed page. |
+| Title of each diagnostic report | The name of its report type, or else the service request title. |
+| **Category** | The category of the diagnostic report. |
+| **Report Date** | The date when the diagnostic report was created, without the time. It is not the date of approval or of the last change. |
+| **Requested By** | The person who requested the service request. |
+| **Location** | The current location of the encounter. It shows only when the encounter has a current location. |
+| Results | A table with the columns **Test**, **Result**, **Reference Range** and, when a result has one, **Interpretation**. **Test** shows the name of the test. The printout leaves out results marked **Entered in Error**. |
+| **Notes** and **Conclusion** | The note and the conclusion, when the diagnostic report has them. |
+| Footer | **Printed by** with the name of the user, and **Generated on:** with the date and time. |
+| File pages | One full page for each page of a PDF file, and one full page for each image file. They come after the footer. |
 
-### 4. Print the report
+The printout does not show the status of the diagnostic report.
 
-Print the print-formatted version with the print command of your browser.
+If you print all **Final** reports of the service request, the diagnostic reports come one after the other. Each has its own title, details, results, notes and conclusion. One footer follows, and then the file pages.
+
+Care prints only some of the files attached to the diagnostic report. A file is printed when it finished uploading and is not archived. It must also be a PDF, JPG, JPEG, PNG, GIF or WEBP file.
+
+Files of other types are left out of the printout, and the print preview shows no message about them. For example, BMP, TIFF, DOC and XLSX files are not printed.
+
+If a file does not load, the print preview still shows the diagnostic report, but **Print** is disabled. An alert shows "Unable to load all reports and attachments. Please reload the page and try again." The alert lists the files that did not load, after the words "Couldn't load:". It ends with "Printing is disabled until every attachment loads." Reload the page and try again.
+
+![The print preview with the first page of the printout outlined: the facility name, address and logo, the heading, the patient's name and Age / Sex, the report title, Category, Report Date, Requested By and the results table](/media/clinical/diagnostic-report/print-a-diagnostic-report-3.png)
+
+### 4. Print the diagnostic report
+
+1. Wait until **Print** is enabled. It stays disabled until the PDF is ready.
+2. Select **Print**. You can also press P. The print dialog opens.
+
+On a touch device that can share PDF files, the button is **Share** instead of **Print**. Select **Share** to share the PDF.
+
+On another touch device, the PDF opens in a new browser tab.
+
+If the facility's print template turns on auto print, the print dialog opens by itself on a computer.
+
+![The Print button outlined at the top right of the print preview, beside the Back button](/media/clinical/diagnostic-report/print-a-diagnostic-report-4.png)
+
+### 5. Leave the print preview
+
+Select **Back** to return to the page you came from. You can also press Escape.
+
+After a reload, or in a new browser tab, **Back** does not return to that page.
+
+![The Diagnostic Reports tab of the encounter after Back, with the same diagnostic report selected and its report card outlined](/media/clinical/diagnostic-report/print-a-diagnostic-report-5.png)
 
 ## Expected Outcome
 
-- Care shows the print-formatted version of the diagnostic report.
-- The printed report shows the category, code, conclusion, note, observation results, and the requester.
+- The print preview shows the diagnostic report, or all **Final** reports of the service request.
+- When you select **Print**, the print dialog opens. On a touch device, you share the PDF, or the PDF opens in a new browser tab.
+- The printout shows the patient, the details and results of each diagnostic report, its notes and conclusion, and the pages of each printed file.
+- Printing does not change the diagnostic report.
+
+## If something goes wrong
+
+| If you see | It means | What to do |
+| --- | --- | --- |
+| "Couldn't load:" with file names, and **Print** is disabled | One or more files attached to the diagnostic report did not load. Care does not print until every printable file loads. | Reload the page and try again. |
+| Only "Unable to load all reports and attachments. Please reload the page and try again." | The diagnostic report or its list of files did not load. This also happens when you do not hold "Can Read Diagnostic Report" for the diagnostic report. | Reload the page and try again. If the message stays, ask your administrator for "Can Read Diagnostic Report". |
+| "Diagnostic Report Not Found" | Care did not find the diagnostic report. The page shows only this message, with no **Back** button. | Go back to the encounter or the service request page. Open the diagnostic report again. |
+| No **Print Report** on the review card, or no **View Full Report** in the page header | The diagnostic report is not **Final**. **View Full Report** needs at least one **Final** report. | Approve the results first, as [Review and approve diagnostic report results](./review-and-approve-diagnostic-report-results.mdx) describes. |
+| No **Diagnostic Reports** tab in the encounter | You hold neither of the two clinical-data permissions. An encounter workspace can also hide the tab. | Ask your administrator for a clinical-data permission. If the diagnostic report is **Final**, you can also print it from the service request page. Reach that page through **Services**. |
+| "Error loading service request or activity definition details." | Care could not open the service request or its activity definition. | Ask your administrator for "Can Read Service Request" and "Can Read Activity Definition". |
 
 ## Related
 
 Concepts:
 
 - [Diagnostic Report](../../../concepts/clinical/diagnostic-report.mdx)
+- [Service Request](../../../concepts/clinical/service-request.mdx)
+- [Files](../../../concepts/clinical/files.mdx)
 
 Flows:
 
 - [Enter diagnostic report results](./enter-diagnostic-report-results.mdx)
+- [Review and approve diagnostic report results](./review-and-approve-diagnostic-report-results.mdx)
 - [View a diagnostic report](./view-a-diagnostic-report.mdx)
-- [Update a diagnostic report](./update-a-diagnostic-report.mdx)
+- [View service requests](../service-request/view-service-requests.mdx)

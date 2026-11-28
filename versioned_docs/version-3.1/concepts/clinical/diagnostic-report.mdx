@@ -2,70 +2,127 @@
 sidebar_position: 7
 ---
 
-# Clinical - Diagnostic Report
+# Diagnostic Report
 
 ## Definition
 
-A **[diagnostic report](https://build.fhir.org/diagnosticreport.html)** in Care holds the result of a laboratory, imaging, or other diagnostic service request. Each diagnostic report answers one service request. Care takes the patient, the encounter, and the facility from that service request. The report groups the individual result values, a written conclusion, and the attached result documents in one place.
+A **[diagnostic report](https://build.fhir.org/diagnosticreport.html)** in Care holds the results of a service request, such as a laboratory test, with a written conclusion and attached files. Each diagnostic report answers one service request and belongs to the patient and the encounter of that request.
+
+You create a diagnostic report, enter its results and approve it on the service request page (the page that **See Details** opens). You read diagnostic reports on the **Diagnostic Reports** tab of the encounter and of the patient's **Clinical History**.
 
 ## Key Attributes
 
 | Components | What it captures |
 | --- | --- |
-| Status | The stage the report has reached, from first registration to the final result. |
-| Category | The diagnostic service section that produced the result, such as the laboratory section or the imaging section. A report has one category. |
-| Code | The test or observation that the report is about. This attribute uses a LOINC code and is optional. |
-| Note | Extra remarks about the report. |
-| Conclusion | A free text summary of the result. |
-| Observations | The individual result values that belong to the report. |
+| Service request | The service request that the diagnostic report answers. Care links it when you create the report, and the link cannot change. |
+| Status | **Preliminary** while you enter results, and **Final** after someone approves the report. See "Status" below. |
+| Category | The diagnostic service section of the report. Care's screens always set it to Laboratory. |
+| Code | The kind of report, by default as a LOINC code. It is optional. On a service request with several report types, the code is the report type that you choose. |
+| Results | What you enter for each observation definition of the report. Each result is an observation that belongs to the report. |
+| Conclusion | The written conclusion of the report. Its placeholder reads "Summarise the findings and anything the requesting doctor should act on." |
+| Note | Free text about the report. Care shows it under **Notes** when it has a value. The screens have no field to enter it. |
+| Files | Files that you attach under **Result Document**, such as photos or printouts. |
+| Who and when | **Report Date** shows when the report was created, and **filed by** shows who created it. **Requested By** shows the requester of the service request. |
+
+### Results are observations
+
+A diagnostic report is not the measurement itself. Each result is an observation. The report groups the observations for one service request and adds a conclusion and files. The status of the report shows whether someone approved it.
+
+The entry card of the report lists the results that the activity definition of the request asks for. You can add other results with **Add observation**.
+
+You type only the value, and Care shows the unit from the observation definition. Each time you save, Care works out the interpretation and the reference range from the ranges of the definition. You never enter the interpretation.
+
+When you remove a saved result with **Remove observation** and then save, Care marks the result **Entered in Error**. The report card, the review card, the report page and the printout leave it out of the results, but **View Observation History** still lists it.
 
 ### Service request
 
-A diagnostic report always belongs to one service request. You do not select a patient, an encounter, or a facility on the report. Care takes all three from the service request that the report answers.
+From the encounter, you work on a diagnostic report only while the encounter is open, that is, not **Completed**, **Cancelled**, **Discontinued** or **Entered in error**. From a location's **Service Requests** list, you can still enter results after the encounter is closed.
 
-### Observations
+You cannot move a diagnostic report to another service request, and Care has no way to delete a diagnostic report.
 
-The observations hold the measured or observed result values. You can add or change observations while the status of the report is not Final. After you set the status to Final, Care locks the observations. You cannot add a new observation or change an existing one.
+### Specimens
 
-### Attachments
+A diagnostic report has no direct link to a specimen. The two connect only through the service request that they share.
 
-A diagnostic report can carry file attachments, such as a scanned copy of a printed report. Care stores these files with the Files feature and attaches them to the report.
+If the activity definition needs specimens, you can create the diagnostic report only after every required specimen is collected. A collected specimen has the status **Available**. The specimens do not need to be processed.
 
-### Specimen
+### Several diagnostic reports for one service request
 
-Care does not link a diagnostic report to a specimen directly. A report and a specimen connect to each other only through the service request that they share.
+A service request has one diagnostic report, unless its activity definition lists **Diagnostic Report Codes**. Then the request can have one report for each code. When you create each report, you choose its code as the report type.
 
-## Status
+### Review and approval
+
+In Care's screens, a diagnostic report becomes **Final** only when someone approves it. After you save results, the review card of the report opens under **Review Test Results** on the service request page.
+
+The review card shows the results with their reference range and interpretation. You can still edit the conclusion there, but Care saves that edit only when you approve.
+
+**Approve Results** is available only while the service request is **Draft** or **Active**. The report must also have a result, a conclusion, or a file that finished uploading and is not archived.
+
+**Approve Results** opens a **Confirm** dialog, where **Approve** makes the report **Final**. Approval has no permission of its own: it uses the permission for entering results.
+
+Care does not keep a separate record of who approved a diagnostic report. It records the approver only as the last user who updated the report.
+
+After approval, the review card offers **Print Report** and **View Report**. **View Report** opens the report page. **View Full Report** on the service request page opens one print preview of all **Final** reports of the request.
+
+**Mark as Complete** on the service request stays disabled while any of its diagnostic reports is not **Final**.
+
+### Status
 
 | Status | Description |
 | --- | --- |
-| Registered | A user started the report, but the report holds no results yet. |
-| Preliminary | The report holds early results that can still change. |
-| Partial | The report holds some, but not all, of the expected results. |
-| Final | The report is complete. Care locks the results against further changes. |
+| **Preliminary** | Care's screens create every diagnostic report with this status. You can enter, change and remove results, write the conclusion and attach files. |
+| **Final** | The report is approved. Care's screens show it read-only. |
 
-Care uses these four statuses only. Care does not enforce an order between them. Any user with the correct permission can set any of the four statuses directly.
+**Save Results** keeps the report **Preliminary**. The approval dialog says "This action cannot be undone."
+
+Care's screens never use the two other statuses, **Registered** and **Partial**.
 
 ## Permissions
 
-| Permission | Roles |
-| --- | --- |
-| Can Create Diagnostic Report on Facility | Facility Admin, Admin, Doctor, Nurse |
-| Can Read Diagnostic Report | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer |
+Your roles decide what you can do with diagnostic reports, and the place where you hold a role matters. Depending on the permission, Care looks for the role in one of four places.
 
-You need Can Create Diagnostic Report on Facility to create or update a diagnostic report. You need Can Read Diagnostic Report to view a diagnostic report.
+- On the service request: one of the encounter's departments, their parent departments, the facility's root organization "Administration", or a department of the encounter's current location. Failing that, a department of the location that the service request is for, such as the laboratory.
+- In the encounter: one of the encounter's departments, their parent departments, the facility's root organization, or a department of the encounter's current location.
+- On the patient: a department of an encounter of the patient that is not closed, or of that encounter's current location. A role in one of the patient's organizations, or a role given to you directly on the patient, also counts.
+- In the facility: any department of the facility.
 
-## Where to find it
+The table lists the roles that hold each permission by default. A deployment can also add roles of its own. "Admin" here is the Admin role of a facility or government organization, not the Admin role of a role organization.
 
-Care shows diagnostic reports on the **Diagnostic Reports** tab of an encounter. You fill in a report from the detail page of its service request.
+| Permission | What it allows | Roles by default |
+| --- | --- | --- |
+| "Can Create Diagnostic Report on Facility" | Create a diagnostic report, save its results and conclusion, attach, rename and archive its files, and approve it. You must hold it on the service request. | Facility Admin, Admin, Doctor, Nurse |
+| "Can Read Diagnostic Report" | Open a diagnostic report and its files, and print it. This covers the service request page, the **Diagnostic Reports** tabs and the report page. You must hold it on the service request. | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer |
+| "Can view clinical data about patients" | See the **Diagnostic Reports** tab of the encounter and of the patient's **Clinical History**, with the list of reports. You must hold it on the patient. | Staff, Doctor, Nurse, Admin, Facility Admin |
+| "Can Read encounter related clinical data" | See the **Diagnostic Reports** tab of the encounter, with its list of reports. It does not give access to the patient's **Clinical History**. You must hold it in the encounter. | Admin, Doctor, Nurse, Facility Admin |
+| "Can Read Service Request" | Open the service request page. You must hold it on the service request. To reach the page from the encounter, you must also hold it in the encounter. To reach it from a location, you must hold it in a department of that location. | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| "Can Read Activity Definition" | Open the service request page, which loads the activity definition of the request. Without it, the page shows only "Error loading service request or activity definition details." You must hold it in the facility. | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer |
+| "Can Read Observation Definition" | Add a result with **Add observation**. You must hold it in the facility. | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+
+The flows list the further permissions that open the encounter, the patient and a location.
+
+So by default, Facility Admin, Admin, Doctor and Nurse hold every permission in the table. With one of these roles in the right places, you can create, fill in, approve, read and print diagnostic reports.
+
+From the encounter, these tasks start only while the encounter is open. After the encounter is closed, these four roles can still read its reports on the encounter's **Diagnostic Reports** tab.
+
+Care shows **Create Report**, **Save Results** and **Approve Results** without checking your permissions. Without "Can Create Diagnostic Report on Facility", Care refuses the save with "You do not have permission to write this diagnostic report". By default, Staff, Administrator and Volunteer can read diagnostic reports but cannot write them.
+
+By default, Staff holds "Can view clinical data about patients" but not "Can Read encounter related clinical data". So with the Staff role in a department, you see the **Diagnostic Reports** tabs only while the patient has an open encounter there.
+
+By default, Volunteer and Administrator hold "Can Read Diagnostic Report" but neither clinical-data permission, so they do not see the **Diagnostic Reports** tabs.
+
+By default, Pharmacist holds neither diagnostic report permission.
 
 ## Related
 
 - Flow: [Enter diagnostic report results](../../flows/clinical/diagnostic-report/enter-diagnostic-report-results.mdx)
+- Flow: [Review and approve diagnostic report results](../../flows/clinical/diagnostic-report/review-and-approve-diagnostic-report-results.mdx)
 - Flow: [View a diagnostic report](../../flows/clinical/diagnostic-report/view-a-diagnostic-report.mdx)
-- Flow: [Update a diagnostic report](../../flows/clinical/diagnostic-report/update-a-diagnostic-report.mdx)
 - Flow: [Print a diagnostic report](../../flows/clinical/diagnostic-report/print-a-diagnostic-report.mdx)
-- Concept: [Encounter](../../concepts/clinical/encounter.mdx)
-- Concept: [Service Request](../../concepts/clinical/service-request.mdx)
-- Concept: [Specimen](../../concepts/clinical/specimen.mdx)
-- Concept: [Files](../../concepts/clinical/files.mdx)
+- Concept: [Service Request](../clinical/service-request.mdx)
+- Concept: [Specimen](../clinical/specimen.mdx)
+- Concept: [Observation](../clinical/observation.mdx)
+- Concept: [Activity Definition](../definitions/activity-definition.mdx)
+- Concept: [Observation Definition](../definitions/observation-definition.mdx)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Files](../clinical/files.mdx)
+- Reference: [Diagnostic Report](../../references/clinical/diagnostic-report.mdx)
