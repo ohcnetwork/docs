@@ -111,7 +111,7 @@ Keep `session.md` current. Update it at every stage change and whenever somethin
 - **The backend decides what a page says.** When the frontend and the backend disagree, document the backend and file the disagreement. Ask the user only when the backend itself can be read two ways.
 - **Patient data.** Do not open, record or screenshot a Care instance until a person confirms it holds no real patient data. Whatever is on screen stays in the image forever.
 - **Credentials.** Ask for them when needed and pass them as environment variables. Never write them into memory, a session file or a spec.
-- **Scope.** Document the module you were asked for. Note what you notice about neighbours; do not write their pages.
+- **Scope.** Document the module you were asked for. Note what you notice about neighbours; do not write their pages. If the user still wants a neighbour's page changed, first look in `$EZ/sessions/` for an open session on that module and tell the user what it plans for that page, so both pull requests do not edit the same file unknowingly. On 28 November 2026 an Observation session learned only at the media stage that a Diagnostic Report session was deleting a page it had corrected.
 - **Memory is for preferences and decisions.** It can tell you how this person likes to work or what a product owner decided. It can never tell you what the code does today.
 
 ## Working in different tools
