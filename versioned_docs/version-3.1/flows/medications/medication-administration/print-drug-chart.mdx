@@ -1,0 +1,104 @@
+---
+sidebar_position: 4
+---
+
+# Print the drug chart
+
+## Overview
+
+<video src="/media/medications/medication-administration/print-drug-chart.mp4" poster="/media/medications/medication-administration/print-drug-chart.poster.png" controls width="720">
+  <track kind="captions" src="/media/medications/medication-administration/print-drug-chart.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to print the drug chart of an encounter. The drug chart shows the completed [medicine administrations](../../../concepts/medications/medication-administration.mdx) of each medicine, day by day and time slot by time slot.
+
+## Pre-requisites
+
+- You opened the encounter from the facility. Care shows **View Drug Chart** only then.
+- The encounter has at least one prescribed medicine. Otherwise **View Drug Chart** is disabled.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can view clinical data about patients | Lets you open the chart, and lets the print page load the medicines and the doses, when you hold it for the patient. You need this permission or the next one. By default, the Staff, Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can Read encounter related clinical data | Gives the same access for this encounter only, when you hold it in one of the encounter's departments or in a department of its current location. By default, the Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can Read encounter | Lets the print page load the details of the encounter, when you hold it in one of the encounter's departments or in a department of its current location. "Can list patients", held for the patient, works instead. By default, the Doctor, Nurse and Facility Admin roles hold "Can Read encounter". By default, the Staff, Doctor, Nurse, Administrator, Facility Admin, Volunteer and Pharmacist roles hold "Can list patients". |
+
+## Steps
+
+### 1. Open the Medicine Administration sub-tab
+
+1. Open the encounter.
+2. Select the **Medications** tab.
+3. Select the **Medicine Administration** sub-tab.
+
+Note: Press `g` then `m` to go to the **Medications** tab.
+
+![The Medicine Administration sub-tab outlined](/media/medications/medication-administration/print-drug-chart-1.png)
+
+### 2. Open the drug chart
+
+Select **View Drug Chart**. Care opens the **Drug Chart** page of the patient.
+
+![The View Drug Chart button outlined](/media/medications/medication-administration/print-drug-chart-2.png)
+
+![The Drug Chart page with its title outlined, showing the medication administration record of the patient](/media/medications/medication-administration/print-drug-chart-3.png)
+
+### 3. Choose what the chart shows
+
+Set the options above the chart.
+
+| Components | What it captures |
+| --- | --- |
+| Show discontinued medications | Adds the medicines that have no active entry. The box is clear when the page opens. |
+| Time slots per day | Splits each day into 1, 2, 3, or 4 time slots. Care selects 4 when the page opens. |
+
+![The chart options outlined: Show discontinued medications, selected, and Time slots per day, set to 4](/media/medications/medication-administration/print-drug-chart-4.png)
+
+### 4. Read the chart
+
+The heading shows the name, the age and the sex of the patient, and the encounter date.
+
+The chart covers the encounter in blocks of up to seven days, from its start date to its end date. For an encounter with no end date, the chart runs to today.
+
+Care lists the medicines in two sections: **Regular Medications** and "PRN Medications (As needed)".
+
+Each cell shows one tick for each completed dose in that time slot. For more than three doses, the cell shows one tick and the number of doses.
+
+The chart counts only doses with the status Completed.
+
+Note: If no medicine of the encounter has an active entry, the page shows "No medications found for this encounter."
+
+![The first page of the chart outlined, with the regular medications and a tick for each recorded dose](/media/medications/medication-administration/print-drug-chart-5.png)
+
+![The PRN medications (as needed) section on a later page of the chart](/media/medications/medication-administration/print-drug-chart-6.png)
+
+### 5. Print the chart
+
+Select **Print**.
+
+On a phone or a tablet that can share a PDF, the button reads **Share**.
+
+Note: Press `p` to select the print button.
+
+![The Print button of the Drug Chart page outlined](/media/medications/medication-administration/print-drug-chart-7.png)
+
+## Expected Outcome
+
+- Care prints the drug chart from the page.
+- On a phone or a tablet, Care shares the PDF, or opens it in a new tab if the device cannot share it.
+
+## Related
+
+Concepts:
+
+- [Medication administration](../../../concepts/medications/medication-administration.mdx)
+- [Medication request](../../../concepts/medications/medication-request.mdx)
+
+Flows:
+
+- [View the medicine administration chart](./view-medicine-administration.mdx)
+- [Administer a dose](./administer-dose.mdx)
+- [Edit an administration record](./update-administration-record.mdx)

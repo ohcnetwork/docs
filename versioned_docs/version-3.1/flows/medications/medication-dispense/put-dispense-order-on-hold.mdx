@@ -1,0 +1,108 @@
+---
+sidebar_position: 7
+---
+
+# Put a dispense order on hold and resume it
+
+## Overview
+
+<video src="/media/medications/medication-dispense/put-dispense-order-on-hold.mp4" poster="/media/medications/medication-dispense/put-dispense-order-on-hold.poster.png" controls width="720">
+  <track kind="captions" src="/media/medications/medication-dispense/put-dispense-order-on-hold.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to pause a [dispense order](../../../concepts/medications/dispense-order.mdx) at a pharmacy location, and how to resume it later.
+
+When you put an order on hold, Care sets the order to Draft and its dispenses to On Hold. When you resume it, Care sets the order and those dispenses to In Progress.
+
+## Pre-requisites
+
+- The dispense order is open: its status is Draft or In Progress.
+- No invoice of the order is balanced. After an invoice is balanced, Care does not let you put the order on hold or resume it.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Pharmacist in Care | Find and open the dispense order, and change its status. You must hold it in a department of the facility. By default, the Facility Admin and Pharmacist roles hold this permission. |
+| Write Medication Dispense | Let Care change the status of the dispenses with the order. You must hold it in a department of the pharmacy location. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold this permission. |
+| Medication Dispense Read | See the dispenses of the order. You must hold it in a department of the pharmacy location. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold this permission. |
+| Can List Facility Locations | Open the pages of the pharmacy location. You must hold it in a department of the location. By default, the Doctor, Facility Admin, Administrator, Nurse, Staff and Pharmacist roles hold this permission. |
+
+Without "Pharmacist in Care", a user needs "Can Read Supply Delivery" to find and open the order. The user also needs "Can Create Supply Delivery on Facility" to change its status. Both must be held in a department of the pharmacy location. By default, only the Facility Admin role holds "Can Create Supply Delivery on Facility".
+
+By default, the Staff, Doctor and Nurse roles cannot put a dispense order on hold or resume it.
+
+## Steps
+
+### 1. Open the dispense order
+
+After you bill the medicines, Care opens the dispense order on the **Dispense Medicines** page.
+
+To open the order later, see [Find and print a dispense order](./find-dispense-order.mdx).
+
+![An open dispense order with Status: In Progress outlined](/media/medications/medication-dispense/put-dispense-order-on-hold-1.png)
+
+### 2. Put the order on hold
+
+1. At the bottom of the page, select **Put on hold**.
+2. Care asks **Put this dispense on hold?**. Select **Put on hold** to confirm.
+
+To go back without a change, select **Stay on this page**.
+
+Care sets the order to Draft and opens the **Prescription Queue**.
+
+Note: Press `h` to select **Put on hold**.
+
+Note: If some dispenses are already On Hold, Care shows **Put in Preparation** instead of **Put on hold**.
+
+![The Put on hold button outlined at the bottom of the dispense order](/media/medications/medication-dispense/put-dispense-order-on-hold-2.png)
+
+![The dialog that asks to put the dispense on hold, with the Put on hold button outlined](/media/medications/medication-dispense/put-dispense-order-on-hold-3.png)
+
+### 3. Open the order again
+
+The order waits on the **Pending** tab of the **Dispense Orders** page.
+
+1. In the location sidebar, select **Pharmacy** > ℞ **Dispense**.
+2. On the **Pending** tab, find the patient with **Filter by Identifier**, or select the patient's name in the list.
+3. Select **View Order** on the order.
+
+![The Prescription Queue with the Dispense link outlined in the Pharmacy menu](/media/medications/medication-dispense/put-dispense-order-on-hold-4.png)
+
+![The Dispense Orders page with the Pending tab outlined](/media/medications/medication-dispense/put-dispense-order-on-hold-5.png)
+
+![The View Order button of the held order outlined in the Pending list](/media/medications/medication-dispense/put-dispense-order-on-hold-6.png)
+
+### 4. Resume the order
+
+Select **Put in Preparation** at the bottom of the page.
+
+You can also select **Mark as In Progress**, the play button next to the status.
+
+Care sets the order to In Progress. Care also sets each dispense that is not completed or cancelled to In Progress.
+
+Note: Care also sets a Draft order to In Progress when you record a payment or issue an invoice. The same happens when you mark an invoice as balanced.
+
+![The held order with its medicines On Hold and the Put in Preparation button outlined](/media/medications/medication-dispense/put-dispense-order-on-hold-7.png)
+
+![The order back at Status: In Progress, outlined](/media/medications/medication-dispense/put-dispense-order-on-hold-8.png)
+
+## Expected Outcome
+
+- While the order is on hold, its status is Draft. Its dispenses that are not completed or cancelled are On Hold.
+- After you resume the order, the order and those dispenses are In Progress again.
+- You can then collect the payment and complete the order. See [Collect payment and complete a dispense order](./complete-dispense-order.mdx).
+
+## Related
+
+Concepts:
+
+- [Dispense Order](../../../concepts/medications/dispense-order.mdx)
+- [Medication Dispense](../../../concepts/medications/medication-dispense.mdx)
+
+Flows:
+
+- [Collect payment and complete a dispense order](./complete-dispense-order.mdx)
+- [Find and print a dispense order](./find-dispense-order.mdx)
+- [Cancel a dispense order](./cancel-dispense-order.mdx)

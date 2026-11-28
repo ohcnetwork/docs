@@ -1,0 +1,197 @@
+---
+sidebar_position: 5
+---
+
+# Dispense order
+
+Technical reference for the `DispenseOrder` module in Care EMR. For what a dispense order is in the product, see the [Dispense order](../../concepts/medications/dispense-order.mdx) concept.
+
+A dispense order groups [medication dispenses](medication-dispense.mdx) for one patient at one location of a facility. Dispenses can join an order in any status except `abandoned` and `entered_in_error`.
+
+**Source:**
+
+- Model: `DispenseOrder` in [`care/emr/models/medication_dispense.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/medication_dispense.py)
+- Spec: [`care/emr/resources/medication/dispense/dispense_order.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/dispense/dispense_order.py)
+- Spec (inline creation from a dispense): [`care/emr/resources/medication/dispense/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/dispense/spec.py)
+- Viewset: [`care/emr/api/viewsets/inventory/dispense_order.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/inventory/dispense_order.py)
+
+The Django model is the storage layer and the Pydantic specs are the API layer. The model stores `tags` and `tags_data`, but no spec reads or writes them.
+
+## Models
+
+| Model | Purpose |
+| --- | --- |
+| `DispenseOrder` | Groups dispenses for one patient at one location of a facility |
+| `MedicationDispense` | Each dispense points to at most one order through `MedicationDispense.order`. See the [Medication dispense](medication-dispense.mdx) reference |
+
+`DispenseOrder` extends [`EMRBaseModel`](../foundation/base-model.mdx). It supplies `external_id`, `created_date`, `modified_date`, the soft-delete flag `deleted`, `created_by`, `updated_by`, `history` and `meta`.
+
+## `DispenseOrder` fields
+
+In the table below, the model type is the Django column and the spec type is what the API reads and writes.
+
+| Field | Model type | Spec type | Required (API) | Notes |
+| --- | --- | --- | --- | --- |
+| `status` | `CharField(255)` | `MedicationDispenseOrderStatusOptions` | Yes | See [status rules](#status-rules) |
+| `name` | `CharField(255)`, nullable | `str \| None` | No | The backend has no naming rule. The encounter's Dispense History shows an order with no name by its creation date and time |
+| `note` | `TextField`, nullable | `str \| None` | No | |
+| `patient` | `FK → Patient`, `CASCADE` | `UUID4` (create) | Yes (create) | Looked up by id. Cannot change after create |
+| `location` | `FK → FacilityLocation`, `CASCADE` | `UUID4` (create) | Yes (create) | Looked up by id. Cannot change after create |
+| `facility` | `FK → Facility`, `CASCADE` | Not accepted | Server-set | The facility of the URL on a direct create; the encounter's facility on an inline create |
+| `alternate_identifier` | `CharField(100)`, nullable | Not in the order specs | n/a | Set only by `create_dispense_order` on a dispense. Not returned |
+| `tags` | `ArrayField[int]`, default `[]` | Not in any spec | n/a | The API has no tag actions and does not return tags |
+| `tags_data` | `JSONField`, default `{}` | Not in any spec | n/a | Added in the 3.1 release. Not returned |
+
+The `unique_alternate_identifier_encounter_location` constraint keeps `alternate_identifier` unique per patient and location. Despite its name, it has no encounter field.
+
+## Enum values
+
+### `MedicationDispenseOrderStatusOptions` values
+
+| Value |
+| --- |
+| `draft` |
+| `in_progress` |
+| `completed` |
+| `abandoned` |
+| `entered_in_error` |
+
+`MEDICATION_DISPENSE_ORDER_COMPLETED_STATUSES` lists `completed`, `abandoned` and `entered_in_error`. The update rules below decide which changes Care allows.
+
+### `CreateDispenseOrderStatusOptions` values
+
+The statuses allowed when a dispense creates its order inline.
+
+| Value |
+| --- |
+| `draft` (default) |
+| `in_progress` |
+
+### Status rules
+
+The rules apply only when an update changes the status. Name and note can change in any status.
+
+| Current status | Allowed new status | Refusal |
+| --- | --- | --- |
+| `draft`, `in_progress` | Any, including `completed` | None |
+| `completed` | `abandoned` or `entered_in_error` | "Completed dispense order can only be cancelled" |
+| `abandoned`, `entered_in_error` | None | "Dispense order already abandoned or entered in error" |
+
+`completed` is not final: it can still move to `abandoned` or `entered_in_error`. `abandoned` and `entered_in_error` are final for the status only.
+
+## Related models
+
+### `MedicationDispense`
+
+```text
+MedicationDispense.order → FK DispenseOrder (CASCADE, nullable)
+```
+
+How a dispense joins an order:
+
+- With `create_dispense_order`, Care looks for an order with the same `alternate_identifier`, patient and location, and creates one when none matches. A match that is not `draft` or `in_progress` fails with "Prescription is not active".
+- With `order`, the dispense joins that existing order.
+- An update can move a dispense to another order. Care locks both orders, and neither can be `abandoned` or `entered_in_error`.
+- Care refuses to add a dispense to an `abandoned` or `entered_in_error` order, or to move one into or out of it. The error is "Dispense order is abandoned or entered in error".
+
+## Resource specs (API schema)
+
+| Spec class | Role | Notes |
+| --- | --- | --- |
+| `BaseMedicationDispenseOrderSpec` | shared · write · update | `id`, `status` (required), `name`, `note`. The viewset uses it as the update spec, so an update changes only these |
+| `MedicationDispenseOrderWriteSpec` | write · create | Adds `patient` and `location` (both required). No `alternate_identifier` and no tags |
+| `MedicationDispenseOrderReadSpec` | read · list | `status`, `name`, `note`, `patient` (list form), `location` (list form), `created_date`, `modified_date` |
+| `MedicationDispenseOrderRetrieveSpec` | read · detail | Adds `created_by`, `updated_by` and the patient in its retrieve form, with the patient's identifiers for the order's facility |
+| `CreateDispenseOrder` | write · nested (dispense spec) | `name`, `note`, `alternate_identifier` (required), `status` (`draft` or `in_progress`, default `draft`) |
+
+## Methods & save behaviour
+
+The model defines no `save()` or `delete()` override. The behaviour below lives in the specs and the viewsets.
+
+- A direct create takes its facility from the URL.
+- An inline create from a dispense takes the encounter's facility, the given status, name and note, and records the user as its creator.
+- An order cannot be created as `completed` inline. A direct create accepts any status.
+- Moving an order to `abandoned` sets each of its dispenses to `cancelled`. Moving it to `entered_in_error` sets each to `entered_in_error`.
+- For each of those dispenses, Care cancels the charge item (`aborted`), sets the medication request's `dispense_status` to `incomplete` and clears the request link.
+- If a charge item is on an invoice that is not a draft, the whole update fails with "Cannot cancel charge item in a non-draft invoice".
+- Care then recalculates the stock of every inventory item involved, so the quantities return to stock.
+- Moving an order to `completed` changes nothing else: not the dispenses, not stock, not billing.
+
+## API integration notes
+
+### Endpoints
+
+All paths are under `/api/v1/`. List, retrieve and update find orders only in the facility in the URL.
+
+| Method | Path | Action |
+| --- | --- | --- |
+| `GET` | `facility/{facility_id}/order/dispense/` | List |
+| `POST` | `facility/{facility_id}/order/dispense/` | Create |
+| `GET` | `facility/{facility_id}/order/dispense/{id}/` | Retrieve |
+| `PUT`, `PATCH` | `facility/{facility_id}/order/dispense/{id}/` | Update. Both use `BaseMedicationDispenseOrderSpec` |
+| `POST` | `facility/{facility_id}/order/dispense/upsert/` | Batch create or update |
+
+There is no delete and no tag action.
+
+### Authorization
+
+The order API uses "Pharmacist in Care" for the facility, or the supply delivery permissions for the order's location.
+
+| Action | Requirement |
+| --- | --- |
+| List | "Pharmacist in Care" in any department of the facility: every order of the facility, and the `location` filter is not applied. Others must send `?location=` (a location of that facility) and hold "Can Read Supply Delivery" there |
+| List without `location`, not a pharmacist | HTTP 400 "Location is required for non-pharmacists" |
+| List with `location`, no permission there | HTTP 403 "You do not have permission to read dispense order" |
+| Retrieve | "Pharmacist in Care" in the facility, or "Can Read Supply Delivery" for the order's location. Else 403 "You do not have permission to read dispense order" |
+| Create | "Pharmacist in Care" in the facility, or "Can Create Supply Delivery on Facility" for the order's location. Else 403 "You do not have permission to create dispense order" |
+| Update | "Pharmacist in Care" in the order's facility, or "Can Create Supply Delivery on Facility" for the order's location. Else 403 "You do not have permission to update dispense order" |
+| Inline create from a dispense | Only "Write Medication Dispense" for the dispensing location, the permission that creates the dispense |
+
+"Can Read Supply Delivery" and "Can Create Supply Delivery on Facility" count when held in the location's departments. These are its parent location's departments, the departments it is linked to and their parents, and the facility's Administration department.
+
+Default role lists from the permission definitions:
+
+| Permission | Default roles |
+| --- | --- |
+| "Pharmacist in Care" | Facility Admin, Pharmacist |
+| "Can Read Supply Delivery" | Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| "Can Create Supply Delivery on Facility" | Facility Admin |
+| "Write Medication Dispense" | Facility Admin, Staff, Doctor, Nurse, Pharmacist |
+
+The permission definitions also name an Admin role. Roles are matched by name, and the only role named Admin in the database is for role organizations, which the screen that links users to departments does not offer. The lists above leave it out.
+
+So by default Staff, Doctor and Nurse can create dispenses, and orders inline with them, but cannot change an order's status.
+
+A permission refusal is HTTP 403 with the message in `detail`. A business-rule refusal is HTTP 400 with `errors: [{type: "validation_error", msg}]`.
+
+### Filters and ordering
+
+| Parameter | Meaning |
+| --- | --- |
+| `status` | Comma-separated statuses |
+| `created_date` | Range of creation dates |
+| `patient` | Patient id |
+| `created_by` | Id of the user who created the order |
+| `location` | Location id. Does nothing as a filter by itself; the list code applies it for non-pharmacists only |
+| `include_children` | With `location`, also orders at the locations under it (non-pharmacists only) |
+| `ordering` | `created_date` or `modified_date`. Without it, newest record first |
+
+Lists are paginated with `limit` and `offset` (default 14, at most 200) and return `count` and `results`.
+
+### Notes
+
+- The Care frontend's encounter Dispense drawer creates the order inline with the dispenses, sending only an identifier, so the order starts as `draft`. It then sends `PUT` to set the order to `completed`.
+- The pharmacy screens change an order's status with `PATCH`, in one batch with an upsert of its dispenses.
+- A medication return is a separate delivery order. It does not change the dispense order or its dispenses. See [Medication dispense](medication-dispense.mdx#medication-returns).
+
+## Related
+
+- Concept: [Dispense order](../../concepts/medications/dispense-order.mdx)
+- Reference: [Medication dispense](medication-dispense.mdx)
+- Reference: [Medication request](medication-request.mdx)
+- Concept: [Supply delivery](../../concepts/supply/supply-delivery.mdx)
+- Reference: [Location](../facility/location.mdx)
+- Reference: [Charge item](../billing/charge-item.mdx)
+- Reference: [Patient](../clinical/patient)
+- Reference: [Base model](../foundation/base-model.mdx)
+- Source: [medication_dispense.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/medication_dispense.py) · [dispense/dispense_order.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/dispense/dispense_order.py) · [viewsets/inventory/dispense_order.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/inventory/dispense_order.py)

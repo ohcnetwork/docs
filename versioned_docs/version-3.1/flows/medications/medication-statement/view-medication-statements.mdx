@@ -2,75 +2,94 @@
 sidebar_position: 2
 ---
 
-# View medication statements for an encounter
+# View medication statements
 
 ## Overview
 
-This flow describes how to view the [medication statements](../../../concepts/medications/medication-statement.mdx) of a patient from an encounter in Care.
+<video src="/media/medications/medication-statement/view-medication-statements.mp4" poster="/media/medications/medication-statement/view-medication-statements.poster.png" controls width="720">
+  <track kind="captions" src="/media/medications/medication-statement/view-medication-statements.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to view the [medication statements](../../../concepts/medications/medication-statement.mdx) of a patient from an encounter. The list shows every statement of the patient, not only the statements of this encounter.
 
 ## Pre-requisites
 
-- The patient is registered in Care, and you open the encounter for that patient.
-- You have the permissions listed below.
+- The patient is registered in Care, and you open an encounter of that patient.
+- You have the permission listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can view clinical data about patients | Lets you read the medication statements of the patient. |
-| Can Read encounter related clinical data | Lets you read the clinical records of the encounter. |
+| Can view clinical data about patients | Lets you open the **Medications** tab and read the medication statements of the patient. You must hold it for the patient: through the patient's organizations, through an open encounter of the patient, or through direct access to the patient. By default, the Staff, Doctor, Nurse and Facility Admin roles hold this permission. |
+
+"Can Read encounter related clinical data" alone is not enough. The list asks for the statements of the whole patient, and Care refuses it to users who have only access to the encounter.
 
 ## Steps
 
-### 1. Open the Medicines tab
+### 1. Open the Medications tab
 
 Open the encounter.
 
-Select the **Medicines** tab.
+Select the **Medications** tab.
 
-Note: To open the **Medicines** tab from anywhere in the encounter, press `g` and then press `m`.
+Note: Press `g` then `m` to go to the **Medications** tab.
+
+![The Medications link outlined in the encounter menu](/media/medications/medication-statement/view-medication-statements-1.png)
 
 ### 2. Select the Medication Statements sub-tab
 
 Select the **Medication Statements** sub-tab.
 
-Care shows the count of the statements next to the title of the list.
+Care shows the statements in a card titled **Medication Statements**. The number in brackets counts the statements that Care loaded so far, not all the statements.
 
-Note: The list shows every medication statement of the patient. It does not show only the statements of this encounter.
+The list shows every statement of the patient, from all encounters. It leaves out statements marked Entered in Error.
+
+Note: Care counts access that you have through an encounter only while that encounter is open. After the encounter closes, Care refuses this list if that encounter was your only access to the patient.
+
+![The Medication Statements sub-tab with its title and count outlined](/media/medications/medication-statement/view-medication-statements-2.png)
 
 ### 3. Read the table
 
-Care shows the medication statements in a table with these columns:
+Care shows the medication statements in a table with these columns.
 
 | Column | What it shows |
 | --- | --- |
 | Medication | The name of the medicine. |
 | Dosage | The dosage instructions for the medicine. |
-| Status | The state of the statement, for example **Active** or **Completed**. |
-| Medication Taken Between | The start date and the end date of the period. Care shows **Ongoing** when there is no end date. |
+| Status | The state of the statement, for example Active or Completed. |
+| Medication Taken Between | The start and the end of the period. Care shows Ongoing when there is no end date. |
 | Reason | Why the patient takes the medicine. |
-| Notes | A **See Note** button. Select the button to read the note. |
+| Notes | A **See Note** button when the statement has a note. Select the button to read the note. |
 | Logged by | The user who recorded the statement. |
 
-Note: Care does not show a statement that staff marked as **Entered in Error**.
+If the patient has no medication statements, Care shows "No Medication Statements".
+
+![The header row of the statements table outlined: Medication, Dosage, Status, Medication Taken Between, Reason, Notes and Logged by](/media/medications/medication-statement/view-medication-statements-3.png)
+
+![The note of a statement shown in a pop-up after See Note, outlined](/media/medications/medication-statement/view-medication-statements-4.png)
 
 ### 4. Show more statements
 
-Select **Load More** to add the next statements to the list.
+Select **Load More** to add the next statements to the list. Care shows the button only while there are more statements to load.
+
+![The Load More button outlined at the bottom of the table](/media/medications/medication-statement/view-medication-statements-5.png)
+
+![More statements added to the table, with the last row outlined](/media/medications/medication-statement/view-medication-statements-6.png)
 
 ## Expected Outcome
 
-- You see the medication statements of the patient.
-- You see the medicine, the dosage instructions, the status, the period, and the reason for each statement.
+- You see the medication statements of the patient from every encounter.
+- You see the medicine, the dosage, the status, the period, and the reason of each statement.
 
 ## Related
 
 Concepts:
 
-- [Medication Statement](../../../concepts/medications/medication-statement.mdx)
+- [Medication statement](../../../concepts/medications/medication-statement.mdx)
 
 Flows:
 
 - [Record a medication statement](./record-medication-statement.mdx)
 - [Update a medication statement](./update-medication-statement.mdx)
-- [Mark a medication statement as entered in error](./medication-statement-entered-in-error.mdx)
+- [View prescriptions and medicines for an encounter](../medication-request/view-encounter-medications.mdx)

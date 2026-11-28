@@ -1,0 +1,151 @@
+---
+sidebar_position: 10
+---
+
+# Return dispensed medicines
+
+## Overview
+
+<video src="/media/medications/medication-dispense/return-medicines.mp4" poster="/media/medications/medication-dispense/return-medicines.poster.png" controls width="720">
+  <track kind="captions" src="/media/medications/medication-dispense/return-medicines.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to record a [medication return](../../../concepts/medications/medication-return.mdx) at a pharmacy location, when a patient brings back medicines that were dispensed at that location.
+
+When you receive the returned items, Care puts them back into the stock of the pharmacy location. When you complete the return, Care creates a refund invoice for the patient.
+
+## Pre-requisites
+
+- The patient has a completed dispense order at this pharmacy location.
+- You have the permissions listed below. By default, only the Facility Admin role can record a medication return.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Write Medication Returns | Create the return, add the returned items, approve the return, receive the items and complete the return. You must hold it in a department of the pharmacy location. By default, only the Facility Admin role holds this permission. |
+| Can Read Medication Returns | Open the return and see its items. You must hold it in a department of the pharmacy location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Pharmacist in Care | Find and open the dispense orders of the patient. You must hold it in a department of the facility. By default, the Facility Admin and Pharmacist roles hold this permission. |
+| Medication Dispense Read | Load the dispenses of the dispense orders into the return. You must hold it in a department of the pharmacy location. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold this permission. |
+| Can Read Product Knowledge | Select the product when you add an item that is not on the dispense order. You must hold it in a department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can Read Inventory Item | Select the stock lot of that item. You must hold it in a department of the pharmacy location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can List Facility Locations | Open the pages of the pharmacy location. You must hold it in a department of the location. By default, the Doctor, Facility Admin, Administrator, Nurse, Staff and Pharmacist roles hold this permission. |
+
+Without "Pharmacist in Care", a user needs "Can Read Supply Delivery" to find and open the dispense orders. It must be held in a department of the pharmacy location.
+
+Note: Users without "Can Write Medication Returns" also see the buttons that start a return. By default, this includes the Pharmacist role. When they select **Create Return**, Care refuses to create the return.
+
+## Steps
+
+### 1. Start the return
+
+Start from a completed dispense order, or from the **History** tab of the **Dispense Orders** page.
+
+- From a completed dispense order: open the order, and select **Medication Return** at the bottom of the page. To open the order, see [Find and print a dispense order](./find-dispense-order.mdx).
+- From the **History** tab: find the patient with **Filter by Identifier**, or select the name of the patient. Tick the orders that the medicines came from. Select **Return Medicines**.
+
+Note: Care shows **Medication Return** on a completed order only when the order has dispenses that are not cancelled.
+
+Note: On the **History** tab, the tick boxes show only when the list shows the orders of one patient. You can tick only Completed orders.
+
+Note: The **Medication Return** page of the pharmacy location also has **Create Medication Return**. There you select the patient first, and you add every item with **Add Item**.
+
+![A completed dispense order with the Medication Return button outlined at the bottom](/media/medications/medication-dispense/return-medicines-1.png)
+
+### 2. Create the return
+
+Care opens **Create Medication Return**.
+
+| Components | What it captures |
+| --- | --- |
+| **Name** | The name of the return. Care fills in "Medication Return - " and the name of the patient. |
+| **Note** | A note about the return. This field is optional. |
+
+Select **Create Return**. Care opens the new return, with the dispense orders attached.
+
+![The Create Medication Return sheet with the Name field outlined, filled with a name for the return](/media/medications/medication-dispense/return-medicines-2.png)
+
+### 3. Add the returned items
+
+1. Under **Add items to be returned**, select **Load from order**.
+2. In **Select Items to Add**, tick each item that the patient brings back.
+3. Select **Done**. Care adds a row for each item, with its lot and the dispensed quantity.
+4. In **Quantity**, enter the quantity that the patient returns.
+5. Select **Save**. Care lists the items under **Items to Return**.
+
+Note: The quantity must be at least 1. For an item loaded from the order, the quantity box stops at the dispensed quantity.
+
+Note: To return an item that is not on the dispense order, select **Add Item**. Select the **Product** and the **Stock Lot**, and enter the **Quantity**. Select **Add Another** for each other item.
+
+Note: While the return is Draft, you can take an item off the return. Open the menu of the item, and select **Mark as entered in error** or **Mark as Abandoned**.
+
+![A new Draft medication return with no items yet, and the Load from order button outlined](/media/medications/medication-dispense/return-medicines-3.png)
+
+![The Select Items to Add dialog with Omeprazole selected and outlined](/media/medications/medication-dispense/return-medicines-4.png)
+
+![The row of the returned item with its Quantity field outlined](/media/medications/medication-dispense/return-medicines-5.png)
+
+### 4. Approve the return
+
+Select **Mark as Approved**. Care sets the return to Pending.
+
+Note: **Mark as Approved** is available only after you save at least one item.
+
+![The return with Omeprazole under Items to Return and the Mark as Approved button outlined](/media/medications/medication-dispense/return-medicines-6.png)
+
+### 5. Receive the items
+
+When the return is Pending, Care ticks each item that is not yet received.
+
+1. Select **Receive & Update Stock**.
+2. In **Receiving Status**, select **Completed** to receive the items into stock. Select **Abandoned** to not receive them.
+3. If you selected **Completed**, select **Normal** or **Damaged** under **Item Condition?**.
+4. Select **Confirm**.
+
+Care puts each item received as Completed back into the stock of the pharmacy location. This includes items with the condition Damaged.
+
+Note: You can also open the ⋮ menu for the ticked items. **Mark as Abandoned** sets them to Abandoned. **Mark as Damaged** receives them as Completed with the condition Damaged.
+
+![The Receive and Update Stock button outlined, with the return status Pending](/media/medications/medication-dispense/return-medicines-7.png)
+
+![The Receive and Update Stock dialog with Completed and Normal selected and the Confirm button outlined](/media/medications/medication-dispense/return-medicines-8.png)
+
+### 6. Complete the return
+
+Select **Mark as Completed**. Care sets the return to Completed.
+
+Note: **Mark as Completed** is not available while an item is ticked. Care does not complete a return while one of its items is not received or abandoned.
+
+![The Mark as Completed button outlined, after the message Supply deliveries updated successfully](/media/medications/medication-dispense/return-medicines-9.png)
+
+### 7. Print the return
+
+On a completed return, select **Print**.
+
+![The completed return with its Print button outlined](/media/medications/medication-dispense/return-medicines-10.png)
+
+![The Medication Return print page, with the patient, the pharmacy and the items returned, and the Print button outlined](/media/medications/medication-dispense/return-medicines-11.png)
+
+## Expected Outcome
+
+- The return is Completed, and Care lists its items under **Items Returned**.
+- Care adds each item received as Completed to the stock of the pharmacy location. This includes items with the condition Damaged.
+- Care creates a refund invoice on the patient's account and issues it. The invoice has a negative charge item for each completed item whose product has a charge item definition.
+- The return shows the **Invoice**, with **View Invoice**.
+
+Note: To correct a completed return, open its ⋮ menu and select **Mark as entered in error**. Care cancels the refund invoice and takes the items out of stock again. If the location no longer has enough stock of an item, Care refuses.
+
+## Related
+
+Concepts:
+
+- [Medication Return](../../../concepts/medications/medication-return.mdx)
+- [Dispense Order](../../../concepts/medications/dispense-order.mdx)
+- [Medication Dispense](../../../concepts/medications/medication-dispense.mdx)
+- [Invoice](../../../concepts/billing/invoice.mdx)
+
+Flows:
+
+- [Find and print a dispense order](./find-dispense-order.mdx)
+- [Collect payment and complete a dispense order](./complete-dispense-order.mdx)
+- [Cancel a dispense order](./cancel-dispense-order.mdx)

@@ -6,53 +6,76 @@ sidebar_position: 6
 
 ## Overview
 
-This flow describes how to print a [prescription](../../../concepts/medications/medication-request.mdx) from an encounter in Care. You can print one prescription, or every prescription in the encounter.
+<video src="/media/medications/medication-request/print-prescription.mp4" poster="/media/medications/medication-request/print-prescription.poster.png" controls width="720">
+  <track kind="captions" src="/media/medications/medication-request/print-prescription.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to print a prescription from an encounter in Care. You can print the selected prescription, or every prescription of the encounter. See [medication request](../../../concepts/medications/medication-request.mdx).
 
 ## Pre-requisites
 
-- The patient is registered in Care, and you open the encounter for that patient.
-- The encounter has at least one prescription with medicines on it.
+- You open the encounter from your facility. Care shows the print buttons only on an encounter that you open from a facility.
+- The prescription that you print has at least one medicine.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can view clinical data about patients | Lets you open and print the prescription. |
-| Can Read encounter related clinical data | Lets you open and print the prescriptions in the encounter. |
-
-Note: You need at least one of these permissions to print a prescription.
+| Can Read encounter | Load each prescription on the print page. You must hold it in one of the encounter's departments, or in a department of the encounter's current location. By default, the Doctor, Nurse and Facility Admin roles hold this permission. The Staff role does not, so Staff cannot print a prescription. |
+| Can view clinical data about patients | Open the encounter, see the **Medications** tab, and list the prescriptions to print. You need this permission for the patient, or the next permission. By default, the Staff, Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can Read encounter related clinical data | Gives the same access as the permission above, when you hold it in one of the encounter's departments, or in a department of the encounter's current location. By default, the Doctor, Nurse and Facility Admin roles hold this permission. |
+| Pharmacist in Care | Another way to list and load the prescriptions, held in any department of the facility. It does not show the **Medications** tab on its own. By default, the Facility Admin and Pharmacist roles hold this permission. |
 
 ## Steps
 
-### 1. Open the prescription view
+### 1. Open the prescriptions
 
-Open the encounter for the patient. Go to the prescription view for that encounter. See [View prescriptions and medications for an encounter](./view-encounter-medications.mdx).
+1. Open the encounter. Select the **Medications** tab.
+2. Stay on the **Prescriptions** sub-tab.
 
-### 2. Print one prescription
+For more about this screen, see [View prescriptions and medicines for an encounter](./view-encounter-medications.mdx).
 
-Open the prescription that you want to print. Select **Print**. Care opens a print-ready view of the medicines on that prescription.
+![The Prescriptions sub-tab outlined on the Medications tab, with All Prescriptions selected](/media/medications/medication-request/print-prescription-1.png)
 
-Note: Care does not offer the print action when the prescription has no medicines on it.
+### 2. Select what to print
 
-Note: Press `p` to print from any screen that shows a print action.
+Select one of these options:
 
-### 3. Print every prescription in the encounter
+- To print one prescription, select the prescription. Then select **Print**.
+- To print every prescription of the encounter, select **Print All Prescriptions**.
 
-Select **Print All Prescriptions**. Care opens a print-ready view that covers every prescription in the encounter.
+Care shows **Print All Prescriptions** whether or not you selected a prescription.
+
+Note: Care disables **Print** when the selected prescription has no medicines.
+
+Note: Care disables **Print All Prescriptions** when the panel shows no medicines.
+
+![One prescription selected, with its Print button outlined next to Edit and Print All Prescriptions](/media/medications/medication-request/print-prescription-2.png)
+
+### 3. Print the prescription
+
+Care opens a print page. Select **Print**.
+
+On a phone or tablet that can share a PDF, the button is **Share**. Select **Share** to share the PDF.
+
+Note: Press `p` on the print page to print.
+
+![The print page of the prescription, with the facility, the patient details and the medicine instructions, and the Print button outlined](/media/medications/medication-request/print-prescription-3.png)
 
 ## Expected Outcome
 
-- Care shows a print-ready view of the prescription that you selected.
-- Care shows a print-ready view of every prescription in the encounter when you select **Print All Prescriptions**.
+- Care shows a print preview of the selected prescription, or of every prescription of the encounter.
+- If none of the prescriptions has medicines, the print page shows "No medications found for this encounter."
+- If the encounter has no prescriptions, the print page for all prescriptions shows "No prescriptions found".
 
 ## Related
 
 Concepts:
 
-- [Medication Request](../../../concepts/medications/medication-request.mdx)
+- [Medication request](../../../concepts/medications/medication-request.mdx)
 
 Flows:
 
-- [Prescribe a medication](./prescribe-medication.mdx)
-- [View prescriptions and medications for an encounter](./view-encounter-medications.mdx)
+- [View prescriptions and medicines for an encounter](./view-encounter-medications.mdx)
+- [Prescribe medicines](./prescribe-medication.mdx)

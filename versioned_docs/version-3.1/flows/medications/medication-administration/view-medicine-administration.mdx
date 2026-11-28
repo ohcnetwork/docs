@@ -2,96 +2,143 @@
 sidebar_position: 2
 ---
 
-# View the medication administration record
+# View the medicine administration chart
 
 ## Overview
 
-This flow describes how to read the [medicine administration](../../../concepts/medications/medication-administration.mdx) record of an encounter in Care.
+<video src="/media/medications/medication-administration/view-medicine-administration.mp4" poster="/media/medications/medication-administration/view-medicine-administration.poster.png" controls width="720">
+  <track kind="captions" src="/media/medications/medication-administration/view-medicine-administration.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to read the medicine administration chart of an encounter. The chart shows, for each prescribed medicine, the doses that staff recorded as [medicine administrations](../../../concepts/medications/medication-administration.mdx).
 
 ## Pre-requisites
 
-- The patient is registered in Care, and you read the record for that patient.
-- The encounter has at least one prescribed medicine.
+- The encounter has at least one prescribed medicine. Otherwise the sub-tab shows "No Medications".
 - You have one of the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can view clinical data about patients | Lets you view the medicine administrations of the patient. |
-| Can Read encounter related clinical data | Lets you view the medicine administrations of one encounter. |
+| Can view clinical data about patients | Lets you open the **Medications** tab and read the chart, when you hold it for the patient. You hold it for the patient through the patient's organizations, through an open encounter of the patient, or through direct access to the patient. By default, the Staff, Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can Read encounter related clinical data | Gives the same access for this encounter only. You must hold it in one of the encounter's departments or in a department of its current location. By default, the Doctor, Nurse and Facility Admin roles hold this permission. |
 
 ## Steps
 
 ### 1. Open the Medicine Administration sub-tab
 
 1. Open the encounter.
-2. Select the **Medicines** tab.
+2. Select the **Medications** tab.
 3. Select the **Medicine Administration** sub-tab.
 
-Note: Press `g` then `m` to go to the **Medicines** tab.
+Note: Press `g` then `m` to go to the **Medications** tab.
 
-### 2. Read the grid
+![The Medicine Administration sub-tab outlined, with the grid of medicines and recorded doses in six-hour time slots](/media/medications/medication-administration/view-medicine-administration-1.png)
+
+### 2. Choose medicines or nutritional products
+
+Care opens the sub-tab on **Medications**.
+
+Select **Nutrition** to see nutritional products; the **Nutrition** view works the same way.
+
+![The Medications and Nutrition toggle outlined above the grid](/media/medications/medication-administration/view-medicine-administration-2.png)
+
+### 3. Read the grid
 
 The **Medicine** column lists the medicines. Four columns to the right show six-hour time slots.
+
 A blue dot marks the current time slot.
 
-Each medicine row shows the dosage, the frequency, and the route. The row also shows one of
-these badges.
+Above the grid, Care shows "Last Modified" with a time taken from the latest recorded dose.
+
+Each row is one medicine. If the medicine was prescribed more than once, Care groups those entries in one row. A count follows the name.
+
+To see each entry on its own line, select the expand button of the row. Each entry then shows the date it was added and its own status.
+
+Each row shows a badge for the state of the medicine. A medicine to give as needed also has a PRN badge.
 
 | Badge | What it means |
 | --- | --- |
-| Active | The patient takes the medicine now. |
-| Stopped | Staff discontinued the medicine. |
-| PRN | Staff give the medicine as needed. |
+| Active | The medicine has at least one active entry. |
+| Stopped | The medicine has no active entry. Care also strikes through its name. |
+| PRN | The medicine has an entry to give as needed. |
 
-Note: When a medicine has more than one prescription, Care shows a count next to the name.
-Select the arrow to expand the row and read each prescription on its own line.
+The row also shows "Last administered" with the time since the last dose.
 
-### 3. Read the doses
+Note: The row also has the controls to stop a medicine. See [Stop a medicine](../medication-request/stop-a-medicine.mdx).
 
-Care shows each recorded dose as a chip in its time slot. The chip shows the time of the dose.
-The colour of the chip shows the status. When a time slot has more than three doses, Care shows
-"+n More".
+![An expanded Paracetamol row outlined, with its two prescriptions on their own lines below it](/media/medications/medication-administration/view-medicine-administration-3.png)
 
-Note: Select a chip to open the record. See [Update an administration record](./update-administration-record.mdx).
+### 4. Read the doses
 
-### 4. Move to other time slots
+Care shows each recorded dose as a button with the time of the dose.
 
-Select the arrow at the left of the grid to move back four time slots. Select the arrow at the
-right to move forward.
+The colour of the button shows the status. Green is Completed, yellow is In Progress, and red is any other status.
 
-Note: Care stops at the earliest prescription date. The left arrow then shows the message
-"Cannot view slots before the earliest prescription date".
+If a time slot has more than three doses, Care shows "+n More".
 
-### 5. Search for a medicine
+The time slot that holds the start of the prescribed period shows "Starts" and the date. The time slot that holds its end shows "Ends" and the date.
 
-Enter the name in the **Search Medication** box. Care shows only the medicines that match.
+Note: Select a dose to open it. See [Edit an administration record](./update-administration-record.mdx).
 
-### 6. Show discontinued medicines
+![A recorded dose in the Amoxicillin row outlined, shown in the colour for Not Done](/media/medications/medication-administration/view-medicine-administration-4.png)
 
-Care hides discontinued medicines. A message under the grid shows how many Care hides.
+### 5. Move to other time slots
 
-Select **Show discontinued** to add them to the grid. Care then shows the message
-"Showing all medications".
+Select the left arrow to move back one time slot.
 
-### 7. Open the drug chart
+Select the right arrow to move forward one time slot.
 
-Select **View Drug Chart** to open the printable chart for the encounter.
+Note: Care stops at the earliest prescription date. The left arrow is then disabled, and its tooltip reads "Cannot view slots before the earliest prescription date".
+
+Note: The right arrow is disabled when the current time slot is the last one on the screen.
+
+![The back arrow at the left of the grid outlined, with the grid moved back to earlier time slots](/media/medications/medication-administration/view-medicine-administration-5.png)
+
+### 6. Search for a medicine
+
+Enter the name in the **Search Medication** box. Care shows only the medicines whose name contains the text.
+
+![The Search Medication box outlined, with Omep typed and only Omeprazole left in the grid](/media/medications/medication-administration/view-medicine-administration-6.png)
+
+### 7. Show discontinued medicines
+
+Care hides a medicine that has no active entry.
+
+To add these medicines to the grid, select the **Show discontinued** checkbox.
+
+The number in brackets after **Show discontinued** counts the entries with the status Ended, Completed, Cancelled or Entered in Error. It counts entries, not medicines.
+
+A note under the grid shows the same number, for example "1 discontinued medication(s) hidden". Care shows this note only when the search box is empty. The encounter must also have an active entry and an entry with one of those statuses. When **Show discontinued** is selected, the note reads "Showing all medications".
+
+![Show discontinued selected, with the stopped medicine Ibuprofen outlined at the bottom of the grid](/media/medications/medication-administration/view-medicine-administration-7.png)
+
+![The message Showing all medications outlined under the grid](/media/medications/medication-administration/view-medicine-administration-8.png)
+
+### 8. Open the drug chart
+
+To open the printable drug chart, select **View Drug Chart**. See [Print the drug chart](./print-drug-chart.mdx).
+
+Note: Care shows **View Drug Chart** only when you opened the encounter from the facility.
+
+![The Drug Chart page of the patient, showing the medication administration record](/media/medications/medication-administration/view-medicine-administration-9.png)
 
 ## Expected Outcome
 
-- You see which doses staff gave, at what time, and in what state.
-- You see the last administered time for each medicine.
+- You see which doses staff recorded for each medicine, at what time, and with what status.
+- You see the time since the last recorded dose of each medicine.
 
 ## Related
 
 Concepts:
 
-- [Medicine Administration](../../../concepts/medications/medication-administration.mdx)
-- [Medication Request](../../../concepts/medications/medication-request.mdx)
+- [Medication administration](../../../concepts/medications/medication-administration.mdx)
+- [Medication request](../../../concepts/medications/medication-request.mdx)
 
 Flows:
 
 - [Administer a dose](./administer-dose.mdx)
-- [Update an administration record](./update-administration-record.mdx)
+- [Edit an administration record](./update-administration-record.mdx)
+- [Print the drug chart](./print-drug-chart.mdx)
+- [Stop a medicine](../medication-request/stop-a-medicine.mdx)

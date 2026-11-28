@@ -1,0 +1,96 @@
+---
+sidebar_position: 6
+---
+
+# Medication return
+
+## Definition
+
+A **medication return** in Care records medicines that come back from a patient to a pharmacy location. Care adds the returned medicines back to the stock of that location when it receives them. When the return is completed, Care creates a refund invoice for the patient.
+
+## Where to find it
+
+Care offers three places to create a return:
+
+- A completed dispense order that still has dispenses that are not cancelled, with **Medication Return**.
+- The **History** tab of the **Dispense Orders** page, filtered to one patient, with **Return Medicines**.
+- The **Medication Return** page, with **Create Medication Return**.
+
+## Key Attributes
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the return. This field is mandatory. |
+| Patient | The patient who returns the medicines. |
+| Return To | The pharmacy location that takes the medicines back. Care uses the location where the return is created. |
+| Note | Free text about the return. This field is optional. |
+| Status | The current state of the return. See Status below. |
+| Items | The medicines that come back. Each item names a product, a lot and a quantity. |
+| Invoice | The refund invoice, after the return is completed. |
+
+### Returned items
+
+Each returned item names a product, a stock lot and a whole quantity of at least 1.
+
+When the return comes from dispense orders, **Load from order** lists the dispenses of those orders. Care copies the lot and the quantity of each selected dispense into the return. The quantity box of such an item does not accept more than the dispensed quantity.
+
+Care counts each item in the stock of its lot at the return location. If that location has no stock of the lot yet, Care adds the lot to it. The lot must belong to the facility of the return location.
+
+An item adds its quantity to the stock of the return location only when it is received as Completed. **Receive & Update Stock** receives the selected items as Completed or Abandoned.
+
+### Refund invoice
+
+When the return is completed, Care creates a refund invoice on the patient's account at the facility and issues it straight away. The invoice holds a reversed charge for each returned item whose product has a charge item definition.
+
+Items whose product has no charge item definition are not on the refund invoice. Care then recalculates the balance of the patient's account.
+
+### Status
+
+| Status | Description |
+| --- | --- |
+| Draft | The pharmacy prepares the return and adds the items. A new return starts in Draft. |
+| Pending | The return is approved and waits for its items to be received. **Mark as Approved** moves a Draft return that has items to Pending. |
+| Completed | Every item is Completed, Abandoned or Entered in Error, and Care has issued the refund invoice. **Mark as Completed** moves a Pending return to Completed. |
+| Entered in Error | Someone recorded the return by mistake. Care cancels the refund invoice, if there is one, and takes the received quantities out of stock again. |
+
+A medication return cannot be abandoned. To cancel a return, the pharmacy marks it as entered in error.
+
+A Completed return can move only to Entered in Error, and Entered in Error is final.
+
+Care refuses to mark a return as entered in error when the location no longer has enough stock to take the received quantities out again.
+
+## How it connects
+
+A medication return is a delivery of the same kind as a [supply delivery](../supply/supply-delivery.mdx) or a [purchase delivery](../supply/purchase-delivery.mdx): it has delivered items, and it changes stock when they are received. It names a patient, and it has no source location.
+
+A medication return is not linked to the dispense that it reverses. Each returned item records a lot and a quantity, not the dispense that it came from. When the pharmacy loads the items from a dispense order, Care copies the lot and the quantity of each dispense into the return.
+
+## Permissions
+
+Care gives permissions through the roles that a user holds in departments. The roles named below hold each permission by default; an installation can change the permissions of its roles.
+
+| Permission | What it allows |
+| --- | --- |
+| Can Write Medication Returns | Create a return, add and change its items, approve it, receive its items, complete it, or mark it as entered in error. You need it in a department of the return location. By default, only the Facility Admin role holds this permission. |
+| Can Read Medication Returns | Open a return and see its items. You need it in a department of the return location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Medication Dispense Read | List the dispenses of the attached dispense orders in **Load from order**. You need it in a department of the location. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold this permission. |
+
+To work on a return, a user needs both medication return permissions. The write permission alone does not let a user open a return.
+
+By default, only the Facility Admin role can record returns. A Pharmacist can open a return but cannot create or change one.
+
+Both medication return permissions are new in 3.1. The permissions for supply and purchase deliveries do not give access to medication returns.
+
+Care creates and cancels the refund invoice without a billing permission. It checks only "Can Write Medication Returns".
+
+## Related
+
+- Flow: [Return dispensed medicines](../../flows/medications/medication-dispense/return-medicines.mdx)
+- Flow: [Find and print a dispense order](../../flows/medications/medication-dispense/find-dispense-order.mdx)
+- Concept: [Medication dispense](./medication-dispense.mdx)
+- Concept: [Dispense order](./dispense-order.mdx)
+- Concept: [Supply Delivery](../supply/supply-delivery.mdx)
+- Concept: [Purchase Delivery](../supply/purchase-delivery.mdx)
+- Concept: [Inventory Item](../supply/inventory-item.mdx)
+- Concept: [Invoice](../billing/invoice.mdx)
+- Reference: [Supply Delivery](../../references/supply/supply-delivery.mdx)

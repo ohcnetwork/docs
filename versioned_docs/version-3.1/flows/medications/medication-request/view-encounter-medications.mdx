@@ -1,88 +1,140 @@
 ---
-sidebar_position: 4
+sidebar_position: 3
 ---
 
-# View prescriptions and medications for an encounter
+# View prescriptions and medicines for an encounter
 
 ## Overview
 
-This flow describes how to view the prescriptions and the prescribed medicines for an encounter in Care.
+<video src="/media/medications/medication-request/view-encounter-medications.mp4" poster="/media/medications/medication-request/view-encounter-medications.poster.png" controls width="720">
+  <track kind="captions" src="/media/medications/medication-request/view-encounter-medications.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to see the prescriptions of an encounter and the medicines in each prescription. See [medication request](../../../concepts/medications/medication-request.mdx).
 
 ## Pre-requisites
 
-- The patient is registered in Care, and you open the encounter for that patient.
+- The patient has an encounter, and you can open it.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can view clinical data about patients | Lets you open the **Medicines** tab of the encounter. |
-| Can Read encounter related clinical data | Lets you read the clinical records of the encounter. |
+| Can view clinical data about patients | Open the encounter, see the **Medications** tab, and list the prescriptions and their medicines. You need this permission for the patient, or the next permission. By default, the Staff, Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can Read encounter related clinical data | Gives the same access as the permission above, when you hold it in one of the encounter's departments, or in a department of the encounter's current location. By default, the Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can Read encounter | Open one prescription to see its medicines. You must hold it in one of the encounter's departments, or in a department of the encounter's current location. By default, the Doctor, Nurse and Facility Admin roles hold this permission. The Staff role does not, so Staff can see the list of prescriptions but cannot open one. |
+| Pharmacist in Care | Another way to list and open the prescriptions, held in any department of the facility. It does not show the **Medications** tab on its own. By default, the Facility Admin and Pharmacist roles hold this permission. |
 
 ## Steps
 
-### 1. Open the Medicines tab
+### 1. Open the Medications tab
 
-Open the encounter.
+Open the encounter. Select the **Medications** tab.
 
-Select the **Medicines** tab.
+Note: Press `g` then `m` to open the **Medications** tab.
 
-Note: To open the **Medicines** tab from anywhere in the encounter, press `g` and then press `m`.
-
-The **Medicines** tab has four sub-tabs:
+The tab opens on the **Prescriptions** sub-tab. It has four sub-tabs:
 
 | Sub-tab | What it shows |
 | --- | --- |
-| Prescriptions | The prescriptions for this encounter. |
-| Medication Statements | The ongoing or self-reported medicine use of the patient. |
-| Medicine Administration | The record of the doses that staff gave. |
-| Dispense History | The dispensing record of the pharmacy. |
+| Prescriptions | The prescriptions of this encounter and their medicines. This flow covers this sub-tab. |
+| Medication Statements | The medication statements of the patient, from every encounter. See [View medication statements](../medication-statement/view-medication-statements.mdx). |
+| Medicine Administration | The doses recorded for the medicines of this encounter. See [View the medicine administration chart](../medication-administration/view-medicine-administration.mdx). |
+| Dispense History | The dispense orders of the patient and the medicines dispensed in them. See [View dispense history for an encounter](../medication-dispense/view-dispense-history.mdx). |
 
-Note: This flow covers the **Prescriptions** sub-tab. The other three sub-tabs hold separate records.
+Note: If your facility has set up an encounter workspace, the workspace can hide the **Medications** tab.
+
+![The Medications tab with its four sub-tabs outlined: Prescriptions, Medication Statements, Medicine Administration and Dispense History](/media/medications/medication-request/view-encounter-medications-1.png)
 
 ### 2. Select a prescription
 
-Select the **Prescriptions** sub-tab.
+- On a large screen, the list of prescriptions shows beside the medicines.
+- On a small screen, select the button above the medicines. Care opens the list in a drawer titled **Select prescription**.
 
-A list on one side shows the prescriptions for this encounter by name.
+The first card is **All Prescriptions**, with the text "View all medications".
+
+Each other card is one prescription. A card shows:
+
+- The date and time when the prescription was made.
+- "Prescribed by" and the name of the prescriber.
+- The tags of the prescription.
 
 Select a prescription to see its medicines.
 
-To see every medicine across every prescription at one time, select **All Prescriptions**.
+To see the medicines of every prescription in the encounter, select **All Prescriptions**.
 
-### 3. Read the medicine details
+Note: **All Prescriptions** shows medicines only. It does not show nutritional products or consumables.
 
-Care shows the medicines of the selected prescription in a table with these columns:
+Note: If you do not have "Can Read encounter", Care does not open the prescription.
+
+![A prescription selected in the list on the left, showing its date and the name of the prescriber, outlined](/media/medications/medication-request/view-encounter-medications-2.png)
+
+### 3. Read the medicines
+
+The heading of the panel shows **All Prescriptions**, or the date of the selected prescription. Under it, Care shows "Medications from all prescriptions", or "Prescribed by" with the name of the prescriber.
+
+If the selected prescription has a note, Care shows it above the table under **Note**.
+
+Care shows the medicines in a table with these columns:
 
 | Column | What it shows |
 | --- | --- |
 | Medicine | The name of the medicine. |
-| Dosage | The quantity of the medicine for each dose. |
-| Frequency | How often the patient takes the medicine. |
-| Duration | How long the patient takes the medicine. |
-| Instructions | The instructions for the patient. |
+| Dosage | The dose of the medicine. |
+| Frequency | How often to give the medicine. |
+| Duration | How long to give the medicine. |
+| Instructions | The instructions for the medicine, and the note of the medicine. |
 
-### 4. Show or hide inactive medicines
+To find a medicine, enter its name in **Search Medications**.
 
-Care dims or strikes through the medicines that are no longer active. A medicine that staff marked as **Entered in Error** is one example.
+If there are no medicines to show, Care shows "No Active Medication Recorded".
 
-Select the eye icon to show or hide these inactive medicines.
+![The medicines table of the selected prescription outlined, with the Medicine, Dosage, Frequency, Duration and Instructions columns](/media/medications/medication-request/view-encounter-medications-3.png)
+
+### 4. Show the inactive medicines
+
+Care hides the inactive medicines until you show them. Inactive medicines have the status Ended, Completed, Cancelled or Entered in Error.
+
+1. Select the control "Show _n_ Inactive Medications", where _n_ is the number of inactive medicines.
+2. To hide them again, select "Hide _n_ Inactive Medications".
+
+Care shows the control only when the list has at least one inactive medicine.
+
+Care dims each inactive medicine. Care also strikes through each inactive medicine that does not have the status Ended.
+
+![The dimmed row of an inactive medicine outlined, with the Hide 1 Inactive Medications button below the table](/media/medications/medication-request/view-encounter-medications-4.png)
+
+### 5. Go on to the next task
+
+From the **Prescriptions** sub-tab, you can go on to these tasks:
+
+- To prescribe, select **All Prescriptions**. Then select **Create**. See [Prescribe medicines](./prescribe-medication.mdx).
+- To change the selected prescription, select **Edit**. See [Edit a prescription](./update-prescription.mdx).
+- To print, select **Print** or **Print All Prescriptions**. See [Print a prescription](./print-prescription.mdx).
+- To stop a medicine, use the **Medicine Administration** sub-tab. See [Stop a medicine](./stop-a-medicine.mdx).
+
+Note: If you open the encounter from an organization instead of a facility, the tab is read-only. Care does not show **Create**, **Edit** or the print buttons, and **All Prescriptions** shows no medicines.
+
+![The Edit button of the selected prescription outlined, next to Print and Print All Prescriptions](/media/medications/medication-request/view-encounter-medications-5.png)
 
 ## Expected Outcome
 
-- You see the prescriptions for the encounter and the medicines in each prescription.
-- You see the dosage, frequency, duration, and instructions for each medicine.
+- You see each prescription of the encounter, with its date and time, its prescriber and its tags.
+- You see the dosage, frequency, duration and instructions of each medicine.
+- If you show the inactive medicines, you also see the medicines that were stopped, completed, cancelled or removed.
 
 ## Related
 
 Concepts:
 
-- [Medication Request](../../../concepts/medications/medication-request.mdx)
+- [Medication request](../../../concepts/medications/medication-request.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
 
 Flows:
 
-- [Prescribe a medication](./prescribe-medication.mdx)
-- [Manage a prescription](./manage-prescription.mdx)
-- [Update a prescription](./update-prescription.mdx)
+- [Prescribe medicines](./prescribe-medication.mdx)
+- [Edit a prescription](./update-prescription.mdx)
+- [Stop a medicine](./stop-a-medicine.mdx)
 - [Print a prescription](./print-prescription.mdx)
+- [View the medicine administration chart](../medication-administration/view-medicine-administration.mdx)

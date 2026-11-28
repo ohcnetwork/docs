@@ -2,64 +2,71 @@
 sidebar_position: 1
 ---
 
-# Medication Request
+# Medication request
 
-A `MedicationRequest` records a prescriber's intent to supply or administer a medication to a patient — the FHIR [`MedicationRequest`](https://hl7.org/fhir/medicationrequest.html) resource. You create one whenever a drug is ordered during an encounter; it carries the medication, dosage instructions, timing, and route as structured JSON, grouped under a prescription.
+Technical reference for the `MedicationRequest` module in Care EMR. For what a medication request is in the product, see the [Medication request](../../concepts/medications/medication-request.mdx) concept.
+
+A medication request records one medicine ordered for a patient in an encounter. It can belong to a prescription, which groups medication requests of the same encounter, but the link is optional.
 
 **Source:**
-- Model: [`care/emr/models/medication_request.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/medication_request.py)
-- Spec: [`resources/medication/request/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/request/spec.py)
-- Spec: [`resources/medication/request_prescription/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/request_prescription/spec.py)
-- Value sets: [`resources/medication/valueset/`](https://github.com/ohcnetwork/care/tree/develop/care/emr/resources/medication/valueset)
 
-Several fields are opaque `JSONField`s whose structure the Django model never declares. The contract lives in the Pydantic resource specs under `care/emr/resources/medication/request/`: the enums, the nested shape of those JSON fields, validation rules, the read/write schema split, and the server-side side effects. The tables below merge both layers.
+- Model: [`care/emr/models/medication_request.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/medication_request.py)
+- Spec: [`care/emr/resources/medication/request/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/request/spec.py)
+- Spec: [`care/emr/resources/medication/request_prescription/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/request_prescription/spec.py)
+- Viewset: [`care/emr/api/viewsets/medication_request.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/medication_request.py)
+- Viewset: [`care/emr/api/viewsets/medication_request_prescription.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/medication_request_prescription.py)
+- Value sets: [`care/emr/resources/medication/valueset/`](https://github.com/ohcnetwork/care/tree/develop/care/emr/resources/medication/valueset)
+
+The Django model stores `medication` and `dosage_instruction` as JSON columns. The Pydantic resource specs define their shape, the enums, the validation and the read and write schemas. This page covers both layers.
 
 ## Models
 
 | Model | Purpose |
 | --- | --- |
-| `MedicationRequestPrescription` | Groups medication requests authored together for an encounter (a prescription) |
-| `MedicationRequest` | A single medication order/request for a patient within an encounter |
+| `MedicationRequest` | One medicine ordered for a patient within an encounter |
+| `MedicationRequestPrescription` | An optional group of medication requests in one encounter (a prescription) |
 
-Both extend [`EMRBaseModel`](../foundation/base-model.mdx), which supplies `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON.
+Both extend [`EMRBaseModel`](../foundation/base-model.mdx). It supplies `external_id`, `created_date`, `modified_date`, the soft-delete flag `deleted`, `created_by`, `updated_by`, `history` and `meta`.
 
 ## `MedicationRequest` fields
 
+In the tables below, the model type is the Django column and the spec type is what the API reads and writes. "Fixed" means that the update spec does not accept the field after create.
+
 ### Order status & intent
 
-| Field | Type | Required | Notes |
-| --- | --- | --- | --- |
-| `status` | `CharField(100)` → `MedicationRequestStatus` | Yes (spec) | Nullable on the model, required by the spec; defaults to `active`. See [status values](#medicationrequeststatus-values) |
-| `status_reason` | `CharField(100)` → `StatusReason \| None` | No | Why the request was discontinued or changed. See [status reason values](#statusreason-values) |
-| `intent` | `CharField(100)` → `MedicationRequestIntent` | Yes (spec) | Nullable on the model, required by the spec. See [intent values](#medicationrequestintent-values) |
-| `category` | `CharField(100)` → `MedicationRequestCategory` | Yes (spec) | Nullable on the model, required by the spec. See [category values](#medicationrequestcategory-values) |
-| `priority` | `CharField(100)` → `MedicationRequestPriority` | Yes (spec) | Nullable on the model, required by the spec. See [priority values](#medicationrequestpriority-values) |
-| `do_not_perform` | `BooleanField` → `bool` | Yes | Set `True` to record that the medication must explicitly **not** be given |
-| `dispense_status` | `CharField(100)` → `MedicationRequestDispenseStatus \| None` | No | Defaults to `None`. Tracks dispense progress. See [dispense status values](#medicationrequestdispensestatus-values) |
+| Field | Model type | Spec type | Required (API) | Notes |
+| --- | --- | --- | --- | --- |
+| `status` | `CharField(100)`, nullable | `MedicationRequestStatus` | Yes | No default in the model or the spec. Can change after create. See [status values](#medicationrequeststatus-values) |
+| `status_reason` | `CharField(100)`, nullable | `StatusReason \| None` | No | Fixed. See [status reason values](#statusreason-values) |
+| `intent` | `CharField(100)`, nullable | `MedicationRequestIntent` | Yes | Fixed |
+| `category` | `CharField(100)`, nullable | `MedicationRequestCategory` | Yes | Fixed |
+| `priority` | `CharField(100)`, nullable | `MedicationRequestPriority` | Yes | Fixed |
+| `do_not_perform` | `BooleanField`, no default | `bool` | Yes | Fixed |
+| `dispense_status` | `CharField(100)`, nullable, default null | `MedicationRequestDispenseStatus \| None` | No | Can change after create. Dispensing also changes it, see [Methods & save behaviour](#methods--save-behaviour) |
 
 ### Medication & dosage
 
-| Field | Type | Required | Notes |
-| --- | --- | --- | --- |
-| `medication` | `JSONField` → `ValueSetBoundCoding[system-medication] \| None` | Conditional | Model default `{}`. A single `Coding { system, code, display }` bound to the [Medication](#bound-value-sets) value set (SNOMED CT medicinal products). Set exactly one of `medication` / `requested_product` |
-| `method` | `JSONField` | n/a | Model default `{}`. Stored but **not exposed by any current spec** — administration method travels per dosage line via `dosage_instruction[].method` |
-| `dosage_instruction` | `JSONField` → `list[DosageInstruction]` | Yes | Model default `[]`. The structured dosage lines. See [DosageInstruction shape](#dosageinstruction-nested-spec) |
-| `note` | `TextField` → `str \| None` | No | Free-text note |
+| Field | Model type | Spec type | Required (API) | Notes |
+| --- | --- | --- | --- | --- |
+| `medication` | `JSONField`, default `{}`, nullable | `ValueSetBoundCoding[system-medication] \| None` | Conditional | One `Coding` bound to the [Medication value set](#bound-value-sets). Send exactly one of `medication` and `requested_product`. Fixed |
+| `method` | `JSONField`, default `{}`, nullable | Not in any spec | n/a | Stored only. The administration method travels on each dosage line as `dosage_instruction[].method` |
+| `dosage_instruction` | `JSONField`, default `[]`, nullable | `list[DosageInstruction]` | Yes | The list can be empty. See [`DosageInstruction`](#dosageinstruction-nested-spec). Fixed |
+| `note` | `TextField`, nullable | `str \| None` | No | Can change after create. Sending `null` does not clear it |
 
 ### Subject & provenance
 
-| Field | Type | Required | Notes |
-| --- | --- | --- | --- |
-| `patient` | `FK → Patient` | server-set | `CASCADE`. Ignored if sent by the client — derived from `encounter.patient` |
-| `encounter` | `FK → Encounter` | Yes (create) | `CASCADE`. Write spec takes `encounter` as a UUID and validates that it exists |
-| `authored_on` | `DateTimeField` → `datetime` | Yes (spec) | Must be tz-aware. Model default `timezone.now` when omitted |
-| `requester` | `FK → users.User` | No | `SET_NULL`. The prescriber; write spec takes a `requester` UUID |
-| `requested_product` | `FK → ProductKnowledge` | Conditional | `SET_NULL`, default `None`. Write spec takes a `requested_product` UUID. Set exactly one of `medication` / `requested_product` |
-| `prescription` | `FK → MedicationRequestPrescription` | No | `SET_NULL`, default `None`. Set via a `prescription` UUID or `create_prescription` (see [validation](#resource-specs-api-schema)) |
+| Field | Model type | Spec type | Required (API) | Notes |
+| --- | --- | --- | --- | --- |
+| `patient` | `FK → Patient`, `CASCADE` | Not accepted | Server-set | Copied from the encounter on create |
+| `encounter` | `FK → Encounter`, `CASCADE` | `UUID4` | Yes (create) | Must exist ("Encounter not found"). Dropped from an update body. Read returns the encounter id |
+| `authored_on` | `DateTimeField`, nullable, default `timezone.now` | `datetime` | Yes | No validator: no time-zone check and no future-date check. The model default does not apply to API creates. Fixed |
+| `requester` | `FK → users.User`, `SET_NULL` | `UUID4 \| None` | No | The requester must also pass the write check, see [Authorization](#authorization). Cannot change after create |
+| `requested_product` | `FK → ProductKnowledge`, `SET_NULL` | `UUID4 \| None` | Conditional | A product of the encounter's facility, or a product with no facility. Fixed |
+| `prescription` | `FK → MedicationRequestPrescription`, `SET_NULL` | `UUID4 \| None` | No | Must be in the same encounter. Or use `create_prescription`. Fixed |
 
 ## Enum values
 
-Spec enums use **underscored** member values (`on_hold`, `entered_in_error`, `original_order`), not the hyphenated FHIR spellings. These are the exact strings the API accepts and returns.
+Enum values use underscores (`on_hold`, `entered_in_error`, `original_order`). They are the exact strings that the API accepts and returns.
 
 ### `MedicationRequestStatus` values
 
@@ -77,21 +84,21 @@ Spec enums use **underscored** member values (`on_hold`, `entered_in_error`, `or
 
 ### `StatusReason` values
 
-| Value | Meaning (FHIR) |
-| --- | --- |
-| `altchoice` | Alternative choice |
-| `clarif` | Prescription requires clarification |
-| `drughigh` | Drug level too high |
-| `hospadm` | Admission to hospital |
-| `labint` | Lab interference issues |
-| `non_avail` | Patient not available |
-| `preg` | Patient is pregnant or breastfeeding |
-| `salg` | Allergy |
-| `sddi` | Drug interaction |
-| `sdupther` | Duplicate therapy |
-| `sintol` | Suspected intolerance |
-| `surg` | Patient scheduled for surgery |
-| `washout` | Washout |
+| Value |
+| --- |
+| `altchoice` |
+| `clarif` |
+| `drughigh` |
+| `hospadm` |
+| `labint` |
+| `non_avail` |
+| `preg` |
+| `salg` |
+| `sddi` |
+| `sdupther` |
+| `sintol` |
+| `surg` |
+| `washout` |
 
 ### `MedicationRequestIntent` values
 
@@ -125,26 +132,26 @@ Spec enums use **underscored** member values (`on_hold`, `entered_in_error`, `or
 
 ### `MedicationRequestDispenseStatus` values
 
-| Value |
-| --- |
-| `complete` |
-| `partial` |
-| `incomplete` |
-| `declined` |
+| Value | Set by |
+| --- | --- |
+| `complete` | A dispense saved with `fully_dispensed: true`, or a client update |
+| `partial` | A dispense saved with `fully_dispensed: false`, or a client update |
+| `incomplete` | Cancelling a dispense that has a charge item, cancelling a dispense order, or a client update |
+| `declined` | Only a client update. No Care code sets it |
 
 ### `TimingUnit` values
 
-UCUM time units used by `Timing.repeat.period_unit` and `bounds_duration.unit`.
+Used by `Timing.repeat.period_unit` and by the `unit` of every `TimingQuantity` (`bounds_duration`, `bounds_range.low`, `bounds_range.high`).
 
-| Value | Unit |
-| --- | --- |
-| `s` | second |
-| `min` | minute |
-| `h` | hour |
-| `d` | day |
-| `wk` | week |
-| `mo` | month |
-| `a` | year |
+| Value |
+| --- |
+| `s` |
+| `min` |
+| `h` |
+| `d` |
+| `wk` |
+| `mo` |
+| `a` |
 
 ### `DoseType` values
 
@@ -157,115 +164,103 @@ Used by `DoseAndRate.type`.
 
 ## `DosageInstruction` nested spec
 
-Each entry in the `dosage_instruction` JSON list deserializes to a `DosageInstruction` (Pydantic, snake_case keys) — the structure hiding behind the opaque `JSONField`.
+Each entry of the `dosage_instruction` list is a `DosageInstruction`. Keys are snake_case, as the spec declares them.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
 | `sequence` | `int \| None` | No | Order of the instruction |
-| `text` | `str \| None` | No | Free-text dosage instruction (SIG) |
-| `additional_instruction` | `list[Coding] \| None` | No | Bound to the [Additional Instruction](#bound-value-sets) value set |
-| `patient_instruction` | `str \| None` | No | Patient-facing instructions |
-| `timing` | `Timing \| None` | No | See `Timing` below |
-| `as_needed_boolean` | `bool` | **Yes** | Set `True` for PRN orders |
-| `as_needed_for` | `Coding \| None` | No | Reason for PRN; bound to the [As Needed](#bound-value-sets) value set |
-| `site` | `Coding \| None` | No | Bound to the [Body Site](#bound-value-sets) value set |
-| `route` | `Coding \| None` | No | Bound to the [Route](#bound-value-sets) value set |
-| `method` | `Coding \| None` | No | Bound to the [Administration Method](#bound-value-sets) value set |
-| `dose_and_rate` | `DoseAndRate \| None` | No | See `DoseAndRate` below |
-| `max_dose_per_period` | `DoseRange \| None` | No | Upper dose limit per period |
+| `text` | `str \| None` | No | Free-text dosage instruction |
+| `additional_instruction` | `list[Coding] \| None` | No | Each bound to the Additional Instruction value set |
+| `patient_instruction` | `str \| None` | No | |
+| `timing` | `Timing \| None` | No | See the sub-types below |
+| `as_needed_boolean` | `bool` | Yes | The only required field |
+| `as_needed_for` | `Coding \| None` | No | Bound to the As Needed value set |
+| `site` | `Coding \| None` | No | Bound to the Body Site value set |
+| `route` | `Coding \| None` | No | Bound to the Route value set |
+| `method` | `Coding \| None` | No | Bound to the Administration Method value set |
+| `dose_and_rate` | `DoseAndRate \| None` | No | |
+| `max_dose_per_period` | `DoseRange \| None` | No | |
 
 ### Sub-types under `DosageInstruction`
 
 ```text
 Timing {
-  repeat: TimingRepeat        # required
-  code: Coding | None         # e.g. BID/TID/QID timing abbreviation
+  repeat: TimingRepeat                 # required
+  code: Coding | None
 }
 
 TimingRepeat {
-  frequency: int              # required — repetitions per period
-  period: Decimal(20,0)       # required — duration the frequency applies to
-  period_unit: TimingUnit     # required — s|min|h|d|wk|mo|a
-  bounds_duration: TimingQuantity  # required — total span
+  frequency: int                       # required
+  period: Decimal(20,0)                # required, whole number
+  period_unit: TimingUnit              # required
+  bounds_duration: TimingQuantity | None
+  bounds_range: TimingRange | None
+  bounds_period: PeriodSpec | None
+}                                      # at least one bound is required
+
+TimingQuantity {
+  value: Decimal(20,0)                 # required, whole number
+  unit: TimingUnit                     # required
 }
 
-TimingQuantity {              # integer-valued time amount
-  value: Decimal(20,0)        # required
-  unit: TimingUnit            # required
+TimingRange {
+  low: TimingQuantity                  # required
+  high: TimingQuantity                 # required
 }
+
+PeriodSpec {
+  start: datetime | None               # time zone required when set
+  end: datetime | None                 # time zone required when set
+}                                      # start cannot be after end
 
 DoseAndRate {
-  type: DoseType              # required — ordered | calculated
-  dose_range: DoseRange | None      # for titrated doses
-  dose_quantity: DosageQuantity | None  # for regular doses
+  type: DoseType                       # required
+  dose_range: DoseRange | None
+  dose_quantity: DosageQuantity | None
 }
 
 DoseRange {
-  low: DosageQuantity         # required
-  high: DosageQuantity        # required
+  low: DosageQuantity                  # required
+  high: DosageQuantity                 # required
 }
 
-DosageQuantity {              # measured dose amount
-  value: Decimal(20,6)        # required
-  unit: Coding                # required
+DosageQuantity {
+  value: Decimal(20,6)                 # required
+  unit: Coding                         # required
 }
+
+Coding {
+  system: str | None
+  version: str | None
+  code: str                            # required
+  display: str | None
+}                                      # unknown keys are refused
 ```
 
-The Pydantic specs define these JSON keys as snake_case (`as_needed_boolean`, `period_unit`, `dose_and_rate`, `max_dose_per_period`, `bounds_duration`), so that is how they sit in storage — not the camelCase FHIR wire format.
+A `TimingRepeat` with no bound fails with "At least one of bounds_duration, bounds_range, or bounds_period is required". `bounds_range` and `bounds_period` were added in June 2026.
 
 ## Bound value sets
 
-Coded fields bind to Care value sets through `ValueSetBoundCoding[<slug>]`. On write, the supplied `Coding.code` is validated against the value set; a code outside it is rejected. All draw from SNOMED CT (`http://snomed.info/sct`).
+Coded fields bind to Care value sets through `ValueSetBoundCoding[<slug>]`. Every write checks the `code` against the value set and refuses a code outside it ("Code does not exist in the valueset").
 
 | Field | Value set slug | SNOMED CT scope |
 | --- | --- | --- |
 | `medication` | `system-medication` | `<< 763158003` Medicinal product |
-| `dosage_instruction[].route` | `system-route` | `is-a 284009009` Route of administration |
-| `dosage_instruction[].site` | `system-body-site` | `is-a 91723000` Anatomical structure |
-| `dosage_instruction[].method` | `system-administration-method` | `is-a 736665006` |
-| `dosage_instruction[].as_needed_for` | `system-as-needed-reason` | `is-a 404684003` Clinical finding |
-| `dosage_instruction[].additional_instruction` | `system-additional-instruction` | `is-a 419492006` |
+| `dosage_instruction[].route` | `system-route` | is-a `284009009` |
+| `dosage_instruction[].site` | `system-body-site` | is-a `91723000` |
+| `dosage_instruction[].method` | `system-administration-method` | is-a `736665006` |
+| `dosage_instruction[].as_needed_for` | `system-as-needed-reason` | is-a `404684003` |
+| `dosage_instruction[].additional_instruction` | `system-additional-instruction` | is-a `419492006` |
 
-`system-medication-not-given` lives in this directory too, but it binds on [Medication Administration](medication-administration.mdx), not on the request.
+Care checks codes against the copy of each value set in the database. A deployment can change that copy after it is loaded, so the codes allowed at a deployment can differ from the scope above.
 
-## Resource specs (API schema)
-
-Every spec extends [`EMRResource`](../foundation/base-model.mdx), which provides `serialize` / `de_serialize` plus the `perform_extra_serialization` / `perform_extra_deserialization` hooks. `MedicationRequestResource` sets `__exclude__ = [patient, encounter, requester, requested_product, prescription]`, so those relations are wired up by hand instead of auto-mapped.
-
-| Spec class | Role | Notes |
-| --- | --- | --- |
-| `MedicationRequestAbstractSpec` | shared (fields) | Plain `BaseModel` holding the clinical fields: `status`, `status_reason`, `intent`, `category`, `priority`, `do_not_perform`, `medication`, `dosage_instruction`, `authored_on`, `note`, `dispense_status` |
-| `MedicationRequestResource` | shared (binding) | Binds the spec to the `MedicationRequest` model and declares `__exclude__` |
-| `BaseMedicationRequestSpec` | shared | `MedicationRequestResource` + `MedicationRequestAbstractSpec` + `id: UUID4` |
-| `MedicationRequestSpec` | write · create | Adds `encounter` (UUID, required), `requester`, `requested_product`, `prescription` (UUIDs), and `create_prescription`. Carries the validators and `perform_extra_deserialization` |
-| `MedicationRequestUpdateSpec` | write · update | Narrow — only `status`, `note`, `dispense_status` are mutable after create |
-| `MedicationRequestReadWithoutPrescriptionSpec` | read · embedded | Full read minus prescription; expands `requested_product` (`ProductKnowledgeReadSpec`), `requester`/`created_by`/`updated_by` (`UserSpec`), plus `created_date`/`modified_date` |
-| `MedicationRequestReadSpec` | read · detail/list | Adds expanded `prescription` (`MedicationRequestPrescriptionReadSpec`) and the `encounter` external id |
-| `CreatePrescription` | write · nested | `{ name?, note?, alternate_identifier (required) }` — inline prescription creation |
-
-### Validation (create — `MedicationRequestSpec`)
-
-- **Medication XOR product:** you cannot set both `medication` and `requested_product`, and one is required.
-- **Prescription XOR create:** you cannot set both `prescription` and `create_prescription`.
-- **Encounter existence:** the `encounter` UUID must match an existing `Encounter` (field validator).
-- `authored_on`, and any nested `PeriodSpec`/timing datetimes, must be timezone-aware.
-
-### Server-side side effects (`perform_extra_deserialization`)
-
-- `encounter` is resolved from its UUID, then `patient` is copied from `encounter.patient` — the client never sets `patient` directly.
-- `requester` / `requested_product` are resolved by `external_id`. If `requested_product.facility` is set and differs from `encounter.facility`, the write raises `"Product not found in facility"`.
-- `prescription` is resolved by `external_id`, scoped to the same `encounter`.
-- `create_prescription` looks up an existing prescription by `(alternate_identifier, encounter)`. A match that is **not** `active` raises `"Prescription is not active"`; no match creates a new `MedicationRequestPrescription` (`status=active`, copying `name`/`note`, `prescribed_by=requester`) and links the request to it.
-
-### Serialization (read)
-
-`perform_extra_serialization` sets `id = external_id` and expands `requested_product`, `requester`, and the audit users (`created_by`/`updated_by`) from cache. `MedicationRequestReadSpec` goes further, expanding `prescription` and emitting `encounter` as its external id.
+The same directory defines `system-medication-not-given`. No medication spec binds it.
 
 ## Related models
 
 ### `MedicationRequestPrescription`
 
-The container that groups every medication request authored together for an encounter into one prescription. Each request points back via `MedicationRequest.prescription`.
+A prescription groups medication requests of one encounter. Each request points to at most one prescription through `MedicationRequest.prescription`.
 
 ```text
 encounter            → FK Encounter (CASCADE)
@@ -273,55 +268,207 @@ patient              → FK Patient (CASCADE)
 name                 → CharField(100), nullable
 note                 → TextField, nullable
 prescribed_by        → FK users.User (CASCADE, nullable)
-status               → CharField(100), nullable  → MedicationRequestPrescriptionStatus
-approval_status      → CharField(100), nullable
-alternate_identifier → CharField(100), nullable
+status               → CharField(100), nullable → MedicationRequestPrescriptionStatus
+approval_status      → CharField(100), nullable; no spec reads or writes it
+alternate_identifier → CharField(100), nullable; set only through create_prescription
 tags                 → ArrayField[int], default []
+tags_data            → JSONField, default {}; added in the 3.1 release
 ```
 
-A `UniqueConstraint` (`unique_alternate_identifier_encounter`) keeps `alternate_identifier` unique per `encounter`.
+The `unique_alternate_identifier_encounter` constraint keeps `alternate_identifier` unique within an encounter.
+
+`tags_data` holds the expiry of each tag, keyed by the tag id as a string. Care writes the entry when a tag is set with an expiry and removes it when the tag is removed.
+
+```text
+tags_data = {
+  "<tag id>": { "expiry": "<ISO date-time>" }
+}
+```
+
+On a read, a rendered tag that has an expiry carries `expiry`, and also `expired: true` after that time.
 
 #### `MedicationRequestPrescriptionStatus` values
 
-`active`, `on_hold`, `ended`, `stopped`, `completed`, `cancelled`, `entered_in_error`, `draft`.
+| Value |
+| --- |
+| `active` |
+| `on_hold` |
+| `ended` |
+| `stopped` |
+| `completed` |
+| `cancelled` |
+| `entered_in_error` |
+| `draft` |
 
-A pharmacist may only move a prescription between `active`, `on_hold`, `completed` (`MEDICATION_PRESCRIPTION_PHARMACIST_ALLOWED_STATUS`).
+There is no `unknown` value. A user who passes only the pharmacist check can set `active`, `on_hold` or `completed` (`MEDICATION_PRESCRIPTION_PHARMACIST_ALLOWED_STATUS`), see [Authorization](#authorization).
 
 #### Prescription specs
 
+The prescription resource leaves `patient` and `encounter` out of the automatic field copy.
+
 | Spec class | Role | Notes |
 | --- | --- | --- |
-| `BaseMedicationRequestPrescriptionSpec` | shared | `id`, `status` (`MedicationRequestPrescriptionStatus`), `note`, `name` |
-| `MedicationRequestPrescriptionWriteSpec` | write · create | Adds `encounter` (UUID), `prescribed_by` (UUID); resolves `encounter`→`patient` and `prescribed_by` server-side |
-| `MedicationRequestPrescriptionUpdateSpec` | write · update | Same shared fields, no new FKs |
-| `MedicationRequestPrescriptionReadSpec` | read · list | Adds `created_date`, `modified_date`, expanded `prescribed_by` (`UserSpec`), `tags` (rendered via `SingleFacilityTagManager`) |
-| `MedicationRequestPrescriptionRetrieveSpec` | read · detail | Adds audit `created_by`/`updated_by` |
-| `MedicationRequestPrescriptionRetrieveMedicationsSpec` | read · detail+children | Adds `medications` (each via `MedicationRequestReadWithoutPrescriptionSpec`) and full `encounter` (`EncounterRetrieveSpec`) |
-| `MedicationRequestPrescriptionRetrieveDetailedSpec` | read · detail | Adds `encounter` via `EncounterListSpec` |
+| `BaseMedicationRequestPrescriptionSpec` | shared | `id`, `status` (required), `note`, `name` |
+| `MedicationRequestPrescriptionWriteSpec` | write · create | Adds `encounter` and `prescribed_by` (both required UUIDs). `patient` comes from the encounter. No `alternate_identifier` |
+| `MedicationRequestPrescriptionUpdateSpec` | write · update | The shared fields: `status` (required), `note`, `name` |
+| `MedicationRequestPrescriptionReadSpec` | read · list | Adds `created_date`, `modified_date`, `prescribed_by` (`UserSpec`) and the rendered `tags` |
+| `MedicationRequestPrescriptionRetrieveSpec` | read · shared | Adds `created_by` and `updated_by`. Base of the next two |
+| `MedicationRequestPrescriptionRetrieveMedicationsSpec` | read · detail | Adds the full `encounter` (`EncounterRetrieveSpec`) and `medications`: every medication request of the prescription in any status, deleted ones left out, each as `MedicationRequestReadWithoutPrescriptionSpec` |
+| `MedicationRequestPrescriptionRetrieveDetailedSpec` | read · facility summary item | Adds the `encounter` in its list form. No `medications` |
+
+## Resource specs (API schema)
+
+Resource specs never copy foreign keys automatically. `MedicationRequestResource` also lists `patient`, `encounter`, `requester`, `requested_product` and `prescription` in `__exclude__`, and the extra (de)serialization hooks set them.
+
+| Spec class | Role | Notes |
+| --- | --- | --- |
+| `MedicationRequestResource` | shared (binding) | Binds the specs to `MedicationRequest` and declares `__exclude__` |
+| `MedicationRequestAbstractSpec` | shared (fields) | `status`, `status_reason`, `intent`, `category`, `priority`, `do_not_perform`, `medication`, `dosage_instruction`, `authored_on`, `note`, `dispense_status` |
+| `BaseMedicationRequestSpec` | shared | The binding plus the fields plus `id` |
+| `MedicationRequestSpec` | write · create | Adds `encounter` (required), `requester`, `requested_product`, `prescription` and `create_prescription`. Holds the validators |
+| `MedicationRequestUpdateSpec` | write · update | Only `status` (required), `note` and `dispense_status` |
+| `MedicationRequestReadWithoutPrescriptionSpec` | read · embedded | Adds `created_by`, `updated_by`, `created_date`, `modified_date`, `requested_product` (`ProductKnowledgeReadSpec`) and `requester` (`UserSpec`). Used for the medications of an opened prescription |
+| `MedicationRequestReadSpec` | read · list and detail | Adds `prescription` (prescription read spec) and the `encounter` id |
+| `CreatePrescription` | write · nested | `name` (optional), `note` (optional), `alternate_identifier` (required) |
+
+### Validation (create)
+
+- Sending both `medication` and `requested_product` fails with "Cannot have both medication and requested product". Sending neither fails with "Either medication or requested product is required".
+- Sending both `prescription` and `create_prescription` fails with "Cannot have both prescription and create_prescription".
+- The `encounter` must exist ("Encounter not found").
+- A `requested_product` of another facility fails with "Product not found in facility". A product with no facility passes.
+- A `prescription` id must belong to the same encounter, or Care answers 404. Its status is not checked on this path.
+- `authored_on` has no validator. Only a `PeriodSpec` (`bounds_period`) requires time-zone-aware date-times.
+- The update spec has no status-transition rule. Any status can follow any status.
+
+### Server-side side effects
+
+- `patient` is copied from the encounter, never from the URL or the body.
+- With `create_prescription`, Care looks for a prescription with the same `alternate_identifier` in the encounter. A match that is not `active` fails with "Prescription is not active". An `active` match is reused.
+- With no match, Care creates an `active` prescription with that identifier, the given `name` and `note`, and the request's `requester` as `prescribed_by`.
+- Every create and update also writes a questionnaire response with structured type `medication_request` and submit type `CREATE` or `UPDATE`.
 
 ## Methods & save behaviour
 
-- Read and write run through the inherited `EMRResource.serialize` / `de_serialize`. `de_serialize` dumps with `exclude_defaults=True`, maps the remaining fields onto the model, then calls `perform_extra_deserialization` for the relation and prescription handling above.
-- `patient` always comes from `encounter`; the client never writes it.
-- Inline prescription creation (`create_prescription`) is idempotent on `(alternate_identifier, encounter)` and proceeds only when an existing match is `active`.
-- `authored_on` falls back to `timezone.now` at the model layer when omitted.
+The models define no `save()` or `delete()` override. The behaviour below lives in the specs and the viewsets.
+
+- Create runs in this order: validate the body, authorize, build the record (the extra deserialization checks run here), save.
+- Fields left at their spec default are not written (`exclude_defaults=True`). So an update cannot clear an optional field by sending `null`.
+- An update body loses `id`, `external_id`, `patient` and `encounter` before validation.
+- Delete is soft: Care sets `deleted` and keeps the row. The default manager hides deleted rows.
+- Dispensing changes `dispense_status`. A dispense with `fully_dispensed` set marks the request `complete` (true) or `partial` (false).
+- Cancelling a dispense that has a charge item sets the request to `incomplete` and removes the link from the dispense. Cancelling a dispense order does the same for each of its dispenses.
+- A prescription created through the prescription endpoint writes no questionnaire response.
 
 ## API integration notes
 
-- Coded fields take a single `Coding` object `{ system, code, display }` validated against bound SNOMED CT value sets — send a `code` from the right value set or the write fails.
-- Enum members are underscored (`on_hold`, `entered_in_error`, `original_order`); send those literals, not the FHIR hyphenated forms.
-- `dosage_instruction` carries SIG text, timing/frequency, PRN flags, dose and rate, and max-dose limits — write the full nested shape (snake_case keys) rather than free text alone.
-- On create, send either `medication` or `requested_product` (not both) and at most one of `prescription` / `create_prescription`.
-- Updates reach only `status`, `note`, and `dispense_status`.
-- `requester`, `requested_product`, and `prescription` use `SET_NULL`, so a request outlives the user, product, or prescription it referenced.
+### Endpoints
+
+All paths are under `/api/v1/`.
+
+| Method | Path | Action |
+| --- | --- | --- |
+| `GET` | `patient/{patient_id}/medication/request/` | List |
+| `POST` | `patient/{patient_id}/medication/request/` | Create |
+| `GET` | `patient/{patient_id}/medication/request/{id}/` | Retrieve |
+| `PUT`, `PATCH` | `patient/{patient_id}/medication/request/{id}/` | Update. Both use `MedicationRequestUpdateSpec` |
+| `DELETE` | `patient/{patient_id}/medication/request/{id}/` | Soft delete |
+| `POST` | `patient/{patient_id}/medication/request/upsert/` | Batch create or update, see [Upsert](#upsert) |
+| `GET`, `POST` | `patient/{patient_id}/medication/prescription/` | List, create |
+| `GET`, `PUT`, `PATCH` | `patient/{patient_id}/medication/prescription/{id}/` | Retrieve, update. Both updates use `MedicationRequestPrescriptionUpdateSpec`. There is no delete |
+| `POST` | `patient/{patient_id}/medication/prescription/upsert/` | Batch create or update |
+| `POST` | `patient/{patient_id}/medication/prescription/{id}/set_tags/` | Set tags |
+| `POST` | `patient/{patient_id}/medication/prescription/{id}/remove_tags/` | Remove tags |
+| `GET` | `facility/{facility_id}/medication_prescription/summary/` | Prescriptions of every encounter in the facility, newest first. The only action on this route |
+
+The tag body is `{"tags": [{"tag": "<tag config id>", "expiry_offset": ...}]}`. The 3.1 release changed it from a plain list of tag ids. Tags can also go in the create body of a prescription.
+
+### Authorization
+
+"Clinical write" below means "Update Encounter related clinical data" held in one of the encounter's departments or its current location's departments. The encounter status must not be Completed, Cancelled, Entered in Error or Discontinued.
+
+| Action | Requirement |
+| --- | --- |
+| Medication request: list | With `?facility=`: "Pharmacist in Care" in any department of that facility. Otherwise "Can view clinical data about patients" on the patient in the URL. Failing that, with `?encounter=`: "Can Read encounter related clinical data" on that encounter. Else 403 "Permission denied to user". The `facility` or `encounter` filter then limits the results to that facility or encounter |
+| Medication request: retrieve | The read check of the list runs first |
+| Medication request: create, upsert items without `id` | Clinical write on the encounter in the body. Else 403 "You do not have permission to update encounter" |
+| Medication request: create with `requester` | The requester also has clinical write on that encounter. Else 403 "Requester does not have permission to update encounter" |
+| Medication request: update, delete | The read check of the list runs first. Then clinical write on the record's encounter |
+| Prescription: list | The same read check as medication requests |
+| Prescription: retrieve | "Can Read encounter" on its encounter, or "Pharmacist in Care" in its facility. Else 403 "Access Denied to prescription" |
+| Prescription: create | Clinical write on the encounter |
+| Prescription: update, set tags, remove tags | Clinical write allows any change. Otherwise "Pharmacist in Care" in the encounter's facility, else 403 "Access Denied to prescription" |
+| Prescription: update by a pharmacist-only user | A new status must be `active`, `on_hold` or `completed`, else 403 "You do not have permission to update medication request prescription". Only `status` is saved. No encounter-status condition applies |
+| Facility summary | "Pharmacist in Care" in the facility of the URL. Else 403 "You do not have permission to view this facility" |
+
+"Can view clinical data about patients" counts the user's roles on the patient. These come from the departments of the patient's open encounters (and of their current locations), the patient's organizations, and a direct patient link. Closed encounters do not count.
+
+Default role lists from the permission definitions:
+
+| Permission | Default roles |
+| --- | --- |
+| "Update Encounter related clinical data" | Doctor, Nurse, Facility Admin |
+| "Can Read encounter related clinical data" | Doctor, Nurse, Facility Admin |
+| "Can Read encounter" | Doctor, Nurse, Facility Admin |
+| "Can view clinical data about patients" | Staff, Doctor, Nurse, Facility Admin |
+| "Pharmacist in Care" | Facility Admin, Pharmacist |
+
+The permission definitions also name an Admin role. Roles are matched by name, and the only role named Admin in the database is for role organizations, which the screen that links users to departments does not offer. The lists above leave it out.
+
+A permission refusal is HTTP 403 with the message in `detail`. A validation error is HTTP 400 with an `errors` list. A missing record is HTTP 404 with type `object_not_found`.
+
+### Filters and ordering
+
+Medication request list:
+
+| Parameter | Meaning |
+| --- | --- |
+| `encounter` | Encounter id |
+| `status` | Comma-separated statuses |
+| `name` | Medicine display contains the text, case-insensitive |
+| `encounter_class` | Does not work: Care answers HTTP 500. The filter is declared on `encounter__class`, but the encounter's field is `encounter_class` |
+| `priority` | Exact priority, case-insensitive |
+| `dispense_status`, `exclude_dispense_status` | Comma-separated dispense statuses to keep or to leave out |
+| `dispense_status_isnull` | Requests with or without a dispense status |
+| `facility` | Facility of the encounter. Also turns on the pharmacist read check |
+| `prescription` | Prescription id |
+| `product_type` | Type of the requested product: `medication`, `nutritional_product` or `consumable` |
+| `medications_only` | `true` keeps requests for a medication product and requests with no product |
+| `ordering` | `created_date` or `modified_date`. Without it, newest record first |
+
+Prescription list: `encounter`, `status` (comma-separated), `facility`, a `created_date` range, and `tags` with `tags_behavior` (`any`, the default, or `all`). Ordering by `created_date` or `modified_date`.
+
+Facility summary: a `created_date` range, `status` (one value, case-insensitive), `patient_external_id`, `encounter_external_id`, `encounter_class` (on the encounter's `encounter_class` field) and the tag filter.
+
+Lists are paginated with `limit` and `offset` (default 14, at most 200) and return `count` and `results`.
+
+### Upsert
+
+`POST .../upsert/` takes `{"datapoints": [...]}`. An item with `id` updates that record; an item without one creates a record.
+
+- An empty list fails with "No datapoints provided". More than `MAX_DATAPOINTS_PER_UPSERT` items (100 by default, set by environment variable) fails with "Too many datapoints provided".
+- All items run in one transaction. If any item fails, nothing is saved and the response is HTTP 400 with one result per item.
+
+### Notes
+
+- Send each coded field as one `Coding` object, `{system, version, code, display}`, with a `code` from the bound value set.
+- `status` has no backend default. The Care frontend starts each new medicine at `active`, intent `order`, priority `routine`, category `inpatient`, with the signed-in user as requester. It has no category or priority field.
+- The Care frontend saves medicines through the upsert. Each save sends one new `create_prescription` identifier and no name, so the new medicines of one save share one prescription.
+- The Care frontend never deletes a medication request. Its "remove" sets the status to `entered_in_error`.
+- `requester`, `requested_product` and `prescription` are `SET_NULL` links. The prescription's `prescribed_by` is a `CASCADE` link. These rules act only when a row is removed from the database. The API delete and the model `delete()` are soft and do not trigger them.
+- No deployment setting is specific to this resource.
 
 ## Related
 
-- Reference: [Medication Administration](medication-administration.mdx)
-- Reference: [Medication Dispense](medication-dispense.mdx)
-- Reference: [Medication Statement](medication-statement.mdx)
+- Concept: [Medication request](../../concepts/medications/medication-request.mdx)
+- Reference: [Medication administration](medication-administration.mdx)
+- Reference: [Medication dispense](medication-dispense.mdx)
+- Reference: [Dispense order](dispense-order.mdx)
+- Reference: [Medication statement](medication-statement.mdx)
 - Reference: [Product Knowledge](../definitions/product-knowledge.mdx)
+- Reference: [Tag config](../platform/tag-config.mdx)
 - Reference: [Encounter](../clinical/encounter.mdx)
 - Reference: [Patient](../clinical/patient)
-- Reference: [Base Model](../foundation/base-model.mdx)
+- Reference: [Base model](../foundation/base-model.mdx)
+- FHIR: [MedicationRequest](https://hl7.org/fhir/medicationrequest.html)
 - Source: [medication_request.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/medication_request.py) · [request/spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/request/spec.py) · [request_prescription/spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/request_prescription/spec.py)

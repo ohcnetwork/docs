@@ -6,86 +6,122 @@ sidebar_position: 1
 
 ## Overview
 
-This flow describes how to record a [medication statement](../../../concepts/medications/medication-statement.mdx) for a patient in Care.
+<video src="/media/medications/medication-statement/record-medication-statement.mp4" poster="/media/medications/medication-statement/record-medication-statement.poster.png" controls width="720">
+  <track kind="captions" src="/media/medications/medication-statement/record-medication-statement.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to record a [medication statement](../../../concepts/medications/medication-statement.mdx) for a patient during an encounter. You record it in a form that your facility built with the **Medication Statement** question.
 
 ## Pre-requisites
 
-- The patient is registered in Care, and you record the statement for that patient.
-- The patient has an encounter at your facility. Care records every medication statement against an encounter.
-- The encounter is open. Care blocks the record when the encounter status is Completed, Cancelled, Discontinued, or Entered in Error.
+- Your facility has built an encounter form that contains the **Medication Statement** question. Ask your facility administrator which form to use. See [Questionnaire](../../../concepts/definitions/questionnaire.mdx).
+- The form is shared with a department that you are in, or with a department under it. Otherwise Care does not list the form under **Forms**. This does not apply if you are in the facility's Administration department.
+- The patient has an open encounter at your facility. Care hides the quick actions when the encounter is Completed, Cancelled, Discontinued, or Entered in error.
+- You opened the encounter from the facility.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can view questionnaire responses on patient | Lets you open the **Updates** tab of the patient. |
-| Can submit questionnaire about patients | Lets you open a form for the patient and submit it. |
-| Update Encounter related clinical data | Lets you record a medication statement against the encounter. |
+| Update Encounter related clinical data | Lets you save the medication statement. You must hold it in one of the encounter's departments or in a department of its current location. By default, the Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can Read Questionnaires | Lets you find the form under **Forms** and open it. You must hold it in the facility's Administration department, in a department that the form is shared with, or in a department above that one. By default, the Staff, Doctor, Nurse, Facility Admin, Administrator, Volunteer and Pharmacist roles hold this permission. |
+| Can view clinical data about patients | Lets you use the **Forms** quick action, and lets the form load the statements of this encounter, when you hold it for the patient. You need this permission or the next one. By default, the Staff, Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can Read encounter related clinical data | Gives the same access for this encounter only, when you hold it in one of the encounter's departments or in a department of its current location. By default, the Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can submit questionnaire about patient encounters | Needed only if you also answer other questions in the form. You must hold it in one of the encounter's departments or in a department of its current location. By default, the Staff, Doctor, Nurse and Facility Admin roles hold this permission. |
 
 ## Steps
 
-### 1. Open the Updates tab
+### 1. Open the encounter
 
-Open the patient.
+Open the patient's encounter. Select the **Overview** tab.
 
-Select the **Updates** tab.
+Care shows the quick actions at the top of the tab.
 
-### 2. Start a new form
+![The encounter Overview tab with the quick actions outlined, including Forms](/media/medications/medication-statement/record-medication-statement-1.png)
 
-Select **Add Patient Updates**. Care opens the form page for the patient.
+### 2. Open the Forms dialog
 
-### 3. Select the Medication Statement form
+Select the **Forms** quick action. Care opens the **Forms** dialog.
 
-Enter `Medication Statement` in the **Search Forms** box.
+Note: When the quick actions are on the screen, press `f` to open the **Forms** dialog.
 
-Select **Medication Statement** in the results.
+![The Forms dialog open, listing the Medication history form](/media/medications/medication-statement/record-medication-statement-2.png)
 
-Note: **Medication Statement** is a patient form. It is not in the **Forms** list of the encounter.
+### 3. Select the form
 
-### 4. Select the medicine
+Enter the name of the form in the **Search Forms** box.
 
-Select **Add Medication**.
+Select the form with the **Medication Statement** question in the list. Care opens the form for the encounter.
 
-Search the clinical drug list for the medicine that the patient reports taking.
+Note: The list shows active encounter forms of your facility and of the whole Care instance. It shows only the forms that you can use, up to 15 at a time.
 
-Select the medicine in the results. Care adds an entry for it.
+Note: The form also shows the statements that staff recorded before during this encounter. To change them, see [Update a medication statement](./update-medication-statement.mdx).
 
-### 5. Complete the entry
+![The Forms dialog with Medication typed and the Medication history form outlined](/media/medications/medication-statement/record-medication-statement-3.png)
 
-Complete the fields of the entry.
+### 4. Add the medicine
+
+In the **Medication Statement** question, search for the medicine in the **Add Medication** box. Care searches the clinical drug list.
+
+Select the medicine in the results. Care adds the medicine to the question.
+
+Note: On a small screen, Care opens the medicine in a panel. Complete the fields of step 5 in the panel. Then select **Done**.
+
+![The medicine picker of the Medication history form, with ferrous sulfate typed and Ferrous sulfate 200 mg oral tablet outlined](/media/medications/medication-statement/record-medication-statement-4.png)
+
+### 5. Complete the details
+
+Complete the fields for the medicine.
 
 | Components | What it captures |
 | --- | --- |
-| Source | Who reported the medicine: the **Patient**, a **Practitioner**, or a **Related Person**. Care selects **Patient** by default. |
-| Status | The state of the medication statement. Care selects **Active** by default. |
-| Dosage Instructions | How the patient takes the medicine. This field is mandatory. |
-| Medication Taken Between | The start date and the end date of the period. The start date is mandatory. Leave the end date empty when the patient still takes the medicine. |
-| Reason | Why the patient takes the medicine. You can enter up to 100 characters. |
+| Source | Who reported the medicine: **Patient**, **Practitioner**, or **Related Person**. Care selects **Patient**. |
+| Status | The state of the statement. Care selects **Active**. The other statuses are **On Hold**, **Completed**, **Stopped**, **Unknown**, **Not Taken**, and **Intended**. |
+| Dosage Instructions | How the patient takes the medicine, as text. This field is mandatory. |
+| Medication Taken Between | The start date and the end date. The start date is mandatory. If the patient still takes the medicine, leave the end date empty. The end date cannot be before the start date. |
+| Reason | Why the patient takes the medicine, in up to 100 characters. |
 | Note | More information about the medicine. |
 
-To record another medicine, repeat step 4 and step 5.
+To record another medicine, do step 4 and step 5 again. The search box then reads **Add another Medication**.
 
-### 6. Submit the form
+Note: To take out a medicine that you added by mistake, select its remove button. Then select **Remove** in the **Remove Medication** dialog. Care takes the medicine out of the form.
 
-Select **Submit**.
+![The new statement row with the Status field outlined, set to Active](/media/medications/medication-statement/record-medication-statement-5.png)
 
-Note: To finish the form later, select **Save as Draft**.
+![The Dosage Instructions field outlined, with the text 1 tablet once a day after lunch](/media/medications/medication-statement/record-medication-statement-6.png)
+
+![The start date of Medication Taken Between outlined, set to September 15th, 2026](/media/medications/medication-statement/record-medication-statement-7.png)
+
+![The Note field outlined, with the text Started by her family doctor](/media/medications/medication-statement/record-medication-statement-8.png)
+
+### 6. Save the form
+
+Select **Save Changes**.
+
+Note: Press `Shift+Enter` to save the form.
+
+Note: Care saves the whole form in one step. If Care refuses one part of the form, it saves nothing.
+
+![The Save Changes button outlined](/media/medications/medication-statement/record-medication-statement-9.png)
+
+![The encounter Overview tab after the save, with the message Questionnaire submitted successfully](/media/medications/medication-statement/record-medication-statement-10.png)
 
 ## Expected Outcome
 
 - Care shows the message "Questionnaire submitted successfully".
-- Care opens the **Updates** tab of the patient.
-- Care shows the medication statement in the **Medication Statements** sub-tab of the **Medicines** tab of the encounter.
+- Care returns to the **Overview** tab of the encounter.
+- Care shows the statement in the **Medication Statements** sub-tab of the **Medications** tab.
 
 ## Related
 
 Concepts:
 
-- [Medication Statement](../../../concepts/medications/medication-statement.mdx)
+- [Medication statement](../../../concepts/medications/medication-statement.mdx)
+- [Questionnaire](../../../concepts/definitions/questionnaire.mdx)
 
 Flows:
 
-- [View medication statements for an encounter](./view-medication-statements.mdx)
+- [View medication statements](./view-medication-statements.mdx)
 - [Update a medication statement](./update-medication-statement.mdx)
-- [Mark a medication statement as entered in error](./medication-statement-entered-in-error.mdx)
+- [Add medicines from past records](../medication-request/add-medications-from-past-records.mdx)

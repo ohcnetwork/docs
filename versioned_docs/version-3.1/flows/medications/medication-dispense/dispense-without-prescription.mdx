@@ -1,0 +1,155 @@
+---
+sidebar_position: 4
+---
+
+# Dispense medicines without a prescription
+
+## Overview
+
+<video src="/media/medications/medication-dispense/dispense-without-prescription.mp4" poster="/media/medications/medication-dispense/dispense-without-prescription.poster.png" controls width="720">
+  <track kind="captions" src="/media/medications/medication-dispense/dispense-without-prescription.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to bill and dispense medicines at a pharmacy location to a patient who has no prescription for them, with **New Dispense**. Care creates a [medication dispense](../../../concepts/medications/medication-dispense.mdx) for each lot in a new [dispense order](../../../concepts/medications/dispense-order.mdx) in one of the patient's encounters.
+
+## Pre-requisites
+
+- Your facility has a pharmacy service, and the pharmacy location is one of its locations.
+- The [patient](../../../concepts/clinical/patient) is registered in Care, or you register the patient during this flow.
+- The pharmacy location has stock of the products that is not expired.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Write Medication Dispense | Bill the medicines. Care saves a dispense for each lot. You must hold it in a department of the pharmacy location. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold this permission. |
+| Can list encounters | See the patient's encounters, where **Dispense Medicine** appears. You must hold it in a department of the facility. By default, the Doctor, Nurse and Facility Admin roles hold this permission. The Pharmacist role does not. |
+| Can Create encounter | Create an encounter for the patient and go straight to billing. You must hold it in a department of the facility. By default, the Doctor, Nurse and Facility Admin roles hold this permission. The Pharmacist role does not. |
+| Can list patients | Load the patient's encounters, and open the encounter that you bill in. You must hold it through a role on the patient: in a department of one of the patient's open encounters, or in an organization of the patient. By default, the Staff, Doctor, Nurse, Administrator, Facility Admin, Volunteer and Pharmacist roles hold this permission. |
+| Pharmacist in Care | See the **Prescription Queue**, and open the dispense order that Care creates and move it to In Progress. You must hold it in a department of the facility. By default, the Facility Admin and Pharmacist roles hold this permission. |
+| Can Read Inventory Item | See the lots and their stock at the pharmacy location. You must hold it in a department of the location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can Read Product Knowledge | Search for the products to dispense. You must hold it in a department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can Write Invoice | Let Care create and issue the invoice when you bill. You must hold it in a department of the facility. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold this permission. |
+| Can Read Account | Let Care find the patient's account. You must hold it in a department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can Read Patient Identifier Config | Search for the patient by an identifier that your facility set up. A search by phone number needs no permission. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can Read Healthcare Service | Open the facility's list of services. You must hold it in a department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can List Facility Locations | Open the pharmacy location and its pages, including **Bill Medications**. You must hold it in a department of the location. By default, the Doctor, Facility Admin, Administrator, Nurse, Staff and Pharmacist roles hold this permission. |
+
+By default, only the Facility Admin role holds all of these permissions. The Pharmacist role does not hold "Can list encounters" or "Can Create encounter", so a user with only that role does not see **Dispense Medicine** or **Create Encounter**, and cannot finish this flow.
+
+Note: To register a new patient in this flow, you also need "Can Create Patient". By default, the Pharmacist role does not hold it. See [Register a patient](../../clinical/patient/register-patient.mdx).
+
+## Steps
+
+### 1. Open the pharmacy location from Services
+
+Do this step even if you are already in the pharmacy location.
+
+1. In the facility sidebar, select **Services**.
+2. Select the pharmacy service.
+3. Select **View Prescriptions** on the card of the pharmacy location. Care opens the **Prescription Queue**.
+
+Care remembers this pharmacy location in this browser. In the next steps, Care bills at this location and uses its stock.
+
+Note: If no pharmacy location was opened from **Services** in this browser, the patient's page does not show **Dispense Medicine**. If you opened another pharmacy location from **Services** last, Care bills at that location.
+
+![The Main Pharmacy service page with the Pharmacy location card outlined](/media/medications/medication-dispense/dispense-without-prescription-1.png)
+
+### 2. Start a new dispense
+
+Select **New Dispense** at the top of the **Prescription Queue**. Care asks you to select a patient.
+
+Note: Press `Shift+D` to start a new dispense. **New Dispense** is also on the **Dispense Orders** page.
+
+If the queue shows the prescriptions of one patient, Care skips the patient search and opens that patient's page. Go to step 5.
+
+![The Prescription Queue with the New Dispense button outlined](/media/medications/medication-dispense/dispense-without-prescription-2.png)
+
+### 3. Find the patient
+
+1. Under **Select Patient**, choose what to search by. Your facility sets the options, such as the phone number or an identifier.
+2. Type the phone number or the identifier. Care lists the patients that match.
+3. Select the patient.
+4. If Care asks **Verify Patient Identity**, enter the patient's year of birth, and then select **Verify**.
+
+Note: With two search options, Care shows each option as a tab. With more than two options, Care lists them under **Search by**.
+
+If the patient is not registered, select **Add New Patient** and register the patient. After you register the patient, Care opens the patient's page for dispensing. Go to step 5.
+
+![The New Dispense sheet with a patient phone number entered and the matching patient outlined](/media/medications/medication-dispense/dispense-without-prescription-3.png)
+
+### 4. Proceed to dispense
+
+Care shows the patient's name in the sheet. Select **Proceed to Dispense**. Care opens the patient's page.
+
+![The New Dispense sheet with the patient selected and the Proceed to Dispense button outlined](/media/medications/medication-dispense/dispense-without-prescription-4.png)
+
+### 5. Select the encounter
+
+On the patient's page, open the **Encounters** tab. It lists the **Active** and the **Completed** encounters.
+
+Select **Dispense Medicine** on the encounter. Care opens **Bill Medications** for that encounter.
+
+If the patient has no encounter to bill in, select **Create Encounter** and save the new encounter. Care opens **Bill Medications** for the new encounter. Care does not open the encounter itself. See [Create an encounter](../../clinical/encounter/create-encounter.mdx).
+
+![The patient home page with an active encounter and its Dispense Medicine button outlined](/media/medications/medication-dispense/dispense-without-prescription-5.png)
+
+### 6. Add the medicines
+
+**Bill Medications** opens with no medicines.
+
+If the patient has unbilled prescriptions in this facility, Care shows how many. **Include all** opens **Bill Medications** for those prescriptions instead. See [Bill and dispense prescribed medicines](./dispense-prescribed-medicines.mdx).
+
+1. Search for the product in **Add Medication**. Care opens the **Add Medication** sheet.
+2. Check the **Dosage** and the **Frequency**. These fields are mandatory. Care fills in a dose of 1, in the unit of the product, and the frequency "SOS (As needed)".
+3. If the medicine is not taken as needed, select the frequency and enter the **Duration**. Care disables **Duration** while the frequency is "SOS (As needed)".
+4. Check the **Required Quantity**, the lots and their quantities. Care calculates the quantity from the dose, the frequency and the duration. Care selects the lots that expire first.
+5. Select **Add Medication**. Care adds the medicine under **Other Items**.
+
+Do this for each medicine.
+
+Note: The **Add Medication** button of the sheet is disabled until the dose and the frequency are set. It also needs a lot with a quantity within its stock.
+
+To change the lots or quantities, see steps 3 and 4 of [Bill and dispense prescribed medicines](./dispense-prescribed-medicines.mdx).
+
+![The Add Medication sheet with Ibuprofen selected, its dosage, frequency and duration, and a lot already selected](/media/medications/medication-dispense/dispense-without-prescription-6.png)
+
+### 7. Bill the medicines
+
+Check the **Estimated Total**, and then select **Bill Selected**.
+
+Note: Press `Enter` to bill.
+
+Care shows **Preparing your bill…** while it creates the invoice.
+
+![The Bill Medications page with Ibuprofen under Other Items and the Estimated Total bar outlined](/media/medications/medication-dispense/dispense-without-prescription-7.png)
+
+![The Collect Payment sheet outlined, after the message Medications billed successfully](/media/medications/medication-dispense/dispense-without-prescription-8.png)
+
+## Expected Outcome
+
+- Care creates one dispense for each lot, with the status Preparation, in one new dispense order.
+- Care reduces the stock of each lot by the quantity that you billed.
+- If the dispenses have charges and the patient has an account, Care creates and issues an invoice.
+- Care shows **Medications billed successfully** and opens the dispense order. The order moves to In Progress. If Care issued an invoice, Care opens the payment sheet.
+
+Next, collect the payment and complete the order. See [Collect payment and complete a dispense order](./complete-dispense-order.mdx).
+
+## Related
+
+Concepts:
+
+- [Medication Dispense](../../../concepts/medications/medication-dispense.mdx)
+- [Dispense Order](../../../concepts/medications/dispense-order.mdx)
+- [Patient](../../../concepts/clinical/patient)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [Open the prescription queue](./open-prescription-queue.mdx)
+- [Bill and dispense prescribed medicines](./dispense-prescribed-medicines.mdx)
+- [Collect payment and complete a dispense order](./complete-dispense-order.mdx)
+- [Search for a patient](../../clinical/patient/search-patient.mdx)
+- [Register a patient](../../clinical/patient/register-patient.mdx)
+- [Create an encounter](../../clinical/encounter/create-encounter.mdx)

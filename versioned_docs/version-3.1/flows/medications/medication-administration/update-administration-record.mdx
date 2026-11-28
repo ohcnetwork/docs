@@ -2,70 +2,90 @@
 sidebar_position: 3
 ---
 
-# Update an administration record
+# Edit an administration record
 
 ## Overview
 
-This flow describes how to change a recorded [medicine administration](../../../concepts/medications/medication-administration.mdx) in Care. For example, you can mark a dose as Not Done, Stopped, or Entered in Error.
+<video src="/media/medications/medication-administration/update-administration-record.mp4" poster="/media/medications/medication-administration/update-administration-record.poster.png" controls width="720">
+  <track kind="captions" src="/media/medications/medication-administration/update-administration-record.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to change the status or the note of a recorded [medicine administration](../../../concepts/medications/medication-administration.mdx). For example, you can mark a dose as Not Done, Stopped, or Entered in Error.
 
 ## Pre-requisites
 
 - Staff recorded the dose on the encounter. See [Administer a dose](./administer-dose.mdx).
-- The encounter is open. You cannot change a record when the encounter status is Completed, Cancelled, Discontinued, or Entered in Error.
-- You have the permission listed below.
+- The encounter is open. Care does not let you save a change when the encounter is Completed, Cancelled, Discontinued, or Entered in error.
+- You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Update Encounter related clinical data | Lets you change an administration record on the encounter. |
+| Update Encounter related clinical data | Lets you save the change. You must hold it in one of the encounter's departments or in a department of its current location. By default, the Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can view clinical data about patients | Lets you open the chart and find the dose, when you hold it for the patient. You need this permission or the next one. By default, the Staff, Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can Read encounter related clinical data | Gives the same access for this encounter only, when you hold it in one of the encounter's departments or in a department of its current location. By default, the Doctor, Nurse and Facility Admin roles hold this permission. |
 
 ## Steps
 
 ### 1. Open the Medicine Administration sub-tab
 
 1. Open the encounter.
-2. Select the **Medicines** tab.
+2. Select the **Medications** tab.
 3. Select the **Medicine Administration** sub-tab.
 
-Note: Press `g` then `m` to go to the **Medicines** tab.
+Note: Press `g` then `m` to go to the **Medications** tab.
+
+![The Medicine Administration sub-tab outlined](/media/medications/medication-administration/update-administration-record-1.png)
 
 ### 2. Open the recorded dose
 
-Find the medicine row and the time slot of the dose. Select the chip that shows the time of the
-dose. Care opens the **Edit Administration** dialog.
+Find the medicine row and the time slot of the dose.
 
-Note: To find an older dose, move back through the time slots. See
-[View the medicine administration record](./view-medicine-administration.mdx).
+Select the button that shows the time of the dose. Care opens the **Edit Administration** dialog.
+
+Note: To find an older dose, move back through the time slots. See [View the medicine administration chart](./view-medicine-administration.mdx).
+
+![A recorded dose in the Amoxicillin row outlined](/media/medications/medication-administration/update-administration-record-2.png)
 
 ### 3. Change the status
 
-Set **Status** to the state that matches what staff did. Select Entered in Error when staff
-created the record by mistake.
+Select the **Status** that matches what staff did.
+
+If staff recorded the dose by mistake, select **Entered in Error**.
+
+![The Edit Administration dialog with the Status field outlined, set to Not Done](/media/medications/medication-administration/update-administration-record-3.png)
 
 ### 4. Change the note
 
-Add or change the free text in **Administration Notes**.
+Add or change the text in **Administration Notes**.
+
+![The Administration Notes box outlined, with a note that the patient refused the tablet](/media/medications/medication-administration/update-administration-record-4.png)
 
 ### 5. Save your changes
 
-Select **Update** to save the record.
+Select **Update**.
 
-Note: The form does not let you change the medicine, the dosage, the start time, or the end
-time after you save an administration.
+Note: You can change only the status and the note of a saved dose. The dialog does not let you change the start time or the end time.
+
+![The Update button of the Edit Administration dialog outlined](/media/medications/medication-administration/update-administration-record-5.png)
+
+![The dose in the Amoxicillin row outlined in the colour of its new status, and the message Medicine Administration saved](/media/medications/medication-administration/update-administration-record-6.png)
 
 ## Expected Outcome
 
 - Care shows the message "Medicine Administration saved".
-- Care shows the new status as the colour of the chip in the time slot.
+- The colour of the dose button follows the new status.
+- A dose marked Entered in Error stays in the chart with that status. The drug chart leaves it out, because the drug chart shows only completed doses.
 
 ## Related
 
 Concepts:
 
-- [Medicine Administration](../../../concepts/medications/medication-administration.mdx)
+- [Medication administration](../../../concepts/medications/medication-administration.mdx)
 
 Flows:
 
 - [Administer a dose](./administer-dose.mdx)
-- [View the medicine administration record](./view-medicine-administration.mdx)
+- [View the medicine administration chart](./view-medicine-administration.mdx)
+- [Print the drug chart](./print-drug-chart.mdx)

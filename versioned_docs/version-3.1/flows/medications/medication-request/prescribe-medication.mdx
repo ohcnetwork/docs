@@ -2,104 +2,175 @@
 sidebar_position: 1
 ---
 
-# Prescribe a medication
+# Prescribe medicines
 
 ## Overview
 
-This flow describes how to prescribe a [medication](../../../concepts/medications/medication-request.mdx) for a patient during an open encounter in Care.
+<video src="/media/medications/medication-request/prescribe-medication.mp4" poster="/media/medications/medication-request/prescribe-medication.poster.png" controls width="720">
+  <track kind="captions" src="/media/medications/medication-request/prescribe-medication.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to prescribe one or more medicines for a patient in an encounter. Each time you save, Care groups the medicines that you saved into one new prescription. See [medication request](../../../concepts/medications/medication-request.mdx).
 
 ## Pre-requisites
 
-- The patient is registered in Care, and you record the medication for that patient.
-- The encounter is open. You cannot prescribe a medication when the encounter status is Completed, Cancelled, Discontinued, or Entered in Error.
-- You have write access to the encounter.
+- The patient has an encounter in your facility, and you open that encounter from the facility. Care shows an encounter that you open from an organization as read-only.
+- The status of the encounter is not Completed, Cancelled, Discontinued or Entered in error.
+- If you view an earlier encounter inside the encounter page, go back to the encounter that you opened. Care lets you prescribe only in that encounter.
+- If another user is the requester, that user also has "Update Encounter related clinical data" for this encounter.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Update Encounter related clinical data | Lets you add and change medications for the encounter. |
+| Update Encounter related clinical data | Save the medicines. You must hold it in one of the encounter's departments, or in a department of the encounter's current location. By default, the Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can view clinical data about patients | Open the encounter and see the **Medications** tab, the **Create** button and the **Medication** quick action. You need this permission for the patient, or the next permission. By default, the Staff, Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can Read encounter related clinical data | Gives the same access as the permission above, when you hold it in one of the encounter's departments, or in a department of the encounter's current location. By default, the Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can Read Product Knowledge | Search the **Product** tab of the medicine picker. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
 
 ## Steps
 
-### 1. Open the Prescriptions sub-tab
+### 1. Open the Medication Request form
 
-1. Open the encounter.
-2. Select the **Medicines** tab.
-3. Select the **Prescriptions** sub-tab.
+Open the form in one of these ways:
 
-Note: Press `g` then `m` to go to the **Medicines** tab.
+- Open the **Medications** tab of the encounter. On the **Prescriptions** sub-tab, select **All Prescriptions**. Then select **Create**.
+- On the **Overview** tab of the encounter, select the **Medication** quick action.
+- Select **Encounter Actions**. Then select **Add Medication**.
 
-### 2. Start a new medication entry
+Care opens the "Medication Request" form for the encounter.
 
-Select the action to add a medicine. Care shows this action only if you have write access to the encounter.
+Note: Press `k` to open the form while the **Overview** tab shows the **Medication** quick action.
 
-Note: Press `k` anywhere in the encounter to go straight to adding a medication.
+Note: When a prescription is selected on the **Prescriptions** sub-tab, the button reads **Edit** and changes that prescription. See [Edit a prescription](./update-prescription.mdx).
 
-### 3. Select the medicine
+![The Medications tab of an encounter, with All Prescriptions selected and the Create button outlined](/media/medications/medication-request/prescribe-medication-1.png)
 
-Select the medicine in the picker. The picker lets you search a clinical drug list. The picker also lets you search the facility's inventory.
+### 2. Select the medicine
 
-Note: Which list the picker opens on by default depends on your deployment's configuration.
+1. Select the **Add Medication** field. After the first medicine, the field reads **Add another Medication**.
+2. Select the tab to search in.
+3. Select the medicine.
 
-### 4. Complete the required fields
+| Tab | What it lists |
+| --- | --- |
+| Product | The active products in the facility's product catalogue. Until you type, Care lists the product categories. Select a category to see its products. |
+| Medication | The clinical drug list. |
 
-Care shows the medicine as a row. Complete the fields in the row.
+On a large screen, Care adds the medicine to the form as a row. On a small screen, Care opens the medicine in a sheet. Complete the sheet and confirm it.
+
+If you select a consumable product, Care sets its first dosage step to "as needed".
+
+Note: The picker opens on the **Product** tab, unless your deployment's configuration sets another default.
+
+Note: To copy medicines from the patient's past records, see [Add medicines from past records](./add-medications-from-past-records.mdx).
+
+Note: The form also has a **Templates** button for saved prescription templates.
+
+![The medicine picker on the Product tab, with Amox typed in the search box and Amoxicillin outlined in the results](/media/medications/medication-request/prescribe-medication-2.png)
+
+### 3. Enter the dosage, frequency and duration
+
+Complete the fields in the row of each medicine.
 
 | Components | What it captures |
 | --- | --- |
-| Dosage | The amount of the medicine to give. Required. |
-| Frequency | How often to give the medicine. Required. |
-| Duration | How long the patient takes the medicine. Optional. |
+| Dosage | The amount of the medicine for each dose. Required. |
+| Frequency | How often to give the medicine, such as "1-0-1". Required. |
+| Duration | How long to give the medicine. Optional. |
+
+In **Duration**, enter a duration, such as "5 days". You can also select **Set a range of days** or **Set fixed start & end dates**.
+
+The **Frequency** list also offers "SOS (As needed)" and "STAT (Immediately)".
+
+If you select "SOS (As needed)", Care disables **Duration**.
+
+If a required field is empty, Care shows "This field is required".
+
+If a duration is not valid, Care shows "Enter a valid duration".
+
+![A medicine row for Amoxicillin with the dosage, the frequency 1-1-1 (Thrice a day) and the duration 5 days filled in, the Duration field outlined](/media/medications/medication-request/prescribe-medication-3.png)
+
+### 4. Set a changing dose
+
+This step is optional.
+
+1. To give a dose that changes over time, select **Configure dose range** beside the dose.
+2. In **Taper & Titrate Dosage**, enter the **Start Dose** and the **End Dose**.
+
+To add another dosage step to a new medicine, select **Add Dosage Step** under its name.
+
+To remove a dosage step, select **Remove step** on that step.
 
 ### 5. Complete the advanced fields
 
-Expand **Advanced fields** to record more detail.
+This step is optional.
+
+- On a large screen, select the bar in the table header. Its tooltip reads **Show Advanced Fields**.
+- On a small screen, expand **Advanced Fields** under the medicine.
 
 | Components | What it captures |
 | --- | --- |
-| Instructions | Directions for the patient or the staff. If the patient takes the medicine as needed, record the reason here. |
+| Instructions | Directions for the medicine. If the frequency is "SOS (As needed)", also select the reason in **Select reason for PRN**. |
 | Route | The route to give the medicine. |
 | Site | The body site for the medicine. |
 | Method | The method to give the medicine. |
 | Intent | The intent of the medication request. |
-| Authored On | The date of the request. You cannot enter a future date. |
-| Requester | The user recorded as the person who requested the medicine. |
+| Authored On | The date and time of the request. Care fills in the current date and time. You cannot select a future date. |
+| Requester | The user who requests the medicine. Care fills in your name. You can select another user of the facility. |
 
-Note: If you add more than one medicine, you can copy the same requester to all of the medicines at one time.
+If the form has more than one medicine, you can copy the requester to every medicine. Select **Apply this requester to all medications**.
 
-### 6. Add a note
+Care then shows "Requester applied to all medications".
 
-To record more detail for one medicine, enter a free-text note for that medicine.
+Note: The requester must have "Update Encounter related clinical data" for this encounter. Otherwise, Care saves none of the medicines.
 
-### 7. Select the prescription
+### 6. Add notes
 
-Add the medicine to a new prescription, or add the medicine to an existing prescription for this encounter.
+This step is optional.
 
-For a new prescription, enter a name. You can also enter a note for the prescription.
+- To add a note for one medicine, enter it in the note field of that medicine. The field shows "Enter additional notes".
+- To add a note for the whole prescription, enter it in **Note**. The field shows "Add any notes for this prescription...".
 
-For more about prescription batches, see [Manage a prescription](./manage-prescription.mdx).
+Care shows the prescription **Note** field after you add the first medicine.
 
-### 8. Save the medication
+![The Note field of the medicine row outlined, with the text Take after food](/media/medications/medication-request/prescribe-medication-4.png)
 
-Submit the form to save the medication.
+![The Note box of the prescription outlined, with the text Review after the course](/media/medications/medication-request/prescribe-medication-5.png)
 
-Note: Press `Shift+Enter` to submit the form.
+### 7. Save the medicines
+
+Select **Save Changes**.
+
+Note: Press `Shift+Enter` to save the form.
+
+Note: You cannot save this form as a draft.
+
+![The Medication Request form with the Save Changes button outlined](/media/medications/medication-request/prescribe-medication-6.png)
+
+![The encounter Overview tab after the save, with the message Questionnaire submitted successfully outlined](/media/medications/medication-request/prescribe-medication-7.png)
 
 ## Expected Outcome
 
-- Care saves the medication for the encounter.
-- Care shows the medication under the prescription that you selected in the **Prescriptions** sub-tab.
+- Care shows "Questionnaire submitted successfully".
+- Care opens the **Overview** tab of the encounter.
+- The medicines that you saved together form one new prescription.
+- On **Medications** > **Prescriptions**, the new prescription shows the date and time of the save. It also shows "Prescribed by" with the name of the requester, and its tags.
+- A prescription has no name. Each save makes a new prescription, and you cannot add medicines to a saved prescription.
+- If Care cannot save one of the medicines, Care saves none of them.
 
 ## Related
 
 Concepts:
 
-- [Medication Request](../../../concepts/medications/medication-request.mdx)
+- [Medication request](../../../concepts/medications/medication-request.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
 
 Flows:
 
-- [Manage a prescription](./manage-prescription.mdx)
-- [Add medications from past records](./add-medications-from-past-records.mdx)
-- [View prescriptions and medications for an encounter](./view-encounter-medications.mdx)
+- [Add medicines from past records](./add-medications-from-past-records.mdx)
+- [View prescriptions and medicines for an encounter](./view-encounter-medications.mdx)
+- [Edit a prescription](./update-prescription.mdx)
+- [Stop a medicine](./stop-a-medicine.mdx)
+- [Print a prescription](./print-prescription.mdx)

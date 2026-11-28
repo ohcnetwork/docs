@@ -1,0 +1,108 @@
+---
+sidebar_position: 5
+---
+
+# Dispense order
+
+## Definition
+
+A **dispense order** in Care groups the [medication dispenses](./medication-dispense.mdx) for one patient at one pharmacy location. The pharmacy bills the medicines on the order, collects payment, and then completes the order.
+
+## Where to find it
+
+The pharmacy works on an order on the **Dispense Medicines** page. It finds its orders on the **Dispense Orders** page, in the **Pending** and **History** tabs. The **Dispense History** sub-tab of an encounter also lists the patient's dispense orders, for users with "Pharmacist in Care".
+
+## Key Attributes
+
+| Components | What it captures |
+| --- | --- |
+| Patient | The patient who receives the medicines. |
+| Location | The pharmacy location that dispenses the medicines. |
+| Status | The current state of the order. See Status below. |
+| Dispenses | The medication dispenses on the order, one for each lot. |
+| Created by / Updated by | Who created the order and when, and who last updated it and when. |
+
+### How dispenses join an order
+
+On the screens, Care creates a dispense order together with its first dispenses. A user who can dispense at the location can create an order this way.
+
+In the pharmacy flow, **Bill Selected** on the **Bill Medications** page creates one dispense for each selected lot and puts all of them in one new order. Care then opens the order on the **Dispense Medicines** page and moves it to In Progress.
+
+While the order is open, **Add Medication** on the order page adds more medicines to it. The field shows only while the order has a draft invoice, has no invoice, or has dispenses that are not on an invoice yet. **Edit Dispense** replaces a dispense with a new one in the same order.
+
+The encounter's **Dispense** drawer creates its own order with the dispenses that it saves. It then asks Care to set that order to Completed in a separate step. That step needs "Pharmacist in Care" or "Can Create Supply Delivery on Facility", so for other users the order stays in Draft.
+
+Care does not add dispenses to an order that is Abandoned or Entered in Error.
+
+### Billing and payment
+
+After **Bill Selected**, Care puts the charges of the new dispenses on an invoice and issues it. The order page then opens payment collection for that invoice.
+
+The order page groups the dispenses by invoice. Dispenses that are not on an invoice yet show first, with **Issue Invoice**. While payment is pending, **Collect Payment** records the payment.
+
+**Complete Dispense** is available only when every dispense that has a charge is on a balanced invoice.
+
+### Status
+
+| Status | Description |
+| --- | --- |
+| Draft | The order is open but not in progress. A new order starts in Draft. **Put on hold** returns an order to Draft and sets its dispenses to On Hold. |
+| In Progress | The pharmacy bills the medicines and collects payment. When the pharmacy flow opens a new order, Care moves it to In Progress. |
+| Completed | The order is finished. **Complete Dispense** sets this status, and sets the open dispenses of the order to Completed. |
+| Abandoned | Someone cancelled the order. Care cancels all of its dispenses. |
+| Entered in Error | Someone recorded the order by mistake. Care sets all of its dispenses to Entered in Error. |
+
+Draft and In Progress are the open statuses, and an open order can move to any status. The **Pending** tab of **Dispense Orders** lists the open orders, and the **History** tab lists the others.
+
+On a Draft order, **Mark as In Progress** starts the order. **Put in Preparation** moves an order that is on hold back to In Progress. After an invoice of the order is fully paid, the order page turns off **Put on hold** and **Put in Preparation**.
+
+A Completed order can move only to Abandoned or Entered in Error. Abandoned and Entered in Error are final.
+
+Completing an order does not change stock or billing. The stock left the lots when the dispenses were saved.
+
+### Cancelling an order
+
+The **More Actions** menu of an order offers **Mark as Abandoned** and **Mark as entered in error**, on open and on completed orders.
+
+Both cancel every dispense of the order. Care aborts their charge items, sets the dispense status of their medication requests back to Incomplete, and puts the quantities back in stock.
+
+Care refuses to cancel an order while one of its invoices is issued or balanced. The order page then asks you to cancel or revert the invoice first.
+
+## How it connects
+
+A dispense order belongs to a patient and a pharmacy location, not to an encounter or a prescription. One order can hold medicines from several prescriptions of the patient, and medicines that are not on any prescription.
+
+## Permissions
+
+Care gives permissions through the roles that a user holds in departments. The roles named below hold each permission by default; an installation can change the permissions of its roles.
+
+| Permission | What it allows |
+| --- | --- |
+| Pharmacist in Care | List, open, create and change every dispense order of the facility. This includes completing an order, putting it on hold and cancelling it. You need it in any department of the facility. By default, the Facility Admin and Pharmacist roles hold this permission. |
+| Can Read Supply Delivery | For a user without "Pharmacist in Care": list and open the dispense orders of a location. You need it in a department of that location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can Create Supply Delivery on Facility | For a user without "Pharmacist in Care": create and change the dispense orders of a location, which includes their status. You need it in a department of that location. By default, only the Facility Admin role holds this permission. |
+| Write Medication Dispense | Add dispenses to an order, change their status and edit them. Moving an order to Draft, In Progress or Completed also saves its dispenses, so it needs this permission too. You need it in a department of the location. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold this permission. |
+| Medication Dispense Read | See the dispenses on the order page. You need it in a department of the location. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold this permission. |
+| Can Read Account | Show the link to the patient's account on the order page. You need it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can Write Invoice | Create and issue the invoices of the order, and add the charges of new or edited dispenses to its draft invoice. You need it in any department of the facility. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold this permission. |
+| Can Read Invoice | Find the draft invoice of the order, to add the charges of new or edited dispenses. You need it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+
+Collecting payment follows the billing permissions. See [Record a payment](../../flows/billing/payment-reconciliation/record-payment.mdx).
+
+By default, the Pharmacist role holds "Pharmacist in Care", so a pharmacist can open, change and complete the dispense orders of the facility. The Doctor, Nurse and Staff roles can dispense, but by default they cannot change the status of a dispense order.
+
+The pharmacy screens show their buttons to every user who can open the page. Care refuses an action when the user does not hold the permission for it.
+
+## Related
+
+- Flow: [Bill and dispense prescribed medicines](../../flows/medications/medication-dispense/dispense-prescribed-medicines.mdx)
+- Flow: [Collect payment and complete a dispense order](../../flows/medications/medication-dispense/complete-dispense-order.mdx)
+- Flow: [Change items in an open dispense order](../../flows/medications/medication-dispense/change-dispense-order-items.mdx)
+- Flow: [Put a dispense order on hold and resume it](../../flows/medications/medication-dispense/put-dispense-order-on-hold.mdx)
+- Flow: [Cancel a dispense order](../../flows/medications/medication-dispense/cancel-dispense-order.mdx)
+- Flow: [Find and print a dispense order](../../flows/medications/medication-dispense/find-dispense-order.mdx)
+- Flow: [Dispense from an encounter](../../flows/medications/medication-dispense/dispense-medication.mdx)
+- Concept: [Medication dispense](./medication-dispense.mdx)
+- Concept: [Medication return](./medication-return.mdx)
+- Concept: [Invoice](../billing/invoice.mdx)
+- Reference: [Dispense order](../../references/medications/dispense-order.mdx)

@@ -1,0 +1,131 @@
+---
+sidebar_position: 9
+---
+
+# Find and print a dispense order
+
+## Overview
+
+<video src="/media/medications/medication-dispense/find-dispense-order.mp4" poster="/media/medications/medication-dispense/find-dispense-order.poster.png" controls width="720">
+  <track kind="captions" src="/media/medications/medication-dispense/find-dispense-order.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to find a [dispense order](../../../concepts/medications/dispense-order.mdx) at a pharmacy location, open it, and print it.
+
+## Pre-requisites
+
+- You can open the pharmacy location. See [Open the prescription queue](./open-prescription-queue.mdx).
+- The inventory usage of the pharmacy location is not None.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Pharmacist in Care | List and open the dispense orders. With this permission, the list shows the orders of every location in the facility. You must hold it in a department of the facility. By default, the Facility Admin and Pharmacist roles hold this permission. |
+| Medication Dispense Read | See the dispenses of an order, and print them. You must hold it in a department of the pharmacy location. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold this permission. |
+| Can List Facility Locations | Open the pages of the pharmacy location. You must hold it in a department of the location. By default, the Doctor, Facility Admin, Administrator, Nurse, Staff and Pharmacist roles hold this permission. |
+
+Without "Pharmacist in Care", a user needs "Can Read Supply Delivery" in a department of the pharmacy location. Then the list shows only the orders of this location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold "Can Read Supply Delivery".
+
+## Steps
+
+### 1. Open the Dispense Orders page
+
+In the location sidebar, select **Pharmacy** > ℞ **Dispense**. Care opens the **Dispense Orders** page.
+
+Note: The overview page of the location also has a **Dispense** link in its **Pharmacy** group.
+
+Note: If the inventory usage of the location is None, Care shows **Inventory and pharmacy aren't available here**. Care also shows it if you cannot open the location.
+
+![The Pharmacy menu with the Dispense link outlined](/media/medications/medication-dispense/find-dispense-order-1.png)
+
+### 2. Select a tab
+
+| Tab | What it lists |
+| --- | --- |
+| **Pending** | The open orders, which are Draft or In Progress. Care opens this tab first. |
+| **History** | The orders that are Completed, Entered in Error or Abandoned. |
+
+![The Dispense Orders page with the Pending and History tabs outlined](/media/medications/medication-dispense/find-dispense-order-2.png)
+
+### 3. Find the order
+
+Use the filters above the list.
+
+| Components | What it captures |
+| --- | --- |
+| **Filter by Identifier** | Find a patient, and show only that patient's orders. |
+| **Filter** | Show only the orders created by one user (**Created By**), or created on a **Date**. |
+
+To show only the orders of one patient, you can also select the patient's name in the list.
+
+The list shows these columns:
+
+| Column | What it shows |
+| --- | --- |
+| **Patient Name** | The name of the patient, and **Created At**, the date and time when the order was created. |
+| **Status** | The status of the order. |
+| **Location** | The location of the order. |
+| **Action** | **View Order**, which opens the order. |
+
+If no order matches, Care shows **No Dispense Orders Found**.
+
+Note: If you have "Pharmacist in Care", the list also shows the orders of other locations in the facility. Care opens such an order under this location, so it shows no dispenses. Open it from the pharmacy location in its **Location** column.
+
+![The History tab with the Filter button outlined](/media/medications/medication-dispense/find-dispense-order-3.png)
+
+![The History list filtered to today, with one order row outlined](/media/medications/medication-dispense/find-dispense-order-4.png)
+
+### 4. Open the order
+
+Select **View Order**. Care opens the order on the **Dispense Medicines** page, with its status at the top.
+
+What you can do next depends on the status of the order:
+
+- If the order is Draft or In Progress, you can complete it, put it on hold, or cancel it.
+- If the order is Completed, you can print it or cancel it. With "Can Write Medication Returns", you can also start a medication return.
+- If the order is Abandoned or Entered in Error, you can print it.
+
+Note: You can also open a dispense order from the charge items of the patient's account. Select **Medication Dispense** on a charge item that came from a dispense.
+
+Note: In the **Dispense History** of an encounter, select **Dispense** next to a dispense that is not Completed. Care opens its dispense order.
+
+![A completed dispense order with Status: Completed outlined](/media/medications/medication-dispense/find-dispense-order-5.png)
+
+### 5. Print the order
+
+You can print an order that is Completed, Abandoned or Entered in Error.
+
+1. Select **Print**. On a Completed order, it is at the bottom of the page. On an Abandoned or Entered in Error order, it is on the patient card.
+2. Care opens a print preview of the order. Select **Print**.
+
+Note: On a phone or tablet, the button can show **Share** instead of **Print**.
+
+The print shows the patient, the location, the name and note of the order, and a **Medication Dispenses** table. The table has the columns **Medicine**, **Dosage**, **Frequency**, **Quantity**, **Lot/Batch Number**, **Expiry Date** and **Prepared date**.
+
+Note: The print lists at most 14 dispenses. It also lists cancelled dispenses, and does not mark them as cancelled.
+
+![The Print button outlined at the bottom of the completed order](/media/medications/medication-dispense/find-dispense-order-6.png)
+
+![The Dispense Order print page, with the patient details and the dispensed medicines, and the Print button outlined](/media/medications/medication-dispense/find-dispense-order-7.png)
+
+## Expected Outcome
+
+- The dispense order is open on the **Dispense Medicines** page, or you have a printed copy of it.
+
+## Related
+
+Concepts:
+
+- [Dispense Order](../../../concepts/medications/dispense-order.mdx)
+- [Medication Dispense](../../../concepts/medications/medication-dispense.mdx)
+
+Flows:
+
+- [Open the prescription queue](./open-prescription-queue.mdx)
+- [Collect payment and complete a dispense order](./complete-dispense-order.mdx)
+- [Put a dispense order on hold and resume it](./put-dispense-order-on-hold.mdx)
+- [Cancel a dispense order](./cancel-dispense-order.mdx)
+- [Return dispensed medicines](./return-medicines.mdx)
+- [View dispense history for an encounter](./view-dispense-history.mdx)
