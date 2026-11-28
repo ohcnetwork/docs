@@ -151,6 +151,8 @@ Then settle what a run can settle, with `probes.md`. Record each finding in `rep
 
 Send one researcher to the backend and one to the frontend, in parallel. Give each: the module, the path of its checkout, this file and `permissions.md`, and the fact format. Ask each to return facts with sources and quotes, a list of what it could not settle, and suspected bugs.
 
+Give each researcher its own facts file and its own range of numbers, for example `facts-backend.md` with E1 to E199 and `facts-frontend.md` with E200 to E399, and merge them into `facts.md` yourself. Two agents editing one file at the same time overwrite each other's additions. Ask them to return suspected bugs and open questions in their final message: on 28 November 2026 the harness refused subagents' writes to files named like `report-backend.md` and `questions-backend.md`, and you copy that text into the session yourself.
+
 A researcher's report is a lead until you have checked it. Open the cited lines for every permission, role and label it reports before the fact goes into `facts.md`. Spot-check the rest.
 
 ## Before you leave research

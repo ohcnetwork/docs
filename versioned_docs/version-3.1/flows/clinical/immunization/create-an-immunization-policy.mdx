@@ -1,0 +1,192 @@
+---
+sidebar_position: 1
+---
+
+# Create an immunization policy
+
+## Overview
+
+<video src="/media/clinical/immunization/create-an-immunization-policy.mp4" poster="/media/clinical/immunization/create-an-immunization-policy.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/immunization/create-an-immunization-policy.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to create an [immunization policy](../../../concepts/clinical/immunization.mdx) for your facility.
+
+A policy is a named list of planned vaccine doses, called recommendations. When a user applies the policy to a patient, Care adds its recommendations to the patient's immunization schedule.
+
+## Pre-requisites
+
+- You know the vaccines, the doses and the timing of the schedule that the policy describes.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Immunization Policy | Lets you start a new policy and save it. Without it, Care does not show **New policy**. You need it through a role in the facility's root department, Administration. By default, the Facility Admin role holds it. |
+| Can Read Immunization Policy | Lets you see **Immunization policies** in the facility settings, load the list of policies and open the new policy page. You need it through a role in any department of the facility. A role in Administration also counts. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+
+By default, a user with the Facility Admin role in Administration has both permissions.
+
+A user with only the Administrator, Staff, Doctor, Nurse, Volunteer or Pharmacist role can open the list of policies. Care does not show **New policy** to that user.
+
+## Steps
+
+### 1. Open the list of immunization policies
+
+Open the facility. In the facility sidebar, select **Settings**.
+
+In the settings menu, under **Clinical**, select **Immunization policies**.
+
+![The facility settings menu with Immunization policies selected under Clinical](/media/clinical/immunization/create-an-immunization-policy-1.png)
+
+Care opens **Immunization policies**, with the text "Facility templates and shared instance policies."
+
+The list shows the policies of your facility, with **Facility** in the **Scope** column. It also shows the policies that the whole instance shares, with **Instance** in the **Scope** column.
+
+If the settings menu does not show **Immunization policies**, you do not have "Can Read Immunization Policy".
+
+### 2. Start a new policy
+
+Select **New policy**.
+
+![The Immunization policies list with three facility policies and the New policy button at the top right](/media/clinical/immunization/create-an-immunization-policy-2.png)
+
+Care opens the page **New immunization policy**, with the badge **Facility** next to the title.
+
+The page has the policy fields and the outline headed **Recommendations**. It also has the editor of the item that you select in the outline.
+
+### 3. Enter the name and the description
+
+| Components | What it captures |
+| --- | --- |
+| **Policy name** | The name of the policy. Required. Up to 255 characters. Users choose the policy by this name when they apply it to a patient. |
+| **Description** | Free text about the policy. Optional. The list of policies shows it under the policy name. |
+
+![The New immunization policy page with Hepatitis B Adult Series in Policy name and a description entered](/media/clinical/immunization/create-an-immunization-policy-3.png)
+
+### 4. Choose one dose or a group of doses
+
+A new policy starts with one item of the type **Recommendation**. The editor of this item is headed **Recommendation template**.
+
+In the outline, this item reads **Policy template** until you enter a series or add a vaccine code. Then it shows the series, or the name of the first vaccine.
+
+A recommendation is one planned dose. A group holds recommendations and other groups. Only the recommendations become doses in the patient's schedule.
+
+- If the policy has one dose, keep the type **Recommendation**. Go to step 6.
+- If the policy has more than one dose, select **Type**. Then select **Group**.
+
+![The Recommendation template editor with Type set to Group, and the outline item Policy template showing 0 items in group](/media/clinical/immunization/create-an-immunization-policy-4.png)
+
+### 5. Add the doses to the group
+
+Select the group in the outline.
+
+Select **Add recommendation** at the bottom of the item editor.
+
+![The group editor with the Add recommendation and Add group buttons at the bottom](/media/clinical/immunization/create-an-immunization-policy-5.png)
+
+Care adds the recommendation at the end of the group and selects it.
+
+The editor of an item in a group has a heading such as "Recommendation 1" or "Group 2". The number is the position of the item in its group.
+
+Under the name of each item, the outline shows the number of items in a group. For a recommendation with a dose number, it shows the dose.
+
+Set the values of the new recommendation, as step 6 describes. Then add the next dose in the same way.
+
+To add a group inside the selected group, select **Add group**.
+
+To copy an item with its values, select the item. Then select **Duplicate**. Care adds the copy directly after the item and selects the copy.
+
+To remove an item, select the item. Then select the bin icon next to **Duplicate**. Screen readers announce this icon as "Remove" and the name of the item.
+
+Care asks for confirmation with the text "This removes the item and all recommendations inside it from the template. Save the policy to apply the change." Select **Remove**.
+
+You cannot copy or remove the **Recommendation template** item.
+
+To change a group back to a recommendation, first remove the items in the group. Until then, Care shows "Remove the items in this group before changing it to a single recommendation."
+
+### 6. Set the vaccines and the timing of each recommendation
+
+Select the recommendation in the outline. Then set its values.
+
+| Components | What it captures |
+| --- | --- |
+| **Vaccine codes** | The vaccine or vaccines of the dose. Required for a recommendation. Select **Add vaccine code**, then search for the vaccine. The search uses the "Medication" value set. To take out a code, select the X on it. Care does not add a code that is already in the list. |
+| **Target diseases** | The diseases that the dose protects against. Optional. Select **Add target disease**, then search for the disease. The search uses the "Condition" value set. The patient's schedule shows them after the words "Protects against". |
+| **Series** | Under **Dose details**. The name of the vaccine series. Optional. The patient's schedule shows it on the row of the dose. |
+| **Dose number** | Under **Dose details**. The number of this dose in its series. Optional. |
+| **Doses in series** | Under **Dose details**. The total number of doses in the series. Optional. With a dose number of 2 and 3 doses in series, the schedule shows "Dose 2 of 3". |
+| **Earliest** | Under **Timing**. The number of days from the start date to the earliest date for the dose. Optional. |
+| **Due** | Under **Timing**. The number of days from the start date to the due date of the dose. Optional. |
+| **Overdue** | Under **Timing**. The number of days from the start date to the date from which the dose is overdue. Optional. |
+| **Recommendation description** | Under **Additional details**. Free text about the dose. Optional. Select **Additional details** to open this section. |
+
+![Recommendation 1 with Hepatitis B vaccine under Vaccine codes and Hepatitis B under Target diseases](/media/clinical/immunization/create-an-immunization-policy-6.png)
+
+The day offsets count from a start date. The user who applies the policy to a patient picks this start date.
+
+By default, the start date is the patient's date of birth, or today if the date of birth is not recorded.
+
+For example, a **Due** offset of 42 makes the dose due 42 days after the start date.
+
+Enter whole days. Each offset that you enter must be larger than the one before it: earliest, then due, then overdue.
+
+![Recommendation 2, dose 2 of 3, with the Timing offsets Earliest 28, Due 30 and Overdue 60 days](/media/clinical/immunization/create-an-immunization-policy-7.png)
+
+In the patient's schedule, a recommendation with the forecast status Due shows as **Upcoming** before its earliest date. From its overdue date, it shows as **Overdue**. If it has no overdue date, it shows as **Overdue** after its due date.
+
+Set the vaccines and the timing on each recommendation. When a user applies the policy in the **Apply policy** dialog, each dose gets only the values of its own recommendation. The vaccines and the timing of a group do not pass to the recommendations in the group.
+
+Note: The **Apply policy** dialog adds at most 20 recommendations at a time. Care does not let a user apply a policy with more than 20 recommendations, or a policy with no recommendations. Keep each policy to 20 recommendations or fewer.
+
+![The Recommendations outline with Policy template holding 3 items: Hepatitis B vaccine Dose 1 of 3, Dose 2 of 3 and Dose 3 of 3](/media/clinical/immunization/create-an-immunization-policy-8.png)
+
+### 7. Save the policy
+
+Select **Save policy**.
+
+![The Save policy button at the top right of the New immunization policy page, next to Unsaved changes](/media/clinical/immunization/create-an-immunization-policy-9.png)
+
+Care checks the policy when you select **Save policy**.
+
+If a value is not correct, Care shows "Check the policy before saving". The alert also says "Review the highlighted fields, including recommendations inside groups."
+
+In the outline, a red dot marks each item with a problem. A group that contains such an item also has a red dot.
+
+Select an item with a red dot to see its message. The table at the end of this page lists the messages.
+
+Correct the values. Then select **Save policy** again.
+
+After the first check, Care checks the policy again at each change. The alert goes away when all the values are correct.
+
+![The message Immunization policy created, with Hepatitis B Adult Series at the top of the Immunization policies list, 3 recommendations and Facility scope](/media/clinical/immunization/create-an-immunization-policy-10.png)
+
+## Expected Outcome
+
+- Care shows the message "Immunization policy created".
+- Care returns you to **Immunization policies**. The new policy is at the top of the list, with **Facility** in the **Scope** column.
+- The **Recommendations** column shows the number of recommendations in the policy. Groups are not counted.
+- The policy is now in the **Apply policy** dialog of the encounters of your facility. To see it there, a user needs "Can Read Immunization Policy" in the facility. See [Apply an immunization policy to a patient](./apply-an-immunization-policy.mdx).
+
+| If you see | What it means | What to do |
+| --- | --- | --- |
+| "This field is required" under **Policy name** | The policy has no name. | Enter a name for the policy. |
+| "Select at least one vaccine code." under **Vaccine codes** | The selected recommendation has no vaccine. | Add a vaccine code, or change the type of the item to **Group**. |
+| "Offsets must be in order: earliest, then due, then overdue. Values cannot be equal." under an offset | The offsets of the selected item are not in order, or two of them are equal. | Change the offsets so that each one is larger than the one before it. |
+| "Enter a whole number of days." under an offset | The offset is not a whole number. | Enter a whole number of days. |
+| "The policy could not be saved. Your changes are still here. Please try again." | Care could not save the policy. Your changes stay on the page. | Select **Save policy** again. |
+| "You do not have permission to manage immunization policies here." | If Care shows it in place of the list, you do not have "Can Read Immunization Policy" in the facility. If Care shows it after you select **New policy**, you are missing "Can Read Immunization Policy" or "Can Create Immunization Policy". | Ask your administrator for the permission. See [Permissions](#permissions). |
+
+## Related
+
+Concepts:
+
+- [Immunization](../../../concepts/clinical/immunization.mdx)
+- [Department](../../../concepts/facility/department.mdx)
+- [Valueset](../../../concepts/definitions/valueset.mdx)
+
+Flows:
+
+- [Edit an immunization policy](./edit-an-immunization-policy.mdx)
+- [Apply an immunization policy to a patient](./apply-an-immunization-policy.mdx)

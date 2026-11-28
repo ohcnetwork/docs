@@ -1,0 +1,150 @@
+---
+sidebar_position: 6
+---
+
+# Record a dose from the schedule
+
+## Overview
+
+<video src="/media/clinical/immunization/record-a-scheduled-dose.mp4" poster="/media/clinical/immunization/record-a-scheduled-dose.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/immunization/record-a-scheduled-dose.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to record a dose that the immunization schedule of a [patient](../../../concepts/clinical/patient) recommends.
+
+You start from the recommendation in the **Schedule**. Care links the new [immunization](../../../concepts/clinical/immunization.mdx) record to that recommendation, and it can mark the recommendation as **Complete**.
+
+## Pre-requisites
+
+- The patient has a schedule. To add one, see [Apply an immunization policy to a patient](./apply-an-immunization-policy.mdx).
+- The recommendation is **Upcoming**, **Due** or **Overdue**. Care does not show **Record dose** for other statuses.
+- The patient has an open encounter at your facility, and you record the dose in that encounter. You open the encounter from your facility.
+- The encounter in which the policy was applied is still open. Care needs this to mark the recommendation as complete.
+- If that encounter is closed, Care still saves the dose. Care then shows "The immunization was recorded, but its recommendation could not be marked complete." The recommendation keeps its status.
+- If you applied the policy in this same encounter, this condition holds while the encounter is open.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Write Immunization | Lets you save the dose. You need it in the encounter in which you record the dose. By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can Write Immunization Recommendation | Lets Care mark the recommendation as complete after it saves the dose. You need it in the encounter in which the policy was applied. Care shows **Mark the recommendation as complete** even if you do not have this permission. By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can Read Immunization Recommendation | Lets the **Immunizations** tab list the schedule of the patient, with its **Record dose** buttons. You need it through a role on the patient. By default, the Doctor, Nurse, Staff, Facility Admin, Administrator, Volunteer and Pharmacist roles hold it. |
+| Can Read Immunization | Lets the tab list the immunization records of the patient. You need it through a role on the patient. By default, the same roles hold it. |
+| Can view clinical data about patients | Shows you the **Immunizations** tab. You need it through a role on the patient. You need this permission or "Can Read encounter related clinical data". By default, the Doctor, Nurse, Staff and Facility Admin roles hold it. |
+| Can Read encounter related clinical data | Shows you the **Immunizations** tab. You need it in the encounter. You need this permission or "Can view clinical data about patients". By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can list patients | Lets you open the encounter. You need it through a role on the patient. You need this permission or "Can Read encounter". By default, the Doctor, Nurse, Staff, Facility Admin, Administrator, Volunteer and Pharmacist roles hold it. |
+| Can Read encounter | Lets you open the encounter. You need it in the encounter. You need this permission or "Can list patients". By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can list encounters | Lets you find the encounter in the encounter list of the facility. The list shows only the encounters in whose departments you hold this permission. By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can List Facility Locations | Needed only to choose a location other than the one that Care fills in. **Location** lists only the locations of the departments where you hold this permission. By default, the Doctor, Nurse, Staff, Facility Admin, Administrator and Pharmacist roles hold it. |
+
+Care adds the recommendations of a policy to the encounter in which you apply the policy. Care checks "Can Write Immunization Recommendation" in that encounter, also when you record the dose in a later encounter.
+
+You have a role on the patient when you hold a role in one of these places:
+
+- A department of an open encounter of the patient, or of the current location of that encounter.
+- An organization that the patient belongs to.
+- The patient itself, when you were given a role directly on the patient.
+
+You hold a permission in an encounter when a role in a department of that encounter gives it to you. The departments of its current location also count.
+
+The departments of an encounter are the departments it is assigned to, the departments above them, and the root department of the facility, Administration.
+
+While an encounter is open, a role in one of its departments is also a role on the patient.
+
+By default, a Doctor, Nurse or Facility Admin role in a department of this encounter gives you all these permissions. This holds when the policy was applied in this encounter.
+
+## Steps
+
+### 1. Open the Immunizations tab of the encounter
+
+Open the encounter of the patient from your facility. [View a patient's immunizations](./view-a-patients-immunizations.mdx) describes how.
+
+Select the **Immunizations** tab. You can also press G, then I.
+
+![An encounter of Sara Thomas with the Immunizations tab selected, showing three Hepatitis B doses with Record dose and Status buttons](/media/clinical/immunization/record-a-scheduled-dose-1.png)
+
+### 2. Find the recommendation in the schedule
+
+Under **Schedule**, find the row of the vaccine and the dose.
+
+![The schedule row of Hepatitis B vaccine Dose 1 of 3, with the Due badge and the due date 28 Nov 2026](/media/clinical/immunization/record-a-scheduled-dose-2.png)
+
+Each row shows the vaccine and its status. A row can also show the dose and the dates of the recommendation.
+
+Care lists the **Overdue**, **Due** and **Upcoming** rows first, in the order of their dates.
+
+### 3. Open the record sheet from the row
+
+Select **Record dose** on the row.
+
+Care opens the **Record immunization** sheet for that recommendation.
+
+**For recommendation** shows that recommendation, and **Vaccine** shows its vaccine.
+
+![The Record immunization sheet with Hepatitis B vaccine Dose 1 of 3 in For recommendation and Hepatitis B vaccine in Vaccine](/media/clinical/immunization/record-a-scheduled-dose-3.png)
+
+If the recommendation lists more than one vaccine, Care fills in the first one. If you gave a different vaccine, select it in **Vaccine**.
+
+If you do not see **Record dose**, check the pre-requisites and the permissions on this page.
+
+### 4. Fill in the dose
+
+Fill in the other fields as for any immunization. [Record an immunization](./record-an-immunization.mdx) describes each field.
+
+![Administration details with Dose 1 milliliter, Intramuscular route and Right deltoid muscle](/media/clinical/immunization/record-a-scheduled-dose-4.png)
+
+For a dose that was given, keep **Status** as **Completed**.
+
+Keep **Mark the recommendation as complete** selected. Care selects it by default, and shows it only when the status is **Completed**.
+
+![The Mark the recommendation as complete box, selected](/media/clinical/immunization/record-a-scheduled-dose-5.png)
+
+If you clear the box, Care saves the dose but does not change the recommendation.
+
+If you set **Status** to **Not given**, Care hides the box and does not change the recommendation. The record stays linked to the recommendation.
+
+To link a different recommendation, select it in **For recommendation**. To save the dose without a link, select **Not linked to a recommendation**.
+
+### 5. Save the immunization
+
+Select **Save immunization**.
+
+Care saves the dose first. Then, if the box is selected, Care tries to mark the recommendation as complete.
+
+To close the sheet without saving, select **Cancel**.
+
+![The message Immunization recorded, with Dose 1 of 3 now Complete at the bottom of the Schedule and no Record dose button on its row](/media/clinical/immunization/record-a-scheduled-dose-6.png)
+
+![The Administered section with the new Hepatitis B vaccine record: Completed, 1 milliliter, intramuscular route, right deltoid muscle](/media/clinical/immunization/record-a-scheduled-dose-7.png)
+
+## Expected Outcome
+
+- Care shows the message "Immunization recorded" and closes the sheet.
+- The dose shows under **Administered**. Care saves it with a link to the recommendation.
+- The recommendation shows **Complete** in the **Schedule**. Care no longer shows **Record dose** on that row.
+- Care moves the row below the rows that are **Overdue**, **Due** or **Upcoming**.
+
+| If you see | What it means | What to do |
+| --- | --- | --- |
+| "The immunization was recorded, but its recommendation could not be marked complete.", with "Access denied to immunization recommendations" and "Immunization recorded" | Care saved the dose, but it did not mark the recommendation as complete. The encounter in which the policy was applied is closed. Or, you do not have "Can Write Immunization Recommendation" in that encounter. The recommendation keeps its status, so the schedule still shows it as **Upcoming**, **Due** or **Overdue**. | If that encounter is still open, ask a user with this permission in that encounter to set the status. See [Change a recommendation's status](./change-a-recommendation-status.mdx). If that encounter is closed, Care cannot change the recommendation. |
+| "You do not have permission to create immunizations" | You do not have "Can Write Immunization" in a department of this encounter, or the encounter is closed. Care saved nothing. | Ask your administrator for a role that holds this permission in a department of this encounter. If the encounter is closed, record the dose in an open encounter of the patient. |
+
+For the messages of the form fields, see [Record an immunization](./record-an-immunization.mdx).
+
+## Related
+
+Concepts:
+
+- [Immunization](../../../concepts/clinical/immunization.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+- [Patient](../../../concepts/clinical/patient)
+
+Flows:
+
+- [Record an immunization](./record-an-immunization.mdx)
+- [Apply an immunization policy to a patient](./apply-an-immunization-policy.mdx)
+- [Change a recommendation's status](./change-a-recommendation-status.mdx)
+- [Correct an immunization record](./correct-an-immunization-record.mdx)
+- [View a patient's immunizations](./view-a-patients-immunizations.mdx)

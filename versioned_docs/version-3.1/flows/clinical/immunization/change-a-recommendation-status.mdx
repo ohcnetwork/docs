@@ -1,0 +1,130 @@
+---
+sidebar_position: 7
+---
+
+# Change a recommendation's status
+
+## Overview
+
+<video src="/media/clinical/immunization/change-a-recommendation-status.mp4" poster="/media/clinical/immunization/change-a-recommendation-status.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/immunization/change-a-recommendation-status.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to change the forecast status of a recommendation in the immunization schedule of a [patient](../../../concepts/clinical/patient).
+
+You change the status in the **Schedule** section of the **Immunizations** tab of an encounter. For what a recommendation is, see [Immunization](../../../concepts/clinical/immunization.mdx).
+
+You can set **Due**, **Complete**, **Immune** or **Contraindicated**. **Upcoming** and **Overdue** are not choices, because Care shows them from the dates of a recommendation with the status **Due**.
+
+## Pre-requisites
+
+- The patient has a schedule. To add one, see [Apply an immunization policy to a patient](./apply-an-immunization-policy.mdx).
+- The patient has an open encounter at your facility, and you work in that encounter. You open the encounter from your facility.
+- An encounter is closed when its status is **Completed**, **Cancelled**, **Entered in error** or **Discontinued**. In a closed encounter, the **Immunizations** tab has no **Status** menu.
+- The encounter in which the policy was applied is still open. If that encounter is closed, Care refuses the change, even when you work in another open encounter.
+- If you applied the policy in this encounter, the condition above holds while this encounter is open.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Write Immunization Recommendation | Lets you change the status. You need it in the encounter in which the policy was applied. By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can Read Immunization Recommendation | Lets the **Immunizations** tab list the schedule of the patient, with its **Status** menus. You need it through a role on the patient. By default, the Doctor, Nurse, Staff, Facility Admin, Administrator, Volunteer and Pharmacist roles hold it. |
+| Can Read Immunization | Lets the tab list the immunization records of the patient. You need it through a role on the patient. By default, the same roles hold it. |
+| Can view clinical data about patients | Shows you the **Immunizations** tab. You need it through a role on the patient. You need this permission or "Can Read encounter related clinical data". By default, the Doctor, Nurse, Staff and Facility Admin roles hold it. |
+| Can Read encounter related clinical data | Shows you the **Immunizations** tab. You need it in the encounter. You need this permission or "Can view clinical data about patients". By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can list patients | Lets you open the encounter. You need it through a role on the patient. You need this permission or "Can Read encounter". By default, the Doctor, Nurse, Staff, Facility Admin, Administrator, Volunteer and Pharmacist roles hold it. |
+| Can Read encounter | Lets you open the encounter. You need it in the encounter. You need this permission or "Can list patients". By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can list encounters | Lets you find the encounter in the encounter list of the facility. The list shows only the encounters in whose departments you hold this permission. By default, the Doctor, Nurse and Facility Admin roles hold it. |
+
+Care adds the recommendations of a policy to the encounter in which you apply the policy. Care checks "Can Write Immunization Recommendation" in that encounter, also when you change a status from a later encounter.
+
+You have a role on the patient when you hold a role in one of these places:
+
+- A department of an open encounter of the patient, or of the current location of that encounter.
+- An organization that the patient belongs to.
+- The patient itself, when you were given a role directly on the patient.
+
+You hold a permission in an encounter when a role in a department of that encounter gives it to you. The departments of its current location also count.
+
+The departments of an encounter are the departments it is assigned to, the departments above them, and the root department of the facility, Administration.
+
+While an encounter is open, a role in one of its departments is also a role on the patient.
+
+By default, the Doctor, Nurse or Facility Admin role in a department of this encounter gives you all these permissions. This holds when the policy was applied in this encounter.
+
+## Steps
+
+### 1. Open the Immunizations tab of the encounter
+
+Open the encounter of the patient from your facility. [View a patient's immunizations](./view-a-patients-immunizations.mdx) describes how.
+
+Select the **Immunizations** tab. You can also press G, then I.
+
+![An encounter of Sara Thomas with the Immunizations tab selected and a Status button on each schedule row](/media/clinical/immunization/change-a-recommendation-status-1.png)
+
+If the encounter is closed, or you do not have "Can Write Immunization Recommendation", the **Schedule** section shows no **Status** menu.
+
+### 2. Find the recommendation
+
+The **Schedule** section lists the recommendations of the patient, also those added in earlier encounters.
+
+Each row shows the vaccine, a status badge, and the dates that are set: **Earliest**, **Due** and **Overdue**.
+
+![The schedule row of Hepatitis B vaccine Dose 3 of 3 with the Upcoming badge](/media/clinical/immunization/change-a-recommendation-status-2.png)
+
+The rows that are **Overdue**, **Due** or **Upcoming** come first, in order of their dates. The other rows follow.
+
+### 3. Open the Status menu
+
+In the row of the recommendation, select **Status**.
+
+Care opens a menu with the heading **Forecast status** and the options **Due**, **Complete**, **Immune** and **Contraindicated**.
+
+The menu marks the current status of the recommendation. If the row shows **Upcoming** or **Overdue**, the menu marks **Due**.
+
+![The Status menu of the Dose 3 of 3 row, headed Forecast status, with Due checked and Complete, Immune and Contraindicated below it](/media/clinical/immunization/change-a-recommendation-status-3.png)
+
+The **Status** menu is on every row, also on the rows with the status **Complete**, **Immune** or **Contraindicated**.
+
+### 4. Select the new status
+
+Select the new status. Care saves the change as soon as you select it.
+
+If you select the status that the recommendation already has, Care saves nothing.
+
+| Status | What changes in the schedule |
+| --- | --- |
+| **Due** | Care shows the row as **Upcoming** before its earliest date. It shows **Overdue** from its overdue date. If there is no overdue date, it shows **Overdue** after the due date. Otherwise it shows **Due**. Users who can record doses see **Record dose** on the row. |
+| **Complete**, **Immune** or **Contraindicated** | The row moves below the **Overdue**, **Due** and **Upcoming** rows. Care no longer shows **Record dose** on the row, and you cannot link a new dose to the recommendation. |
+
+![The message Recommendation updated, with Dose 3 of 3 now Immune at the bottom of the Schedule and no Record dose button on its row](/media/clinical/immunization/change-a-recommendation-status-4.png)
+
+## Expected Outcome
+
+- Care shows the message "Recommendation updated".
+- The row shows the badge of the new status.
+- The badges at the top of the tab, with the number of overdue and due recommendations, include the change.
+- The patient's clinical history shows the same status on its **Immunizations** tab.
+
+When Care refuses the change, it shows an error message, and the recommendation keeps its status.
+
+| If you see | What it means | What to do |
+| --- | --- | --- |
+| "Access denied to immunization recommendations" | The encounter in which the policy was applied is closed. Care saved nothing. | In Care 3.1, you cannot change the status of this recommendation after that encounter is closed. |
+| "Access denied to immunization recommendations" | You do not have "Can Write Immunization Recommendation" in a department of the encounter in which the policy was applied. Care saved nothing. | Ask your administrator for this permission. See [Permissions](#permissions). |
+
+## Related
+
+Concepts:
+
+- [Immunization](../../../concepts/clinical/immunization.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [View a patient's immunizations](./view-a-patients-immunizations.mdx)
+- [Apply an immunization policy to a patient](./apply-an-immunization-policy.mdx)
+- [Record a dose from the schedule](./record-a-scheduled-dose.mdx)
+- [Correct an immunization record](./correct-an-immunization-record.mdx)

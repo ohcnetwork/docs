@@ -1,0 +1,146 @@
+---
+sidebar_position: 8
+---
+
+# Correct an immunization record
+
+## Overview
+
+<video src="/media/clinical/immunization/correct-an-immunization-record.mp4" poster="/media/clinical/immunization/correct-an-immunization-record.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/immunization/correct-an-immunization-record.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to correct an [immunization](../../../concepts/clinical/immunization.mdx) record of a [patient](../../../concepts/clinical/patient), or mark it as entered in error.
+
+You correct a record in the **Administered** section of the **Immunizations** tab of an encounter.
+
+Care has no way to delete an immunization record. To mark a record that was made by mistake, set its status to **Entered in error**.
+
+## Pre-requisites
+
+- The patient has an open encounter at your facility, and you work in that encounter. You open the encounter from your facility.
+- An encounter is closed when its status is **Completed**, **Cancelled**, **Entered in error** or **Discontinued**. In a closed encounter, the **Immunizations** tab has no **Edit** button.
+- The encounter in which the dose was recorded is still open. If that encounter is closed, Care refuses the correction, even when you work in another open encounter.
+- If the dose was recorded in this encounter, the condition above holds while this encounter is open.
+- The record does not have the status **Entered in error**. Care does not show **Edit** on such a record.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Write Immunization | Lets you save the correction. You need it in the encounter in which the dose was recorded. By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can Read Immunization | Lets the **Immunizations** tab list the immunization records of the patient, with their **Edit** buttons. You need it through a role on the patient. By default, the Doctor, Nurse, Staff, Facility Admin, Administrator, Volunteer and Pharmacist roles hold it. |
+| Can Read Immunization Recommendation | Lets the tab list the schedule of the patient. You need it through a role on the patient. By default, the same roles hold it. |
+| Can view clinical data about patients | Shows you the **Immunizations** tab. You need it through a role on the patient. You need this permission or "Can Read encounter related clinical data". By default, the Doctor, Nurse, Staff and Facility Admin roles hold it. |
+| Can Read encounter related clinical data | Shows you the **Immunizations** tab. You need it in the encounter. You need this permission or "Can view clinical data about patients". By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can list patients | Lets you open the encounter. You need it through a role on the patient. You need this permission or "Can Read encounter". By default, the Doctor, Nurse, Staff, Facility Admin, Administrator, Volunteer and Pharmacist roles hold it. |
+| Can Read encounter | Lets you open the encounter. You need it in the encounter. You need this permission or "Can list patients". By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can list encounters | Lets you find the encounter in the encounter list of the facility. The list shows only the encounters in whose departments you hold this permission. By default, the Doctor, Nurse and Facility Admin roles hold it. |
+
+Care checks "Can Write Immunization" in the encounter in which the dose was recorded, not in the encounter in which you work.
+
+You have a role on the patient when you hold a role in one of these places:
+
+- A department of an open encounter of the patient, or of the current location of that encounter.
+- An organization that the patient belongs to.
+- The patient itself, when you were given a role directly on the patient.
+
+You hold a permission in an encounter when a role in a department of that encounter gives it to you. The departments of its current location also count.
+
+The departments of an encounter are the departments it is assigned to, the departments above them, and the root department of the facility, Administration.
+
+While an encounter is open, a role in one of its departments is also a role on the patient.
+
+By default, the Doctor, Nurse or Facility Admin role in a department of this encounter gives you all these permissions. This holds when the dose was recorded in this encounter.
+
+## Steps
+
+### 1. Open the Immunizations tab of the encounter
+
+Open the encounter of the patient from your facility. [View a patient's immunizations](./view-a-patients-immunizations.mdx) describes how.
+
+Select the **Immunizations** tab. You can also press G, then I.
+
+![An encounter of Sara Thomas with the Immunizations tab selected and an Edit button on each record in the Administered section](/media/clinical/immunization/correct-an-immunization-record-1.png)
+
+If the encounter is closed, or you do not have "Can Write Immunization", the **Administered** section shows no **Edit** button.
+
+### 2. Open the Edit immunization sheet
+
+The **Administered** section lists all the immunization records of the patient, the most recent date first. It also lists the records of earlier encounters.
+
+In the row of the record, select **Edit**.
+
+![The Influenza vaccine record in the Administered section, with Right deltoid muscle and the Edit button](/media/clinical/immunization/correct-an-immunization-record-2.png)
+
+Care opens the **Edit immunization** sheet, with the text "Correct this record, or mark it as entered in error."
+
+![The Edit immunization sheet with the saved values of the Influenza vaccine record and the Vaccine field greyed out](/media/clinical/immunization/correct-an-immunization-record-3.png)
+
+Care shows **Edit** on the records of every encounter of the patient. Care saves the correction only if the encounter in which the dose was recorded is still open.
+
+### 3. Correct the values
+
+The sheet starts with the saved values of the record. Change the values that are wrong.
+
+| Components | What it captures |
+| --- | --- |
+| **Vaccine** | The vaccine that the record is for. You cannot change it. |
+| **Status** | **Completed**, **Not given**, **Draft** or **Entered in error**. |
+| **Administered on** | The date and time of the dose. Required when the status is **Completed**. You cannot set a time later than now. When the status is **Not given**, this field is **Date**. |
+| **Reason not given** | Shown, and required, only when the status is **Not given**. Select **Patient is immune**, **Medical precaution**, **Vaccine out of stock**, **Patient objection**, **Philosophical objection**, **Religious objection**, **Vaccine efficacy concerns** or **Vaccine safety concerns**. |
+| **Historical record** | Select it when the dose was "Reported by the patient or another provider, not administered by this team." Care then shows the **Reported** badge on the record. |
+| **Dose** and **Unit** | The amount of the dose. If you enter a dose, it must be greater than zero. |
+| **Route** | The route of the dose. |
+| **Site** | The body site of the dose. |
+| **Subpotent dose (may need to be repeated)** | Select it if the dose was subpotent. Care then shows the **Subpotent reason** field, and the **Subpotent** badge on the record. |
+| **Note** | Free text. |
+
+**Dose**, **Unit**, **Route**, **Site** and the subpotent fields are in the **Administration details** section. Care hides this section when the status is **Not given**.
+
+![The Site field of the Edit immunization sheet changed to Left deltoid muscle](/media/clinical/immunization/correct-an-immunization-record-4.png)
+
+The sheet has no **Administered by** or **Location** field when you correct a record. You cannot change who gave the dose or where.
+
+To mark the record as entered in error, set **Status** to **Entered in error**.
+
+### 4. Save the correction
+
+Select **Save**.
+
+Care shows the message "Immunization updated" and closes the sheet.
+
+![The message Immunization updated, with the Influenza vaccine record now showing Left deltoid muscle](/media/clinical/immunization/correct-an-immunization-record-5.png)
+
+To close the sheet without saving, select **Cancel**.
+
+## Expected Outcome
+
+- The **Administered** section shows the corrected record.
+- If you set the status to **Entered in error**, Care shows the record faded, with its vaccine struck through. The record has no **Edit** button, so you cannot correct it again.
+- Correcting a record does not change the schedule. A recommendation that the dose completed stays **Complete**, also when you mark the record as entered in error. To change the status of a recommendation, see [Change a recommendation's status](./change-a-recommendation-status.mdx).
+
+When Care refuses the save, it shows an error message, and the sheet stays open.
+
+| If you see | What it means | What to do |
+| --- | --- | --- |
+| "You do not have permission to update immunizations" | The encounter in which the dose was recorded is closed. Care saved nothing. | In Care 3.1, you cannot correct this record after that encounter is closed. |
+| "You do not have permission to update immunizations" | You do not have "Can Write Immunization" in a department of the encounter in which the dose was recorded. Care saved nothing. | Ask your administrator for this permission. See [Permissions](#permissions). |
+| "This field is required" | The status is **Completed**, and the date is empty. | Enter the date of the dose. |
+| "The date cannot be in the future." | The date is later than now. | Enter a date that is not in the future. |
+| "Select why the immunization was not given." | The status is **Not given**, and no reason is selected. | Select a reason in **Reason not given**. |
+| "Enter a dose greater than zero." | The dose is zero or less. | Enter a dose greater than zero, or clear the field. |
+
+## Related
+
+Concepts:
+
+- [Immunization](../../../concepts/clinical/immunization.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [View a patient's immunizations](./view-a-patients-immunizations.mdx)
+- [Record an immunization](./record-an-immunization.mdx)
+- [Change a recommendation's status](./change-a-recommendation-status.mdx)

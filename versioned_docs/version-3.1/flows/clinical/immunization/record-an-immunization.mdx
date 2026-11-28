@@ -1,0 +1,175 @@
+---
+sidebar_position: 5
+---
+
+# Record an immunization
+
+## Overview
+
+<video src="/media/clinical/immunization/record-an-immunization.mp4" poster="/media/clinical/immunization/record-an-immunization.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/immunization/record-an-immunization.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to record an [immunization](../../../concepts/clinical/immunization.mdx) for a [patient](../../../concepts/clinical/patient) in Care. You record it in an open encounter of the patient, from the **Immunizations** tab of that encounter.
+
+An immunization record can be a vaccine that your team gave, or a dose that the patient or another provider reports. It can also be a dose that was not given.
+
+To record a dose that the patient's schedule recommends, see [Record a dose from the schedule](./record-a-scheduled-dose.mdx).
+
+## Pre-requisites
+
+- The patient has an open encounter at your facility, and you record the immunization in that encounter. You open the encounter from your facility.
+- An encounter is closed when its status is **Completed**, **Cancelled**, **Entered in error** or **Discontinued**. Care then does not show **Record immunization**, and it does not save a record in that encounter.
+- Care shows **Record immunization** only in the encounter that you opened. Care does not show it for an earlier encounter that you select on that page.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Write Immunization | Lets you save the immunization record. You need it in the encounter. By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can Read Immunization | Lets the **Immunizations** tab list the immunization records of the patient. You need it through a role on the patient. By default, the Doctor, Nurse, Staff, Facility Admin, Administrator, Volunteer and Pharmacist roles hold it. |
+| Can Read Immunization Recommendation | Lets the tab list the schedule of the patient. **For recommendation** takes its options from this list. You need it through a role on the patient. By default, the same roles hold it. |
+| Can view clinical data about patients | Shows you the **Immunizations** tab. You need it through a role on the patient. You need this permission or "Can Read encounter related clinical data". By default, the Doctor, Nurse, Staff and Facility Admin roles hold it. |
+| Can Read encounter related clinical data | Shows you the **Immunizations** tab. You need it in the encounter. You need this permission or "Can view clinical data about patients". By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can list patients | Lets you open the encounter. You need it through a role on the patient. You need this permission or "Can Read encounter". By default, the Doctor, Nurse, Staff, Facility Admin, Administrator, Volunteer and Pharmacist roles hold it. |
+| Can Read encounter | Lets you open the encounter. You need it in the encounter. You need this permission or "Can list patients". By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can list encounters | Lets you find the encounter in the encounter list of the facility. The list shows only the encounters in whose departments you hold this permission. By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can List Facility Locations | Needed only to choose a location other than the one that Care fills in. **Location** lists only the locations of the departments where you hold this permission. By default, the Doctor, Nurse, Staff, Facility Admin, Administrator and Pharmacist roles hold it. |
+
+You have a role on the patient when you hold a role in one of these places:
+
+- A department of an open encounter of the patient, or of the current location of that encounter.
+- An organization that the patient belongs to.
+- The patient itself, when you were given a role directly on the patient.
+
+You hold a permission in the encounter when a role in a department of the encounter gives it to you. The departments of its current location also count.
+
+The departments of an encounter are the departments it is assigned to, the departments above them, and the root department of the facility, Administration.
+
+While the encounter is open, a role in one of its departments is also a role on the patient.
+
+By default, if you hold the Doctor, Nurse or Facility Admin role in a department of this encounter, you have all these permissions.
+
+## Steps
+
+### 1. Open the Immunizations tab of the encounter
+
+Open the encounter of the patient from your facility. [View a patient's immunizations](./view-a-patients-immunizations.mdx) describes how.
+
+Select the **Immunizations** tab. You can also press G, then I.
+
+![An encounter of Sara Thomas with the Immunizations tab selected and the Record immunization button at the top right](/media/clinical/immunization/record-an-immunization-1.png)
+
+The tab shows the **Schedule** of the patient and the doses under **Administered**.
+
+### 2. Open the Record immunization sheet
+
+Select **Record immunization**.
+
+Care opens the **Record immunization** sheet. Its description reads "Record a vaccine given in this encounter, a historical dose, or a dose that was not given."
+
+![The Record immunization sheet with For recommendation, Vaccine, Status, Administered on, Historical record and Administration details](/media/clinical/immunization/record-an-immunization-2.png)
+
+If you do not see **Record immunization**, check the pre-requisites and the permissions on this page.
+
+### 3. Enter the vaccine and what happened
+
+| Components | What it captures |
+| --- | --- |
+| **For recommendation** | The recommendation in the schedule that this dose is for. Care shows this field only when the schedule has a recommendation that is **Upcoming**, **Due** or **Overdue**. The default is **Not linked to a recommendation**. Each option shows the vaccine and the dose, for example "Dose 1 of 2". When you select a recommendation, Care fills in **Vaccine** with the first vaccine of that recommendation. |
+| **Vaccine** | The vaccine. Required. Select it from the "Medication" value set, which includes SNOMED CT medicinal products. If you leave it empty, Care shows "Select the vaccine." |
+| **Status** | **Completed** or **Not given**. Required. The default is **Completed**. |
+| **Administered on** | The date and time of the dose. The default is now. Required when the status is **Completed**. You cannot enter a date in the future. When the status is **Not given**, the field is **Date**, and it is optional. |
+| **Reason not given** | Why the dose was not given. Care shows this field only when the status is **Not given**. Required. If you leave it empty, Care shows "Select why the immunization was not given." |
+| **Historical record** | Select this box when the patient or another provider reports the dose, and your team did not give it. Care then hides **Administered by** and **Location**. |
+| **Mark the recommendation as complete** | Care shows this box only when you link a recommendation and the status is **Completed**. The box is selected by default. See [Record a dose from the schedule](./record-a-scheduled-dose.mdx). |
+
+![The Vaccine search with influenza vaccine typed and Influenza vaccine at the top of the results](/media/clinical/immunization/record-an-immunization-3.png)
+
+![Status set to Completed and Administered on set to the current date and time, with Influenza vaccine selected](/media/clinical/immunization/record-an-immunization-4.png)
+
+**Reason not given** offers these reasons:
+
+- **Patient is immune**
+- **Medical precaution**
+- **Vaccine out of stock**
+- **Patient objection**
+- **Philosophical objection**
+- **Religious objection**
+- **Vaccine efficacy concerns**
+- **Vaccine safety concerns**
+
+To record a dose that was not given, set **Status** to **Not given**. Then select a reason in **Reason not given**.
+
+For a dose that was not given, Care hides **Administration details**. Care does not save a dose, route, site or subpotent details for it.
+
+To record a dose that the patient or another provider reports, select **Historical record**.
+
+Care saves a historical record as reported, not as given by your team.
+
+### 4. Enter the administration details
+
+Care shows **Administration details** only when the status is **Completed**. All these fields are optional.
+
+![Administration details with Dose 0.5 milliliter, Intramuscular route, Right deltoid muscle and Dr. Meera Iyer in Administered by](/media/clinical/immunization/record-an-immunization-5.png)
+
+| Components | What it captures |
+| --- | --- |
+| **Dose** | The amount given, as a number. If you enter a dose, it must be more than zero. Otherwise Care shows "Enter a dose greater than zero." |
+| **Unit** | The unit of the dose. The default is milliliter. |
+| **Route** | How the vaccine was given. Select a route from the "Route" value set. |
+| **Site** | The body site where the vaccine was given. Select a site from the "Body Site" value set. |
+| **Administered by** | The person who gave the dose. The default is you. The list shows the users who have a role in your facility. Care shows this field only when **Historical record** is not selected. |
+| **Location** | Where the dose was given. The default is the current location of the encounter, if the encounter has one. Otherwise the field starts empty. The list shows only the locations of the departments where you hold "Can List Facility Locations". Care shows this field only when **Historical record** is not selected. |
+| **Subpotent dose (may need to be repeated)** | Select this box when the dose may need to be repeated. |
+| **Subpotent reason** | Free text about why the dose is subpotent. Care shows this field only when you select **Subpotent dose (may need to be repeated)**. |
+
+### 5. Add a note
+
+Type a note in **Note** if you need to. This field is optional, and it takes free text.
+
+![The Note field with the text Seasonal influenza vaccine for this year](/media/clinical/immunization/record-an-immunization-6.png)
+
+### 6. Save the immunization
+
+Select **Save immunization**.
+
+To close the sheet without saving, select **Cancel**.
+
+![The message Immunization recorded, with the new Influenza vaccine record, Completed, at the top of the Administered section](/media/clinical/immunization/record-an-immunization-7.png)
+
+## Expected Outcome
+
+- Care shows the message "Immunization recorded" and closes the sheet.
+- The record shows under **Administered** on the **Immunizations** tab. Care lists the records newest first, by the date of the dose.
+- The record shows its status, **Completed** or **Not given**. A dose that was not given also shows "Not given:" and the reason.
+- A historical record shows the **Reported** badge. A subpotent dose shows the **Subpotent** badge. A record with no date shows "Date not recorded".
+- Care saves the record in this encounter, for this patient and this facility.
+- The record also shows on the **Immunizations** tab of the clinical history of the patient. That view is read-only. See [View a patient's immunizations](./view-a-patients-immunizations.mdx).
+- If you linked a recommendation and kept **Mark the recommendation as complete** selected, Care tries to mark it **Complete**. [Record a dose from the schedule](./record-a-scheduled-dose.mdx) describes when Care cannot do this.
+- You cannot delete an immunization record. To correct it, or to mark it as entered in error, see [Correct an immunization record](./correct-an-immunization-record.mdx). You can correct the record while this encounter is open.
+
+| If you see | What it means | What to do |
+| --- | --- | --- |
+| "You do not have permission to create immunizations" | You do not have "Can Write Immunization" in a department of this encounter, or the encounter is closed. Care saved nothing. | Ask your administrator for a role that holds this permission in a department of this encounter. If the encounter is closed, record the immunization in an open encounter of the patient. |
+| "Select the vaccine." | **Vaccine** is empty. | Select the vaccine. |
+| "This field is required" under **Administered on** | The status is **Completed**, and the date is empty. | Enter the date and time of the dose. |
+| "The date cannot be in the future." | The date is later than now. | Enter a date and time that is not in the future. |
+| "Select why the immunization was not given." | The status is **Not given**, and **Reason not given** is empty. | Select a reason. |
+| "Enter a dose greater than zero." | **Dose** is zero or less. | Enter a dose that is more than zero, or leave **Dose** empty. |
+
+## Related
+
+Concepts:
+
+- [Immunization](../../../concepts/clinical/immunization.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+- [Patient](../../../concepts/clinical/patient)
+
+Flows:
+
+- [Record a dose from the schedule](./record-a-scheduled-dose.mdx)
+- [Correct an immunization record](./correct-an-immunization-record.mdx)
+- [View a patient's immunizations](./view-a-patients-immunizations.mdx)
+- [Apply an immunization policy to a patient](./apply-an-immunization-policy.mdx)

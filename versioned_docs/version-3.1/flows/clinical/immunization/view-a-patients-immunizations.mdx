@@ -1,0 +1,183 @@
+---
+sidebar_position: 3
+---
+
+# View a patient's immunizations
+
+## Overview
+
+<video src="/media/clinical/immunization/view-a-patients-immunizations.mp4" poster="/media/clinical/immunization/view-a-patients-immunizations.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/immunization/view-a-patients-immunizations.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to see the immunizations of a patient in Care. The immunization panel shows the patient's schedule of recommended doses and the doses that were recorded.
+
+For what an immunization record, a policy and a recommendation are in Care, see [Immunization](../../../concepts/clinical/immunization.mdx).
+
+You can open the immunization panel of a patient in two places:
+
+- The **Immunizations** tab of an encounter of the patient.
+- The **Immunizations** tab of the patient's clinical history. This view is read-only.
+
+Both places show all the recommendations and all the immunization records of the patient, from every encounter and every facility.
+
+## Pre-requisites
+
+- The patient is registered in Care.
+- If you use the encounter tab, the patient has an encounter at your facility.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Read Immunization | Lets Care load the **Administered** section. You need it through a role on the patient. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Read Immunization Recommendation | Lets Care load the **Schedule** section. You need it through a role on the patient. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can view clinical data about patients | Shows the **Immunizations** tab of the encounter. It also lets you open the patient's page, its **Clinical History** tab and the **Immunizations** tab of the clinical history. You need it through a role on the patient. By default, the Staff, Doctor, Nurse and Facility Admin roles hold it. |
+| Can Read encounter related clinical data | Shows the **Immunizations** tab of the encounter, if you do not have "Can view clinical data about patients". You need it in the encounter. By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can list patients | Lets you open the encounter. You need it through a role on the patient. You need this permission or "Can Read encounter". By default, the Staff, Doctor, Nurse, Administrator, Facility Admin, Volunteer and Pharmacist roles hold it. |
+| Can Read encounter | Lets you open the encounter, whatever its status. You need it in the encounter. You need this permission or "Can list patients". By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can list encounters | Lets you find the encounter in the encounter list of the facility. The list shows only the encounters in whose departments you hold this permission. By default, the Doctor, Nurse and Facility Admin roles hold it. |
+
+You have a role on the patient when you hold a role in one of these places:
+
+- A department of an open encounter of the patient, or a department of the current location of that encounter.
+- An organization that the patient belongs to.
+- The patient itself, when you were given a role directly on the patient.
+
+An encounter is closed when its status is **Completed**, **Cancelled**, **Discontinued** or **Entered in error**. Every other encounter is open.
+
+You hold a permission in the encounter when a role in a department of the encounter gives it to you. The departments of an encounter are the departments it is assigned to, the departments above them, and the facility's root department, Administration. The departments of the encounter's current location also count.
+
+While an encounter is open, a role in one of its departments is also a role on the patient. After the encounter is closed, that role counts only in the encounter.
+
+By default, if you hold the Doctor, Nurse or Facility Admin role in a department of an open encounter of the patient, you have all these permissions.
+
+By default, the Staff role in such a department is enough to view the panel. It gives you "Can list patients", "Can view clinical data about patients" and both read permissions. It does not give "Can list encounters", so a user with only this role does not see the encounter in the encounter list.
+
+By default, the Administrator, Volunteer and Pharmacist roles can open the encounter, but Care does not show them the **Immunizations** tab.
+
+## Steps
+
+### 1. Open the immunization panel
+
+To open the panel from an encounter, open the patient's encounter at your facility. In the facility sidebar, the encounter list is under **Encounters & Locations**. Its entry reads **All Encounters**, or the name of an encounter class.
+
+You can also find the patient with **Search patients** in the facility sidebar.
+
+In the encounter, select the **Immunizations** tab. You can also press G, then I.
+
+![An encounter of Sara Thomas with the Immunizations tab selected, showing the Schedule and Administered sections](/media/clinical/immunization/view-a-patients-immunizations-1.png)
+
+To open the panel from the patient's clinical history, open the patient's page, as [View a patient's profile](../patient/view-patient-profile.mdx) describes.
+
+Select the **Clinical History** tab. Care opens the clinical history on its **Responses** tab.
+
+From an encounter, you can also select the **Clinical History** link, or press H.
+
+Select the **Immunizations** tab.
+
+![The Immunizations tab of Sara Thomas's clinical history, showing the schedule and the administered doses without any action buttons](/media/clinical/immunization/view-a-patients-immunizations-5.png)
+
+The clinical history view is read-only. It has no **Apply policy**, **Record immunization**, **Record dose**, **Status** or **Edit** controls. To make changes, use the **Immunizations** tab of an open encounter.
+
+If you do not see the **Immunizations** tab, check these two causes:
+
+- You do not have "Can view clinical data about patients" through a role on the patient. In an encounter, "Can Read encounter related clinical data" in the encounter also shows the tab.
+- The workspace that you use hides the tab. A workspace can hide the tab in the encounter and in the clinical history.
+
+### 2. Read the panel header
+
+The header shows a badge "`{count}` overdue" with the number of overdue recommendations. It also shows a badge "`{count}` due" with the number of due recommendations.
+
+Care shows each badge only when its count is more than zero.
+
+In an open encounter, the header can also show **Apply policy** and **Record immunization**. See [Apply an immunization policy to a patient](./apply-an-immunization-policy.mdx) and [Record an immunization](./record-an-immunization.mdx).
+
+![The header of the immunization panel with the Apply policy and Record immunization buttons and no due or overdue badges](/media/clinical/immunization/view-a-patients-immunizations-2.png)
+
+### 3. Read the schedule
+
+The **Schedule** section lists the recommendations of the patient.
+
+![The Schedule section with three Hepatitis B vaccine rows: dose 2 Upcoming, dose 1 Complete and dose 3 Immune, each with its dates](/media/clinical/immunization/view-a-patients-immunizations-3.png)
+
+Care lists the **Overdue**, **Due** and **Upcoming** rows first, and the other rows after them. In each part, the rows are in order of date. Care uses the due date, else the earliest date, else the overdue date. Rows without dates come last.
+
+Each row shows these items:
+
+| Components | What it captures |
+| --- | --- |
+| Vaccine | The vaccine or vaccines of the recommendation. Without a vaccine, the row shows **Vaccine not specified**. |
+| Status badge | The forecast status of the recommendation. See the next table. |
+| Detail line | The series, the dose label and "Protects against `{diseases}`", when they are set. The dose label is "Dose `{number}` of `{total}`". It is "Dose `{number}`" when the number of doses in the series is not set. |
+| **Earliest**, **Due**, **Overdue** | The dates of the recommendation that are set, in the form DD MMM YYYY. |
+| Description | The description of the recommendation, when it has one. |
+
+The badge shows one of these forecast statuses:
+
+| Status | What it means |
+| --- | --- |
+| **Upcoming** | The recommendation is due, and today is before its earliest date. |
+| **Due** | The recommendation is due, and it is not upcoming or overdue. |
+| **Overdue** | The recommendation is due, and today is its overdue date or later. Without an overdue date, the due date has passed. |
+| **Complete** | Set with the **Status** menu, or when you record a linked dose with **Mark the recommendation as complete** checked. See [Record a dose from the schedule](./record-a-scheduled-dose.mdx). |
+| **Immune** | Set with the **Status** menu. |
+| **Contraindicated** | Set with the **Status** menu. |
+
+Care saves only Due, Complete, Immune and Contraindicated. Upcoming and Overdue are not saved: Care shows them from the dates of a due recommendation.
+
+If the patient has no recommendations, the section shows "No recommendations scheduled". It also shows the hint "Apply an immunization policy from an encounter to schedule recommended vaccines."
+
+In an open encounter, a row can also show **Record dose** and **Status**. See [Record a dose from the schedule](./record-a-scheduled-dose.mdx) and [Change a recommendation's status](./change-a-recommendation-status.mdx).
+
+### 4. Read the administered doses
+
+The **Administered** section lists the immunization records of the patient, newest first by the date the dose was given.
+
+![The Administered section with two Completed records, Influenza vaccine and Hepatitis B vaccine, each with time, dose, route and site](/media/clinical/immunization/view-a-patients-immunizations-4.png)
+
+Each row shows these items:
+
+| Components | What it captures |
+| --- | --- |
+| Vaccine | The vaccine of the record. For a record marked **Entered in error**, the row is faded and the vaccine is struck through. |
+| Status badge | **Completed**, **Not given**, **Draft** or **Entered in error**. |
+| **Reported** | Shown for a historical record: a dose that the patient or another provider reported, not one that your team gave. |
+| **Subpotent** | Shown when the dose was subpotent and may need to be repeated. The row also shows the subpotent reason, if one was entered. |
+| Date and details | The date the dose was given, or **Date not recorded**. Then the dose with its unit, the route and the site, when they are set. |
+| Reason | For a **Not given** record, "Not given: `{reason}`". |
+| Note | The note of the record, when it has one. |
+
+If the patient has no immunization records, the section shows "No immunizations recorded". It also shows the hint "Doses given, reported, or not given will appear here."
+
+In an open encounter, a record row can also show **Edit**. Care does not show **Edit** on a record marked **Entered in error**. See [Correct an immunization record](./correct-an-immunization-record.mdx).
+
+## Expected Outcome
+
+- You see the schedule and the immunization records of the patient, from every encounter and every facility.
+- In the clinical history, the panel is read-only.
+
+| If you see | What it means | What to do |
+| --- | --- | --- |
+| No **Immunizations** tab | You do not have "Can view clinical data about patients" through a role on the patient, or "Can Read encounter related clinical data" in the encounter. Or the workspace that you use hides the tab. | Ask your administrator for one of these permissions, or about the workspace. |
+| "You do not have permission to view this encounter" | You can read neither the clinical data of the patient nor the encounter. Care goes back to the previous page. | Ask your administrator for the permissions listed above. |
+| "Patient Not Found" | Care could not open the patient's page for you. | Ask your administrator for "Can view clinical data about patients" through a role on the patient. |
+| "Could not load this clinical information. Try again." in a section | Care could not load that section. Care loads both sections for the whole patient, so you need "Can Read Immunization" and "Can Read Immunization Recommendation" through a role on the patient. A role in a department of a closed encounter is not a role on the patient. | Select **Try Again**. If the message stays, ask your administrator for these permissions. |
+
+## Related
+
+Concepts:
+
+- [Immunization](../../../concepts/clinical/immunization.mdx)
+- [Patient](../../../concepts/clinical/patient)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [Apply an immunization policy to a patient](./apply-an-immunization-policy.mdx)
+- [Record an immunization](./record-an-immunization.mdx)
+- [Record a dose from the schedule](./record-a-scheduled-dose.mdx)
+- [Change a recommendation's status](./change-a-recommendation-status.mdx)
+- [Correct an immunization record](./correct-an-immunization-record.mdx)
+- [View a patient's profile](../patient/view-patient-profile.mdx)
