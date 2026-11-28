@@ -1,0 +1,164 @@
+---
+sidebar_position: 4
+---
+
+# Apply an immunization policy to a patient
+
+## Overview
+
+<video src="/media/clinical/immunization/apply-an-immunization-policy.mp4" poster="/media/clinical/immunization/apply-an-immunization-policy.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/immunization/apply-an-immunization-policy.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to apply an immunization policy to a patient in an encounter. Care adds the recommendations of the policy to the patient's schedule, with dates counted from a start date that you choose.
+
+For what an immunization policy and a recommendation are in Care, see [Immunization](../../../concepts/clinical/immunization.mdx).
+
+## Pre-requisites
+
+- The patient has an open encounter at your facility, and you apply the policy in that encounter. An encounter is open when its status is not **Completed**, **Cancelled**, **Discontinued** or **Entered in error**.
+- You open the encounter from your facility, for example from the encounter list of the facility.
+- Your facility has at least one immunization policy, or an instance policy exists. [Create an immunization policy](./create-an-immunization-policy.mdx) describes how to create a facility policy.
+- The policy has at least one recommendation, and 20 recommendations or fewer.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Write Immunization Recommendation | Lets you add the recommendations. You need it in the encounter. By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can Read Immunization Policy | Lets the dialog list the policies. You need it through a role in any department of your facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Read Immunization Recommendation | Lets Care load the **Schedule** section of the panel. You need it through a role on the patient. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Read Immunization | Lets Care load the **Administered** section of the panel. You need it through a role on the patient. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can view clinical data about patients | Shows the **Immunizations** tab. Care shows **Apply policy** only when you have this permission or the next one. You need it through a role on the patient. By default, the Staff, Doctor, Nurse and Facility Admin roles hold it. |
+| Can Read encounter related clinical data | Shows the **Immunizations** tab and **Apply policy**, if you do not have "Can view clinical data about patients". You need it in the encounter. By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can list patients | Lets you open the encounter. You need it through a role on the patient. You need this permission or "Can Read encounter". By default, the Staff, Doctor, Nurse, Administrator, Facility Admin, Volunteer and Pharmacist roles hold it. |
+| Can Read encounter | Lets you open the encounter. You need it in the encounter. You need this permission or "Can list patients". By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can list encounters | Lets you find the encounter in the encounter list of the facility. The list shows only the encounters in whose departments you hold this permission. By default, the Doctor, Nurse and Facility Admin roles hold it. |
+
+You have a role on the patient when you hold a role in one of these places:
+
+- A department of an open encounter of the patient, or a department of the current location of that encounter.
+- An organization that the patient belongs to.
+- The patient itself, when you were given a role directly on the patient.
+
+You hold a permission in the encounter when a role in a department of the encounter gives it to you. The departments of an encounter are the departments it is assigned to, the departments above them, and the facility's root department, Administration. The departments of the encounter's current location also count.
+
+While an encounter is open, a role in one of its departments is also a role on the patient.
+
+By default, if you hold the Doctor, Nurse or Facility Admin role in a department of this encounter, you have all these permissions.
+
+## Steps
+
+### 1. Open the Immunizations tab of the encounter
+
+Open the patient's encounter at your facility. Select the **Immunizations** tab. You can also press G, then I.
+
+![The Immunizations tab of an encounter with the Apply policy button and the empty Schedule message No recommendations scheduled](/media/clinical/immunization/apply-an-immunization-policy-1.png)
+
+[View a patient's immunizations](./view-a-patients-immunizations.mdx) describes the panel.
+
+### 2. Open the Apply policy dialog
+
+Select **Apply policy** at the top of the panel.
+
+Care opens the **Apply policy** dialog with the text "Schedule a policy for this patient. Each recommendation is due on its policy offset from the start date."
+
+![The Apply policy dialog with Select a policy in Policy, the date of birth in Start date and the Add 0 recommendations button disabled](/media/clinical/immunization/apply-an-immunization-policy-2.png)
+
+Care shows **Apply policy** only when the encounter is open and you opened it from your facility. You also need "Can Write Immunization Recommendation", and one of the two permissions that show the **Immunizations** tab.
+
+### 3. Select the policy
+
+Select the **Policy** field. It reads **Select a policy** until you choose one.
+
+The list shows the policies of your facility and the instance policies, by name.
+
+Select the policy that you want to apply.
+
+![The Policy list of the Apply policy dialog open, with Hepatitis B Adult Series and three other policies](/media/clinical/immunization/apply-an-immunization-policy-3.png)
+
+If no policy is available, the dialog shows "No immunization policies yet".
+
+If Care cannot load the policies, the dialog shows "Unable to load immunization policies. Please try again." Select **Try Again**.
+
+### 4. Check the start date
+
+The **Start date** is the date from which Care counts the day offsets of the policy.
+
+By default, the start date is the patient's date of birth. If the patient has no date of birth in Care, the default is today.
+
+Change the start date if you need to.
+
+![The Apply policy dialog with Hepatitis B Adult Series selected and Start date changed to 28/11/2026](/media/clinical/immunization/apply-an-immunization-policy-4.png)
+
+Care sets each date of a recommendation to the start date plus the number of days in the policy.
+
+### 5. Review the schedule preview
+
+After you select a policy, the dialog shows **Schedule preview**. It lists each recommendation that Care adds.
+
+![The Schedule preview with three Hepatitis B vaccine doses, due 28 Nov 2026, 28 Dec 2026 and 27 May 2027](/media/clinical/immunization/apply-an-immunization-policy-5.png)
+
+Each row shows the vaccine, and the series and the dose label when they are set. It also shows "Due `{date}`", or "No due date".
+
+Care adds only the recommendations of the policy. It does not add the groups of the policy.
+
+Each recommendation gets these values from the policy: the vaccines, target diseases, series, dose number, doses in series and description.
+
+If the patient already has recommendations, the dialog says "This patient already has `{count}` recommendations. Applying a policy adds to the schedule; it does not replace it."
+
+If the policy has no recommendations, the dialog shows "This policy has no recommendations to schedule."
+
+If the policy has more than 20 recommendations, the dialog shows "This policy has more than 20 recommendations. Choose a policy with at most 20 recommendations." You cannot apply that policy.
+
+### 6. Add the recommendations
+
+Select the button "Add `{count}` recommendations". The number is the number of rows in the preview.
+
+![The Add 3 recommendations button at the bottom right of the Apply policy dialog](/media/clinical/immunization/apply-an-immunization-policy-6.png)
+
+While Care saves, the button reads "Adding recommendations…".
+
+The button stays disabled when the preview has no rows. It also stays disabled when the policy has more than 20 recommendations, or when the policies did not load.
+
+Care adds all the recommendations together. If Care refuses one of them, it adds none of them.
+
+To close the dialog without applying the policy, select **Cancel**.
+
+![The message Immunization policy applied, with the three new doses in the Schedule: dose 1 Due and doses 2 and 3 Upcoming](/media/clinical/immunization/apply-an-immunization-policy-7.png)
+
+## Expected Outcome
+
+- Care shows the message "Immunization policy applied" and closes the dialog.
+- The new recommendations show in the **Schedule** section. Each one starts as due, so the panel shows it as **Upcoming**, **Due** or **Overdue**, from its dates.
+- Care adds the recommendations to the existing schedule of the patient. It does not replace the recommendations that the patient already has.
+- Each new recommendation belongs to this encounter.
+
+Note: You can change the status of these recommendations, or mark them complete, only while this encounter is open.
+
+When Care refuses to add the recommendations, it shows the message "The policy could not be applied. Please try again." The dialog stays open, and Care adds no recommendation.
+
+The message does not say why Care refused.
+
+| If you see | What it means | What to do |
+| --- | --- | --- |
+| No **Apply policy** button | The encounter is closed, you did not open it from your facility, or you do not have "Can Write Immunization Recommendation". | Apply the policy in an open encounter that you open from your facility. If you still do not see the button, ask your administrator for this permission. |
+| "Unable to load immunization policies. Please try again." | Care could not list the policies. For example, you do not have "Can Read Immunization Policy" in a department of your facility. | Select **Try Again**. If the message stays, ask your administrator for this permission. |
+| "No immunization policies yet" | No policy is available to your facility. | Ask a user who can create policies to create one. See [Create an immunization policy](./create-an-immunization-policy.mdx). |
+| "This policy has more than 20 recommendations. Choose a policy with at most 20 recommendations." | The policy has too many recommendations to apply at one time. | Choose a policy with 20 recommendations or fewer. |
+| "The policy could not be applied. Please try again." | Care refused at least one recommendation, and it added none. For example, you do not have "Can Write Immunization Recommendation" in the encounter, or the encounter is now closed. | Check that the encounter is still open. Ask a user with the Doctor, Nurse or Facility Admin role in the encounter to apply the policy. |
+
+## Related
+
+Concepts:
+
+- [Immunization](../../../concepts/clinical/immunization.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [View a patient's immunizations](./view-a-patients-immunizations.mdx)
+- [Create an immunization policy](./create-an-immunization-policy.mdx)
+- [Record a dose from the schedule](./record-a-scheduled-dose.mdx)
+- [Change a recommendation's status](./change-a-recommendation-status.mdx)

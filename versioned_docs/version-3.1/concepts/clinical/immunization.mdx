@@ -1,0 +1,244 @@
+---
+sidebar_position: 14
+---
+
+# Immunization
+
+## Definition
+
+An **[immunization](https://build.fhir.org/immunization.html)** in Care is the record of one vaccine dose for one patient: a dose that your team gave in an encounter, a dose that the patient or another provider reports, or a dose that was not given.
+
+Immunization policies are reusable templates of vaccine [recommendations](https://build.fhir.org/immunizationrecommendation.html). When you apply a policy to a patient, Care adds its recommendations to the patient's schedule, each with its own dates.
+
+You record doses and apply policies from the **Immunizations** tab of an open [encounter](./encounter.mdx).
+
+## Key Attributes
+
+Immunization in Care has three parts: the immunization record, the immunization policy and the recommendation. The table below describes the immunization record. The policy and the recommendation are described after it.
+
+| Components | What it captures |
+| --- | --- |
+| Patient | The [patient](../clinical/patient) the record is about. Care takes the patient from the encounter. |
+| Encounter | The encounter in which the record was made. Every record belongs to one encounter, and you cannot move it to another encounter. See "Encounter" below. |
+| Facility | The [facility](../facility/facility.mdx) of that encounter. |
+| Vaccine | The vaccine. You choose it from the "Medication" [value set](../definitions/valueset.mdx) of Care, which includes SNOMED CT medicinal products. It is required, and you cannot change it after you save the record. The form labels it **Vaccine**. |
+| Status | Completed, Not given, Draft or Entered in error. See "Status" below. |
+| Date | The date and time of the dose, labelled **Administered on**. For a dose that was not given, the form labels it **Date**. It is required for a Completed record and cannot be in the future. A record without a date shows "Date not recorded". |
+| Reason not given | Why the dose was not given. The form asks for it only for a Not given record. See "Reported, not given and subpotent doses" below. |
+| Historical record | Whether the patient or another provider reported the dose, instead of your team giving it. |
+| For recommendation | The recommendation in the patient's schedule that the dose fulfils. It is optional. See "Records and recommendations" below. |
+| Dose and Unit | The amount of vaccine given, under **Administration details**. If you enter a dose, it must be more than zero. |
+| Route | The route of administration, from the "Route" value set. |
+| Site | The body site, from the "Body Site" value set. |
+| Administered by | The user who gave the dose. You choose a user of the facility, and the field starts with you. |
+| Location | The [location](../facility/location.mdx) in the facility. The field starts with the current location of the encounter, if the encounter has one. |
+| Subpotent dose | Whether the dose was subpotent, with an optional **Subpotent reason**. |
+| Note | Free text about the dose. |
+
+The form has no field for the product or the lot of the vaccine.
+
+When you correct a record, you cannot change the vaccine, **Administered by**, **Location** or **For recommendation**.
+
+### Encounter
+
+Every immunization record belongs to the encounter in which it was recorded. You record a dose from the **Immunizations** tab of that encounter, and Care takes the patient and the facility from it. See [Record an immunization](../../flows/clinical/immunization/record-an-immunization.mdx).
+
+Care does not let you record a dose in a closed encounter. A closed encounter has the status **Completed**, **Cancelled**, **Entered in error** or **Discontinued**.
+
+You can correct a record only while the encounter in which it was recorded is still open. After that encounter is closed, you cannot change the record, even from another open encounter of the patient.
+
+Care has no way to delete an immunization record. If a record is wrong, you correct it, or you mark it as entered in error. See [Correct an immunization record](../../flows/clinical/immunization/correct-an-immunization-record.mdx).
+
+### Reported, not given and subpotent doses
+
+A historical record is a dose that the patient or another provider reports, and that your team did not give. You mark it with **Historical record**. A historical record shows the badge **Reported**, and it has no **Administered by** or **Location**.
+
+A dose that was not given is recorded with the status Not given. **Reason not given** is then required.
+
+The reasons are **Patient is immune**, **Medical precaution**, **Vaccine out of stock**, **Patient objection**, **Philosophical objection**, **Religious objection**, **Vaccine efficacy concerns** and **Vaccine safety concerns**.
+
+A Not given record shows "Not given:" followed by the reason. For a Not given dose, the form hides **Administration details**. When you record a dose as Not given, Care does not save a dose, route, site or subpotent details for it.
+
+If a dose was subpotent, you check **Subpotent dose (may need to be repeated)**, and you can add a **Subpotent reason**. The record then shows the badge **Subpotent**.
+
+### Immunization policy
+
+An immunization policy is a reusable template of vaccine recommendations. It has a **Policy name** of up to 255 characters, an optional **Description**, a scope, and a template of recommendations and groups.
+
+A facility policy belongs to one facility. In the facility sidebar, **Settings** opens the facility settings, and the **Immunization policies** page is in the **Clinical** group. See [Create an immunization policy](../../flows/clinical/immunization/create-an-immunization-policy.mdx) and [Edit an immunization policy](../../flows/clinical/immunization/edit-an-immunization-policy.mdx).
+
+An instance policy belongs to no facility, and every facility of the Care instance can use it. The facility's list shows the instance policies together with the facility's own policies, with the scope **Instance**.
+
+You can open an instance policy and apply it to a patient, but you cannot change it from the facility. Care shows it as **Read only**. A facility can change only its own policies.
+
+The list shows each policy with the columns **Policy**, **Vaccines**, **Recommendations** and **Scope**. The **Recommendations** column counts the recommendations, including those inside groups, and does not count the groups.
+
+Care has no way to delete a policy.
+
+The template of a policy is an outline headed **Recommendations**. When you select its first item, its editor is headed **Recommendation template**. A new policy starts with a single recommendation. Each item has a **Type**: **Recommendation** or **Group**.
+
+A group holds recommendations and other groups, which you add with **Add recommendation** and **Add group**. Only a group can contain items, so a group can become a recommendation only after you remove the items in it.
+
+Groups only organize the policy. When you apply the policy, Care adds only the recommendations to the patient's schedule, not the groups.
+
+Each recommendation in the schedule takes only the fields of its own item in the policy. The vaccine codes, target diseases, day offsets and dose details of a group are not copied to the recommendations inside it.
+
+Removing an item from the template also removes all the recommendations inside it.
+
+Each item in a template, a recommendation or a group, has these fields:
+
+| Components | What it captures |
+| --- | --- |
+| Vaccine codes | The vaccines for this dose, from the "Medication" value set. They are required for a recommendation and optional for a group. Each code is added only once. |
+| Target diseases | Optional. The diseases that the vaccine protects against, from the "Condition" value set. The schedule shows them after "Protects against". |
+| Series, Dose number and Doses in series | Optional text under **Dose details**. When **Dose number** is set, the schedule shows the dose as, for example, "Dose 2 of 3" with **Doses in series**, or "Dose 2" without it. |
+| Earliest, Due and Overdue | Optional day offsets under **Timing**. They set the dates of the recommendation when you apply the policy. |
+| Recommendation description | Optional text under **Additional details**. |
+
+Each day offset is a whole number of days. Care counts it from the start date that you choose when you apply the policy. For example, with a start date of 1 January and a **Due** offset of 30, the recommendation is due on 31 January.
+
+The offsets that you set must go up from **Earliest** to **Due** to **Overdue**, and two of them cannot be equal. Otherwise Care shows "Offsets must be in order: earliest, then due, then overdue. Values cannot be equal."
+
+### Recommendations and the schedule
+
+A recommendation is one planned dose in the patient's schedule. It takes the vaccine codes, the target diseases and the dose details from its item in the policy, and has up to three dates: earliest, due and overdue.
+
+You create recommendations by applying a policy, with **Apply policy** on the **Immunizations** tab of an open encounter. See [Apply an immunization policy to a patient](../../flows/clinical/immunization/apply-an-immunization-policy.mdx).
+
+When you apply a policy, you choose a **Start date**. It starts as the patient's date of birth, or today when the patient has no date of birth. Care sets each date of each recommendation to the start date plus the day offset of the policy. The **Schedule preview** shows the recommendations before you add them.
+
+Each new recommendation starts with the forecast status Due. It belongs to the encounter in which you applied the policy.
+
+Applying a policy adds recommendations to the schedule. It does not replace the recommendations that the patient already has, and the dialog says so when the patient has some.
+
+One application can add at most 20 recommendations. For a policy with more, Care asks you to choose a policy with at most 20 recommendations.
+
+Care adds the recommendations of one application together. If Care refuses one of them, it adds none.
+
+You cannot remove a recommendation from the schedule, so you cannot undo applying a policy.
+
+The **Schedule** section of the immunization panel lists the patient's recommendations. It does not show groups. Rows that are Overdue, Due or Upcoming come first, then the other rows. Within each block, the rows are in order of date.
+
+Each row names the vaccine. When they are set, it also shows the series, the dose, and "Protects against" with the target diseases. It shows whichever of the **Earliest**, **Due** and **Overdue** dates are set.
+
+The header of the panel shows how many recommendations are overdue and how many are due.
+
+You change the forecast status of a recommendation from its **Status** menu. See [Change a recommendation's status](../../flows/clinical/immunization/change-a-recommendation-status.mdx).
+
+Care lets you change a recommendation only while the encounter in which the policy was applied is still open. After that encounter is closed, the recommendation keeps its forecast status, even if you work from another open encounter of the patient.
+
+### Records and recommendations
+
+An immunization record can name the recommendation that it fulfils. You link the two when you record the dose, in **For recommendation**. If you start from **Record dose** on a row of the schedule, Care links that row for you. See [Record a dose from the schedule](../../flows/clinical/immunization/record-a-scheduled-dose.mdx).
+
+**For recommendation** lists the recommendations whose forecast status is Due, which includes the rows shown as Upcoming or Overdue. When you choose one, Care sets **Vaccine** to the first vaccine code of that recommendation. **Not linked to a recommendation** saves the record without a link.
+
+You set the link only when you record the dose. When you correct the record later, you cannot add or change the link.
+
+For a Completed dose with a link, the form shows **Mark the recommendation as complete**, checked. When you save, Care records the dose and then tries to set the recommendation to Complete.
+
+If you clear the box, or record the dose as Not given, Care does not change the recommendation.
+
+If the encounter in which the policy was applied is closed, Care still saves the dose and its link, but it cannot mark the recommendation complete. Care shows "The immunization was recorded, but its recommendation could not be marked complete.", and the recommendation stays Due.
+
+### Where you see immunizations
+
+The **Immunizations** tab of an encounter shows the immunization panel. The panel lists all of the patient's records and recommendations, from every encounter and every facility, not only those of this encounter.
+
+On an open encounter, the panel offers **Apply policy**, **Record immunization**, **Record dose**, the **Status** menu and **Edit** to users who hold the permissions for them. On a closed encounter, the panel shows no buttons.
+
+The **Administered** section lists the records, newest first. Each record shows its status, and the badges **Reported** and **Subpotent** where they apply. A record marked as entered in error is shown faded, with the vaccine struck through.
+
+The **Clinical History** tab of the patient's page also has an **Immunizations** tab, with the same panel. There the panel is read-only, because you record immunizations from an encounter. See [View a patient's immunizations](../../flows/clinical/immunization/view-a-patients-immunizations.mdx).
+
+A workspace of the encounter or of the clinical history can hide the **Immunizations** tab.
+
+You can also share a patient's immunization records with a referral.
+
+### Status
+
+An immunization record has a status. A recommendation has a forecast status.
+
+These are the statuses of an immunization record. When you record a dose, Care offers only Completed and Not given. When you correct a record, Care offers all four.
+
+| Status | Description |
+| --- | --- |
+| Completed | The dose was given. A new record starts as Completed. A Completed record needs the date in **Administered on**. |
+| Not given | The dose was not given. The record needs a **Reason not given**, and the form hides **Administration details**. |
+| Draft | Offered only when you correct a record. |
+| Entered in error | Offered only when you correct a record. The edit form says "Correct this record, or mark it as entered in error." Care keeps the record, shows it faded with the vaccine struck through, and no longer shows **Edit** for it. |
+
+These are the forecast statuses of a recommendation. Care stores Due, Complete, Immune and Contraindicated. For a Due recommendation, the schedule shows Upcoming, Due or Overdue, from today's date and the dates of the recommendation.
+
+| Status | Description |
+| --- | --- |
+| Upcoming | Shown for a Due recommendation before its earliest date. |
+| Due | A new recommendation starts as Due. The schedule shows Due for a Due recommendation that is neither Upcoming nor Overdue. |
+| Overdue | Shown for a Due recommendation from its overdue date. When it has no overdue date, Overdue is shown from the day after its due date. |
+| Complete | Set from the **Status** menu, or when you record a linked dose with **Mark the recommendation as complete**. |
+| Immune | Set from the **Status** menu. |
+| Contraindicated | Set from the **Status** menu. |
+
+**Record dose** appears only on Upcoming, Due and Overdue rows. The **Status** menu appears on every row, and it offers Due, Complete, Immune and Contraindicated. Upcoming and Overdue are not in the menu, because Care works them out from the dates.
+
+## Permissions
+
+Care controls immunizations with its immunization permissions, and with patient and encounter permissions. Where you hold a permission matters.
+
+You have a role on the patient when you hold a role in one of these places:
+
+- A [department](../facility/department.mdx) of an open encounter of the patient, or of the current location of that encounter.
+- An organization that the patient belongs to.
+- The patient itself, when you were given a role directly on the patient.
+
+A closed encounter gives no role on the patient.
+
+You hold a permission in the encounter when a role in a department of the encounter gives it to you. These are the departments that the encounter is assigned to, the departments above them, and the root department of the facility, Administration. The departments of the encounter's current location also count.
+
+While an encounter is open, a role in one of its departments counts both as a role on the patient and as held in the encounter.
+
+The roles named below hold each permission by default. Your installation can change the permissions of its roles.
+
+| Permission | What it allows |
+| --- | --- |
+| Can Write Immunization | Record a dose, and correct a record, which includes marking it as entered in error. You need it in the encounter, and the encounter must be open. To correct a record, you need it in the encounter in which the dose was recorded. By default, the Facility Admin, Doctor and Nurse roles hold it. |
+| Can Write Immunization Recommendation | Apply a policy, change the forecast status of a recommendation, and mark a recommendation complete when you record a dose. You need it in the encounter, and the encounter must be open. For a recommendation that already exists, this is the encounter in which the policy was applied. By default, the Facility Admin, Doctor and Nurse roles hold it. |
+| Can Create Immunization Policy | Create and edit the facility's immunization policies. Care shows **New policy** and **Save policy** only with this permission. You need it in the root department of the facility, Administration. By default, the Facility Admin role holds it. |
+| Can Read Immunization | See the patient's immunization records, in the **Administered** section of the panel. You need it through a role on the patient. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Read Immunization Recommendation | See the patient's schedule, in the **Schedule** section of the panel. You need it through a role on the patient. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Read Immunization Policy | See **Immunization policies** in the facility settings, list and open the policies, and choose a policy in the **Apply policy** dialog. You need it in a department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can view clinical data about patients | See the **Immunizations** tab of an encounter, and the **Clinical History** tab of the patient's page with its **Immunizations** tab. You need it through a role on the patient. For the encounter tab, "Can Read encounter related clinical data" in the encounter also works. By default, the Facility Admin, Staff, Doctor and Nurse roles hold it. |
+| Can Read encounter related clinical data | See the **Immunizations** tab of an encounter. You need it in the encounter. By default, the Facility Admin, Doctor and Nurse roles hold it. |
+| Can list patients | Open the encounter. You need it through a role on the patient. You need this permission or "Can Read encounter". By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Read encounter | Open the encounter, whatever its status. You need it in the encounter. You need this permission or "Can list patients". By default, the Facility Admin, Doctor and Nurse roles hold it. |
+| Can list encounters | Find the encounter in the encounter list of the facility. The list shows only the encounters in whose departments you hold this permission. By default, the Facility Admin, Doctor and Nurse roles hold it. |
+| Can List Facility Locations | Choose a **Location** other than the current location of the encounter when you record a dose. Care lists only the locations of the departments where you hold this permission. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse and Pharmacist roles hold it. |
+
+By default, the Facility Admin, Doctor or Nurse role in a department of an open encounter lets you view immunizations, record doses and apply policies from that encounter. While the encounter is open, it also lets you correct the records and change the recommendations that were made in it.
+
+By default, the Staff role can view immunizations, but it cannot record doses, apply policies or change recommendations.
+
+The Administrator, Volunteer and Pharmacist roles hold the immunization read permissions. They do not hold "Can view clinical data about patients" or "Can Read encounter related clinical data", so by default Care does not show them the **Immunizations** tab.
+
+Care lists the records and the schedule through your role on the patient. If a closed encounter is your only link to the patient, Care refuses to list them.
+
+Without "Can Read Immunization Policy", the **Apply policy** dialog shows "Unable to load immunization policies. Please try again."
+
+## Related
+
+- Flow: [Create an immunization policy](../../flows/clinical/immunization/create-an-immunization-policy.mdx)
+- Flow: [Edit an immunization policy](../../flows/clinical/immunization/edit-an-immunization-policy.mdx)
+- Flow: [View a patient's immunizations](../../flows/clinical/immunization/view-a-patients-immunizations.mdx)
+- Flow: [Apply an immunization policy to a patient](../../flows/clinical/immunization/apply-an-immunization-policy.mdx)
+- Flow: [Record an immunization](../../flows/clinical/immunization/record-an-immunization.mdx)
+- Flow: [Record a dose from the schedule](../../flows/clinical/immunization/record-a-scheduled-dose.mdx)
+- Flow: [Change a recommendation's status](../../flows/clinical/immunization/change-a-recommendation-status.mdx)
+- Flow: [Correct an immunization record](../../flows/clinical/immunization/correct-an-immunization-record.mdx)
+- Flow: [View a patient's profile](../../flows/clinical/patient/view-patient-profile.mdx)
+- Concept: [Patient](../clinical/patient)
+- Concept: [Encounter](./encounter.mdx)
+- Concept: [Facility](../facility/facility.mdx)
+- Concept: [Department](../facility/department.mdx)
+- Concept: [Locations](../facility/location.mdx)
+- Concept: [Valueset](../definitions/valueset.mdx)
+- Concept: [Roles and Permission](../access-governance/access-control.mdx)

@@ -1,0 +1,115 @@
+---
+sidebar_position: 2
+---
+
+# Edit an immunization policy
+
+## Overview
+
+<video src="/media/clinical/immunization/edit-an-immunization-policy.mp4" poster="/media/clinical/immunization/edit-an-immunization-policy.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/immunization/edit-an-immunization-policy.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to change an [immunization policy](../../../concepts/clinical/immunization.mdx) of your facility: its name, its description and its recommendations.
+
+A change applies the next time a user applies the policy to a patient. The schedules that patients already have do not change.
+
+## Pre-requisites
+
+- The policy belongs to your facility. In the list of policies, it has **Facility** in the **Scope** column.
+- If the policy has **Instance** in the **Scope** column, the whole instance shares it. You can view it, but you cannot edit it from your facility.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Create Immunization Policy | Lets you change the policy and save it. Without it, Care opens the policy read-only. You need it through a role in the facility's root department, Administration. By default, the Facility Admin role holds it. |
+| Can Read Immunization Policy | Lets you see **Immunization policies** in the facility settings, load the list of policies and open the policy. You need it through a role in any department of the facility. A role in Administration also counts. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+
+By default, a user with the Facility Admin role in Administration has both permissions.
+
+## Steps
+
+### 1. Open the policy
+
+Open the facility. In the facility sidebar, select **Settings**.
+
+In the settings menu, under **Clinical**, select **Immunization policies**.
+
+To find the policy, type a part of its name in **Search policies by name**.
+
+The list shows 15 policies on each page.
+
+Select the name of the policy.
+
+![The Immunization policies list filtered by Tetanus, showing the Tetanus-Diphtheria Booster policy with Facility scope](/media/clinical/immunization/edit-an-immunization-policy-1.png)
+
+Care opens the policy page. The title is the name of the policy, with the scope badge next to it.
+
+![The Tetanus-Diphtheria Booster policy page with the Facility badge next to the title and Save policy disabled](/media/clinical/immunization/edit-an-immunization-policy-2.png)
+
+Care opens the policy read-only in these cases:
+
+- The policy has the scope **Instance**. The **Read only** alert says that the instance shares this policy.
+- You do not have "Can Create Immunization Policy" in Administration. The **Read only** alert says "You can view this policy. Editing requires permission for the facility or instance that owns it."
+- Care could not check who owns the policy. The badge reads **Unknown scope**, and the **Read only** alert says "Policy ownership could not be verified. Editing is unavailable until its scope is provided." Select **Try again** to check again.
+
+On a read-only policy, Care does not show **Save policy**, and you cannot change the fields. You can still select items in the outline to see their values.
+
+### 2. Change the policy
+
+Change the policy in the same way as when you create it. The page uses the same fields and the same outline.
+
+- To change the name or the description, see step 3 of [Create an immunization policy](./create-an-immunization-policy.mdx).
+- To add, copy or remove doses and groups, see step 5 of the same page.
+- To change the vaccines or the timing of a dose, select its recommendation in the outline. Step 6 of the same page describes the fields.
+
+![The Timing section of the Td booster recommendation with Due 0 and Overdue changed to 30 days](/media/clinical/immunization/edit-an-immunization-policy-3.png)
+
+When you change something, Care shows **Unsaved changes** next to **Save policy**.
+
+If you leave the page before you save, Care asks "You have unsaved changes. Leave without saving?". To stay on the page, cancel the question. To leave without your changes, confirm it.
+
+### 3. Save the changes
+
+Select **Save policy**.
+
+![Unsaved changes next to the Save policy button, with the new description One Td booster dose for adults every 10 years](/media/clinical/immunization/edit-an-immunization-policy-4.png)
+
+**Save policy** stays disabled until you change something.
+
+Care checks the policy again. If a value is not correct, Care shows "Check the policy before saving". In the outline, a red dot marks each item with a problem.
+
+Correct the values. Then select **Save policy** again.
+
+[Create an immunization policy](./create-an-immunization-policy.mdx) lists the messages and what to do.
+
+Note: You cannot delete a policy in Care 3.1.
+
+![The message Immunization policy updated, with Tetanus-Diphtheria Booster showing its new description in the policy list](/media/clinical/immunization/edit-an-immunization-policy-5.png)
+
+## Expected Outcome
+
+- Care shows the message "Immunization policy updated".
+- Care returns you to **Immunization policies**.
+- The next time a user applies the policy to a patient, Care uses the changed recommendations.
+- The recommendations that patients already have from this policy do not change. Care keeps no link between those recommendations and the policy.
+
+| If you see | What it means | What to do |
+| --- | --- | --- |
+| "The policy could not be saved. Your changes are still here. Please try again." | Care could not save the policy. Your changes stay on the page. | Select **Save policy** again. |
+| "Unable to load this immunization policy. Please try again." | The policy belongs to another facility, or Care could not load the policy. | If the page shows **Try again**, select it. Otherwise, open the policy from the list of the facility that owns it. |
+| "You do not have permission to manage immunization policies here." | You do not have "Can Read Immunization Policy" in the facility. | Ask your administrator for the permission. See [Permissions](#permissions). |
+
+## Related
+
+Concepts:
+
+- [Immunization](../../../concepts/clinical/immunization.mdx)
+- [Department](../../../concepts/facility/department.mdx)
+
+Flows:
+
+- [Create an immunization policy](./create-an-immunization-policy.mdx)
+- [Apply an immunization policy to a patient](./apply-an-immunization-policy.mdx)
