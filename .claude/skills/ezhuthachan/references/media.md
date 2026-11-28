@@ -74,6 +74,8 @@ rm -r "$EZ/locks/<backend-host>"
 
 If `mkdir` fails, another session holds it. Read `owner`, tell the user, and wait or ask.
 
+A session may share another session's stack when the user approves it, for example a stack already running at the same pinned commits. Then do not take the lock: write `shared-with-<your session id>` into the owner's lock folder, saying who approved it, and record only while the owner is not recording. To queue your recordings behind the owner's, run them through a copy of `withlock.sh` whose `LOCK` points at the owner's `media/.recording.lock`. Do not reset, stop or rebuild a stack you share, and use patients the owner does not.
+
 ## Set up the recording kit
 
 Copy the kit into the session and install Playwright at the version the product uses, so the two agree on browser builds:
