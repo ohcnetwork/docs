@@ -2,53 +2,117 @@
 sidebar_position: 2
 ---
 
-# View schedule templates
+# View a schedule
 
 ## Overview
 
-This flow describes how to see the schedule templates of a resource in Care. Use it to check when a practitioner, a location, or a healthcare service is available. See [Schedule & Availability](../../../concepts/scheduling/schedule.mdx).
+<video src="/media/scheduling/schedule/view-schedule-templates.mp4" poster="/media/scheduling/schedule/view-schedule-templates.poster.png" controls width="720">
+  <track kind="captions" src="/media/scheduling/schedule/view-schedule-templates.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to see the [schedule](../../../concepts/scheduling/schedule.mdx) of a practitioner, a location or a healthcare service. The schedule page shows the templates of one month beside a calendar, where you can open a day to see its sessions, its exceptions and a link to its appointments.
 
 ## Pre-requisites
 
-- The facility is created in Care.
-- The resource is available in the facility.
-- You have the permission listed below.
+- You are a member of the facility.
+- You have the permissions listed below, in the place that the list below the table gives for the resource.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can list schedule on Object | Lets you see the schedules of the resource. |
+| Can list schedule on Object | Lets you open the schedule page and see its templates and exceptions. Hold it in the place listed below for the resource. For a practitioner, the **Availability** tab shows only if you hold it in a department or team of the facility, or in its Administration organization. By default, the Admin (facility role), Facility Admin, Administrator, Doctor, Nurse and Staff roles hold it. |
+| Can list bookings on Object | Optional. Lets the calendar show the link to the appointments of a day. Hold it in the place listed below for the resource. Without it, the link does not show and Care shows no message. By default, the Admin, Facility Admin, Administrator, Doctor, Nurse and Staff roles hold it. |
+| Can Read Healthcare Service | Only for a location or a healthcare service. Lets you open **Services** and the healthcare service. Hold it in any organization of the facility. By default, the Admin, Facility Admin, Administrator, Doctor, Nurse, Staff, Volunteer and Pharmacist roles hold it. |
+
+Care accepts Can list schedule on Object and Can list bookings on Object only in these places:
+
+- For a practitioner: the facility's Administration organization, a department or team that the practitioner belongs to, or a parent of it.
+- For a location: a department linked to the location or to its parent location, a parent of that department, or the facility's Administration organization.
+- For a healthcare service with a managing organization: that organization or a parent of it. The Administration organization does not count.
+- For a healthcare service without a managing organization: only the facility's Administration organization.
+
+Only roles that you hold in the facility's organizations count. A role in a governance organization above the facility does not count.
 
 ## Steps
 
-### 1. Open the schedule of the resource
+### 1. Open the schedule
 
-Open the facility. Go to the scheduling section and select the resource.
+Practitioners, locations and healthcare services use the same schedule page. Open it in one of these ways:
 
-### 2. Read the list of templates
+- For a practitioner, select **Users** in the facility sidebar. Find the practitioner and select **See Details**. Then select the **Availability** tab.
+- For your own schedule, open the account menu and select **Profile**. Then select the **Availability** tab.
+- For a location, select **Services** in the facility sidebar. Select a healthcare service. On a location card, select **View appointments**. This link shows for services that are not a store, a pharmacy or a lab. In the location sidebar, under **Scheduling**, select **Schedule**.
+- For a healthcare service, select **Services** in the facility sidebar. Select the service. In the service sidebar, under **Scheduling**, select **Schedule**.
 
-The page lists the schedule templates for the selected month. Each template shows its name, its validity period and its sessions.
+The schedule page opens on the **Schedule** tab. It also has an **Exceptions** tab and a calendar of the month.
 
-If the resource has no template for the month, the page shows the message "No schedule templates found for this month."
+![Dr. Meera Iyer's Availability tab with the Schedule tab outlined, listing the Evening OP and Morning OP templates beside the November 2026 calendar](/media/scheduling/schedule/view-schedule-templates-1.png)
 
-### 3. Check the visibility of a template
+Care can show "You do not have permission to update schedule", and the page does not finish loading. Then you do not hold Can list schedule on Object in the place for this resource. Ask your administrator for it.
 
-A private template shows the message "This schedule is private". Patients cannot see a private template and cannot book against it.
+### 2. Read the templates of the month
+
+The **Schedule** tab lists the templates whose valid period overlaps the month on the calendar.
+
+Each template card shows these details:
+
+- A lock icon if the template is not public. Move the pointer over the icon to see "This schedule is private".
+- "Scheduled for", followed by the short names of the template's weekdays, for example "Mon, Wed".
+- Each session, with the label **Appointment** and its number of slots and slot length, in the form "8 slots of 15 mins.".
+- The first and the last day of the valid period, after "Valid from" and "till".
+
+![The Evening OP template card outlined, with the tooltip This schedule is private on its lock icon, its weekdays, its session and its valid period](/media/scheduling/schedule/view-schedule-templates-2.png)
+
+Depending on your permissions, a card also shows a pencil icon to edit the template and **Manage Charges** to set its charges. See [Edit a schedule template](./edit-schedule-template.mdx) and [Set the charges for a schedule](./set-schedule-charges.mdx).
+
+If no template overlaps the month, the tab shows "No schedule templates found for this month."
+
+### 3. Read the calendar
+
+Each day shows up to five coloured dots. Each dot stands for a template that has a session on that weekday.
+
+A day with an exception shows a striped band. An exception from 00:00 to 23:59 stripes the whole day.
+
+![The November 2026 calendar outlined, with coloured dots for the template sessions and striped bands on the days with exceptions](/media/scheduling/schedule/view-schedule-templates-3.png)
+
+To see the exceptions of the month as a list, select the **Exceptions** tab. See [View schedule exceptions](../exception/view-schedule-exceptions.mdx).
+
+### 4. Open a day
+
+Select a day on the calendar. A pop-up opens with the details of that day.
+
+The pop-up shows:
+
+- Each session of that day, with its number of slots and slot length, in the form "8 slots of 15 mins.".
+- Each exception of that day, as "Exception:" followed by its reason, with its times.
+- If the day has appointments, a link such as "View 3 scheduled appointments". Select it to open the appointments page. For a practitioner, the page shows that practitioner's appointments for that day.
+- For today or a later day, **Add Exception**. It shows only if you hold Can Create on Schedule in any department or team of the facility, or in its Administration organization. See [Add a schedule exception](../exception/create-schedule-exception.mdx).
+
+![The pop-up for Nov 30, 2026 outlined, with Add Exception, the link View 4 scheduled appointments, the Evening OP and Morning OP sessions and Exception: Outreach clinic](/media/scheduling/schedule/view-schedule-templates-4.png)
+
+Days before today never show the appointments link, because Care counts appointments only from today.
 
 ## Expected Outcome
 
-- You see the schedule templates of the resource for the selected month.
-- You see the sessions in each template, with their times and slot types.
+- You see the templates of the resource whose valid period overlaps the month on the calendar.
+- You see on the calendar which days have sessions and which days have exceptions.
+- For a day, you see its sessions, its exceptions and, from today on, a link to its appointments.
 
 ## Related
 
 Concepts:
 
 - [Schedule & Availability](../../../concepts/scheduling/schedule.mdx)
+- [Schedule Exception](../../../concepts/scheduling/exception.mdx)
+- [Appointment Booking](../../../concepts/scheduling/booking.mdx)
 
 Flows:
 
 - [Create a schedule template](./create-schedule-template.mdx)
 - [Edit a schedule template](./edit-schedule-template.mdx)
-- [Delete a schedule template](./delete-schedule-template.mdx)
+- [Add or remove a session in a schedule template](./add-or-remove-schedule-session.mdx)
+- [Set the charges for a schedule](./set-schedule-charges.mdx)
+- [View schedule exceptions](../exception/view-schedule-exceptions.mdx)
+- [Add a schedule exception](../exception/create-schedule-exception.mdx)
+- [Find and open appointments](../appointment/find-appointments.mdx)

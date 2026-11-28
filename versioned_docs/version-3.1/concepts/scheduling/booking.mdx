@@ -4,66 +4,174 @@ sidebar_position: 2
 
 # Appointment Booking
 
-A **booking** claims a specific time slot on a practitioner, location, or service's calendar for one patient, and tracks that appointment from the moment it is requested until the patient is seen or the slot is released. It is how published availability becomes an accountable commitment between a patient and the facility.
+## Definition
 
-## What it represents
+An **[appointment](https://build.fhir.org/appointment.html)** in Care reserves a place in one slot of a [schedule template](../scheduling/schedule.mdx) for one patient. The slot belongs to a practitioner, a location or a healthcare service.
 
-In Care's FHIR-aligned model, a booking maps to the **Appointment** resource, and the time slot it occupies maps to the **Slot** resource. Care's field names may differ from the FHIR element names, but the lifecycle maps directly. Together the two capture:
+Staff book appointments from the patient's records, and patients can book the slots of public templates themselves.
 
-- **Who and when** — the patient, the chosen time slot, and who created the booking
-- **Where it lands** — the slot belongs to a schedulable resource: a practitioner, a location, or a healthcare service
-- **Status** — where the appointment sits in its lifecycle, from proposed through fulfilled, cancelled, or no-show
+The schedule template makes the slots, and its **Patients per Slot** sets how many appointments one slot takes. Care refuses a [schedule exception](../scheduling/exception.mdx) when a slot that has an appointment starts within the exception's times on one of its dates.
 
-The key distinction: a booking is not the schedule it came from. A [Schedule](../scheduling/schedule.mdx) defines recurring availability and generates bookable slots; a booking is one patient claiming one of those slots. Each slot has a fixed capacity, so once it fills, no further bookings can be made against it — availability is a shared resource, and a booking is a reservation against it.
+In the names of its permissions and in some messages, Care calls an appointment a booking.
 
-## Lifecycle
+## Key Attributes
 
-A booking is created as `booked` — the slot is reserved the moment the appointment exists. From there it advances as the patient arrives and is seen, then settles into a terminal state. Cancelling and rescheduling are deliberate, separate actions, never ordinary edits to the status field.
+| Components | What it captures |
+| --- | --- |
+| Patient | The patient who has the appointment. |
+| Resource | The practitioner, location or healthcare service that the patient sees. |
+| Slot | The date and the time of the appointment, in a session of a schedule template. |
+| Status | Where the appointment stands, for example Booked or Checked-In. See Status below. |
+| Note | Free text about the appointment. |
+| Tags | Labels that you attach to the appointment. |
+| Booked by | The staff member who booked the appointment, or the patient. |
+| Token | The queue token of the appointment, if staff generated one. |
+| Encounter | The encounter that started from the appointment, if there is one. |
+| Charge item | The charge for the appointment, if the schedule template has charges. |
 
-```text
-proposed → pending → booked → arrived → checked_in → in_consultation → fulfilled
-                       │
-                       ├──→ cancelled / entered_in_error / rescheduled
-                       └──→ noshow
-```
+### Patient
 
-- **proposed / pending** — a tentative or unconfirmed request, before the slot is firmly held
-- **booked** — the appointment exists and the slot is reserved for the patient (the default on creation)
-- **waitlist** — the patient is waiting for a slot to open up
-- **arrived / checked_in** — the patient has reached the facility and been registered for the visit
-- **in_consultation** — the patient is being seen; a booking in this state cannot be cancelled
-- **fulfilled / noshow** — terminal: the visit was completed, or the patient did not turn up
-- **cancelled / entered_in_error / rescheduled** — the appointment was called off, logged in error, or moved; these are set only through the dedicated cancel and reschedule actions
+Staff book an appointment from the patient. **Schedule Appointment** is on Patient Home, in the header of the patient page, and on each patient in the patient search results.
 
-Anything that ends a booking early — cancelling, marking an error, or rescheduling — releases the slot's capacity so it can be offered to someone else. Rescheduling does this by closing the original booking and creating a fresh one on the new slot.
+Your deployment can also open the booking sheet right after a patient is registered.
 
-## How it connects
+A patient can hold only a limited number of upcoming appointments that are still open. Appointments that are Fulfilled, No-show, Entered in Error, Cancelled or Rescheduled do not count.
 
-A booking sits at the centre of several scheduling and clinical primitives:
+Care counts the patient's appointments at all facilities. The default limit is 10, and your deployment can change it.
 
-- **Patient** — every booking belongs to exactly one [patient](../clinical/patient); one patient can hold many bookings over time
-- **Slot and schedule** — the booking occupies a slot generated by a [Schedule](../scheduling/schedule.mdx); the slot caps how many patients can book the same window
-- **Encounter** — when the patient is seen, the booking links to the [Encounter](../clinical/encounter.mdx) that documents the visit
-- **Token** — a queue [token](../scheduling/token.mdx) can be generated for the booking to manage walk-in and waiting-room flow
-- **Charge item** — if the schedule is priced, booking automatically raises a [charge item](../billing/charge-item.mdx) so the appointment can be billed; cancelling the booking aborts it
+### Slot
 
-## Permissions
+In the **Book Appointment** sheet you choose the resource type, the resource, a day and a slot. Then you select **Confirm Appointment**.
 
-Bookings are governed by the schedule permission set. Access is granted to staff working within the facility that owns the schedule.
+The calendar does not let you choose days before today, fully booked days or days without slots. The slot list hides slots that have ended or are full.
 
-| Permission | Description | System Roles |
+Care checks these rules when you confirm:
+
+- The slot has not ended.
+- The slot still has a free place.
+- The patient does not already have an appointment in that slot.
+- The patient is below the limit of upcoming appointments.
+
+A new appointment starts as Booked and takes one place in the slot. Care then opens it in **Appointment Details**.
+
+### Note
+
+When you book, the reason for visit becomes the note of the appointment. **Appointment Details** shows the note.
+
+**Mark as no-show** and **Cancel Appointment** each ask for a note. The note starts with the current note and replaces it.
+
+**Reschedule** asks for a note for the current appointment and a note for the new appointment.
+
+### Tags
+
+You can add [tags](../platform/tagging.mdx) when you book an appointment, and change them while you reschedule. On **Appointment Details**, use **Add Tags** or **Manage Tags**.
+
+The **Appointments** page can filter appointments by tags.
+
+### Booked by
+
+For an appointment that staff book, **Booked by** shows the staff member.
+
+Patients can book appointments themselves in the patient portal, but only in the slots of public schedule templates. They sign in with a one-time password (OTP) on their phone number, and they can book only for patient records with that phone number. In the portal a patient can cancel an appointment, and reschedule it unless it is In-Consultation. For such an appointment, **Booked by** shows the patient's name with "(Patient)". Your deployment can switch off patient sign-in.
+
+### Token
+
+Staff can generate one queue [token](../scheduling/token.mdx) from an appointment that is not in a final status, and the token stays linked to the appointment.
+
+### Encounter
+
+An appointment can lead to one [encounter](../clinical/encounter.mdx). The encounter must be for the same patient and at the same facility.
+
+**Start Consultation** in **Quick Actions** opens the encounter form when the appointment has no encounter yet. The form uses the encounter defaults of the schedule template. When you save the encounter, Care links it to the appointment.
+
+If you hold Can update bookings on Object in the right place, the appointment's status then becomes In-Consultation. Without it, Care still creates and links the encounter, but the status of the appointment does not change.
+
+If an encounter is already linked, **Start Consultation** opens that encounter. It also sets In-Consultation, again only if you hold Can update bookings on Object in the right place.
+
+**Create Planned Encounter** also creates a linked encounter. It shows only while no encounter is linked.
+
+Linking an encounter does not change the status of the appointment by itself. Care refuses to link a second encounter to the same appointment.
+
+From the encounter page, **Close Appointment** sets the appointment to Fulfilled.
+
+### Who can work with appointments
+
+| Permission | What it lets you do | Default roles |
 | --- | --- | --- |
-| `can_write_booking` | Update a booking, and run the cancel, reschedule, and generate-token actions on it | Admin, Staff, Facility Admin, Doctor, Nurse |
-| `can_list_booking` | List and retrieve the bookings on a schedulable resource | Admin, Staff, Facility Admin, Doctor, Nurse, Administrator |
-| `can_write_schedule` | Filter a booking list by organisation (checked when listing bookings scoped to a facility organisation) | Admin, Staff, Facility Admin, Doctor, Nurse |
-| `can_reschedule_booking` | Move a booking to a different slot via the reschedule action | Doctor, Staff, Nurse, Administrator, Facility Admin, Admin |
+| Can list bookings on Object | See appointments on the **Appointments** pages and open **Appointment Details**. You must hold it in the place listed below for the resource. | Admin (facility role), Staff, Facility Admin, Doctor, Nurse and Administrator |
+| Can update bookings on Object | Book an appointment. For booking, a role in any department or team of the facility, or in its Administration organization, counts. Also check in, set In-Consultation, mark Fulfilled or No-show, cancel, mark as entered in error, and change tags. For these, you must hold it in the place listed below for the resource. | Admin, Staff, Facility Admin, Doctor and Nurse |
+| Can reschedule bookings on Object | Reschedule an appointment. You also need Can update bookings on Object for the current appointment. For this permission, a role in any department or team of the facility, or in its Administration organization, counts. | Admin, Staff, Facility Admin, Doctor, Nurse and Administrator |
+| Can Create encounter | Create the encounter from **Start Consultation** or **Create Planned Encounter**. A role in any department or team of the facility, or in its Administration organization, counts. | Admin, Facility Admin, Doctor and Nurse |
 
-Roles come from a user's facility and organization memberships, and permissions cascade down the organization tree — a role held higher up applies to the facilities and resources beneath it.
+Care accepts Can list bookings on Object and Can update bookings on Object for an appointment only in these places:
+
+- For a practitioner: the facility's Administration organization, a department or team that the practitioner belongs to, or a parent of it.
+- For a location: a department linked to the location or to its parent location, a parent of that department, or the facility's Administration organization.
+- For a healthcare service with a managing organization: that organization or a parent of it. The Administration organization does not count.
+- For a healthcare service without a managing organization: only the facility's Administration organization.
+
+Only roles that you hold in the facility's organizations count. A role in a governance organization above the facility does not count.
+
+An Administrator can see appointments but cannot book, change or reschedule them, because that role does not hold Can update bookings on Object. A user whose only role is Staff can check in a patient, but cannot create the encounter.
+
+The screen shows **Check-In**, the three-dots menu button and **Reschedule** if you hold the permission in any department or team of the facility, or in its Administration organization. **Add Tags**, **Manage Tags**, **Start Consultation** and **Create Planned Encounter** show without a permission check. Care saves the change only when you hold the permission in the right place.
+
+### Status
+
+| Status | Description |
+| --- | --- |
+| Booked | The slot is reserved for the patient. Every new appointment starts in this status. |
+| Checked-In | Staff checked the patient in. **Check-In** sets this status. |
+| In-Consultation | The consultation has started. **Start Consultation** sets this status if you hold Can update bookings on Object in the right place. |
+| Fulfilled | The visit is complete. **Mark as Fulfilled**, or **Close Appointment** on the encounter page, sets this status. |
+| No-show | The patient did not come. **Mark as no-show** sets this status. |
+| Cancelled | The appointment is cancelled. **Cancel Appointment** sets this status. |
+| Entered in Error | The appointment was recorded by mistake. **Mark as entered in error** sets this status. |
+| Rescheduled | The appointment moved to another slot. **Reschedule** sets this status and creates a new appointment. |
+
+Care itself does not enforce an order of statuses. It accepts a change from any status to any other status, also from Cancelled, Fulfilled or No-show, but not a change to Cancelled, Entered in Error or Rescheduled. Those three statuses are set only when an appointment is cancelled, marked as entered in error or rescheduled.
+
+The **Appointment Details** screen is stricter:
+
+- **Check-In** shows only for a Booked appointment. It works from one day before to one day after the start of the slot. This is the check-in window.
+- **Start Consultation** shows for a Booked or Checked-In appointment within the check-in window.
+- **Mark as Fulfilled** and **Mark as no-show** work from one day before the start of the slot. **Mark as no-show** shows only for Booked and Checked-In appointments.
+- **Cancel Appointment** and **Reschedule** are hidden while the appointment is In-Consultation.
+- For a Fulfilled, No-show, Cancelled, Entered in Error or Rescheduled appointment, the screen hides **Check-In** and the three-dots menu button.
+
+**Mark as Fulfilled**, **Mark as no-show**, **Cancel Appointment**, **Mark as entered in error** and **Reschedule** are in the menu that opens from the three-dots menu button at the top of **Appointment Details**.
+
+On the **Appointments** page, the board columns and the list tabs are Booked, Checked-In, In-Consultation, Fulfilled and Non Fulfilled. Non Fulfilled holds the Cancelled, Entered in Error, Rescheduled and No-show appointments.
+
+**Cancel Appointment** cancels the appointment. You must enter a note. Care refuses to cancel an appointment that is In-Consultation, with the message "You cannot cancel an appointment In-Consultation".
+
+**Mark as entered in error** sets the status Entered in Error. Its dialog has no note field. The menu offers it also for an appointment that is In-Consultation, but Care refuses it in that status too.
+
+**Reschedule** moves an appointment to another slot. You first enter a note for the current appointment, and then choose a new slot. The new slot can belong to another resource of the same type in the same facility, but it cannot be the current slot.
+
+Care marks the current appointment Rescheduled and frees its place. Care creates a new Booked appointment on the new slot, with the same checks as a new booking, and opens it. An appointment that is In-Consultation cannot be rescheduled.
+
+When an appointment is cancelled, entered in error or rescheduled, Care frees its place in the slot and aborts its charge item.
 
 ## Related
 
-- Reference: [Booking (technical)](../../references/scheduling/booking.mdx)
-- Concept: [Schedule](../scheduling/schedule.mdx)
+- Flow: [Book an appointment for a patient](../../flows/scheduling/appointment/book-appointment.mdx)
+- Flow: [Find and open appointments](../../flows/scheduling/appointment/find-appointments.mdx)
+- Flow: [Print a list of appointments](../../flows/scheduling/appointment/print-appointment-list.mdx)
+- Flow: [Check in a patient for an appointment](../../flows/scheduling/appointment/check-in-patient.mdx)
+- Flow: [Start a consultation from an appointment](../../flows/scheduling/appointment/start-consultation.mdx)
+- Flow: [Mark an appointment as fulfilled](../../flows/scheduling/appointment/mark-appointment-fulfilled.mdx)
+- Flow: [Mark an appointment as no-show](../../flows/scheduling/appointment/mark-appointment-no-show.mdx)
+- Flow: [Cancel an appointment](../../flows/scheduling/appointment/cancel-appointment.mdx)
+- Flow: [Reschedule an appointment](../../flows/scheduling/appointment/reschedule-appointment.mdx)
+- Flow: [Add or change an appointment's tags](../../flows/scheduling/appointment/manage-appointment-tags.mdx)
+- Flow: [Print an appointment](../../flows/scheduling/appointment/print-appointment.mdx)
+- Flow: [View a patient's appointments](../../flows/clinical/patient/view-patient-appointments.mdx)
+- Concept: [Schedule & Availability](../scheduling/schedule.mdx)
+- Concept: [Schedule Exception](../scheduling/exception.mdx)
 - Concept: [Token](../scheduling/token.mdx)
-- Concept: [Encounter](../clinical/encounter.mdx)
 - Concept: [Patient](../clinical/patient)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Charge Item](../billing/charge-item.mdx)
+- Concept: [Tagging](../platform/tagging.mdx)
+- Reference: [Booking](../../references/scheduling/booking.mdx)

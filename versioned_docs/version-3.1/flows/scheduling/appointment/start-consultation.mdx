@@ -1,0 +1,144 @@
+---
+sidebar_position: 5
+---
+
+# Start a consultation from an appointment
+
+## Overview
+
+<video src="/media/scheduling/appointment/start-consultation.mp4" poster="/media/scheduling/appointment/start-consultation.poster.png" controls width="720">
+  <track kind="captions" src="/media/scheduling/appointment/start-consultation.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to start the consultation for an [appointment](../../../concepts/scheduling/booking.mdx) from **Appointment Details**, by opening or creating its [encounter](../../../concepts/clinical/encounter.mdx). If you hold the permission to update the appointment, its status becomes In-Consultation.
+
+## Pre-requisites
+
+- The patient has an appointment at the facility, and its status is Booked or Checked-In.
+- The time is between one day before and one day after the start of the appointment's slot.
+- If you want preset departments, encounter type and care team, set them in the schedule template's **Encounter defaults**. See [Edit a schedule template](../schedule/edit-schedule-template.mdx).
+- You have the permissions listed below. Hold the two booking permissions in the place that the list below the table gives.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can update bookings on Object | Lets Care set the appointment to In-Consultation. Hold it in the place listed below for the appointment's schedule. By default, the Admin (facility role), Staff, Facility Admin, Doctor and Nurse roles hold it. Administrator does not. |
+| Can Create encounter | Needed only if no encounter is linked yet. Lets you create the encounter. Hold it in any organization of the facility. By default, the Admin, Facility Admin, Doctor and Nurse roles hold it. Staff and Administrator do not. |
+| Update Encounter non clinical | Needed only if the schedule template has a care team in its encounter defaults. Lets Care add that care team to the new encounter. Hold it in an organization of the encounter or of its location. The encounter's organizations are its departments, their parents and the facility's Administration organization. By default, the Admin, Facility Admin, Doctor and Nurse roles hold it. |
+| Can Read encounter | Needed with the permission above to add the care team. It also lets you open the encounter. Hold it in the same places. By default, the Admin, Facility Admin, Doctor and Nurse roles hold it. |
+| Can list bookings on Object | Lets you open **Appointment Details**. Hold it in the place listed below for the appointment's schedule. By default, the Admin, Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can View Facility Organizations | Optional. Lets you choose a department in the encounter form that you do not belong to. Hold it in any organization of the facility. By default, the Facility Admin, Admin, Staff, Doctor, Administrator, Nurse and Volunteer roles hold it. |
+| Can Read Tag Config | Lets you choose tags in the encounter form. Hold it in any organization of the facility. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+
+Care accepts Can update bookings on Object and Can list bookings on Object only in these places:
+
+- For a practitioner: the facility's Administration organization, a department or team that the practitioner belongs to, or a parent of it.
+- For a location: a department linked to the location or to its parent location, a parent of that department, or the facility's Administration organization.
+- For a healthcare service with a managing organization: that organization or a parent of it. The Administration organization does not count.
+- For a healthcare service without a managing organization: only the facility's Administration organization.
+
+Only roles that you hold in the facility's organizations count. A role in a governance organization above the facility does not count.
+
+Care shows **Start Consultation** and **Create Planned Encounter** to anyone who can open the appointment. Care does not check the permissions above first. Staff and Administrator do not hold Can Create encounter by default. If Care refuses to create the encounter, ask your administrator for that permission.
+
+## Steps
+
+### 1. Open the appointment
+
+Open the appointment from the Appointments board or list, from the patient's appointments, or from the encounter page. Care shows **Appointment Details**. To find and open an appointment, see [Find and open appointments](./find-appointments.mdx).
+
+![The Appointments board with Arjun Rao's 10:00 appointment outlined in the Booked column](/media/scheduling/appointment/start-consultation-1.png)
+
+### 2. Select Start Consultation
+
+In **Quick Actions**, select **Start Consultation**. Keyboard shortcut: `1`.
+
+![The Start Consultation quick action outlined in Quick Actions on Appointment Details](/media/scheduling/appointment/start-consultation-2.png)
+
+If an encounter is already linked to the appointment, Care opens that encounter. Continue with step 5.
+
+If no encounter is linked yet, the **Initiate Patient Encounter** form opens. Continue with step 3.
+
+Note: Care shows **Start Consultation** only for a Booked or Checked-In appointment. It must be between one day before and one day after the slot starts.
+
+If you want to create the encounter but not start the consultation, select **Create Planned Encounter** instead. Care shows it only while the appointment has no encounter and is not in a final status.
+
+![The Create Planned Encounter quick action outlined in Quick Actions, next to Start Consultation](/media/scheduling/appointment/start-consultation-8.png)
+
+The same form opens, and its status starts as Planned. After you save, Care stays on **Appointment Details**. The encounter is linked to the appointment, and the appointment keeps its status.
+
+![The Initiate Patient Encounter form with Status outlined, set to Planned](/media/scheduling/appointment/start-consultation-9.png)
+
+![Appointment Details after the save: the Encounter card outlined shows Planned, and Schedule Information still shows Booked](/media/scheduling/appointment/start-consultation-10.png)
+
+While that encounter is Planned, its appointment bar offers **Start Encounter** instead of **Close Appointment**.
+
+![The appointment bar on the planned encounter, with the Start Encounter button outlined](/media/scheduling/appointment/start-consultation-11.png)
+
+### 3. Check the encounter form
+
+Care fills in these fields for you.
+
+| Component | What it captures |
+| --- | --- |
+| Status | The status of the encounter. Care sets it to In Progress. |
+| Departments | The departments of the encounter. Care selects the departments from the schedule template's encounter defaults. If the template sets none, Care selects your preferred departments. If you have none, Care selects your department if you belong to only one. Select at least one department. |
+| Encounter type | The type of the encounter. Care selects the encounter type of the schedule template if your deployment allows it. Otherwise, Care selects your deployment's default type. If your deployment sets no default type, Care selects none. |
+
+![The Initiate Patient Encounter form with Status outlined, set to In Progress](/media/scheduling/appointment/start-consultation-3.png)
+
+![The Departments field outlined in the Initiate Patient Encounter form, with General Medicine selected](/media/scheduling/appointment/start-consultation-4.png)
+
+Complete the other fields. For each field of this form, see [Create an encounter](../../clinical/encounter/create-encounter.mdx).
+
+### 4. Create the encounter
+
+Select **Create Encounter**. The button shows "Creating..." while Care saves.
+
+Care creates the encounter and links it to the appointment.
+
+If the schedule template has a default care team, Care adds those members to the encounter's care team.
+
+If Care cannot add the care team, Care shows a message, and the encounter stays. To add the members yourself, see [Manage the encounter care team](../../clinical/encounter/manage-encounter-care-team.mdx).
+
+Care then opens the new encounter.
+
+![The new encounter page with the message Encounter created successfully, and the appointment bar outlined with the View Appointment link](/media/scheduling/appointment/start-consultation-5.png)
+
+### 5. Check the appointment's status
+
+If you hold Can update bookings on Object in the place listed above, Care sets the appointment to In-Consultation.
+
+![The Schedule Information card on Appointment Details outlined, showing the status In-Consultation](/media/scheduling/appointment/start-consultation-6.png)
+
+![The View Encounter button outlined in the Encounter card on Appointment Details](/media/scheduling/appointment/start-consultation-7.png)
+
+If you do not hold it there, Care refuses the status change. The encounter stays linked, and the appointment keeps its status.
+
+## Expected Outcome
+
+- The encounter is linked to the appointment, and Care opens it.
+- If you hold Can update bookings on Object in the place listed above, the appointment's status is In-Consultation.
+- **Appointment Details** shows the encounter, with **View Encounter**.
+- On the Appointments board, an In-Consultation appointment is in the **In-Consultation** column.
+- The encounter page shows the appointment bar, with **View Appointment** to go back to the appointment.
+- If you used **Create Planned Encounter**, the encounter is linked, and the appointment keeps its status.
+
+## Related
+
+Concepts:
+
+- [Appointment Booking](../../../concepts/scheduling/booking.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+- [Care Team](../../../concepts/clinical/care-team.mdx)
+- [Schedule & Availability](../../../concepts/scheduling/schedule.mdx)
+
+Flows:
+
+- [Find and open appointments](./find-appointments.mdx)
+- [Check in a patient for an appointment](./check-in-patient.mdx)
+- [Mark an appointment as fulfilled](./mark-appointment-fulfilled.mdx)
+- [Create an encounter](../../clinical/encounter/create-encounter.mdx)
+- [Manage the encounter care team](../../clinical/encounter/manage-encounter-care-team.mdx)
+- [Edit a schedule template](../schedule/edit-schedule-template.mdx)

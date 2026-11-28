@@ -1,0 +1,104 @@
+---
+sidebar_position: 6
+---
+
+# Mark an appointment as fulfilled
+
+## Overview
+
+<video src="/media/scheduling/appointment/mark-appointment-fulfilled.mp4" poster="/media/scheduling/appointment/mark-appointment-fulfilled.poster.png" controls width="720">
+  <track kind="captions" src="/media/scheduling/appointment/mark-appointment-fulfilled.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to mark an [appointment](../../../concepts/scheduling/booking.mdx) as fulfilled when the visit is over. You can do it from **Appointment Details**, or close the appointment from the page of its encounter.
+
+## Pre-requisites
+
+- If you use **Appointment Details**, the appointment's status is not Fulfilled, No-show, Cancelled, Entered in Error or Rescheduled.
+- If you use **Appointment Details**, it is no earlier than one day before the start of the appointment's slot.
+- If you use the encounter page, an encounter is linked to the appointment. For example, you started the consultation from it.
+- If you use the encounter page, the encounter is not Planned, On Hold or completed. The appointment is not Fulfilled.
+- You have the permissions listed below. Hold the two booking permissions in the place that the list below the table gives.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can update bookings on Object | Lets you mark the appointment as Fulfilled, from either page. Hold it in the place listed below for the appointment's schedule. By default, the Admin (facility role), Staff, Facility Admin, Doctor and Nurse roles hold it. Administrator does not. |
+| Can list bookings on Object | Needed only on **Appointment Details**. Lets you open that page. Hold it in the place listed below for the appointment's schedule. By default, the Admin, Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can Read encounter | Needed only on the encounter page. Lets you open the encounter and use the encounter actions in its appointment bar. Hold it in an organization of the encounter or of its current location. The encounter's organizations are its departments, their parents and the facility's Administration organization. By default, the Admin, Facility Admin, Doctor and Nurse roles hold it. |
+
+Care accepts Can update bookings on Object and Can list bookings on Object only in these places:
+
+- For a practitioner: the facility's Administration organization, a department or team that the practitioner belongs to, or a parent of it.
+- For a location: a department linked to the location or to its parent location, a parent of that department, or the facility's Administration organization.
+- For a healthcare service with a managing organization: that organization or a parent of it. The Administration organization does not count.
+- For a healthcare service without a managing organization: only the facility's Administration organization.
+
+Only roles that you hold in the facility's organizations count. A role in a governance organization above the facility does not count.
+
+Care shows the menu button (three dots) on **Appointment Details** if you hold Can update bookings on Object anywhere in the facility. This includes any department or team of the facility, and its Administration organization.
+
+Care shows **Close Appointment** to anyone who can read the encounter, without checking the booking permission.
+
+In both cases, Care saves the change only in the place for the appointment's schedule. If Care refuses, ask your administrator for the permission in that place.
+
+## Steps
+
+### 1. Open the appointment or its encounter
+
+To use **Appointment Details**, open the appointment. To find and open an appointment, see [Find and open appointments](./find-appointments.mdx).
+
+To use the encounter page, open the encounter that is linked to the appointment. The encounter page shows the appointment bar.
+
+### 2. Mark the appointment as fulfilled
+
+If you are on **Appointment Details**, select the menu button (three dots) at the top of the page. The **Actions** menu opens.
+
+![The menu button with three dots outlined at the top of Appointment Details, next to Check-In](/media/scheduling/appointment/mark-appointment-fulfilled-2.png)
+
+Select **Mark as Fulfilled**. Care saves the change at once. There is no confirmation.
+
+![The open Actions menu on Appointment Details with Mark as Fulfilled outlined](/media/scheduling/appointment/mark-appointment-fulfilled-3.png)
+
+![The Schedule Information card outlined, showing the status Fulfilled; the Actions menu button is gone](/media/scheduling/appointment/mark-appointment-fulfilled-4.png)
+
+If you are on the encounter page, select the menu button (three dots) in the appointment bar.
+
+![The menu button with three dots outlined at the end of the appointment bar on the encounter page, next to Complete](/media/scheduling/appointment/mark-appointment-fulfilled-5.png)
+
+Select **Close Appointment**. On a narrow screen, it is in the **Encounter** part of the menu.
+
+![The appointment bar menu open on the encounter page, with Close Appointment outlined above Mark as Complete](/media/scheduling/appointment/mark-appointment-fulfilled-6.png)
+
+**Close Appointment** marks the appointment as Fulfilled. If the appointment has an active [token](../../../concepts/scheduling/token.mdx), Care closes the token in the same step. It does not complete the encounter.
+
+![The message Appointment closed successfully outlined on the encounter page; the encounter is still In Progress](/media/scheduling/appointment/mark-appointment-fulfilled-7.png)
+
+If any part of this fails, Care changes nothing.
+
+Note: **Mark as Fulfilled** is disabled until one day before the start of the appointment's slot.
+
+Note: If the encounter is Planned or On Hold, the appointment bar offers **Start Encounter** instead of **Close Appointment**.
+
+## Expected Outcome
+
+- The appointment's status is Fulfilled.
+- If you used **Close Appointment**, Care shows "Appointment closed successfully".
+- On **Appointment Details**, the menu button (three dots), **Start Consultation** and **Create Planned Encounter** are no longer shown. Fulfilled is a final status.
+- On the Appointments board, the appointment is in the **Fulfilled** column.
+
+## Related
+
+Concepts:
+
+- [Appointment Booking](../../../concepts/scheduling/booking.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+- [Token](../../../concepts/scheduling/token.mdx)
+
+Flows:
+
+- [Find and open appointments](./find-appointments.mdx)
+- [Start a consultation from an appointment](./start-consultation.mdx)
+- [Mark an appointment as no-show](./mark-appointment-no-show.mdx)
+- [Complete an encounter](../../clinical/encounter/complete-encounter.mdx)

@@ -1,0 +1,102 @@
+---
+sidebar_position: 7
+---
+
+# Mark an appointment as no-show
+
+## Overview
+
+<video src="/media/scheduling/appointment/mark-appointment-no-show.mp4" poster="/media/scheduling/appointment/mark-appointment-no-show.poster.png" controls width="720">
+  <track kind="captions" src="/media/scheduling/appointment/mark-appointment-no-show.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to mark an [appointment](../../../concepts/scheduling/booking.mdx) as no-show from **Appointment Details**, with a note.
+
+## Pre-requisites
+
+- The patient has an appointment at the facility, and its status is Booked or Checked-In.
+- It is no earlier than one day before the start of the appointment's slot.
+- You have the permissions listed below, in the place that the list below the table gives.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can update bookings on Object | Lets you mark the appointment as no-show. Hold it in the place listed below for the appointment's schedule. By default, the Admin (facility role), Staff, Facility Admin, Doctor and Nurse roles hold it. Administrator does not. |
+| Can list bookings on Object | Lets you open **Appointment Details**. Hold it in the place listed below for the appointment's schedule. By default, the Admin, Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+
+Care accepts Can update bookings on Object and Can list bookings on Object only in these places:
+
+- For a practitioner: the facility's Administration organization, a department or team that the practitioner belongs to, or a parent of it.
+- For a location: a department linked to the location or to its parent location, a parent of that department, or the facility's Administration organization.
+- For a healthcare service with a managing organization: that organization or a parent of it. The Administration organization does not count.
+- For a healthcare service without a managing organization: only the facility's Administration organization.
+
+Only roles that you hold in the facility's organizations count. A role in a governance organization above the facility does not count.
+
+Care shows the menu button (three dots) on **Appointment Details** if you hold Can update bookings on Object anywhere in the facility. This includes any department or team of the facility, and its Administration organization. When you confirm, Care accepts the permission only in the place for the appointment's schedule. If Care refuses, ask your administrator for the permission in that place.
+
+## Steps
+
+### 1. Open the appointment
+
+Open the appointment from the Appointments board or list, from the patient's appointments, or from the encounter page. Care shows **Appointment Details**. To find and open an appointment, see [Find and open appointments](./find-appointments.mdx).
+
+![The Appointments board with Arjun Rao's 09:45 appointment outlined in the Booked column](/media/scheduling/appointment/mark-appointment-no-show-1.png)
+
+### 2. Select Mark as no-show
+
+Select the menu button (three dots) at the top of **Appointment Details**. The **Actions** menu opens.
+
+![The menu button with three dots outlined at the top of Appointment Details, next to Check-In](/media/scheduling/appointment/mark-appointment-no-show-2.png)
+
+Select **Mark as no-show**. The **Mark as no-show** dialog opens.
+
+![The open Actions menu on Appointment Details with Mark as no-show outlined](/media/scheduling/appointment/mark-appointment-no-show-3.png)
+
+Note: Care offers **Mark as no-show** only for a Booked or Checked-In appointment. The item is disabled until one day before the slot starts.
+
+### 3. Enter a note
+
+The **Note** field shows the appointment's current note.
+
+![The Mark as no-show dialog with the Note field outlined, showing the current note Routine check-up](/media/scheduling/appointment/mark-appointment-no-show-4.png)
+
+Enter a note, or change the current note. **Confirm** stays disabled while the note is empty.
+
+The dialog warns: "This action cannot be undone. The appointment will be marked No-Show and the patient will be notified."
+
+![The warning outlined in the Mark as no-show dialog, below the new note Patient did not arrive; phone not answered](/media/scheduling/appointment/mark-appointment-no-show-5.png)
+
+### 4. Confirm
+
+Select **Confirm**.
+
+![The Confirm button outlined at the bottom of the Mark as no-show dialog](/media/scheduling/appointment/mark-appointment-no-show-6.png)
+
+Care sets the appointment's status to No-show and saves your note with the appointment.
+
+![The Schedule Information card outlined on Appointment Details, showing the status No-show](/media/scheduling/appointment/mark-appointment-no-show-7.png)
+
+![The Note card on Appointment Details with the new note outlined: Patient did not arrive; phone not answered](/media/scheduling/appointment/mark-appointment-no-show-8.png)
+
+## Expected Outcome
+
+- The appointment's status is No-show.
+- The **Note** card on **Appointment Details** shows the note you entered.
+- **Appointment Details** no longer shows the menu button (three dots), because No-show is a final status.
+- On the Appointments board, the appointment is in the **Non Fulfilled** column.
+
+## Related
+
+Concepts:
+
+- [Appointment Booking](../../../concepts/scheduling/booking.mdx)
+
+Flows:
+
+- [Find and open appointments](./find-appointments.mdx)
+- [Check in a patient for an appointment](./check-in-patient.mdx)
+- [Mark an appointment as fulfilled](./mark-appointment-fulfilled.mdx)
+- [Cancel an appointment](./cancel-appointment.mdx)
+- [Reschedule an appointment](./reschedule-appointment.mdx)

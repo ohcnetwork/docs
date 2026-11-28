@@ -1,0 +1,107 @@
+---
+sidebar_position: 3
+---
+
+# Print a list of appointments
+
+## Overview
+
+<video src="/media/scheduling/appointment/print-appointment-list.mp4" poster="/media/scheduling/appointment/print-appointment-list.poster.png" controls width="720">
+  <track kind="captions" src="/media/scheduling/appointment/print-appointment-list.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to print a list of [appointments](../../../concepts/scheduling/booking.mdx) from the **List** view of an **Appointments** page. The printout covers the practitioners, the statuses and the date range that you choose.
+
+## Pre-requisites
+
+- You can open the **Appointments** page and see its appointments. See [Find and open appointments](./find-appointments.mdx).
+- You know the date range to print. The range has a start date and is shorter than 31 days.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can list bookings on Object | Lets Care list the appointments to print. Hold it in the place listed below for each practitioner in the filter. On a location or service page, hold it for that location or service. By default, the Admin (facility role), Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+
+Care accepts Can list bookings on Object only in these places:
+
+- For a practitioner: the facility's Administration organization, a department or team that the practitioner belongs to, or a parent of it.
+- For a location: a department linked to the location or to its parent location, a parent of that department, or the facility's Administration organization.
+- For a healthcare service with a managing organization: that organization or a parent of it. The Administration organization does not count.
+- For a healthcare service without a managing organization: only the facility's Administration organization.
+
+The **Print** button and the print page check no permission. Care checks Can list bookings on Object when it lists the appointments to print.
+
+## Steps
+
+### 1. Open the list of appointments
+
+Open the **Appointments** page of the facility, a location or a healthcare service. See [Find and open appointments](./find-appointments.mdx).
+
+Select **List**. The **Print** button shows only in the list view.
+
+![The List view of the Appointments page with the Print button outlined, next to Auto Refresh](/media/scheduling/appointment/print-appointment-list-1.png)
+
+### 2. Choose what to print
+
+The printout uses these choices from the list:
+
+| Choice | How the printout uses it |
+| --- | --- |
+| **Practitioners** | On the facility page, the printout covers the practitioners in this filter. On a location or healthcare service page, it covers that location or service. |
+| Status tab | The printout covers the statuses of the open tab. If you do not choose a tab, it covers **Booked**. |
+| Date range | Set a start date. If you do not set an end date, the printout ends today. |
+
+![The Practitioners filter outlined, with Dr. Meera Iyer chosen, above the list of Booked appointments](/media/scheduling/appointment/print-appointment-list-2.png)
+
+![The status tabs outlined, with the Booked tab open, above the list of appointments](/media/scheduling/appointment/print-appointment-list-3.png)
+
+![The date range filter outlined, set to Date Is on Today](/media/scheduling/appointment/print-appointment-list-4.png)
+
+### 3. Select Print
+
+Select **Print**.
+
+If the date range has no start date, or is 31 days or longer, **Print** is disabled.
+
+### 4. Check the print preview
+
+The preview has the title "Appointments" and shows **Date Range**, **Generated on:** and **Total Appointments**.
+
+The table has these columns:
+
+| Column | When it shows |
+| --- | --- |
+| Patient | Always. |
+| Practitioner | When the printout covers more than one practitioner. |
+| **Appointment Time** | Always. |
+| **Token No.** | Always. |
+| **Status** | Always. |
+
+![The print preview outlined, with the facility header, Date Range, Practitioner, Generated on, Total Appointments and a table of six Booked appointments](/media/scheduling/appointment/print-appointment-list-5.png)
+
+To sort the rows by token number, turn on **Sort by Token No.** in the toolbar.
+
+![The Sort by Token No. switch outlined in the toolbar above the print preview](/media/scheduling/appointment/print-appointment-list-6.png)
+
+### 5. Print the list
+
+Print the preview.
+
+![The Print button outlined at the top right of the print preview, next to Back](/media/scheduling/appointment/print-appointment-list-7.png)
+
+## Expected Outcome
+
+- You have a printed list of the appointments that match your choices on the list.
+
+## Related
+
+Concepts:
+
+- [Appointment Booking](../../../concepts/scheduling/booking.mdx)
+
+Flows:
+
+- [Find and open appointments](./find-appointments.mdx)
+- [Print an appointment](./print-appointment.mdx)

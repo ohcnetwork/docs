@@ -1,0 +1,87 @@
+---
+sidebar_position: 10
+---
+
+# Add or change an appointment's tags
+
+## Overview
+
+<video src="/media/scheduling/appointment/manage-appointment-tags.mp4" poster="/media/scheduling/appointment/manage-appointment-tags.poster.png" controls width="720">
+  <track kind="captions" src="/media/scheduling/appointment/manage-appointment-tags.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to add, change or remove the tags of an [appointment](../../../concepts/scheduling/booking.mdx) in Care. You can also set tags when you book an appointment and when you reschedule it.
+
+## Pre-requisites
+
+- You can open the appointment on **Appointment Details**.
+- You have a role in an organization of the facility.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can update bookings on Object | Lets you save the tags of the appointment. Hold it in the place listed below for the appointment. By default, the Admin (facility role), Staff, Facility Admin, Doctor and Nurse roles hold it. |
+| Can list bookings on Object | Lets you open the appointment on **Appointment Details**. Care also checks it when it saves the tags. Hold it in the place listed below for the appointment. By default, the Admin, Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can Read Tag Config | Lets you see the tags that you can choose. Hold it in any organization of the facility. By default, the Admin, Staff, Facility Admin, Doctor, Nurse, Administrator, Volunteer and Pharmacist roles hold it. |
+
+Care accepts Can update bookings on Object and Can list bookings on Object only in these places:
+
+- For a practitioner: the facility's Administration organization, a department or team that the practitioner belongs to, or a parent of it.
+- For a location: a department linked to the location or to its parent location, a parent of that department, or the facility's Administration organization.
+- For a healthcare service with a managing organization: that organization or a parent of it. The Administration organization does not count.
+- For a healthcare service without a managing organization: only the facility's Administration organization.
+
+Only roles that you hold in the facility's organizations count. A role in a governance organization above the facility does not count.
+
+Care shows **Add Tags** or **Manage Tags** to everyone who can open the appointment. Care saves the tags only if you hold Can update bookings on Object in the place for the appointment. The Administrator role, for example, sees the button but cannot save.
+
+If Care shows "You do not have permission to update bookings", ask your administrator for Can update bookings on Object in the place for the appointment.
+
+## Steps
+
+### 1. Open the appointment
+
+Open the appointment on **Appointment Details**. See [Find and open appointments](./find-appointments.mdx).
+
+The card at the top of the page shows the tags of the appointment.
+
+![The card at the top of Appointment Details outlined, showing No tags assigned and Add Tags](/media/scheduling/appointment/manage-appointment-tags-1.png)
+
+### 2. Open the tags
+
+Select the tag button on the card at the top of the page:
+
+- If the appointment has no tags, select **Add Tags**.
+- If the appointment has tags, select **Manage Tags**.
+
+![The tag menu open below Add Tags, with a Search tags field and the tags Follow-up and First visit under Other tags](/media/scheduling/appointment/manage-appointment-tags-2.png)
+
+### 3. Choose the tags
+
+Choose the tags that the appointment needs. Remove the tags that it does not need. Care lists the tags that the facility can use.
+
+Care saves each change at once.
+
+![The message Tags updated successfully outlined, with First visit under Selected tags in the tag menu](/media/scheduling/appointment/manage-appointment-tags-3.png)
+
+![The card at the top of Appointment Details outlined, now showing the First Visit tag and Manage Tags](/media/scheduling/appointment/manage-appointment-tags-4.png)
+
+## Expected Outcome
+
+- Care shows the message "Tags updated successfully".
+- The card at the top of **Appointment Details** shows the new tags of the appointment.
+- You can find the appointment by its tags with **Filter by Tags** on the Appointments page.
+
+## Related
+
+Concepts:
+
+- [Appointment Booking](../../../concepts/scheduling/booking.mdx)
+
+Flows:
+
+- [Find and open appointments](./find-appointments.mdx)
+- [Book an appointment for a patient](./book-appointment.mdx)
+- [Reschedule an appointment](./reschedule-appointment.mdx)
