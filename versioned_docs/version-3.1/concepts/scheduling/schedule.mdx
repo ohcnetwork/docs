@@ -6,78 +6,163 @@ sidebar_position: 1
 
 ## Definition
 
-A **[schedule](https://build.fhir.org/schedule.html)** in Care records when a resource can be booked at a facility. The resource is a practitioner, a location, or a healthcare service. Each schedule holds one or more availability sessions. A session states the days of the week, the start time and the end time when the resource is available.
+A **[schedule template](https://build.fhir.org/schedule.html)** in Care states when a practitioner, a location or a healthcare service is available for appointments at a facility.
 
-Care creates bookable slots from the schedule. Staff and patients book appointments against these slots.
+A template applies on the weekdays that you choose, for the dates in its valid period. Each template holds one or more sessions, and Care divides each session into slots.
+
+Staff and patients book [appointments](../scheduling/booking.mdx) in these slots. An appointment takes one place in one slot.
+
+A [schedule exception](../scheduling/exception.mdx) marks a period when the resource is not available. The exception belongs to the resource, so it applies to every template of that resource.
 
 ## Key Attributes
 
 | Components | What it captures |
 | --- | --- |
-| Template Name | The name of the schedule template. This is required. |
-| Valid From | The first date that the schedule applies. This is required. |
-| Valid Till | The last date that the schedule applies. This is required. |
-| Resource | The practitioner, location, or healthcare service that the schedule belongs to. |
-| Availability sessions | One or more sessions. Each session holds a session title, a slot type, the days of the week, a start time and an end time. |
-| Public | Whether patients can see the schedule and book against it. A private schedule shows the message "This schedule is private". |
+| Resource | The practitioner, location or healthcare service that the template belongs to. |
+| Template Name | The name of the template, for example "Regular OP Day". This is required. |
+| Valid Period | The first date and the last date on which the template applies. This is required. |
+| Weekly Schedule | The weekdays on which the template applies. Select at least one weekday. |
+| Sessions | One or more time ranges in the day. Care divides each session into slots. Add at least one session. |
+| Make the template public | Whether patients can book the slots of this template themselves. This is off for a new template. |
+| Encounter defaults | The departments, care team and type of encounter that Care fills in when a consultation starts from an appointment. These are optional. |
+| Charges | The consultation charge and the re-visit rules for appointments on this template. Set them after you create the template. |
 
-### Resource types
+To edit a template, select the pencil icon on its card. In **Edit Schedule Template** you can change the name, the valid period, **Make the template public** and the encounter defaults.
 
-A schedule belongs to one of these resource types:
+**Delete** in the same sheet deletes the whole template. Care refuses this while any future slot of the template has an appointment. Deleting a template also deletes its sessions and their slots.
 
-| Resource type | What it schedules |
+### Resource
+
+A template belongs to one practitioner, one location or one healthcare service of the facility. A resource can have more than one template.
+
+A practitioner must be a member of the facility. Otherwise Care refuses the template with the message "Schedule User is not part of the facility".
+
+Each resource has its own schedule page:
+
+- For a practitioner, open **Users**, select **See Details** for the user, and open the **Availability** tab. For your own schedule, select **Profile** in the account menu, then open the **Availability** tab.
+- For a location, select **Services**, then a service, and select **View appointments** on a location card. Then select **Schedule** under **Scheduling** in the location sidebar.
+- For a healthcare service, open the service from **Services** and select **Schedule** under **Scheduling** in its sidebar.
+
+The schedule page is the same for all three resources. It shows a calendar for one month beside two tabs. The **Schedule** tab lists the templates that apply in that month, and the **Exceptions** tab lists its exceptions.
+
+On the calendar, each day shows up to five coloured dots, one for each template that has a session on that weekday. When you select a day, a pop-up shows the sessions, slots and exceptions of that day. From today on, if the day has appointments and you can list them, the pop-up also shows a link to them.
+
+### Valid Period
+
+The valid period is one date range, with a first date and a last date.
+
+When you create a template, neither date can be before today, and the last date cannot be before the first date. A template can start today.
+
+When you edit a template, the dates can be in the past, but the last date still cannot be before the first date.
+
+Care refuses a change to the valid period that leaves out slots that already have appointments.
+
+### Weekly Schedule
+
+When you create a template, you choose its weekdays once, under **Weekly Schedule**. These weekdays apply to every session that you create with the template.
+
+A session that you add later to an existing template has its own **Weekdays** field. Each template card lists the weekdays of the template.
+
+### Sessions
+
+A session is a named time range in the day, for example "IP Rounds". Care divides the session into slots of equal length, and each slot takes a fixed number of appointments.
+
+| Components | What it captures |
 | --- | --- |
-| Practitioner | A user, for example a doctor or a nurse. |
-| Location | A place inside the facility, for example a consultation room. |
-| Healthcare Service | A service that the facility offers. |
+| Session Title | The name of the session. This is required. |
+| Start Time and End Time | The time when the session starts and ends on each weekday. The start time must be before the end time. |
+| Slot duration (mins.) | The length of one slot in minutes. This is required and must be at least 1. |
+| Patients per Slot | The number of appointments that one slot takes. This is required and must be at least 1. |
+| Remarks | A note about the session. This is optional. |
 
-A facility holds only one schedulable resource for each practitioner, each location, and each healthcare service.
+If you turn on **Auto-fill slot duration**, you enter a number of slots instead, and Care calculates the slot duration from the length of the session.
 
-### Availability sessions
+When the times and the slot values are filled in, the form shows how many slots the session holds and about how many minutes each patient gets.
 
-Each session in a schedule holds these values:
+Care also checks these rules when you save:
 
-| Component | What it captures |
+- The length of the session must be a whole multiple of the slot duration.
+- One session can hold only a limited number of slots on one day. The default limit is 30, and your deployment can change it.
+
+Sessions in one template must not overlap on the same weekday. Sessions that only touch also count as overlapping. A session that ends at 12:00 and a session that starts at 12:00 on the same weekday are refused with the message "Availability time ranges are overlapping".
+
+Care does not compare the sessions of different templates of the same resource. Two templates of the same practitioner can cover the same hours, and Care offers the slots of both. When a day has slots from more than one template, the booking sheet shows a choice of template.
+
+Sessions cannot be edited. In **Edit Schedule Template**, you can only add a new session or delete an existing one. To change the times of a session, delete the old session first and then add the new one, because Care refuses a new session that overlaps an existing one.
+
+Care refuses to delete a session while one of its future slots has an appointment. Deleting a session also deletes its slots.
+
+Care makes the slots of a day from the sessions of every template that is valid on that day. It leaves out the slots that overlap an exception. It does not make slots that have already ended, and a slot cannot be booked after it ends.
+
+### Make the template public
+
+A new template is private. When you select **Make the template public**, patients can book its slots themselves in the patient portal, after they sign in with a one-time password (OTP) on their phone number. Patients see only the slots of public templates, while staff see and book the slots of all templates. A template that is not public shows a lock icon with the tooltip "This schedule is private". If you make a public template private again, Care warns that existing appointments do not change and that patients can no longer book new ones.
+
+### Encounter defaults
+
+**Encounter defaults** are optional values that Care fills in when staff start a consultation from an appointment on this template.
+
+- Departments: the departments of the facility for the new encounter. Care preselects them in the encounter form.
+- **Care Team**: users, each with a role. Care adds them to the care team of the encounter after it creates the encounter. Each user must be an active member of the facility and appear only once.
+- **Type of Encounter**: the type of the new encounter, or **Not Specified**. Care uses it only if your deployment allows that type. Otherwise it uses the default type of your deployment.
+
+The encounter form that opens from **Start Consultation** on **Appointment Details** uses these defaults.
+
+### Charges
+
+A template can have charges, so that its appointments get a [charge item](../billing/charge-item.mdx) for the patient. To set them, select **Manage Charges** on the template card.
+
+| Components | What it captures |
 | --- | --- |
-| Session Title | The name of the session, for example "IP Rounds". This is required. |
-| Slot type | Appointment Slot, Open, or Closed. This is required. |
-| Days of the week | The days that the session repeats. You select at least one day. |
-| Start time and end time | The time range of the session on each selected day. The start time must be earlier than the end time. |
-| Slot size in minutes | The length of one slot. This is required for an appointment slot. |
-| Tokens per slot | The number of patients that Care books into one slot. This is required for an appointment slot. |
-| Reason | Free text that explains the session. This is optional. |
+| Consultation Charge | The [charge item definition](../definitions/charge-item-definition.mdx) for an appointment. This is required. |
+| Re-visit allowed days | The number of days in which a return visit counts as a re-visit. This is required and cannot be negative. |
+| Re-visit consultation charge | The charge item definition for a re-visit. You can set it only when the re-visit allowed days are more than 0. |
 
-### Slot types
+When an appointment is booked, Care looks for the patient's last paid consultation charge on the same template. If the patient paid it within the re-visit allowed days, Care uses the re-visit consultation charge. Otherwise Care uses the consultation charge.
 
-| Slot type | What it means |
-| --- | --- |
-| Appointment Slot | Care divides the session into slots of a fixed size. Patients book a specific slot. |
-| Open | The resource is available for the whole session, and Care does not divide the session into slots. |
-| Closed | The resource is not available for booking during the session. |
+If the visit counts as a re-visit and the template has no re-visit consultation charge, the appointment gets no charge item. A template with no consultation charge gives no charge item.
 
-### Validation rules
+When an appointment is cancelled or rescheduled, Care aborts its charge item. **Appointment Details** shows the charge items of an appointment, but you cannot change them there.
 
-- The Valid From date must not be in the past.
-- The Valid From date must not be later than the Valid Till date.
-- The start time of a session must be earlier than its end time.
-- Sessions in a schedule must not overlap.
-- For an appointment slot, the length of the session must be a multiple of the slot size in minutes.
-- For an appointment slot, the number of slots in one session must not be more than the limit that your deployment sets.
+### Who can work with schedules
 
-## Permissions
+| Permission | What it lets you do | Default roles |
+| --- | --- | --- |
+| Can list schedule on Object | See the templates and the exceptions of a resource. | Admin (facility role), Staff, Facility Admin, Doctor, Nurse and Administrator |
+| Can Create on Schedule | Create, edit and delete templates, and add or delete sessions. | Admin, Staff, Facility Admin, Doctor and Nurse |
+| Can Set Charge Item Definition on Facility | Set the charges of a template with **Manage Charges**. You must hold it in the facility's Administration organization. | Facility Admin and Admin |
 
-| Permission | What it allows |
-| --- | --- |
-| Can Create on Schedule | Create and change schedules and their sessions. |
-| Can list schedule on Object | See the schedules of a resource. |
+Care accepts Can Create on Schedule and Can list schedule on Object only in these places:
 
-## Configuration
+- For a practitioner: the facility's Administration organization, a department or team that the practitioner belongs to, or a parent of it.
+- For a location: a department linked to the location or to its parent location, a parent of that department, or the facility's Administration organization.
+- For a healthcare service with a managing organization: that organization or a parent of it. The Administration organization does not count.
+- For a healthcare service without a managing organization: only the facility's Administration organization.
 
-The maximum number of slots in one availability session depends on your deployment's configuration.
+Only roles that you hold in the facility's organizations count. A role in a governance organization above the facility does not count.
+
+An Administrator can see the templates and exceptions, but cannot change them.
+
+The **Availability** tab of a practitioner shows only if you hold Can list schedule on Object in a department or team of the facility, or in its Administration organization.
+
+The schedule page shows **Create Template**, the pencil icon and **Manage Charges** if you hold the permissions in any department or team of the facility, or in its Administration organization. Care saves the change only when you hold the permission in the place listed above.
 
 ## Related
 
 - Flow: [Create a schedule template](../../flows/scheduling/schedule/create-schedule-template.mdx)
-- Flow: [View schedule templates](../../flows/scheduling/schedule/view-schedule-templates.mdx)
+- Flow: [View a schedule](../../flows/scheduling/schedule/view-schedule-templates.mdx)
 - Flow: [Edit a schedule template](../../flows/scheduling/schedule/edit-schedule-template.mdx)
+- Flow: [Add or remove a session in a schedule template](../../flows/scheduling/schedule/add-or-remove-schedule-session.mdx)
+- Flow: [Set the charges for a schedule](../../flows/scheduling/schedule/set-schedule-charges.mdx)
 - Flow: [Delete a schedule template](../../flows/scheduling/schedule/delete-schedule-template.mdx)
+- Flow: [Add a schedule exception](../../flows/scheduling/exception/create-schedule-exception.mdx)
+- Flow: [Book an appointment for a patient](../../flows/scheduling/appointment/book-appointment.mdx)
+- Concept: [Schedule Exception](../scheduling/exception.mdx)
+- Concept: [Appointment Booking](../scheduling/booking.mdx)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Care Team](../clinical/care-team.mdx)
+- Concept: [Charge Item Definition](../definitions/charge-item-definition.mdx)
+- Concept: [Department](../facility/department.mdx)
+- Concept: [Location](../facility/location.mdx)
+- Concept: [Healthcare Service](../facility/healthcare-service.mdx)
+- Reference: [Schedule](../../references/scheduling/schedule.mdx)

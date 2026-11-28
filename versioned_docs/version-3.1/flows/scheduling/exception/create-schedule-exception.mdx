@@ -2,59 +2,120 @@
 sidebar_position: 1
 ---
 
-# Create a schedule exception
+# Add a schedule exception
 
 ## Overview
 
-This flow describes how to record a period when a resource is not available in Care. The exception overrides the regular schedule, and Care does not offer slots during that period. See [Schedule Exception](../../../concepts/scheduling/exception.mdx).
+<video src="/media/scheduling/exception/create-schedule-exception.mp4" poster="/media/scheduling/exception/create-schedule-exception.poster.png" controls width="720">
+  <track kind="captions" src="/media/scheduling/exception/create-schedule-exception.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to add a [schedule exception](../../../concepts/scheduling/exception.mdx) in Care: a period when a practitioner, location or healthcare service is not available. The exception applies to every schedule template of that resource.
 
 ## Pre-requisites
 
-- The resource is available in the facility.
-- You can open the schedule of the resource.
+- You are a member of the facility.
+- No booked slot starts within the times of the exception, on one of its dates. The start time and the end time count as within. If a booked slot does, cancel or reschedule that appointment first.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create on Schedule | Lets you create a schedule exception. |
-| Can list schedule on Object | Lets you see the schedules of the resource. |
+| Can Create on Schedule | Lets you add the exception. You must hold it in the place given below for the resource. By default, the Admin (facility role), Staff, Facility Admin, Doctor and Nurse roles hold it. |
+| Can list schedule on Object | Lets you open the schedule page. Care checks it in the same place as Can Create on Schedule. For a practitioner, Care shows the **Availability** tab only if you hold it in a department or team of the facility, or in its Administration organization. By default, the Admin, Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can Read Healthcare Service | Lets you open **Services** and a service, on the way to the schedule of a location or a healthcare service. A role in any organization of the facility counts. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+
+Care accepts Can Create on Schedule and Can list schedule on Object only in these places:
+
+- For a practitioner: the facility's Administration organization, a department or team that the practitioner belongs to, or a parent of it.
+- For a location: a department linked to the location or to its parent location, a parent of that department, or the facility's Administration organization.
+- For a healthcare service with a managing organization: that organization or a parent of it. The Administration organization does not count.
+- For a healthcare service without a managing organization: only the facility's Administration organization.
+
+Only roles that you hold in the facility's organizations count. A role in a governance organization above the facility does not count.
+
+Care shows **Add Exception** if you hold Can Create on Schedule in the facility. A role in any department or team, or in the Administration organization, counts for this. Care saves the exception only if you hold the permission in the place given above. If Care refuses the exception, ask your administrator for Can Create on Schedule in that place.
 
 ## Steps
 
-### 1. Open the schedule of the resource
+### 1. Open the schedule
 
-Open the facility. Go to the scheduling section and select the resource.
+Each practitioner, location and healthcare service has its own schedule page. Open it in one of these ways:
 
-### 2. Open the exceptions panel
+- For a practitioner: in the facility sidebar, select **Users**. On the user's card, select **See Details**. Then select the **Availability** tab.
+- For your own schedule: open the account menu and select **Profile**. Then select the **Availability** tab.
+- For a location: in the facility sidebar, select **Services**, then a service. On a location card, select **View appointments**. This link shows for services that are not a store, a pharmacy or a lab. In the location sidebar, under **Scheduling**, select **Schedule**.
+- For a healthcare service: in the facility sidebar, select **Services**, then the service. In the service sidebar, under **Scheduling**, select **Schedule**.
 
-Select **Add Exception**. Care opens the **Add Schedule Exceptions** panel. The panel shows the text "Configure absences by adding unavailability beyond the regular schedule."
+![The account menu open at the bottom of the facility sidebar, with Profile outlined under Dr. Meera Iyer](/media/scheduling/exception/create-schedule-exception-1.png)
+
+Care can refuse to load the page and show "You do not have permission to update schedule". This means that you do not hold Can list schedule on Object in the place for this resource. Ask your administrator for it.
+
+The page opens on the **Schedule** tab, next to the **Exceptions** tab.
+
+### 2. Open the exception form
+
+Select the **Exceptions** tab, then select **Add Exception**.
+
+![The Exceptions tab outlined next to the Schedule tab on Dr. Meera Iyer's Availability tab](/media/scheduling/exception/create-schedule-exception-2.png)
+
+You can also start from the calendar. Select today or a later day, then select **Add Exception** in the pop-up. Care opens the **Exceptions** tab and sets the period to that day.
+
+The **Add Schedule Exceptions** sheet opens, with the text "Configure absences by adding unavailability beyond the regular schedule."
+
+![The Add Schedule Exceptions sheet with its heading outlined and empty Reason, Valid Period, Full Day Unavailable, From and To fields](/media/scheduling/exception/create-schedule-exception-3.png)
 
 ### 3. Enter the reason
 
-Enter the **Reason** for the unavailability, for example leave or a holiday.
+In **Reason**, enter why the resource is not available, for example a holiday or a conference. The form requires a reason.
+
+![The Reason field outlined in the Add Schedule Exceptions sheet, filled in with Department meeting](/media/scheduling/exception/create-schedule-exception-4.png)
 
 ### 4. Set the period
 
-Enter **Valid From** and **Valid Till**.
+In **Valid Period**, open the date range. Select the **Start date** and the **End date**, then select **Apply**.
 
-The Valid From date must not be in the past. The Valid Till date must be the same as, or later than, the Valid From date.
+![The Valid Period date picker outlined, with 28/11/2026 as both the Start date and the End date, above the Apply button](/media/scheduling/exception/create-schedule-exception-5.png)
+
+You cannot select a day before today. If a date is in the past, Care shows "Schedule exception cannot be created for the past".
+
+The end date must be the same as or later than the start date. If it is earlier, Care shows "Valid till must be equal to or after valid from date".
 
 ### 5. Set the times
 
-To make the resource unavailable for the whole day, select **Full day unavailable**.
+To block the whole day, select **Full Day Unavailable**. Care sets the times from 00:00 to 23:59.
 
-For a part of the day, leave that option clear and enter the start time and the end time. The start time must be earlier than the end time.
+To block a part of the day, enter the start time in **From** and the end time in **To**. Both times are required.
+
+![The From and To fields outlined, set to 11:00 AM and 01:00 PM, with Full Day Unavailable clear](/media/scheduling/exception/create-schedule-exception-6.png)
+
+The start time must be earlier than the end time. If it is not, Care shows "Start time must be before end time".
+
+If the exception starts today, the start time must be later than the current time. If it is not, Care shows "Start time must be a future time".
+
+To block a slot, start the exception at or before the start time of that slot.
 
 ### 6. Confirm the unavailability
 
-Select **Confirm Unavailability**. Care shows a message that the exception is created.
+Select **Confirm Unavailability**.
+
+![The Confirm Unavailability button outlined at the bottom of the filled-in Add Schedule Exceptions sheet](/media/scheduling/exception/create-schedule-exception-7.png)
+
+Care shows "Exception created successfully" and closes the sheet.
+
+![The message Exception created successfully, with the new Department meeting exception outlined on the Exceptions tab: 11 AM - 1 PM on Sat, 28 Nov 2026](/media/scheduling/exception/create-schedule-exception-8.png)
+
+Care checks the slots that start within the times of the exception, on its dates. If one of them has an appointment, Care does not save the exception. The message is "There are bookings during this exception".
 
 ## Expected Outcome
 
-- The exception appears in the list of schedule exceptions for the resource.
-- Care does not offer slots for booking during the period of the exception.
+- The exception is listed on the **Exceptions** tab in each month that it covers.
+- On the calendar, the days of the exception have stripes. A full-day exception stripes the whole day.
+- Care removes the free slots that start inside the exception, and offers no new slots that overlap it.
+- The exception applies to every schedule template of the practitioner, location or healthcare service.
+- Adding the exception does not change any appointment.
+- You cannot change the exception later. To change it, remove it and add a new one.
 
 ## Related
 
@@ -67,3 +128,6 @@ Flows:
 
 - [View schedule exceptions](./view-schedule-exceptions.mdx)
 - [Remove a schedule exception](./remove-schedule-exception.mdx)
+- [View a schedule](../schedule/view-schedule-templates.mdx)
+- [Cancel an appointment](../appointment/cancel-appointment.mdx)
+- [Reschedule an appointment](../appointment/reschedule-appointment.mdx)

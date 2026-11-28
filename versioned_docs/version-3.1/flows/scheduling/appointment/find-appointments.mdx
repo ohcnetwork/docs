@@ -1,0 +1,184 @@
+---
+sidebar_position: 2
+---
+
+# Find and open appointments
+
+## Overview
+
+<video src="/media/scheduling/appointment/find-appointments.mp4" poster="/media/scheduling/appointment/find-appointments.poster.png" controls width="720">
+  <track kind="captions" src="/media/scheduling/appointment/find-appointments.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to find [appointments](../../../concepts/scheduling/booking.mdx) on the **Appointments** page of the facility, a location or a healthcare service, and how to open one in **Appointment Details**.
+
+## Pre-requisites
+
+- You are a member of the facility: you have a role in one of its organizations.
+- Appointments are booked for the practitioners, the location or the healthcare service. See [Book an appointment for a patient](./book-appointment.mdx).
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can list bookings on Object | Lets you see the appointments and open **Appointment Details**. Hold it in the place listed below for each practitioner, location or healthcare service whose appointments you list. If one practitioner in the filter fails the check, Care refuses the whole list. By default, the Admin (facility role), Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can View Facility Organizations | Lets you switch the practitioner filter to all departments. Without it, that list is empty. By default, the Facility Admin, Admin, Staff, Doctor, Administrator, Nurse and Volunteer roles hold it. |
+| Can Read Tag Config | Lets Care show the tags that you select in **Filter by Tags**. Hold it in any organization of the facility. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Read Healthcare Service | Lets you open **Services** and a healthcare service on the way to a location's or a service's **Appointments** page. Hold it in any organization of the facility. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Read Charge Item | Lets **Appointment Details** show the appointment's charge items. Hold it in any organization of the facility. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Read Account | Lets **Appointment Details** show the patient's open account. Hold it in any organization of the facility. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+
+Care accepts Can list bookings on Object only in these places:
+
+- For a practitioner: the facility's Administration organization, a department or team that the practitioner belongs to, or a parent of it.
+- For a location: a department linked to the location or to its parent location, a parent of that department, or the facility's Administration organization.
+- For a healthcare service with a managing organization: that organization or a parent of it. The Administration organization does not count.
+- For a healthcare service without a managing organization: only the facility's Administration organization.
+
+Which pages you can open does not decide which appointments you can see.
+
+- The facility sidebar shows **Appointments** if you hold Can list bookings on Object in the facility. This means a department or team of the facility, or its Administration organization.
+- The **Appointments** entries of a location and of a healthcare service show for every user.
+- On every **Appointments** page, Care loads the appointments only if you hold the permission in the facility.
+- If Care refuses the list, the board shows empty columns. The list view shows the refusal message.
+- **Appointment Details** opens only if you hold Can list bookings on Object in the facility.
+- Otherwise, Care shows "You do not have permissions to view this page" and goes back to the facility overview.
+- Care also checks the permission in the place listed above for the appointment's resource. Without it, **Appointment Details** stays in its loading state.
+
+## Steps
+
+### 1. Open the Appointments page
+
+Open the page for the facility, a location or a healthcare service:
+
+| Page | How to open it |
+| --- | --- |
+| Facility | In the facility sidebar, under **Patient Management**, select **Appointments**. |
+| Location | In the location's sidebar, under **Scheduling**, select **Appointments**. You can also select **Services** and a service. Then select **View appointments** on a location card of the service. |
+| Healthcare service | Select **Services** and select the service. In the service's sidebar, under **Scheduling**, select **Appointments**. |
+
+![The facility sidebar with Appointments outlined under Patient Management](/media/scheduling/appointment/find-appointments-1.png)
+
+You can also open the page from these places:
+
+- On a schedule's calendar, select today or a later day that has bookings. Select the link that shows the number of scheduled appointments, for example "View 3 scheduled appointments".
+- On the encounter page of an appointment, select **Appointments board**. The page opens for the appointment's resource and day.
+
+### 2. Choose a view
+
+The **Appointments** page opens on the **Board** view. To see a table, select **List**.
+
+![The Appointments page on the Board view, with the Board and List buttons outlined at the top right](/media/scheduling/appointment/find-appointments-2.png)
+
+### 3. Filter the appointments
+
+| Filter | What it does |
+| --- | --- |
+| **Practitioners** | Shows the appointments of the practitioners that you choose. This filter is only on the facility page. It starts with you. The list shows your departments (**My Dept.**). Switch to **All Dept.** to see all departments. |
+| **Filter by Tags** | Shows the appointments that have the tags that you choose. |
+| Date range | Shows the appointments in a date range. The default range is today, unless your deployment sets a different default. |
+| **Search patients** | Shows the appointments of one patient. |
+
+![The Practitioners filter outlined with Dr. Meera Iyer added, and her appointments in the Booked, Checked-In and In-Consultation columns](/media/scheduling/appointment/find-appointments-3.png)
+
+If you have no schedule in Care, the board stays empty. The **List** view shows "No schedules found for this resource". Choose a practitioner under **Practitioners**.
+
+Note: The tags and the date range are in the filter menu.
+
+### 4. Turn on auto refresh
+
+This step is optional.
+
+Turn on **Auto Refresh** to refresh the page at a fixed interval.
+
+![The Auto Refresh switch turned on and outlined, next to Scan and Search patients](/media/scheduling/appointment/find-appointments-4.png)
+
+Auto Refresh is off unless your deployment turns it on. The interval is 10 seconds, unless your deployment sets a different interval.
+
+### 5. Read the board or the list
+
+The board has these columns: **Booked**, **Checked-In**, **In-Consultation**, **Fulfilled** and **Non Fulfilled**.
+
+- The **Non Fulfilled** column holds the appointments that are **Cancelled**, **Entered in Error**, **Rescheduled** or **No-show**.
+- A column that holds more than one status has a filter button. Use it to choose the statuses that the column shows.
+- A card shows the token number when the appointment has a token.
+- An empty column shows "No appointments found".
+
+![The Booked column of the board outlined, with cards for Maya Raman, Arjun Rao and Sara Thomas showing age, sex and slot time](/media/scheduling/appointment/find-appointments-5.png)
+
+The list has a tab for each of the same groups. It opens on the **Booked** tab.
+
+| Column | What it shows |
+| --- | --- |
+| **Patient** | The patient of the appointment. |
+| **Practitioner** | The practitioner of the appointment. This column is only on the facility page. |
+| **Current Status** | The status of the appointment. |
+| **Token No.** | The token number, when the appointment has a token. |
+
+![The List view on the Booked tab, with the table of Patient, Practitioner, Current Status and Token No. outlined](/media/scheduling/appointment/find-appointments-6.png)
+
+An empty list shows "No appointments found" and "Try adjusting your filters or create a new appointment".
+
+Care sorts the appointments by the start time of their slots.
+
+### 6. Open an appointment
+
+Select a card on the board, or a row in the list. Care opens **Appointment Details**.
+
+You can also open an appointment from these places:
+
+- The patient's list of appointments. See [View a patient's appointments](../../clinical/patient/view-patient-appointments.mdx).
+- The encounter page of the appointment: select **View Appointment**.
+
+### 7. Read Appointment Details
+
+| Part | What it shows |
+| --- | --- |
+| Header card | The appointment's tags. It shows **Add Tags** when there are no tags, or **Manage Tags** when there are tags. |
+| **Schedule Information** | The status, date, session, time and duration, with **Booked by** and **Last updated by**. |
+| **Booked by** | If the patient booked the appointment, it shows the patient's name with "(Patient)". |
+| **Practitioner**, **Location** or **Healthcare Service** | The resource of the appointment. The card title is the resource type. |
+| **Note** | The appointment's note, or "No note provided". |
+| Charge items | The appointment's charge items. You cannot change them here. |
+| Token | The token, when the appointment has one. |
+| **Generate Token** | Shows when there is no token, the status is not final, and your role lets you write tokens. See [Token](../../../concepts/scheduling/token.mdx). |
+| **Encounter** | When an encounter is linked: **View Encounter** and **View Patient**. |
+| **Quick Actions** | **Start Consultation**, **Create Planned Encounter**, **Print Appointment** and **Accounts**. Which actions show depends on the status and on whether an encounter is linked. |
+
+![Appointment Details for Maya Raman, with the Schedule Information card outlined, showing Booked, the date, session, time, Booked by and Last updated by](/media/scheduling/appointment/find-appointments-7.png)
+
+![Appointment Details with Quick Actions outlined: Start Consultation, Create Planned Encounter, Print Appointment and Accounts](/media/scheduling/appointment/find-appointments-8.png)
+
+The page also shows **Check-In** and the menu button (three dots) at the top of **Appointment Details**. These show if you hold Can update bookings on Object in the facility.
+
+The menu button opens the **Actions** menu.
+
+**Check-In** and the menu button do not show when the appointment is Fulfilled, No-show, Cancelled, Entered in Error or Rescheduled.
+
+## Expected Outcome
+
+- The **Appointments** page shows the appointments that match your filters, on the board or in the list.
+- **Appointment Details** shows the appointment that you selected, with the actions that apply to it.
+
+## Related
+
+Concepts:
+
+- [Appointment Booking](../../../concepts/scheduling/booking.mdx)
+- [Schedule & Availability](../../../concepts/scheduling/schedule.mdx)
+- [Token](../../../concepts/scheduling/token.mdx)
+
+Flows:
+
+- [Book an appointment for a patient](./book-appointment.mdx)
+- [Print a list of appointments](./print-appointment-list.mdx)
+- [Print an appointment](./print-appointment.mdx)
+- [Check in a patient for an appointment](./check-in-patient.mdx)
+- [Start a consultation from an appointment](./start-consultation.mdx)
+- [Mark an appointment as fulfilled](./mark-appointment-fulfilled.mdx)
+- [Mark an appointment as no-show](./mark-appointment-no-show.mdx)
+- [Cancel an appointment](./cancel-appointment.mdx)
+- [Reschedule an appointment](./reschedule-appointment.mdx)
+- [Add or change an appointment's tags](./manage-appointment-tags.mdx)
+- [View a patient's appointments](../../clinical/patient/view-patient-appointments.mdx)

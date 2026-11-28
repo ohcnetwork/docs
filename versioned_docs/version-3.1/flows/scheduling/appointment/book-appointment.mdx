@@ -1,0 +1,171 @@
+---
+sidebar_position: 1
+---
+
+# Book an appointment for a patient
+
+## Overview
+
+<video src="/media/scheduling/appointment/book-appointment.mp4" poster="/media/scheduling/appointment/book-appointment.poster.png" controls width="720">
+  <track kind="captions" src="/media/scheduling/appointment/book-appointment.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to book an [appointment](../../../concepts/scheduling/booking.mdx) for a patient in a slot of a practitioner, a location or a healthcare service. You choose the resource, a date and a slot in the **Book Appointment** sheet, and Care opens the new appointment.
+
+## Pre-requisites
+
+- The [patient](../../../concepts/clinical/patient) is registered in Care.
+- You are a member of the facility: you have a role in one of its organizations.
+- The practitioner, location or healthcare service has a valid schedule template with a session on that day. See [Create a schedule template](../schedule/create-schedule-template.mdx).
+- If you start from the patient page, you can open the patient's record.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can update bookings on Object | Lets you book the appointment. Hold it in any organization of the facility. By default, the Admin (facility role), Staff, Facility Admin, Doctor and Nurse roles hold it. |
+| Can list bookings on Object | Lets you select a day after today in the calendar, unless your deployment turns off the day counts. Care also needs it to open the new appointment after you book. Hold it in the place listed below for the chosen resource. By default, the Admin, Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can View Facility Organizations | Lets you switch the practitioner list to all departments. Without it, that list is empty. By default, the Facility Admin, Admin, Staff, Doctor, Administrator, Nurse and Volunteer roles hold it. |
+| Can List Facility Locations | Lets you find a location. Care lists only the locations linked to an organization in which you hold it. By default, the Admin, Doctor, Facility Admin, Administrator, Nurse, Staff and Pharmacist roles hold it. |
+| Can Read Healthcare Service | Lets you choose a healthcare service. Hold it in any organization of the facility. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Read Tag Config | Lets you choose tags for the appointment. Hold it in any organization of the facility. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+
+Care accepts Can list bookings on Object only in these places:
+
+- For a practitioner: the facility's Administration organization, a department or team that the practitioner belongs to, or a parent of it.
+- For a location: a department linked to the location or to its parent location, a parent of that department, or the facility's Administration organization.
+- For a healthcare service with a managing organization: that organization or a parent of it. The Administration organization does not count.
+- For a healthcare service without a managing organization: only the facility's Administration organization.
+
+Which buttons you see does not decide whether Care accepts the booking. Care checks Can update bookings on Object when you confirm.
+
+- On Patient Home, **Schedule Appointment** shows if you hold Can update bookings on Object in the facility. This means a department or team of the facility, or its Administration organization.
+- On the patient page, **Schedule Appointment** depends on your roles on this patient. It shows only if these roles give you Can update bookings on Object.
+- Your roles on a patient come from the organizations of the patient's active encounters and their locations. They also come from the patient's governance organizations and from a direct link to the patient.
+- If you do not see **Schedule Appointment** on the patient page, open the sheet from Patient Home.
+
+## Steps
+
+### 1. Open the Book Appointment sheet
+
+Open the sheet from one of these places:
+
+- Patient Home: Search for the patient and open Patient Home. See [Search for a patient](../../clinical/patient/search-patient.mdx). Then select **Schedule Appointment**. You can also press S.
+- Patient search results: Select **Schedule Appointment** for the patient. If the result is a partial match, Care first asks you to verify the patient's identity (**Verify Patient Identity**). Care then opens Patient Home with the sheet open.
+- Patient page: Select **Schedule Appointment** in the header. The button shows only when you open the patient page inside a facility. See [View a patient's profile](../../clinical/patient/view-patient-profile.mdx).
+- After registration: If your deployment is set up to do so, the sheet opens after you register a patient. See [Register a patient](../../clinical/patient/register-patient.mdx).
+
+The search results show **Schedule Appointment** to every user. The sheet opens only if Patient Home shows **Schedule Appointment** to you.
+
+![Patient search results for Maya Raman, with her row outlined and Schedule Appointment in the Actions column](/media/scheduling/appointment/book-appointment-1.png)
+
+![Patient Home for Maya Raman, with the Schedule Appointment quick action outlined](/media/scheduling/appointment/book-appointment-2.png)
+
+The **Book Appointment** sheet opens on its **Book Appointment** tab. The other tab, **Bookings**, lists the patient's appointments.
+
+### 2. Choose the resource type
+
+Under **Select resource type**, select **Practitioner**, **Location** or **Healthcare Service**.
+
+![The Book Appointment sheet on its Book Appointment tab, with Practitioner selected under Select resource type](/media/scheduling/appointment/book-appointment-3.png)
+
+Care remembers the type that you chose last in this browser. The first time, the type is **Practitioner**.
+
+### 3. Choose the practitioner, location or healthcare service
+
+| Resource type | How you choose it |
+| --- | --- |
+| **Practitioner** | Open **Select Practitioner**. The list shows the practitioners of your departments (**My Dept.**). Switch to **All Dept.** to see all departments. Select one practitioner. |
+| **Location** | Search for the location in **Select Location**. Select the location. |
+| **Healthcare Service** | Open **Select Healthcare Service**. The list shows only the healthcare services that are set up for scheduling. Select the service. |
+
+![Dr. Meera Iyer chosen in the Practitioner field, with the November calendar and the slots of 28 November beside it](/media/scheduling/appointment/book-appointment-4.png)
+
+### 4. Add tags and a reason for the visit
+
+Both fields are optional.
+
+- To add tags, choose them under **Tag**.
+- In **Reason for visit**, type the reason. The placeholder is "Type the reason for visit".
+
+![Persistent cough for two weeks typed in the Reason for visit field, with the Tag field left empty](/media/scheduling/appointment/book-appointment-5.png)
+
+Care saves the reason as the appointment's note.
+
+### 5. Choose a date
+
+Until you choose a resource, the calendar shows "Choose practitioner/location/healthcare service to see availability.".
+
+Each day that has free places shows how many are left, for example "3 left".
+
+![Saturday 28 November selected in the calendar, showing 5 left, with Monday 30 November showing 36 left](/media/scheduling/appointment/book-appointment-6.png)
+
+You cannot select a day before today, a day that is fully booked, or a day without slots.
+
+Note: If your deployment turns off the day counts, every day counts as open.
+
+On a phone, select **Select date** to open a drawer. Then select **Select Slot**.
+
+### 6. Choose a slot
+
+The slot panel shows how many **Available Time Slots** the day has.
+
+- If the day has slots from more than one schedule template, choose the schedule template first.
+- The slots are grouped under their session name.
+- Each slot shows its start time and the places left. A slot that is running now shows **Live**.
+- Slots that have ended or that are full are hidden or disabled.
+- Care selects the first available slot. Select a different slot if you need one.
+
+![The 09:00 slot selected under Morning Consultation, with 2 left, among the 4 Available Time Slots](/media/scheduling/appointment/book-appointment-7.png)
+
+If the day has no slots, the panel shows "No slots available for this date".
+
+### 7. Confirm the appointment
+
+After you select a slot, the **Cancel** and **Confirm Appointment** buttons show.
+
+Select **Confirm Appointment**.
+
+![The Confirm Appointment button outlined next to Cancel at the bottom of the Book Appointment sheet](/media/scheduling/appointment/book-appointment-8.png)
+
+![Appointment Details with the banner Appointment created successfully, for Dr. Meera Iyer on 28th November in the 9:00 AM - 9:15 AM slot](/media/scheduling/appointment/book-appointment-9.png)
+
+Care refuses the booking in these cases. It shows the reason in an error message.
+
+| Case | Message |
+| --- | --- |
+| The slot has already ended. | "Slot is already past" |
+| The slot is full. | "Slot is already full" |
+| The patient already has an open appointment in this slot. | "Patient already has a booking for this slot" |
+| The patient already has the maximum number of upcoming appointments, counted at all facilities. | "Patient already has maximum number of appointments (10)" |
+
+The limit is 10 upcoming appointments, unless your deployment sets a different limit. Appointments that are Fulfilled, No-show, Entered in Error, Cancelled or Rescheduled do not count.
+
+## Expected Outcome
+
+- Care shows the message "Appointment created successfully".
+- Care opens **Appointment Details** for the new appointment. A banner shows "Appointment created successfully!" with the patient's name, the date and the slot times.
+- The appointment has the status Booked and takes one place in the slot. **Booked by** shows your name.
+- The tags that you chose are on the appointment.
+
+## Related
+
+Concepts:
+
+- [Appointment Booking](../../../concepts/scheduling/booking.mdx)
+- [Schedule & Availability](../../../concepts/scheduling/schedule.mdx)
+- [Patient](../../../concepts/clinical/patient)
+
+Flows:
+
+- [Find and open appointments](./find-appointments.mdx)
+- [Check in a patient for an appointment](./check-in-patient.mdx)
+- [Start a consultation from an appointment](./start-consultation.mdx)
+- [Reschedule an appointment](./reschedule-appointment.mdx)
+- [Cancel an appointment](./cancel-appointment.mdx)
+- [Add or change an appointment's tags](./manage-appointment-tags.mdx)
+- [View a patient's appointments](../../clinical/patient/view-patient-appointments.mdx)
+- [Search for a patient](../../clinical/patient/search-patient.mdx)
+- [Register a patient](../../clinical/patient/register-patient.mdx)
+- [Create a schedule template](../schedule/create-schedule-template.mdx)

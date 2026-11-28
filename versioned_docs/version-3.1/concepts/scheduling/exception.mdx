@@ -6,40 +6,73 @@ sidebar_position: 4
 
 ## Definition
 
-A **schedule exception** in Care records a period when a resource is not available, even though a schedule makes it available. The resource is a practitioner, a location, or a healthcare service.
+A **schedule exception** in Care is a period when a practitioner, a location or a healthcare service is not available.
 
-An exception overrides the regular schedule. Care does not offer slots for booking during the period of the exception.
+An exception belongs to the resource, not to one template, so it applies to every [schedule template](../scheduling/schedule.mdx) of that resource. When you add an exception, Care removes the free slots of the resource that start inside it, on every day of the period. Care also does not make new slots that overlap it.
+
+Care refuses an exception when a slot that has an appointment starts within the exception's times on one of its dates, start and end times included. The message is "There are bookings during this exception". An [appointment](../scheduling/booking.mdx) frees its place in the slot when it is cancelled or rescheduled.
+
+You add and see exceptions on the **Exceptions** tab of the schedule page. The tab lists the exceptions that overlap the month shown on the calendar, and the calendar shows each exception as a striped band.
 
 ## Key Attributes
 
 | Components | What it captures |
 | --- | --- |
-| Reason | The reason for the unavailability, for example leave or a holiday. This is required. |
-| Valid From | The first date of the unavailability. This is required. |
-| Valid Till | The last date of the unavailability. This is required. |
-| Full day unavailable | Whether the resource is unavailable for the whole day. |
-| Start time | The time that the unavailability starts on each day. This is required when the resource is not unavailable for the full day. |
-| End time | The time that the unavailability ends on each day. This is required when the resource is not unavailable for the full day. |
-| Resource | The practitioner, location, or healthcare service that the exception belongs to. |
+| Reason | Why the resource is not available, for example "Holiday Leave". The form requires a reason, although Care itself does not. |
+| Valid Period | The first date and the last date of the exception. Neither date can be before today. |
+| From and To | The start time and the end time on each day of the period. Both are required. |
+| Full Day Unavailable | Sets the start time to 00:00 and the end time to 23:59. |
+| Resource | The practitioner, location or healthcare service that is not available. Care takes it from the schedule page that you open. |
 
-An exception applies on every day in the period from Valid From to Valid Till. For a part-day exception, the same start time and end time apply on each of those days.
+Each exception card shows the reason, the times and the dates.
 
-### Validation rules
+An exception cannot be edited. To change an exception, remove it and add a new one.
 
-- The Valid From date must not be in the past. Care shows the message "Schedule exception cannot be created for the past".
-- The Valid Till date must be the same as, or later than, the Valid From date.
-- The start time must be earlier than the end time.
+**Remove** on an exception card removes the exception after you confirm. Care warns that this cannot be undone.
 
-## Permissions
+When you remove an exception, Care marks it as removed. The removal does not by itself recreate the slots that Care removed when the exception was added.
 
-| Permission | What it allows |
-| --- | --- |
-| Can Create on Schedule | Create and remove schedule exceptions. |
-| Can list schedule on Object | See the exceptions of a resource. |
+### Valid Period
+
+Both dates must be today or later, and the last date cannot be before the first date.
+
+You can also add an exception from the calendar. Select a day that is today or later. In the pop-up, select **Add Exception**. Care fills in that day as the valid period.
+
+### From and To
+
+The same start time and end time apply on every day of the valid period.
+
+Care has no separate full-day setting. It keeps only a start time and an end time for each exception.
+
+**Full Day Unavailable** fills in 00:00 and 23:59 for you. The calendar shows an exception from 00:00 to 23:59 as a full day.
+
+For part of a day, the start time must be before the end time. If the exception starts today, the start time must be later than the current time.
+
+### Who can work with exceptions
+
+| Permission | What it lets you do | Default roles |
+| --- | --- | --- |
+| Can list schedule on Object | See the exceptions of a resource. | Admin (facility role), Staff, Facility Admin, Doctor, Nurse and Administrator |
+| Can Create on Schedule | Add and remove exceptions. | Admin, Staff, Facility Admin, Doctor and Nurse |
+
+Care accepts Can Create on Schedule and Can list schedule on Object only in these places:
+
+- For a practitioner: the facility's Administration organization, a department or team that the practitioner belongs to, or a parent of it.
+- For a location: a department linked to the location or to its parent location, a parent of that department, or the facility's Administration organization.
+- For a healthcare service with a managing organization: that organization or a parent of it. The Administration organization does not count.
+- For a healthcare service without a managing organization: only the facility's Administration organization.
+
+Only roles that you hold in the facility's organizations count. A role in a governance organization above the facility does not count.
+
+**Add Exception** shows if you hold Can Create on Schedule in any department or team of the facility, or in its Administration organization.
+
+**Remove** shows for everyone who can open the **Exceptions** tab. Care removes the exception only for a user who holds Can Create on Schedule in the right place. An Administrator sees **Remove**, but Care refuses the removal.
 
 ## Related
 
-- Concept: [Schedule & Availability](../../concepts/scheduling/schedule.mdx)
-- Flow: [Create a schedule exception](../../flows/scheduling/exception/create-schedule-exception.mdx)
+- Flow: [Add a schedule exception](../../flows/scheduling/exception/create-schedule-exception.mdx)
 - Flow: [View schedule exceptions](../../flows/scheduling/exception/view-schedule-exceptions.mdx)
 - Flow: [Remove a schedule exception](../../flows/scheduling/exception/remove-schedule-exception.mdx)
+- Flow: [View a schedule](../../flows/scheduling/schedule/view-schedule-templates.mdx)
+- Concept: [Schedule & Availability](../scheduling/schedule.mdx)
+- Concept: [Appointment Booking](../scheduling/booking.mdx)

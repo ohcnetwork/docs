@@ -1,0 +1,81 @@
+---
+sidebar_position: 11
+---
+
+# Print an appointment
+
+## Overview
+
+<video src="/media/scheduling/appointment/print-appointment.mp4" poster="/media/scheduling/appointment/print-appointment.poster.png" controls width="720">
+  <track kind="captions" src="/media/scheduling/appointment/print-appointment.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to print one [appointment](../../../concepts/scheduling/booking.mdx) from **Appointment Details**. The printout includes the appointment's charge items and paid invoices.
+
+## Pre-requisites
+
+- The appointment is booked for the patient. See [Book an appointment for a patient](./book-appointment.mdx).
+- The appointment is not Cancelled, Entered in Error, Rescheduled or No-show.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can list bookings on Object | Lets you open the appointment and its print page. Hold it in a department or team of the facility, or in its Administration organization. Also hold it in the place listed below for the appointment's resource. By default, the Admin (facility role), Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can Read Charge Item | Lets the printout show the appointment's charge items. Hold it in any organization of the facility. Without it, the print page still opens. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+
+Care accepts Can list bookings on Object only in these places:
+
+- For a practitioner: the facility's Administration organization, a department or team that the practitioner belongs to, or a parent of it.
+- For a location: a department linked to the location or to its parent location, a parent of that department, or the facility's Administration organization.
+- For a healthcare service with a managing organization: that organization or a parent of it. The Administration organization does not count.
+- For a healthcare service without a managing organization: only the facility's Administration organization.
+
+**Print Appointment** shows without a permission check. Without Can list bookings on Object in these places, the print page stays in its loading state.
+
+## Steps
+
+### 1. Open the appointment
+
+Open **Appointment Details** for the appointment. See [Find and open appointments](./find-appointments.mdx).
+
+![Appointment Details for Maya Raman, with the patient's name outlined in the card at the top of the page](/media/scheduling/appointment/print-appointment-1.png)
+
+### 2. Select Print Appointment
+
+In **Quick Actions**, select **Print Appointment**. You can also press 3.
+
+![The Print Appointment quick action outlined in Quick Actions on Appointment Details](/media/scheduling/appointment/print-appointment-2.png)
+
+Care opens the print page of the appointment.
+
+### 3. Check the print preview
+
+The preview shows the appointment with its charge items and paid invoices.
+
+![The print preview of the appointment outlined, with the facility header, date, time, practitioner, session, the patient's details, a QR code and the note](/media/scheduling/appointment/print-appointment-3.png)
+
+If the charge items or the invoices fail to load, the preview still shows the appointment.
+
+### 4. Print the appointment
+
+Print the preview.
+
+![The Print button outlined at the top right of the print page, next to Back](/media/scheduling/appointment/print-appointment-4.png)
+
+## Expected Outcome
+
+- You have a printout of the appointment, with its charge items and paid invoices.
+
+## Related
+
+Concepts:
+
+- [Appointment Booking](../../../concepts/scheduling/booking.mdx)
+
+Flows:
+
+- [Find and open appointments](./find-appointments.mdx)
+- [Print a list of appointments](./print-appointment-list.mdx)
+- [Book an appointment for a patient](./book-appointment.mdx)

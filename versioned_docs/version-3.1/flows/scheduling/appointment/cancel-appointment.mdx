@@ -1,0 +1,118 @@
+---
+sidebar_position: 8
+---
+
+# Cancel an appointment
+
+## Overview
+
+<video src="/media/scheduling/appointment/cancel-appointment.mp4" poster="/media/scheduling/appointment/cancel-appointment.poster.png" controls width="720">
+  <track kind="captions" src="/media/scheduling/appointment/cancel-appointment.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to cancel an [appointment](../../../concepts/scheduling/booking.mdx) in Care, or how to mark it as entered in error. Both actions free the appointment's place in its slot, and the screen warns that you cannot undo them.
+
+## Pre-requisites
+
+- You can open the appointment on **Appointment Details**.
+- The appointment is not Fulfilled, No-show, Cancelled, Entered in Error or Rescheduled. Care hides the actions for these statuses.
+- The appointment is not In-Consultation. Care does not offer **Cancel Appointment** in this status, and refuses both actions then.
+- You have a role in an organization of the facility.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can update bookings on Object | Lets you cancel the appointment, or mark it as entered in error. Hold it in the place listed below for the appointment. By default, the Admin (facility role), Staff, Facility Admin, Doctor and Nurse roles hold it. |
+| Can list bookings on Object | Lets you open the appointment on **Appointment Details**. Hold it in the place listed below for the appointment. By default, the Admin, Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+
+Care accepts Can update bookings on Object and Can list bookings on Object only in these places:
+
+- For a practitioner: the facility's Administration organization, a department or team that the practitioner belongs to, or a parent of it.
+- For a location: a department linked to the location or to its parent location, a parent of that department, or the facility's Administration organization.
+- For a healthcare service with a managing organization: that organization or a parent of it. The Administration organization does not count.
+- For a healthcare service without a managing organization: only the facility's Administration organization.
+
+Only roles that you hold in the facility's organizations count. A role in a governance organization above the facility does not count.
+
+Care shows the **Actions** menu if you hold Can update bookings on Object anywhere in the facility. This includes any department or team of the facility, and its Administration organization. When you confirm, Care accepts the permission only in the place for the appointment.
+
+If Care shows "You do not have permission to update bookings", ask your administrator for Can update bookings on Object in the place for the appointment.
+
+## Steps
+
+### 1. Open the appointment
+
+Open the appointment on **Appointment Details**. See [Find and open appointments](./find-appointments.mdx).
+
+![The Appointments board with Sara Thomas's 10:00 appointment outlined in the Booked column](/media/scheduling/appointment/cancel-appointment-1.png)
+
+### 2. Choose how to cancel
+
+Select the menu button (three dots) at the top of **Appointment Details**. Care opens the **Actions** menu.
+
+![The menu button with three dots outlined at the top of Appointment Details, next to Check-In](/media/scheduling/appointment/cancel-appointment-2.png)
+
+![The open Actions menu outlined, listing Cancel Appointment and Mark as entered in error among its items](/media/scheduling/appointment/cancel-appointment-3.png)
+
+The menu has two actions that cancel the appointment. The screen describes each one:
+
+| Menu item | Warning on the screen | What you enter |
+| --- | --- | --- |
+| **Cancel Appointment** | "This action cannot be undone. The appointment will be cancelled and the patient will be notified." | A note. **Confirm** is available only when the note has text. |
+| **Mark as entered in error** | "This action cannot be undone. The appointment will be marked as entered in error and removed from the system." | Nothing. The dialog has no note field. |
+
+To cancel the appointment, do step 3. To mark the appointment as entered in error, do step 4.
+
+### 3. Cancel the appointment
+
+1. Select **Cancel Appointment**. Care opens the **Cancel Appointment** dialog.
+2. Enter a note in **Note**. The field shows the current note of the appointment first.
+3. Read the warning.
+4. Select **Confirm**. **Confirm** is available only when the note has text.
+
+![The Cancel Appointment dialog with the Note field outlined, showing the current note Follow-up for skin rash](/media/scheduling/appointment/cancel-appointment-4.png)
+
+![The warning outlined in the Cancel Appointment dialog, below the new note Patient asked to cancel](/media/scheduling/appointment/cancel-appointment-5.png)
+
+![Appointment Details with the message Appointment has been cancelled! and the Schedule Information card outlined, showing Cancelled](/media/scheduling/appointment/cancel-appointment-6.png)
+
+![The Note card on Appointment Details with the new note outlined: Patient asked to cancel](/media/scheduling/appointment/cancel-appointment-7.png)
+
+### 4. Mark the appointment as entered in error
+
+1. Select **Mark as entered in error**. Care opens the **Mark as entered in error** dialog.
+2. Read the warning.
+3. Select **Confirm**.
+
+![The open Actions menu on Appointment Details with Mark as entered in error outlined](/media/scheduling/appointment/cancel-appointment-8.png)
+
+![The Mark as entered in error dialog with its warning outlined; the dialog has no note field](/media/scheduling/appointment/cancel-appointment-9.png)
+
+![Appointment Details with the message Appointment has been cancelled! and the Schedule Information card outlined, showing Entered in Error](/media/scheduling/appointment/cancel-appointment-10.png)
+
+Note: Care also shows **Mark as entered in error** for an appointment that is In-Consultation. Care refuses the action then.
+
+## Expected Outcome
+
+- Care shows the message "Appointment has been cancelled!".
+- The status of the appointment changes to Cancelled or to Entered in Error.
+- The appointment's place in the slot is free again for another appointment.
+- If you cancelled the appointment, your note replaces the note of the appointment.
+- If the appointment has a charge item, Care marks the charge item as aborted.
+- **Appointment Details** no longer shows the **Actions** menu for the appointment.
+- In the patient's appointments, the appointment is listed under **Cancelled**.
+
+## Related
+
+Concepts:
+
+- [Appointment Booking](../../../concepts/scheduling/booking.mdx)
+
+Flows:
+
+- [Find and open appointments](./find-appointments.mdx)
+- [Reschedule an appointment](./reschedule-appointment.mdx)
+- [Mark an appointment as no-show](./mark-appointment-no-show.mdx)
+- [View a patient's appointments and tokens](../../clinical/patient/view-patient-appointments.mdx)

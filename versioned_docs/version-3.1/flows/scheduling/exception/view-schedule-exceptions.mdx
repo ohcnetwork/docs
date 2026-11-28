@@ -6,44 +6,92 @@ sidebar_position: 2
 
 ## Overview
 
-This flow describes how to see the periods when a resource is not available in Care. See [Schedule Exception](../../../concepts/scheduling/exception.mdx).
+<video src="/media/scheduling/exception/view-schedule-exceptions.mp4" poster="/media/scheduling/exception/view-schedule-exceptions.poster.png" controls width="720">
+  <track kind="captions" src="/media/scheduling/exception/view-schedule-exceptions.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to see the [schedule exceptions](../../../concepts/scheduling/exception.mdx) of a practitioner, location or healthcare service in Care. An exception is a period when the resource is not available, across all its schedule templates.
 
 ## Pre-requisites
 
-- The resource is available in the facility.
-- You have the permission listed below.
+- You are a member of the facility.
+- You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can list schedule on Object | Lets you see the exceptions of the resource. |
+| Can list schedule on Object | Lets you open the schedule page and see its exceptions. You must hold it in the place given below for the resource. For a practitioner, Care shows the **Availability** tab only if you hold it in a department or team of the facility, or in its Administration organization. By default, the Admin (facility role), Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can Read Healthcare Service | Lets you open **Services** and a service, on the way to the schedule of a location or a healthcare service. A role in any organization of the facility counts. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+
+Care accepts Can list schedule on Object only in these places:
+
+- For a practitioner: the facility's Administration organization, a department or team that the practitioner belongs to, or a parent of it.
+- For a location: a department linked to the location or to its parent location, a parent of that department, or the facility's Administration organization.
+- For a healthcare service with a managing organization: that organization or a parent of it. The Administration organization does not count.
+- For a healthcare service without a managing organization: only the facility's Administration organization.
+
+Only roles that you hold in the facility's organizations count. A role in a governance organization above the facility does not count.
 
 ## Steps
 
-### 1. Open the schedule of the resource
+### 1. Open the schedule
 
-Open the facility. Go to the scheduling section and select the resource.
+Each practitioner, location and healthcare service has its own schedule page. Open it in one of these ways:
 
-### 2. Read the list of exceptions
+- For a practitioner: in the facility sidebar, select **Users**. On the user's card, select **See Details**. Then select the **Availability** tab.
+- For your own schedule: open the account menu and select **Profile**. Then select the **Availability** tab.
+- For a location: in the facility sidebar, select **Services**, then a service. On a location card, select **View appointments**. This link shows for services that are not a store, a pharmacy or a lab. In the location sidebar, under **Scheduling**, select **Schedule**.
+- For a healthcare service: in the facility sidebar, select **Services**, then the service. In the service sidebar, under **Scheduling**, select **Schedule**.
 
-The page lists the schedule exceptions of the resource. Each exception shows its reason, its dates and its times.
+![The account menu open at the bottom of the facility sidebar, with Profile outlined under Dr. Meera Iyer](/media/scheduling/exception/view-schedule-exceptions-1.png)
 
-An exception for the whole day shows the date. An exception for a part of the day shows the start time and the end time.
+Care can refuse to load the page and show "You do not have permission to update schedule". This means that you do not hold Can list schedule on Object in the place for this resource. Ask your administrator for it.
 
-If the resource has no exception, the page shows the message "No scheduled exceptions found."
+The page opens on the **Schedule** tab, next to the **Exceptions** tab.
+
+### 2. Open the Exceptions tab
+
+Select the **Exceptions** tab. Every user who can open the schedule page can open this tab.
+
+![The Exceptions tab outlined on Dr. Meera Iyer's Availability tab, which lists the Department meeting and Outreach clinic exceptions](/media/scheduling/exception/view-schedule-exceptions-2.png)
+
+### 3. Read the list of exceptions
+
+The tab lists only the exceptions that overlap the month shown on the calendar.
+
+Each exception shows this information:
+
+- The reason, as the title.
+- The start time and the end time, also for a full-day exception.
+- "on" and the date, for an exception of one day.
+- "from" and "to" with the two dates, for an exception of more than one day.
+
+![The list of exceptions outlined: Department meeting, 11 AM - 1 PM on Sat, 28 Nov 2026, and Outreach clinic, 11 AM - 1 PM from Sun, 29 Nov 2026 to Mon, 30 Nov 2026](/media/scheduling/exception/view-schedule-exceptions-3.png)
+
+If no exception overlaps the month, the tab shows "No scheduled exceptions found".
+
+### 4. Check the calendar
+
+On the calendar, the days of an exception have stripes. A full-day exception stripes the whole day.
+
+Select a day to see its exceptions. Each one shows as "Exception:" with its reason and its times.
+
+![The pop-up for Nov 28, 2026 outlined beside the calendar, with the Morning OP session and Exception: Department meeting from 11 AM to 1 PM](/media/scheduling/exception/view-schedule-exceptions-4.png)
 
 ## Expected Outcome
 
-- You see the periods when the resource is not available.
+- You see the exceptions of the practitioner, location or healthcare service that overlap the month on the calendar.
 
 ## Related
 
 Concepts:
 
 - [Schedule Exception](../../../concepts/scheduling/exception.mdx)
+- [Schedule & Availability](../../../concepts/scheduling/schedule.mdx)
 
 Flows:
 
-- [Create a schedule exception](./create-schedule-exception.mdx)
+- [Add a schedule exception](./create-schedule-exception.mdx)
 - [Remove a schedule exception](./remove-schedule-exception.mdx)
+- [View a schedule](../schedule/view-schedule-templates.mdx)

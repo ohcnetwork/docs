@@ -1,0 +1,123 @@
+---
+sidebar_position: 9
+---
+
+# Reschedule an appointment
+
+## Overview
+
+<video src="/media/scheduling/appointment/reschedule-appointment.mp4" poster="/media/scheduling/appointment/reschedule-appointment.poster.png" controls width="720">
+  <track kind="captions" src="/media/scheduling/appointment/reschedule-appointment.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to move an [appointment](../../../concepts/scheduling/booking.mdx) to another slot in Care. Care marks the current appointment as Rescheduled and creates a new appointment with the status Booked in the slot that you choose.
+
+## Pre-requisites
+
+- You can open the appointment on **Appointment Details**.
+- The appointment is not Fulfilled, No-show, Cancelled, Entered in Error or Rescheduled. Care hides the actions for these statuses.
+- The appointment is not In-Consultation. Care does not offer **Reschedule** in this status, and does not reschedule such an appointment.
+- The new slot is at the same facility, and it is not the current slot.
+- The new slot has not ended and is not full, and the patient has no other open appointment in it. Care checks the new slot as it checks a new appointment.
+- You have a role in an organization of the facility.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can reschedule bookings on Object | Lets you reschedule the appointment. **Reschedule** shows in the **Actions** menu only with this permission. Hold it in any organization of the facility. By default, the Admin (facility role), Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can update bookings on Object | Lets you see the **Actions** menu, change the tags of the appointment, and reschedule it. Hold it in the place listed below for the current appointment. By default, the Admin, Staff, Facility Admin, Doctor and Nurse roles hold it. The Administrator role does not hold it, so it cannot reschedule. |
+| Can list bookings on Object | Lets you open the appointment on **Appointment Details**, and select days after today in the calendar. Hold it in the place listed below for the current appointment, and for the resource that you choose for the new slot. By default, the Admin, Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can Read Tag Config | Lets you choose tags in **Tags**. Hold it in any organization of the facility. By default, the Admin, Staff, Facility Admin, Doctor, Nurse, Administrator, Volunteer and Pharmacist roles hold it. |
+| Can View Facility Organizations | Only for a practitioner. Lets you choose from all departments of the facility when you choose the practitioner. Without it, you can choose only the departments that you belong to. By default, the Admin, Staff, Facility Admin, Doctor, Nurse, Administrator and Volunteer roles hold it. |
+| Can List Facility Locations | Only for a location. Lets you choose the location. Care lists only the locations linked to an organization where you hold this permission. By default, the Admin, Staff, Facility Admin, Doctor, Nurse, Administrator and Pharmacist roles hold it. |
+| Can Read Healthcare Service | Only for a healthcare service. Lets you choose the healthcare service. Hold it in any organization of the facility. By default, the Admin, Staff, Facility Admin, Doctor, Nurse, Administrator, Volunteer and Pharmacist roles hold it. |
+
+Care accepts Can update bookings on Object and Can list bookings on Object only in these places:
+
+- For a practitioner: the facility's Administration organization, a department or team that the practitioner belongs to, or a parent of it.
+- For a location: a department linked to the location or to its parent location, a parent of that department, or the facility's Administration organization.
+- For a healthcare service with a managing organization: that organization or a parent of it. The Administration organization does not count.
+- For a healthcare service without a managing organization: only the facility's Administration organization.
+
+Only roles that you hold in the facility's organizations count. A role in a governance organization above the facility does not count.
+
+Care shows the **Actions** menu if you hold Can update bookings on Object anywhere in the facility. This includes any department or team of the facility, and its Administration organization. When you reschedule, Care accepts the permission only in the place for the current appointment.
+
+If Care shows "You do not have permission to reschedule appointments", ask your administrator for Can reschedule bookings on Object in an organization of the facility.
+
+## Steps
+
+### 1. Open the appointment
+
+Open the appointment on **Appointment Details**. See [Find and open appointments](./find-appointments.mdx).
+
+![The Appointments board with a Sara Thomas appointment outlined at the bottom of the Booked column](/media/scheduling/appointment/reschedule-appointment-1.png)
+
+### 2. Start the reschedule
+
+1. Select the menu button (three dots) at the top of **Appointment Details**. Care opens the **Actions** menu.
+2. Select **Reschedule**. Care opens the **Reschedule Appointment** dialog.
+3. Enter a note for the current appointment in **Note**. The field shows the current note of the appointment first.
+4. Read the warning: "You are about to create a new appointment by clicking Continue. This action cannot be undone. The current appointment will be marked as Rescheduled with above note, and the patient will be notified."
+5. Select **Continue**. **Continue** is available only when the note has text.
+
+![The open Actions menu on Appointment Details with Reschedule outlined](/media/scheduling/appointment/reschedule-appointment-2.png)
+
+![The Reschedule Appointment dialog outlined, with the note Patient asked to come on Monday instead, the warning, and Continue](/media/scheduling/appointment/reschedule-appointment-3.png)
+
+### 3. Set the tags and the note
+
+Care opens a sheet where you choose the new slot.
+
+| Components | What it captures |
+| --- | --- |
+| **Tags** | The tags of the current appointment. Care saves each change on the current appointment at once, even if you do not reschedule. |
+| **Note** | A note for the new appointment. It starts with the current note of the appointment. When empty, it shows "Enter a note for this appointment". |
+
+![The Reschedule Appointment sheet with Tags, Note showing the current note Annual health check, Practitioner and the calendar](/media/scheduling/appointment/reschedule-appointment-4.png)
+
+### 4. Choose the new slot
+
+1. Keep the current practitioner, location or healthcare service, or choose another one of the same type.
+2. Select a day in the calendar. You cannot select a day before today, a fully booked day or a day without slots.
+3. If the day has slots from more than one schedule, choose the schedule by its name. Care selects the first schedule for you.
+4. Select a slot. Care does not list the current slot, slots that have ended or full slots.
+
+![The Reschedule Appointment sheet with November 30 selected, the Morning OP schedule chosen and the 09:30 slot outlined](/media/scheduling/appointment/reschedule-appointment-5.png)
+
+Care selects the first available slot for you. Make sure that it is the slot you want.
+
+Note: To select a day after today, you need Can list bookings on Object in the place for the resource. Your deployment's configuration can remove this limit.
+
+### 5. Reschedule the appointment
+
+Select **Reschedule**. **Reschedule** is available only when a slot is selected. While Care works, the button shows **Rescheduling...**.
+
+![The Reschedule button outlined at the bottom of the Reschedule Appointment sheet, with the 09:30 slot selected](/media/scheduling/appointment/reschedule-appointment-6.png)
+
+![Appointment Details of the new appointment, with the Schedule Information card outlined: November 30, 2026, 9:30 AM, Booked](/media/scheduling/appointment/reschedule-appointment-7.png)
+
+## Expected Outcome
+
+- Care opens the new appointment on **Appointment Details**.
+- The new appointment has the status Booked, in the slot that you chose, with the note that you entered for it.
+- The current appointment has the status Rescheduled, with the note that you entered in the dialog.
+- The place in the old slot is free again.
+- If the current appointment has a charge item, Care marks that charge item as aborted.
+- In the patient's appointments, the current appointment is listed under **Cancelled**.
+
+## Related
+
+Concepts:
+
+- [Appointment Booking](../../../concepts/scheduling/booking.mdx)
+- [Schedule & Availability](../../../concepts/scheduling/schedule.mdx)
+
+Flows:
+
+- [Find and open appointments](./find-appointments.mdx)
+- [Book an appointment for a patient](./book-appointment.mdx)
+- [Cancel an appointment](./cancel-appointment.mdx)
+- [Add or change an appointment's tags](./manage-appointment-tags.mdx)

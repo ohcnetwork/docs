@@ -1,0 +1,116 @@
+---
+sidebar_position: 5
+---
+
+# Set the charges for a schedule
+
+## Overview
+
+<video src="/media/scheduling/schedule/set-schedule-charges.mp4" poster="/media/scheduling/schedule/set-schedule-charges.poster.png" controls width="720">
+  <track kind="captions" src="/media/scheduling/schedule/set-schedule-charges.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to set the charges for a [schedule template](../../../concepts/scheduling/schedule.mdx) in Care. When an appointment is booked on the template, Care uses these [charge item definitions](../../../concepts/definitions/charge-item-definition.mdx) to create a charge item for the appointment.
+
+## Pre-requisites
+
+- You are a member of the facility.
+- A schedule template is created for the practitioner, location or healthcare service. See [Create a schedule template](./create-schedule-template.mdx).
+- The charge item definitions that you want to use are in the facility. If one is missing, you can create it from the picker, or see [Create a charge item definition](../../definitions/charge-item-definition/create-charge-item-definition.mdx).
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Set Charge Item Definition on Facility | Lets you save the charges. You must hold it in the facility's Administration organization, for every kind of resource. By default, only the Facility Admin and Admin (facility role) roles hold it. |
+| Can Create on Schedule | Care shows **Manage Charges** only if you also hold this permission, in any department or team of the facility, or in its Administration organization. Saving the charges does not check it. By default, the Admin, Staff, Facility Admin, Doctor and Nurse roles hold it. |
+| Can list schedule on Object | Lets you open the schedule page. You must hold it in the place given below for the resource. For a practitioner, Care shows the **Availability** tab only if you hold it in a department or team of the facility, or in its Administration organization. By default, the Admin, Staff, Facility Admin, Doctor, Nurse and Administrator roles hold it. |
+| Can Read Charge Item Definition | Lets the pickers list the charge item definitions of the facility. A role in any organization of the facility counts. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Read Resource Category | Lets the pickers list the resource categories. A role in any organization of the facility counts. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can Create Charge Item Definition on Facility | You need it only to create a new charge item definition from the picker. You must hold it in the facility's Administration organization. By default, the Facility Admin and Admin roles hold it. |
+| Can Read Healthcare Service | Lets you open **Services** and a service, on the way to the schedule of a location or a healthcare service. A role in any organization of the facility counts. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+
+Care accepts Can list schedule on Object only in these places:
+
+- For a practitioner: the facility's Administration organization, a department or team that the practitioner belongs to, or a parent of it.
+- For a location: a department linked to the location or to its parent location, a parent of that department, or the facility's Administration organization.
+- For a healthcare service with a managing organization: that organization or a parent of it. The Administration organization does not count.
+- For a healthcare service without a managing organization: only the facility's Administration organization.
+
+Only roles that you hold in the facility's organizations count. A role in a governance organization above the facility does not count.
+
+With the default roles, a Facility Admin or an Admin in the facility's Administration organization holds every permission in this table. For a healthcare service with a managing organization, that user also needs Can list schedule on Object in the managing organization or a parent of it.
+
+Care can show **Manage Charges** to a user who cannot save the charges. For example, a Facility Admin who is only in a department sees the button, but Care refuses the save. Care also shows **Create Charge Item Definition** to every user. It creates the definition only if you hold Can Create Charge Item Definition on Facility in the facility's Administration organization.
+
+## Steps
+
+### 1. Open the schedule
+
+Each practitioner, location and healthcare service has its own schedule page. Open it in one of these ways:
+
+- For a practitioner: in the facility sidebar, select **Users**. On the user's card, select **See Details**. Then select the **Availability** tab.
+- For your own schedule: open the account menu and select **Profile**. Then select the **Availability** tab.
+- For a location: in the facility sidebar, select **Services**, then a service. On a location card, select **View appointments**. This link shows for services that are not a store, a pharmacy or a lab. In the location sidebar, under **Scheduling**, select **Schedule**.
+- For a healthcare service: in the facility sidebar, select **Services**, then the service. In the service sidebar, under **Scheduling**, select **Schedule**.
+
+Care can refuse to load the page and show "You do not have permission to update schedule". This means that you do not hold Can list schedule on Object in the place for this resource. Ask your administrator for it.
+
+The page opens on the **Schedule** tab. It lists the schedule templates that cover the month shown on the calendar.
+
+### 2. Open the charges of the template
+
+On the template card, select **Manage Charges**. The **Select Charge Item Definitions** sheet opens, with the text "Select or Create Charge Item Definitions".
+
+![Manage Charges outlined on the Afternoon OP template card on Dr. Meera Iyer's Availability tab](/media/scheduling/schedule/set-schedule-charges-1.png)
+
+### 3. Choose the consultation charge
+
+In **Consultation Charge**, select a charge item definition. This field is required.
+
+![The Consultation Charge picker open in the Select Charge Item Definitions sheet, with the search OP Consultation and the OP Consultation option outlined](/media/scheduling/schedule/set-schedule-charges-2.png)
+
+If the charge item definition is not in the list, select **Create Charge Item Definition** in the picker.
+
+### 4. Set the re-visit rule
+
+| Components | What it captures |
+| --- | --- |
+| **Re-visit allowed days** | Required. The number of days after the patient paid for an earlier visit during which a return visit gets the re-visit charge. The number cannot be negative. |
+| **Re-visit consultation charge** | The charge item definition for a return visit. This field is available only when **Re-visit allowed days** is more than 0. |
+
+![The charge fields outlined, with OP Consultation in Consultation Charge, 7 in Re-visit allowed days and Re-visit consultation charge still empty](/media/scheduling/schedule/set-schedule-charges-3.png)
+
+Care uses the re-visit charge for a return visit within the re-visit allowed days. The days count from the patient's last paid charge for this template and consultation charge.
+
+If a return visit falls within these days and no re-visit charge is set, Care creates no charge.
+
+### 5. Save the charges
+
+Select **Save**. The button is available after you choose a consultation charge.
+
+Care shows "Charge item definition updated successfully".
+
+![The message Charge item definition updated successfully outlined above Dr. Meera Iyer's Availability tab](/media/scheduling/schedule/set-schedule-charges-4.png)
+
+## Expected Outcome
+
+- When an appointment is booked on the template, Care creates a charge item for the appointment. Care uses the consultation charge, or the re-visit charge for a return visit.
+- If a template has no consultation charge, Care creates no charge item for its appointments.
+
+## Related
+
+Concepts:
+
+- [Schedule & Availability](../../../concepts/scheduling/schedule.mdx)
+- [Charge Item Definition](../../../concepts/definitions/charge-item-definition.mdx)
+- [Charge Item](../../../concepts/billing/charge-item.mdx)
+- [Appointment Booking](../../../concepts/scheduling/booking.mdx)
+
+Flows:
+
+- [Create a charge item definition](../../definitions/charge-item-definition/create-charge-item-definition.mdx)
+- [Create a schedule template](./create-schedule-template.mdx)
+- [Edit a schedule template](./edit-schedule-template.mdx)
+- [Book an appointment for a patient](../appointment/book-appointment.mdx)

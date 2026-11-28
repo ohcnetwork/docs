@@ -6,89 +6,197 @@ sidebar_position: 1
 
 ## Overview
 
-This flow describes how to create a schedule template for a resource in Care. The template states when the resource is available, and Care creates bookable slots from it. See [Schedule & Availability](../../../concepts/scheduling/schedule.mdx).
+<video src="/media/scheduling/schedule/create-schedule-template.mp4" poster="/media/scheduling/schedule/create-schedule-template.poster.png" controls width="720">
+  <track kind="captions" src="/media/scheduling/schedule/create-schedule-template.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to create a [schedule template](../../../concepts/scheduling/schedule.mdx) for a practitioner, a location or a healthcare service. Care makes bookable slots from the sessions of the template, on its weekdays and within its valid period.
 
 ## Pre-requisites
 
-- The facility is created in Care.
-- The resource is available in the facility. The resource is a practitioner, a location, or a healthcare service.
-- You have the permissions listed below.
+- You are a member of the facility.
+- If you create the template for a practitioner, the practitioner is a member of the facility.
+- You have the permissions listed below, in the place that the list below the table gives for the resource.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create on Schedule | Lets you create a schedule template. |
-| Can list schedule on Object | Lets you see the schedules of the resource. |
+| Can Create on Schedule | Lets you save the template. Hold it in the place listed below for the resource. By default, the Admin (facility role), Facility Admin, Doctor, Nurse and Staff roles hold it. |
+| Can list schedule on Object | Lets you open the schedule page and see its templates. Hold it in the place listed below for the resource. For a practitioner, the **Availability** tab shows only if you hold it in a department or team of the facility, or in its Administration organization. By default, the Admin, Facility Admin, Administrator, Doctor, Nurse and Staff roles hold it. |
+| Can Read Healthcare Service | Only for a location or a healthcare service. Lets you open **Services** and the healthcare service. Hold it in any organization of the facility. By default, the Admin, Facility Admin, Administrator, Doctor, Nurse, Staff, Volunteer and Pharmacist roles hold it. |
+| Can View Facility Organizations | Optional. Lets you choose from all departments of the facility in **Encounter defaults**. Without it, you can choose only the departments that you belong to. By default, the Admin, Facility Admin, Administrator, Doctor, Nurse, Staff and Volunteer roles hold it. |
+
+Care accepts Can Create on Schedule and Can list schedule on Object only in these places:
+
+- For a practitioner: the facility's Administration organization, a department or team that the practitioner belongs to, or a parent of it.
+- For a location: a department linked to the location or to its parent location, a parent of that department, or the facility's Administration organization.
+- For a healthcare service with a managing organization: that organization or a parent of it. The Administration organization does not count.
+- For a healthcare service without a managing organization: only the facility's Administration organization.
+
+Only roles that you hold in the facility's organizations count. A role in a governance organization above the facility does not count.
+
+Care shows **Create Template** if you hold Can Create on Schedule anywhere in the facility. This includes any department or team of the facility, and its Administration organization. When you save, Care accepts the permission only in the place for the resource.
 
 ## Steps
 
-### 1. Open the schedule of the resource
+### 1. Open the schedule
 
-Open the facility. Go to the scheduling section and select the resource that you want to schedule.
+Practitioners, locations and healthcare services use the same schedule page. Open it in one of these ways:
 
-### 2. Start a new template
+- For a practitioner, select **Users** in the facility sidebar. Find the practitioner and select **See Details**. Then select the **Availability** tab.
+- For your own schedule, open the account menu and select **Profile**. Then select the **Availability** tab.
+- For a location, select **Services** in the facility sidebar. Select a healthcare service. On a location card, select **View appointments**. This link shows for services that are not a store, a pharmacy or a lab. In the location sidebar, under **Scheduling**, select **Schedule**.
+- For a healthcare service, select **Services** in the facility sidebar. Select the service. In the service sidebar, under **Scheduling**, select **Schedule**.
 
-Select the option to add a schedule template. Care opens the **Schedule Template** panel.
+![Dr. Meera Iyer's user details page with the Availability tab outlined, showing the Schedule and Exceptions tabs, Create Template and the November 2026 calendar](/media/scheduling/schedule/create-schedule-template-1.png)
+
+The schedule page opens on the **Schedule** tab. It also has an **Exceptions** tab and a calendar of the month.
+
+Care can show "You do not have permission to update schedule", and the page does not finish loading. Then you do not hold Can list schedule on Object in the place for this resource. Ask your administrator for it.
+
+### 2. Start the template
+
+Select **Create Template**. The **Create Schedule Template** sheet opens.
+
+![The Create Schedule Template sheet with its heading outlined and the Template Name, Valid Period and Weekly Schedule fields still empty](/media/scheduling/schedule/create-schedule-template-2.png)
 
 ### 3. Name the template
 
-Enter the **Template Name**. The placeholder shows an example, "Regular OP Day".
+Enter the **Template Name**, for example "Regular OP Day". The name is required.
 
-### 4. Set the validity period
+![The Template Name field outlined in the Create Schedule Template sheet, filled in with Evening OP](/media/scheduling/schedule/create-schedule-template-3.png)
 
-Enter **Valid From** and **Valid Till**.
+### 4. Set the valid period
 
-The Valid From date must not be in the past. The Valid From date must not be later than the Valid Till date.
+1. Select the **Valid Period** field. It shows "Select date range" while it is empty.
+2. Choose the **Start date** and the **End date**. Care blocks the days before today.
+3. Select **Apply**.
 
-### 5. Select the days of the week
+![The Valid Period date picker outlined, with Start date 28/11/2026 and End date 27/01/2027 chosen, above the Apply button](/media/scheduling/schedule/create-schedule-template-4.png)
 
-Select the days that the template applies to. You select at least one day.
+Both dates are required. The start date can be today.
 
-### 6. Add a session
+If the start date is before today, Care shows "Schedule cannot be created for the past".
 
-Complete these fields for the session:
+If the end date is before the start date, Care shows "To date must be equal to or after from date".
 
-| Field | What to enter |
+### 5. Select the weekdays
+
+Under **Weekly Schedule**, select the weekdays on which the template applies.
+
+![The weekday buttons under Weekly Schedule outlined, with Mon, Tue, Wed, Thu and Fri selected and Sat and Sun clear](/media/scheduling/schedule/create-schedule-template-5.png)
+
+Select at least one weekday. If you select none, Care shows "Select at least one weekday".
+
+The weekdays apply to every session in the template.
+
+### 6. Set the visibility
+
+To let patients book the slots of this template themselves, select **Make the template public**. The box is clear by default.
+
+![The Make the template public option outlined in the sheet, with its box clear](/media/scheduling/schedule/create-schedule-template-6.png)
+
+Staff see the slots of public and private templates.
+
+### 7. Set the encounter defaults
+
+This step is optional. **Encounter defaults** are "Applied when an encounter is created from an appointment on this schedule." All of them start empty.
+
+![The Encounter defaults section outlined, with the empty Select Department, Select Member and Select Role fields below it](/media/scheduling/schedule/create-schedule-template-7.png)
+
+| Components | What it captures |
 | --- | --- |
-| Session Title | The name of the session, for example "IP Rounds". |
-| Slot type | Appointment Slot, Open, or Closed. |
-| Start time | The time that the session starts. |
-| End time | The time that the session ends. |
-| Reason | Free text that explains the session. This is optional. |
+| Departments (**Select Department**) | The departments that Care preselects for those encounters. Optional. |
+| **Care Team** | The members that Care adds to the care team of those encounters. Choose a member in **Select Member** and a role in **Select Role**. Then select **Add**. |
+| **Type of Encounter** | The type that Care preselects for those encounters. It starts as **Not Specified**. Your deployment sets which types you can choose. |
 
-For an appointment slot, also complete these fields:
+**Add** is active only after you choose a member and a role. If you add the same member twice, Care shows "Member already added".
 
-| Field | What to enter |
+Care uses these defaults when staff start a consultation from an appointment on this template that has no encounter yet. See [Start a consultation from an appointment](../appointment/start-consultation.mdx).
+
+### 8. Fill in the session
+
+The template starts with one session. Fill in these fields:
+
+| Components | What it captures |
 | --- | --- |
-| Slot size in minutes | The length of one slot. |
-| Tokens per slot | The number of patients that Care books into one slot. |
+| **Session Title** | A name for the session, for example "IP Rounds". Required. |
+| **Start Time** | The time that the session starts. It must be before the end time. |
+| **End Time** | The time that the session ends. |
+| **Slot duration (mins.)** | The length of one slot, in minutes. Required, at least 1. |
+| **Patients per Slot** | The number of patients that can book one slot. Required, at least 1. |
+| **Remarks** | A note about the session. Optional. |
 
-The start time must be earlier than the end time. For an appointment slot, the length of the session must be a multiple of the slot size in minutes.
+If the start time is not before the end time, Care shows "Start time must be before end time".
 
-To add more sessions, select **Add another session**. Sessions must not overlap.
+When the times, the slot duration and the patients per slot are filled in, a note appears. It shows the number of slots and about how many minutes each patient gets.
 
-### 7. Set the visibility
+![The session form outlined, filled in as Evening Consultation from 04:00 PM to 07:00 PM with 15-minute slots and 2 patients per slot, above the note on 12 slots](/media/scheduling/schedule/create-schedule-template-8.png)
 
-Set whether the schedule is public. Patients can see a public schedule and book against it. A private schedule shows the message "This schedule is private".
+Care refuses to save the template unless every session meets these rules:
 
-### 8. Save the template
+- The slot duration is a whole number of minutes.
+- The session length is a whole multiple of the slot duration. For example, a 60-minute session can have 10-minute slots but not 25-minute slots.
+- The session has no more slots than your deployment allows. The limit is 30 slots unless your deployment changes it.
 
-Save the template. Care shows the message "Schedule template created successfully".
+### 9. Let Care calculate the slot duration
+
+Do this step only if you want Care to calculate the slot duration.
+
+1. Turn on **Auto-fill slot duration**.
+2. Enter the **Number of slots:** for the session. It is required and must be at least 1.
+
+Care divides the session length by the number of slots and fills in **Slot duration (mins.)**. You cannot change the slot duration while auto-fill is on.
+
+Choose a number of slots that divides the session length evenly. For example, a 60-minute session gets 10-minute slots with 6 slots. With 7 slots it gets 8.57-minute slots, and Care refuses to save the template.
+
+### 10. Add more sessions
+
+Do this step only if the template needs more than one session.
+
+1. Select **Add another session**.
+2. Fill in the new session as in step 8.
+
+To take a session out of the form, select **Remove** on that session. The template needs at least one session. Otherwise Care shows "Add at least one session".
+
+The sessions of one template must not overlap. Sessions that touch also overlap, for example a session that ends at 12:00 and a session that starts at 12:00.
+
+Care does not compare these sessions with the sessions of the resource's other templates.
+
+### 11. Save the template
+
+Select **Save**. The button shows **Saving...** while Care saves the template.
+
+![The message Schedule template created successfully, with the new Evening OP template card outlined above Morning OP on the Schedule tab](/media/scheduling/schedule/create-schedule-template-9.png)
+
+To clear the form instead, select **Cancel**.
 
 ## Expected Outcome
 
-- The template appears in the list of schedule templates for the resource.
-- Care creates bookable slots from the sessions in the template.
+- Care shows "Schedule template created successfully" and closes the sheet.
+- The template shows on the **Schedule** tab in each month that its valid period overlaps.
+- On the calendar, the template shows as a coloured dot on the days of its sessions. A day shows at most five dots.
+- Staff can book appointments in the slots of the template, on its weekdays, within its valid period and outside any exception.
+- If the template is public, patients can also book its slots themselves.
 
 ## Related
 
 Concepts:
 
 - [Schedule & Availability](../../../concepts/scheduling/schedule.mdx)
+- [Appointment Booking](../../../concepts/scheduling/booking.mdx)
+- [Healthcare Service](../../../concepts/facility/healthcare-service.mdx)
+- [Locations](../../../concepts/facility/location.mdx)
+- [Department](../../../concepts/facility/department.mdx)
 
 Flows:
 
-- [View schedule templates](./view-schedule-templates.mdx)
+- [View a schedule](./view-schedule-templates.mdx)
 - [Edit a schedule template](./edit-schedule-template.mdx)
+- [Add or remove a session in a schedule template](./add-or-remove-schedule-session.mdx)
+- [Set the charges for a schedule](./set-schedule-charges.mdx)
 - [Delete a schedule template](./delete-schedule-template.mdx)
+- [Add a schedule exception](../exception/create-schedule-exception.mdx)
+- [Book an appointment for a patient](../appointment/book-appointment.mdx)
+- [Start a consultation from an appointment](../appointment/start-consultation.mdx)
