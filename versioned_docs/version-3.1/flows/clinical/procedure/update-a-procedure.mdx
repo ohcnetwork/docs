@@ -1,0 +1,183 @@
+---
+sidebar_position: 2
+---
+
+# Update a procedure
+
+## Overview
+
+<video src="/media/clinical/procedure/update-a-procedure.mp4" poster="/media/clinical/procedure/update-a-procedure.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/procedure/update-a-procedure.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to change a saved [procedure](../../../concepts/clinical/procedure.mdx) of a patient in Care. You change it in the Procedure form of the encounter where the procedure was recorded.
+
+## Pre-requisites
+
+- The procedure is saved in Care, and it is not marked as entered in error. To record a procedure, see [Record a procedure](./record-a-procedure.mdx).
+- The encounter where the procedure was recorded is open, and you change the procedure from that encounter. An encounter is open when its status is **Planned**, **In Progress**, **On Hold**, **Discharged** or **Unknown**.
+- If that encounter status is **Completed**, **Cancelled**, **Discontinued** or **Entered in error**, you cannot change its procedures. Care does not show the controls that open the Procedure form, and Care refuses the save.
+- You open the encounter from your facility. Care shows the controls that change procedures only on an encounter that you open from a facility.
+- If you view another encounter of the patient from inside this encounter's page, Care does not show these controls.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Update Encounter related clinical data | Lets you save changes to the procedures. You need it in the encounter where the procedure was recorded, and that encounter must be open. The permission in another encounter does not count. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. By default, the Staff role does not hold it. |
+| Can view clinical data about patients | Lets Care load the patient on the encounter page. It also shows you the **Procedures** panel and its **Edit** pencil, and lets the form load the procedures of the encounter. You need it through a role on the patient. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Read encounter related clinical data | Shows you the **Procedures** panel and its **Edit** pencil, and lets the form load the procedures. It applies to this encounter only, and it does not load the patient. You need it in the encounter. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can list patients | Lets Care load the encounter. You need it through a role on the patient. If you hold it in an organization that the patient belongs to, it also loads the patient. By default, the Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer and Pharmacist roles hold it. |
+| Can Read encounter | Lets Care load the encounter. You need it in the encounter. It does not load the patient. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+
+The encounter page loads the patient and the encounter. Until both load, the page shows only its loading state. For this flow, you need all of these:
+
+- To load the patient, you need one of three things. The first is "Can view clinical data about patients" through a role on the patient. The second is "Can list patients" in an organization that the patient belongs to. The third is a role given directly on the patient.
+- To load the encounter, you need "Can list patients" through a role on the patient. "Can Read encounter" in the encounter also works.
+- To see the **Procedures** panel and to fill in the form, you need "Can view clinical data about patients" through a role on the patient. "Can Read encounter related clinical data" in the encounter also works.
+- To save, you need "Update Encounter related clinical data" in the encounter where the procedure was recorded.
+
+You have a role on the patient when you hold a role in one of these places:
+
+- An organization of an open encounter of the patient, or of the current location of that encounter.
+- An organization that the patient belongs to.
+- The patient itself, when you were given a role directly on the patient.
+
+You hold a permission in the encounter when a role in an organization of the encounter gives it to you. The organizations of its current location also count.
+
+The organizations of an encounter are the organizations it is assigned to, their parent organizations, and the root organization of the facility, "Administration".
+
+By default, if you hold the Doctor, Nurse, Admin or Facility Admin role in an organization of this open encounter, you have all these permissions.
+
+By default, the Staff role does not hold "Update Encounter related clinical data". With only the Staff role in an organization of this encounter, you can open the Procedure form and change the rows. Care then refuses the save.
+
+"Admin" in this table is the facility role, not the role with the same name that administers a role organization.
+
+The searches in the form need no other permission. By default, any signed-in user can read the value sets that they search.
+
+Note: Your deployment can let every user open every patient. This setting is off by default.
+
+## Steps
+
+### 1. Open the encounter
+
+Open the patient's encounter from your facility. To find the patient, see [View a patient's profile](../patient/view-patient-profile.mdx).
+
+If another tab of the encounter is open, select the **Overview** tab.
+
+### 2. Open the Procedure form
+
+In the **Procedures** panel, select the **Edit** pencil.
+
+Care opens the Procedure form. Its title is "Procedure". It is a built-in questionnaire, so its messages say "questionnaire".
+
+The form shows the procedures of this encounter as rows, up to 100. This includes the procedures marked as entered in error.
+
+You can also open the same form in these ways:
+
+- Select the **Procedures** quick action.
+- If the **Procedures** quick action is on the screen, press C.
+- Select **Encounter Actions**, or press Shift+E. This opens the command dialog. Under **Encounter Actions**, select **Add Procedure**.
+
+Note: The **Procedures** panel shows only when the encounter has a procedure that is not marked as entered in error.
+
+In this flow, the Procedure form is shown in a wide browser window. Each procedure is then a row in a table.
+
+![The Edit pencil on the Procedures panel of the encounter Overview, outlined](/media/clinical/procedure/update-a-procedure-2.png)
+
+### 3. Find the procedure
+
+Find the row of the procedure. The **Procedure** column shows the name of the procedure.
+
+A faded row is a procedure marked as entered in error. You cannot change it.
+
+You cannot change the procedure of a row. If the wrong procedure was recorded, [mark it as entered in error](./mark-a-procedure-as-entered-in-error.mdx). Then [record the right procedure](./record-a-procedure.mdx).
+
+The form shows only the procedures of this encounter. To change a procedure of another encounter, open that encounter.
+
+![The Procedure form with the Tonsillectomy row outlined, below a greyed-out row marked as entered in error](/media/clinical/procedure/update-a-procedure-3.png)
+
+### 4. Change the values in the row
+
+Change these values if necessary:
+
+| Components | What it captures |
+| --- | --- |
+| **Date Performed** | The day when the procedure was done. You cannot pick a date after today. Care keeps the day, not a time. If the procedure has an approximate date, the cell shows that text. You then change it in **Approximate Date**, in step 5. |
+| **Status** | **Completed**, **Not Done**, **Stopped**, **Unknown** or **Entered in Error**. If you select **Entered in Error**, you mark the procedure as entered in error. See [Mark a procedure as entered in error](./mark-a-procedure-as-entered-in-error.mdx). |
+| **Outcome** | **Not Specified**, **Successful**, **Partially Successful** or **Unsuccessful**. **Not Specified** means that no outcome is recorded. |
+
+![The Outcome cell of the Tonsillectomy row set to Successful, outlined](/media/clinical/procedure/update-a-procedure-4.png)
+
+### 5. Change the details
+
+Select the button with three vertical dots in the **Action** column of the row. This button opens the row menu.
+
+In the row menu, select **Show Details**. Care shows the detail fields under the row.
+
+Change these values if necessary:
+
+| Components | What it captures |
+| --- | --- |
+| **Approximate Date** | The date in words, when you do not know the exact day. It replaces a picked date. If you delete all the text, the procedure has no date. |
+| **Status Reason** | Why the procedure was not done or was stopped. The field shows only when **Status** is **Not Done** or **Stopped**. If you change **Status** to **Completed**, **Unknown** or **Entered in Error**, Care clears the reason. |
+| **Body Site** | The body sites of the procedure. You can select more than one. |
+| **Reason** | The reasons for the procedure. You can select more than one. |
+| **Category** | The categories of the procedure. You can select more than one. |
+| **Note** | Free text about the procedure. |
+
+In **Body Site**, **Reason** and **Category**, each value shows as a chip. To take out a value, select the remove button on its chip. You cannot add the same value twice.
+
+To hide the detail fields, select **Hide Details** in the row menu.
+
+![The detail fields of the Tonsillectomy row open, with the Note field filled in and outlined](/media/clinical/procedure/update-a-procedure-5.png)
+
+### 6. Save the changes
+
+Select **Save Changes**. You can also press Shift+Enter.
+
+Care saves only the procedures that you changed. It does not send the other rows again.
+
+Care saves all the changes together. If Care refuses one change, it saves none of them.
+
+The procedure stays in the encounter where it was recorded.
+
+To close the form without saving, select **Cancel**. If you made changes, Care asks "Close and discard draft". Select **Discard** to close the form.
+
+## Expected Outcome
+
+- Care shows the message "Questionnaire submitted successfully".
+- Care returns you to the page where you opened the form. By default, this is the **Overview** tab of the encounter.
+- The **Procedures** panel shows the procedure with its new values.
+- The **Past Procedures** tab of the patient's clinical history also shows the new values. See [View a patient's procedures](./view-a-patients-procedures.mdx).
+- If you marked the procedure as entered in error, the **Procedures** panel no longer shows it.
+
+![The encounter Overview with the message Questionnaire submitted successfully and the Procedures panel showing Tonsillectomy with the outcome Successful, outlined](/media/clinical/procedure/update-a-procedure-result.png)
+
+If Care refuses the save, it shows the message "Failed to submit questionnaire". Care saves nothing.
+
+| If you see | What it means | What to do |
+| --- | --- | --- |
+| No **Procedures** panel on the **Overview** tab | The encounter has no procedure, or each procedure is marked as entered in error. | To add a procedure, see [Record a procedure](./record-a-procedure.mdx). |
+| No **Edit** pencil and no **Procedures** quick action | The encounter is closed, or you did not open it from your facility. You can also be viewing another encounter of the patient from inside this encounter's page. You cannot change the procedures of a closed encounter. | If the encounter is open, open it from your facility. |
+| A faded row that you cannot change | The procedure is marked as entered in error. The form offers no way to change it back. | If it was marked by mistake, record the procedure again. See [Record a procedure](./record-a-procedure.mdx). |
+| The procedure is not in the form | The procedure was recorded in another encounter. Or the encounter has more than 100 procedures, and the form loads only 100. | If the procedure is in another encounter, open that encounter. |
+| The encounter page keeps showing its loading state | Care cannot load the patient or the encounter. You hold none of the permissions that load them. | Ask your administrator for "Can view clinical data about patients" through a role on the patient. |
+| "Nothing to submit yet — answer at least one question" | You did not change a procedure. Care sent nothing. | Change a value. Then select **Save Changes** again. |
+| "Failed to submit questionnaire" | You do not hold "Update Encounter related clinical data" in the encounter. By default, a user with only the Staff role is in this case. Care saved nothing. | Ask your administrator for the permission. You can also ask a user with the Doctor, Nurse, Admin or Facility Admin role in the encounter. |
+| "Failed to submit questionnaire" | The encounter is closed. Care refuses every change on a closed encounter, also when you hold the permission. Care saved nothing. | You cannot change the procedures of a closed encounter. |
+
+## Related
+
+Concepts:
+
+- [Procedure](../../../concepts/clinical/procedure.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [Record a procedure](./record-a-procedure.mdx)
+- [Mark a procedure as entered in error](./mark-a-procedure-as-entered-in-error.mdx)
+- [View a patient's procedures](./view-a-patients-procedures.mdx)
+- [View a patient's profile](../patient/view-patient-profile.mdx)

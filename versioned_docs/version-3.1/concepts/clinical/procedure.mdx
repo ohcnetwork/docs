@@ -1,0 +1,171 @@
+---
+sidebar_position: 13
+---
+
+# Procedure
+
+## Definition
+
+A **[procedure](https://build.fhir.org/procedure.html)** in Care is a record that a procedure was done on a [patient](../clinical/patient), or that it was not done or was stopped. You record it during an [encounter](./encounter.mdx), and it stays with that encounter.
+
+A procedure records the past, so Care has no planned or in-progress procedure. To order a procedure, you create a [service request](./service-request.mdx), and nothing in Care turns a service request into a procedure.
+
+## Key Attributes
+
+| Components | What it captures |
+| --- | --- |
+| Procedure | The procedure that was done, not done or stopped. You search for it in the "Procedure" value set of your deployment. It is required. See "Procedure" below. |
+| Date Performed | The day on which the procedure was done. It cannot be in the future. Instead of a date, you can enter an approximate date as free text. Both are optional. See "Date Performed" below. |
+| Status | Completed, Not Done, Stopped, Unknown or Entered in Error. A new procedure starts as Completed. See "Status" below. |
+| Status Reason | Why the procedure was not done or was stopped. The form shows it only when the status is Not Done or Stopped. It comes from the "Procedure Status Reason" value set. |
+| Outcome | Successful, Partially Successful or Unsuccessful. It is optional, and a new procedure starts at Not Specified. See "Outcome" below. |
+| Body Site | The parts of the body involved. You can choose more than one, from the "Body Site" value set. |
+| Reason | Why the procedure was done. You can choose more than one, from the "Procedure Reason" value set. |
+| Category | The kind of procedure, such as surgical or diagnostic. You can choose more than one, from the "Procedure Category" value set. |
+| Note | Free text about the procedure. In the lists, the info icon of a row opens **See Note** when the procedure has a note. |
+| Encounter | The encounter in which the procedure was recorded. Every procedure has one, and a procedure cannot move to another encounter. See "Encounter" below. |
+| Patient | The patient of that encounter. Care takes the patient from the encounter. |
+| Recorded by and recorded date | Who recorded the procedure, and the date and time it was recorded. Care fills these in when the procedure is first saved, and it also keeps who last updated the procedure. |
+
+### Procedure
+
+You choose the procedure when you add it to the Procedure form, by searching the "Procedure" [value set](../definitions/valueset.mdx). By default, this value set holds SNOMED CT codes, and its content in your deployment can differ from this default.
+
+The form shows the procedure of each row as text and has no way to change it. To replace a saved procedure that has the wrong code, mark it as entered in error and add the right one.
+
+You can record the same procedure more than once. If you add a procedure that is already listed, the form warns you, but it still adds it as a separate procedure.
+
+Care uses the word "Procedure" in other places too. An [activity definition](../definitions/activity-definition.mdx) can have the category "Procedure", and a diagnostic report labels the code of its service request "Procedure". Neither is the procedure that this page describes.
+
+A service request asks for a service to be done, and the service can be a procedure. An activity definition describes a service that a facility offers, and staff order it as a service request.
+
+When staff mark a service request as complete, Care does not record a procedure. You record the procedure separately, in the encounter.
+
+The codes also come from different value sets. A procedure uses the "Procedure" value set, and service requests and activity definitions use "Activity Definition Procedure Code". By default, both start with the same SNOMED CT codes, but Care keeps them as separate value sets.
+
+### Date Performed
+
+**Date Performed** records a day, not a time. The form does not let you pick a date after today.
+
+When you know only roughly when the procedure happened, you enter an **Approximate Date** instead, such as a year. The approximate date replaces the picked date, and the lists show its text in place of a date.
+
+A new procedure has no date, because procedures are often recorded long after they happened. The lists show "-" for a procedure without a date.
+
+### Encounter
+
+You record procedures in the Procedure form of an encounter. The form is a built-in questionnaire, so its messages say "questionnaire".
+
+In the standard encounter workspace, you open the form from the **Overview** tab, with the **Procedures** quick action or the **Edit** pencil of the **Procedures** panel. **Add Procedure** in **Encounter Actions** also opens it.
+
+A facility can customize the encounter workspace, so your **Overview** can look different.
+
+The form lists the procedures already saved in the encounter, so you use the same form to add procedures and to change saved ones. When you select **Save Changes**, Care saves only the procedures that you added or changed.
+
+The form loads only the procedures of its own encounter, so you change a procedure only from the encounter in which it was recorded.
+
+You can record and change procedures only while the encounter is open. An encounter is closed when its status is Completed, Cancelled, Discontinued or Entered in error. A Discharged encounter is still open.
+
+On a closed encounter, Care shows no quick actions, and the **Procedures** panel has no **Edit** pencil.
+
+Each time you record or change a procedure, Care also saves a [questionnaire response](./questionnaire-response.mdx) that points to the procedure. These responses do not appear in the responses panel of the **Overview**.
+
+The **Procedures** panel on the **Overview** tab lists the procedures of the encounter, newest recorded first. Its columns are **Procedure**, **Status**, **Outcome** and **Date Performed**.
+
+The panel appears only when the encounter has at least one procedure that is not marked as entered in error.
+
+**Past Procedures** shows the procedures of the patient from every encounter, on a timeline. The timeline groups them by the day on which each was recorded in Care, not by the day it was performed.
+
+You reach **Past Procedures** from the **History** link of the **Procedures** panel, or from the **Clinical History** tab of the patient's profile.
+
+Both lists leave out procedures marked as entered in error. Care keeps those procedures, but it does not show them in these lists.
+
+### Outcome
+
+A procedure can also have an outcome. It is optional.
+
+| Outcome | Description |
+| --- | --- |
+| Not Specified | No outcome was recorded. The lists show "-". |
+| Successful | The procedure was successful. |
+| Partially Successful | The procedure was partly successful. |
+| Unsuccessful | The procedure was not successful. |
+
+### Status
+
+| Status | Description |
+| --- | --- |
+| Completed | The procedure was done. A new procedure starts as Completed. |
+| Not Done | The procedure was not done. You can add a **Status Reason**. |
+| Stopped | The procedure was stopped. You can add a **Status Reason**. |
+| Unknown | The status of the procedure is not known. |
+| Entered in Error | The procedure was recorded by mistake. See below. |
+
+When you choose a status that takes no reason in the **Status** list, the form clears the status reason.
+
+The form offers Entered in Error only for a saved procedure. You set it with **Remove Procedure** in the row menu, or by choosing it in the **Status** list. Care saves the change when you select **Save Changes**.
+
+Care does not delete a procedure marked as entered in error. It keeps the record and leaves it out of the **Procedures** panel and **Past Procedures**.
+
+After it is saved as entered in error, the procedure is greyed out and locked in the form. The form offers no way to change it back.
+
+## Permissions
+
+Care controls procedures with patient and encounter permissions. Where you hold a permission matters.
+
+You have a role on the patient when you hold a role in one of these places:
+
+- An [organization](../access-governance/facility-organization.mdx) of an open encounter of the patient, or of the current location of that encounter.
+- An [organization](../access-governance/organization.mdx) that the patient belongs to.
+- The patient itself, when you were given a role directly on the patient.
+
+A closed encounter gives no role on the patient.
+
+You hold a permission in the encounter when a role in one of its organizations gives it to you. The organizations of an encounter are the organizations it is assigned to, their parent organizations, and the root organization of the facility, "Administration". The organizations of its current location also count.
+
+When you create an encounter, you choose its organizations under **Departments**.
+
+The roles named below hold each permission by default.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Update Encounter related clinical data | Record a procedure, change it, and mark it as entered in error. You need it in the encounter, and the encounter must be open. For a saved procedure, this is the encounter in which it was recorded. | Admin, Doctor, Nurse, Facility Admin |
+| Can view clinical data about patients | See the procedures of the patient: the **Procedures** panel of an encounter, and **Past Procedures** with the procedures of every encounter. It also lets the encounter page load the patient. You need it through a role on the patient. | Staff, Doctor, Nurse, Admin, Facility Admin |
+| Can Read encounter related clinical data | See the procedures of one encounter, in its **Procedures** panel. You need it in the encounter. It does not give you **Past Procedures**, and it does not let the encounter page load the patient. | Admin, Doctor, Nurse, Facility Admin |
+| Can list patients | Open the encounter. You need it through a role on the patient, or you need "Can Read encounter". Held through a role in an organization that the patient belongs to, it also lets the encounter page load the patient. | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer, Pharmacist |
+| Can Read encounter | Open the encounter. You need it in the encounter, or you need "Can list patients". | Admin, Doctor, Nurse, Facility Admin |
+
+"Admin" in this table is the facility role, not the role with the same name that administers a role organization.
+
+The encounter page loads both the encounter and the patient. Until both have loaded, it shows only its loading screen and a Back button.
+
+Care loads the patient for you when you hold "Can view clinical data about patients" through a role on the patient, or "Can list patients" through a role in an organization that the patient belongs to. A role given directly on the patient is also enough.
+
+A deployment setting, which is off by default, lets every user open every patient.
+
+So on a closed encounter, a role in an organization of the encounter is not enough to see its procedures. You also need "Can view clinical data about patients" or "Can list patients" through a role in an organization that the patient belongs to, or a role given directly on the patient.
+
+By default, the Admin, Doctor, Nurse or Facility Admin role in an organization of an open encounter lets you see, record and change the procedures of that encounter. It also lets you see **Past Procedures**.
+
+To record or change procedures from the **Overview**, you also need "Can view clinical data about patients" or "Can Read encounter related clinical data". The **Procedures** quick action and the **Edit** pencil appear only when you can see the clinical data of the encounter. The form also loads the saved procedures of the encounter, which needs one of these permissions.
+
+Saving the Procedure form needs no questionnaire permission, because the form sends only the procedures.
+
+By default, the Staff role can see procedures but cannot record them. Care still shows Staff the **Procedures** quick action and the form, because it does not check the write permission before the save. When a Staff user selects **Save Changes**, Care refuses the save and shows "Failed to submit questionnaire".
+
+"Can list patients" and "Can Read encounter" alone do not let you see procedures. So by default, the Administrator, Volunteer and Pharmacist roles cannot see procedures.
+
+## Related
+
+- Flow: [Record a procedure](../../flows/clinical/procedure/record-a-procedure.mdx)
+- Flow: [Update a procedure](../../flows/clinical/procedure/update-a-procedure.mdx)
+- Flow: [Mark a procedure as entered in error](../../flows/clinical/procedure/mark-a-procedure-as-entered-in-error.mdx)
+- Flow: [View a patient's procedures](../../flows/clinical/procedure/view-a-patients-procedures.mdx)
+- Concept: [Patient](../clinical/patient)
+- Concept: [Encounter](./encounter.mdx)
+- Concept: [Service Request](./service-request.mdx)
+- Concept: [Activity Definition](../definitions/activity-definition.mdx)
+- Concept: [Questionnaire Response](./questionnaire-response.mdx)
+- Concept: [Value Set](../definitions/valueset.mdx)
+- Concept: [Facility Organization](../access-governance/facility-organization.mdx)
+- Concept: [Roles and Permission](../access-governance/access-control.mdx)
+- Reference: [Procedure](../../references/clinical/procedure.mdx)
