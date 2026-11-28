@@ -2,120 +2,129 @@
 sidebar_position: 1
 ---
 
-# Medication Request
+# Medication request
 
 ## Definition
 
-A **[medication request](https://build.fhir.org/medicationrequest.html)** in Care is an order
-or prescription for a specific medicine for a patient. You create a medication request during
-an encounter. Care groups one or more medication requests together under a named prescription.
-A medication request records what you order, not what the patient receives.
-
-Care keeps the medication request separate from three related records. Medicine Administration
-records a dose that staff give to the patient. Dispense History records the pharmacy dispense.
-Medication Statements record the medicines that the patient reports or took in the past. Care
-shows each of these records in its own sub-tab of the **Medicines** tab.
+A **[medication request](https://build.fhir.org/medicationrequest.html)** in Care is an order for one medicine for a patient, made in an encounter. Each time you save the "Medication Request" form, Care puts all the new medicines of that save into one new prescription. A medication request records the order only: Care records the doses that staff give and the medicines that the pharmacy dispenses as separate records.
 
 ## Key Attributes
 
 | Components | What it captures |
 | --- | --- |
-| Medicine | The drug that you prescribe. You select it from a clinical drug list or from the facility's inventory. |
-| Dosage | The amount of the medicine that the patient takes. This field is mandatory. |
-| Frequency | How often the patient takes the medicine. This field is mandatory. |
-| Duration | How long the patient takes the medicine. This field is optional. |
-| Instructions | More instructions for the patient. This includes the reason to take the medicine when needed. This field is optional. |
-| Route | How the patient receives the medicine, for example by mouth or by injection. This field is optional. |
-| Site | The body site that the medicine applies to. This field is optional. |
-| Method | The method of administration. This field is optional. |
-| Authored On | The date that you write the request. Care sets the current date and time by default. You cannot enter a future date. |
-| Requester | The user that Care records as the person who requests the medicine. This field is optional. |
-| Note | Free text notes about the medicine. This field is optional. |
-| Status | The current state of the request. |
-| Category | The care setting that the request applies to. |
-| Priority | The urgency of the request. |
-| Dispense Status | How much of the request the pharmacy dispensed. The separate dispense process updates this field. |
+| Medicine | The medicine that you order. You pick a product from the facility's product catalogue on the **Product** tab, or a medicine from the clinical drug list on the **Medication** tab. The picker opens on **Product** unless your deployment is set up to open it on **Medication**. |
+| Dosage | The amount of each dose. The form requires it. **Configure dose range** records a dose that changes over time. **Add Dosage Step** adds another dosage step to a medicine that is not saved yet. |
+| Frequency | How often the patient takes the medicine, such as 1-0-1. The list also offers as-needed (SOS) and immediate (STAT) doses. The form requires a frequency. |
+| Duration | How long the patient takes the medicine: a number of days, a range of days, or fixed start and end dates. Duration is optional, and the form turns it off for an as-needed medicine. |
+| Instructions | More instructions for the patient. For an as-needed medicine, you also select the reason to take it here. |
+| Route, Site, Method | How the patient takes the medicine and where it is applied. These fields are optional. |
+| Intent | The kind of order. The form sets it to order. |
+| Authored On | The date and time of the order. The form sets the current date and time, and does not accept a future date. |
+| Requester | The user who orders the medicine. The form sets you as the requester, and you can pick another user of the facility. The requester must also be allowed to update the encounter's clinical data, or Care does not save the medicine. |
+| Note | A free-text note about the medicine. You can change it after you save. |
+| Status | The state of the request. See Status below. |
+| Category | The care setting: Inpatient, Outpatient, Community or Discharge. The form has no Category field, so Care records Inpatient for every medicine that you prescribe on the form. |
+| Priority | The urgency: Routine, Urgent, ASAP or STAT. The form has no Priority field, so Care records Routine for every medicine that you prescribe on the form. |
+| Dispense Status | How much of the medicine the pharmacy has dispensed. See Dispense Status below. |
+
+### Where Care shows medication requests
+
+Care shows medication requests in the encounter's **Medications** tab. The **Prescriptions** sub-tab lists the prescriptions of the encounter, and **All Prescriptions** shows the medicines of all of them together.
+
+The **Medicine Administration** sub-tab shows the same medicines in a chart of the doses that staff give. The other two sub-tabs are **Medication Statements** and **Dispense History**.
 
 ### Prescription
 
-A prescription is a named batch that groups one or more medication requests for the same
-encounter. When you prescribe a medicine, you add it to a new prescription or to an existing
-one. A new prescription needs a name. You can also add an optional note to it. An encounter can
-have more than one prescription. Care lets you switch between the prescriptions of an encounter.
+A prescription groups the medicines that you save together. Each time you save the "Medication Request" form, Care puts all the new medicines of that save into one new prescription. An encounter therefore has one prescription for each save that adds medicines.
+
+The form does not give a prescription a name. Care lists it by the date and time it was created, with **Prescribed by** and the name of the prescriber, and its tags. The prescriber is the requester of the medicines.
+
+You cannot add medicines to a saved prescription, because the form does not show the medicine picker when you edit a prescription. To order more medicines, you save the form again, and Care makes a new prescription.
+
+You can add a note to a prescription when you create it. After you save, the form shows the note read-only.
+
+### Prescription status
+
+A prescription has its own status, separate from the status of each medicine in it. When you save the form, Care creates the new prescription as Active. The pharmacy screens show an active prescription as **Billing Pending**, and also show Completed and Cancelled prescriptions.
+
+Users with "Pharmacist in Care" work with prescriptions from a pharmacy location. The **Prescription Queue** there shows the prescriptions of every encounter in the facility.
+
+From the pharmacy, a user with "Pharmacist in Care" can mark an active prescription as completed with **Mark Prescription Complete** or **Mark as Completed**. The same user can reactivate a completed or cancelled prescription with **Reactivate Prescription**.
+
+When the pharmacy bills a prescription with **Mark Complete** ticked, Care also marks the prescription as completed.
+
+These pharmacy status changes do not depend on the status of the encounter, so they also work after the encounter is closed.
+
+To cancel a prescription with **Cancel Prescription**, a user needs "Update Encounter related clinical data" on the encounter, and the encounter must be open. "Pharmacist in Care" alone does not allow it.
 
 ### Changes after you save
 
-After you save a medicine on a prescription, you cannot change its dosage, frequency, route, or
-other clinical details. You can edit its note. You can add new medicines to the same
-prescription. You can also remove the medicine. When you remove a medicine, Care marks it as
-Entered in Error and keeps the record.
+After you save a medicine, the form shows its dosage, frequency, duration and other details read-only. You can still change its note.
 
-### Category
+When you remove a saved medicine with **Remove**, Care does not delete it. Care sets its status to Entered in Error and keeps the record.
 
-| Category | Description |
-| --- | --- |
-| Inpatient | The request applies to a patient who stays in the facility. |
-| Outpatient | The request applies to a patient who visits the facility. |
-| Community | The request applies to care in the community. |
-| Discharge | The request applies to the medicines that the patient takes after discharge. |
+### Stopping a medicine
 
-### Priority
+You stop a medicine on the **Medicine Administration** sub-tab, not on the prescription. That sub-tab shows all the medication requests for the same medicine in one row.
 
-| Priority | Description |
-| --- | --- |
-| Routine | The patient takes the medicine in the normal order of work. |
-| Urgent | Staff act on the request before routine requests. |
-| ASAP | Staff act on the request as soon as possible. |
-| Stat | Staff act on the request immediately. |
+**Discontinue** on the row ends every active medication request in the row. **Stop**, on one medication request in the expanded row, ends only that one. Care sets the status of each to Ended and keeps the record.
 
-### Dispense Status
+Care does not offer **Administer** for an ended medication request, so staff cannot record a dose of it from the chart.
 
-| Dispense Status | Description |
-| --- | --- |
-| Complete | The pharmacy dispensed the full amount of the request. |
-| Partial | The pharmacy dispensed part of the request. |
-| Incomplete | The pharmacy did not finish the dispense of the request. |
-| Declined | The pharmacy declined to dispense the request. |
+### Status
 
-## Status
+Care treats Active, On Hold, Draft and Unknown as current statuses. It treats Ended, Completed, Cancelled and Entered in Error as inactive: the **Prescriptions** sub-tab hides inactive medicines until you show them, and then shows them dimmed.
 
 | Status | Description |
 | --- | --- |
-| Active | The patient takes the medicine now. |
-| On Hold | The patient stops the medicine for a limited time. |
-| Ended | The request reached its end. |
-| Stopped | Staff stopped the medicine before its planned end. |
-| Completed | The patient took the full course of the medicine. |
-| Cancelled | Staff cancelled the request before the patient took the medicine. |
-| Entered in Error | Staff created the request by mistake. |
-| Draft | The request is not complete and staff did not issue it. |
-| Unknown | The state of the request is not known. |
+| Active | Current. Every medicine that you prescribe starts with this status. |
+| On Hold | Current. |
+| Draft | Current. |
+| Unknown | Current. |
+| Ended | Inactive. **Stop** and **Discontinue** set this status. |
+| Completed | Inactive. Care shows the medicine struck through. |
+| Cancelled | Inactive. Care shows the medicine struck through. |
+| Entered in Error | Inactive. **Remove** sets this status. Care keeps the record, shows it struck through, and leaves it out of **Medication History**. |
+| Stopped | Care accepts this status, but the screens set Ended, not Stopped, when you stop a medicine. |
+
+### Dispense Status
+
+Care updates the dispense status when the pharmacy dispenses the medicine, cancels a dispense that has a charge, or cancels a dispense order.
+
+| Dispense Status | Description |
+| --- | --- |
+| Complete | The pharmacy dispensed all of the medicine. |
+| Partial | The pharmacy dispensed part of the medicine. |
+| Incomplete | Care sets this status when a dispense order for the medicine is cancelled, or when a dispense of it that has a charge is cancelled. The pharmacy screens also show a medicine with no dispense status as Incomplete. |
+| Declined | Care accepts this status, but no screen sets it. |
 
 ## Permissions
 
+Care gives permissions through the roles that a user holds in departments. The roles named below hold each permission by default; an installation can change the permissions of its roles.
+
 | Permission | What it allows |
 | --- | --- |
-| Update Encounter related clinical data | Prescribe a medication, add medicines to an existing prescription, edit a note, and remove a medicine. |
-| Can view clinical data about patients | View the medication requests and the prescriptions of a patient. |
-| Can Read encounter related clinical data | View the medication requests and the prescriptions of an encounter. |
+| Update Encounter related clinical data | Prescribe medicines, change the note of a saved medicine, remove a medicine, stop or discontinue a medicine, and cancel a prescription. You must hold it in one of the encounter's departments or a department of its current location. The encounter must not be Completed, Cancelled, Discontinued or Entered in Error. A requester that you choose must hold it too. By default, the Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can view clinical data about patients | See the patient's medication requests and prescriptions in lists, and use **Medication History** in the form. It counts through the patient: through a department of one of the patient's open encounters, through the patient's own organizations, or through a direct link to the patient. By default, the Staff, Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can Read encounter related clinical data | See the medication requests and prescriptions of one encounter in the **Medications** tab, which asks for them by encounter. You must hold it in one of the encounter's departments or a department of its current location. It still works after the encounter is closed. By default, the Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can Read encounter | Open one prescription. The screens open the prescription before you edit or print it. To edit it, you also need "Update Encounter related clinical data". You must hold it in one of the encounter's departments or a department of its current location. By default, the Doctor, Nurse and Facility Admin roles hold this permission. |
+| Pharmacist in Care | Work with prescriptions from a pharmacy location: see the **Prescription Queue** of the facility, open a prescription, mark it as completed and reactivate it. It does not allow cancelling a prescription. You must hold it in any department of the facility. By default, the Facility Admin and Pharmacist roles hold this permission. |
+| Can Read Product Knowledge | Pick a medicine from the **Product** tab of the medicine picker. You must hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
 
-To change medicines, you also need an open encounter. Care blocks changes when the encounter
-status is Completed, Cancelled, Discontinued, or Entered in Error.
+By default, the Staff role holds "Can view clinical data about patients" but not "Update Encounter related clinical data" or "Can Read encounter". So Staff can see a patient's medicines in lists, but cannot prescribe or open a prescription.
 
-Care has a separate Pharmacist role. This role has its own permissions for pharmacy work on
-dispense records and prescription status.
-
-## Configuration
-
-No deployment configuration changes which fields are mandatory. One configuration option sets
-the default tab of the medicine picker. This option selects either the clinical drug list or the
-facility's inventory.
+By default, the Pharmacist role holds "Pharmacist in Care". It does not hold "Can view clinical data about patients", "Can Read encounter related clinical data" or "Can Read encounter". A pharmacist therefore works with medication requests from the pharmacy screens, not from the encounter.
 
 ## Related
 
-- Flow: [Prescribe a medication](../../flows/medications/medication-request/prescribe-medication.mdx)
-- Flow: [Manage a prescription](../../flows/medications/medication-request/manage-prescription.mdx)
-- Flow: [Add medications from past records](../../flows/medications/medication-request/add-medications-from-past-records.mdx)
-- Flow: [View prescriptions and medications for an encounter](../../flows/medications/medication-request/view-encounter-medications.mdx)
-- Flow: [Update a prescription](../../flows/medications/medication-request/update-prescription.mdx)
+- Flow: [Prescribe medicines](../../flows/medications/medication-request/prescribe-medication.mdx)
+- Flow: [Add medicines from past records](../../flows/medications/medication-request/add-medications-from-past-records.mdx)
+- Flow: [View prescriptions and medicines for an encounter](../../flows/medications/medication-request/view-encounter-medications.mdx)
+- Flow: [Edit a prescription](../../flows/medications/medication-request/update-prescription.mdx)
+- Flow: [Stop a medicine](../../flows/medications/medication-request/stop-a-medicine.mdx)
 - Flow: [Print a prescription](../../flows/medications/medication-request/print-prescription.mdx)
+- Flow: [Preview a patient's prescriptions](../../flows/medications/medication-dispense/preview-prescriptions.mdx)
+- Concept: [Medication administration](./medication-administration.mdx)
+- Concept: [Medication dispense](./medication-dispense.mdx)
+- Concept: [Medication statement](./medication-statement.mdx)
+- Reference: [Medication request](../../references/medications/medication-request.mdx)

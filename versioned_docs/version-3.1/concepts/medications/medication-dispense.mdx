@@ -2,63 +2,111 @@
 sidebar_position: 3
 ---
 
-# Medication Dispense
+# Medication dispense
 
 ## Definition
 
-A **[medicine dispense](https://build.fhir.org/medicationdispense.html)** in Care is the record of
-a medicine or a supply item that the pharmacy gives to a patient. The pharmacy gives the item
-from the facility's stock. A medicine dispense is separate from the
-[medication request](../../concepts/medications/medication-request.mdx), which is the order.
+A **[medication dispense](https://build.fhir.org/medicationdispense.html)** in Care is the record of a medicine that a pharmacy location prepares and gives to a patient. Each dispense takes a quantity from one lot of a product in stock.
 
 ## Key Attributes
 
 | Components | What it captures |
 | --- | --- |
-| Item | The inventory item that the pharmacy dispenses. This field is mandatory. |
-| Quantity | How many units the pharmacy dispenses. This field is mandatory. |
-| Days Supply | How many days the quantity lasts. This field is optional. |
-| Location | The facility location that the pharmacy dispenses the item from. This field is mandatory. |
-| Authorizing Request | The medication request that this dispense fulfills. This field is optional. |
+| Lot | The lot that the medicine comes from. A lot is one batch of a product, with its expiry date. This field is mandatory. |
+| Quantity | How many units the pharmacy dispenses. It is a whole number of at least 1. Care refuses a quantity larger than the stock of the lot. This field is mandatory. |
+| Location | The pharmacy location that dispenses the medicine. It must be in the facility of the encounter. This field is mandatory. |
+| Encounter | The encounter that the dispense belongs to. Care takes the patient from the encounter. This field is mandatory. |
+| Authorizing Request | The medication request that the dispense fulfils. It must be on the same encounter. This field is optional. |
+| Dispense Order | The dispense order that groups this dispense with other dispenses for the same patient. This field is optional. |
 | Status | The current state of the dispense. See Status below. This field is mandatory. |
-| When Prepared / When Handed Over | When the pharmacy prepared the item and handed it over. These fields are optional. |
+| Dosage Instructions | How the patient takes the medicine. The pharmacy flow saves them when it bills the medicine. This field is optional. |
+| Substitution | Whether the pharmacy gave a different product in place of the prescribed one. It records the type and the reason. This field is optional. |
+| All Given? | Whether this dispense completes the medication request. Care then sets the dispense status of the request to Complete or Partial. |
+| When Prepared / When Handed Over | When the pharmacy prepared the medicine and when it handed the medicine over. These fields are optional. |
 | Note | Free text notes about the dispense. This field is optional. |
 
-Note: A dispense can belong to a Dispense Order. A Dispense Order groups the items that the
-pharmacy dispenses for a patient at one time. A Prescription groups medication requests in the
-same way. Care names a Dispense Order after the date and time of the dispense when the order
-has no name.
+### Stock
 
-## Status
+Care takes the quantity out of the stock of the lot as soon as the dispense is saved. This happens before the patient pays and before the dispense order is completed.
+
+A dispense counts against stock while it is in Preparation, In Progress, On Hold or Completed. A dispense in Cancelled, Stopped, Declined or Entered in Error does not count, so moving a dispense to one of these statuses puts its quantity back in the lot.
+
+### Billing
+
+If the product has a charge item definition, Care creates a charge item for the dispensed quantity when the dispense is saved. The charge item is Billable and goes on the patient's open account at the facility. If the patient has no open account, Care creates one.
+
+In the pharmacy flow, **Bill Selected** then puts these charges on an invoice and issues it. The encounter's **Dispense** drawer does not create an invoice, unless the deployment turns on automatic invoicing.
+
+When a dispense with a charge item moves to a cancelling status, Care sets the charge item to Aborted and takes it off a draft invoice. Care also sets the dispense status of the medication request to Incomplete and removes the link to it.
+
+Care refuses to cancel a dispense when its charge item is on an invoice that is not a draft. On the dispense order page, the cancelling statuses show only while the dispense has no invoice or a draft invoice.
+
+### Changes after you save
+
+After a dispense is saved, its lot, quantity, location, encounter and medication request cannot change.
+
+To change the lot or the quantity, the dispense order page offers **Edit Dispense**. Care then cancels the dispense and creates a new one in the same order.
+
+### Status
 
 | Status | Description |
 | --- | --- |
-| Preparation | The pharmacy prepares the item. |
-| In Progress | The dispense is in progress. |
-| Completed | The pharmacy hands over the item. |
-| On Hold | The dispense is paused. |
-| Cancelled | Staff cancel the dispense. Care restores the quantity to stock. |
-| Stopped | Staff stop the dispense. Care restores the quantity to stock. |
-| Declined | Staff decline the dispense. Care restores the quantity to stock. |
-| Entered in Error | Staff record the dispense by mistake. Care restores the quantity to stock. |
+| Preparation | The pharmacy billed the medicine and prepares it. The quantity is already out of stock. |
+| In Progress | The dispense order of this dispense is in progress. |
+| On Hold | The pharmacy put the dispense order of this dispense on hold. |
+| Completed | The dispense is complete. |
+| Cancelled | Someone cancelled the dispense. Care puts the quantity back in stock. |
+| Stopped | Someone stopped the dispense. Care puts the quantity back in stock. |
+| Declined | Someone declined the dispense. Care puts the quantity back in stock. |
+| Entered in Error | Someone recorded the dispense by mistake. Care puts the quantity back in stock. |
 
-Note: When you dispense from the **Dispense History** sub-tab of an encounter, Care sets the
-status to Completed.
+In the pharmacy flow, **Bill Selected** creates each dispense in Preparation. After that, the dispenses follow their dispense order. They move to In Progress when the order is in progress, and to On Hold when the pharmacy puts the order on hold. They move to Completed when the pharmacy selects **Complete Dispense**.
 
-Note: Care has no separate return action. To reverse a dispense and put the quantity back in
-stock, change its status to Cancelled, Stopped, Declined, or Entered in Error.
+From an open encounter, the **Dispense** drawer on the **Dispense History** sub-tab saves each dispense as Completed straight away.
+
+Cancelled, Stopped, Declined and Entered in Error are final. Care refuses any change to a dispense in one of these statuses. When a dispense order is marked as abandoned or entered in error, Care cancels all of its dispenses.
+
+Medicines that a patient brings back go on a [medication return](./medication-return.mdx), not on the dispense. A return puts the received quantity back in stock and, when it is completed, creates a refund invoice. A return is not linked to the dispense that it reverses.
+
+## How it connects
+
+A dispense is separate from the [medication request](./medication-request.mdx), which is the prescribed medicine. A dispense can fulfil a medication request, or it can stand alone without one, for example when the pharmacy adds a medicine that is not on the prescription.
+
+The pharmacy groups the dispenses for a patient at one pharmacy location in a [dispense order](./dispense-order.mdx). It bills the dispenses of the order, collects payment and completes them together.
+
+Dispensing does not need access to the patient's encounter, and Care accepts a dispense after the encounter is closed.
 
 ## Permissions
 
+Care gives permissions through the roles that a user holds in departments. The roles named below hold each permission by default; an installation can change the permissions of its roles.
+
+The departments of a location are the departments linked to it and their parent departments, the departments of its parent location, and the facility's Administration department. The departments of an encounter include those of its current location.
+
 | Permission | What it allows |
 | --- | --- |
-| Medication Dispense Read | View dispense records. Facility Admin, Admin, Staff, Doctor, Nurse, and Pharmacist hold this permission. |
-| Write Medication Dispense | Dispense an item, or change a dispense record. Facility Admin, Admin, Staff, Doctor, Nurse, and Pharmacist hold this permission. |
-| Can Read Supply Delivery | View a Dispense Order. Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, and Pharmacist hold this permission. |
-| Can Create Supply Delivery on Facility | Create or change a Dispense Order. Only Facility Admin and Admin hold this permission. |
+| Write Medication Dispense | Dispense a medicine at a location, or change a dispense. You need it in a department of the dispensing location. You do not need access to the encounter. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold this permission. |
+| Medication Dispense Read | See dispenses. For the dispenses of a location, you need it in a department of that location. For the dispenses of an encounter, you need it in a department of the encounter. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold this permission. |
+| Can Read Inventory Item | See the lots and the stock of a location, to choose the lot to dispense from. You need it in a department of the location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Pharmacist in Care | Open the Prescription Queue, read the medication requests of the facility, and list, open, create or change every dispense order of the facility. You need it in any department of the facility. By default, the Facility Admin and Pharmacist roles hold this permission. |
+| Can Read Supply Delivery | For a user without "Pharmacist in Care": list and open the dispense orders of a location. You need it in a department of that location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can Create Supply Delivery on Facility | For a user without "Pharmacist in Care": create or change the dispense orders of a location, which includes completing them. You need it in a department of that location. By default, only the Facility Admin role holds this permission. |
+| Can Read Account | Let the **Bill Medications** page find the patient's open account, which Care needs to create the invoice. You need it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can Write Invoice | Create and issue the invoice for the dispensed medicines in the pharmacy flow. You need it in any department of the facility. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold this permission. |
+
+The pharmacy screens show their buttons to every user who can open the page. Care refuses an action when the user does not hold the permission for it.
+
+Note: The encounter's **Dispense History** sub-tab lists dispense orders only for users with "Pharmacist in Care". The encounter's **Dispense** drawer saves dispenses for users with "Write Medication Dispense". But only a user with "Pharmacist in Care" or "Can Create Supply Delivery on Facility" can complete the order that the drawer creates. For other users, that order stays in Draft.
 
 ## Related
 
-- Flow: [Dispense a medication](../../flows/medications/medication-dispense/dispense-medication.mdx)
-- Flow: [View dispense history](../../flows/medications/medication-dispense/view-dispense-history.mdx)
-- Concept: [Medication Request](../../concepts/medications/medication-request.mdx)
+- Flow: [Bill and dispense prescribed medicines](../../flows/medications/medication-dispense/dispense-prescribed-medicines.mdx)
+- Flow: [Dispense from an encounter](../../flows/medications/medication-dispense/dispense-medication.mdx)
+- Flow: [View dispense history for an encounter](../../flows/medications/medication-dispense/view-dispense-history.mdx)
+- Flow: [Change items in an open dispense order](../../flows/medications/medication-dispense/change-dispense-order-items.mdx)
+- Flow: [Return dispensed medicines](../../flows/medications/medication-dispense/return-medicines.mdx)
+- Concept: [Dispense order](./dispense-order.mdx)
+- Concept: [Medication return](./medication-return.mdx)
+- Concept: [Medication request](./medication-request.mdx)
+- Concept: [Inventory Item](../supply/inventory-item.mdx)
+- Concept: [Charge Item](../billing/charge-item.mdx)
+- Reference: [Medication dispense](../../references/medications/medication-dispense.mdx)

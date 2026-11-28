@@ -1,0 +1,111 @@
+---
+sidebar_position: 8
+---
+
+# Cancel a dispense order
+
+## Overview
+
+<video src="/media/medications/medication-dispense/cancel-dispense-order.mp4" poster="/media/medications/medication-dispense/cancel-dispense-order.poster.png" controls width="720">
+  <track kind="captions" src="/media/medications/medication-dispense/cancel-dispense-order.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to cancel a [dispense order](../../../concepts/medications/dispense-order.mdx) at a pharmacy location with **Mark as Abandoned** or **Mark as entered in error**.
+
+When you cancel an order, Care cancels all its dispenses and puts their quantities back into stock. You cannot undo this.
+
+## Pre-requisites
+
+- The dispense order is Draft, In Progress or Completed.
+- If the order has an issued or balanced invoice, you cancel that invoice first.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Pharmacist in Care | Find and open the dispense order, and cancel it. You must hold it in a department of the facility. By default, the Facility Admin and Pharmacist roles hold this permission. |
+| Medication Dispense Read | See the dispenses and invoices of the order. You must hold it in a department of the pharmacy location. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold this permission. |
+| Can List Facility Locations | Open the pages of the pharmacy location. You must hold it in a department of the location. By default, the Doctor, Facility Admin, Administrator, Nurse, Staff and Pharmacist roles hold this permission. |
+| Can Read Invoice | See the invoices of the order in the payment banners. You must hold it in a department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can Destroy Invoice | Cancel an issued or balanced invoice of the order, which you must do before you cancel the order. You must hold it in a department of the facility. By default, only the Facility Admin role holds this permission. See [Cancel an invoice](../../billing/invoice/cancel-invoice.mdx). |
+
+Without "Pharmacist in Care", a user needs "Can Read Supply Delivery" to find and open the order. The user also needs "Can Create Supply Delivery on Facility" to cancel it. Both must be held in a department of the pharmacy location. By default, only the Facility Admin role holds "Can Create Supply Delivery on Facility".
+
+By default, the Staff, Doctor and Nurse roles cannot cancel a dispense order.
+
+## Steps
+
+### 1. Open the dispense order
+
+Open the order on the **Dispense Medicines** page. See [Find and print a dispense order](./find-dispense-order.mdx).
+
+![A dispense order with Status: In Progress outlined, and an issued invoice under Payment status](/media/medications/medication-dispense/cancel-dispense-order-1.png)
+
+### 2. Cancel an issued invoice
+
+Care shows a payment banner above each group of dispenses on an invoice.
+
+If a banner shows an issued or balanced invoice, open the menu on that banner and select **Cancel Invoice**.
+
+If the order is Draft or In Progress, the banner then shows **Invoice Not Generated**. Care also shows the **Add Medication** field. Do not issue a new invoice. Go on to step 3.
+
+For the rules that apply to cancelling an invoice, see [Cancel an invoice](../../billing/invoice/cancel-invoice.mdx).
+
+Note: Care does not let you cancel the order while it has an issued or balanced invoice. A draft invoice does not stop you.
+
+![The arrow next to Collect Payment outlined](/media/medications/medication-dispense/cancel-dispense-order-2.png)
+
+![The invoice menu open, with Cancel Invoice outlined](/media/medications/medication-dispense/cancel-dispense-order-3.png)
+
+![The Confirm dialog for cancelling the invoice, with the Confirm button outlined](/media/medications/medication-dispense/cancel-dispense-order-4.png)
+
+### 3. Select how to cancel the order
+
+1. At the bottom of the page, select the ⋮ button (**More Actions**).
+2. Select the action that fits the reason.
+
+| Action | When to use it |
+| --- | --- |
+| **Mark as Abandoned** | The order stopped before it was completed. |
+| **Mark as entered in error** | The order was created by mistake. |
+
+![The More Actions button outlined at the bottom of the order, with the banner Invoice Not Generated](/media/medications/medication-dispense/cancel-dispense-order-5.png)
+
+![The More Actions menu open, with Mark as Abandoned outlined and Mark as entered in error above it](/media/medications/medication-dispense/cancel-dispense-order-6.png)
+
+### 4. Confirm
+
+Care opens a confirmation with the name of the action. It says that you cannot undo the action.
+
+Select **Confirm**. To go back without a change, select **Cancel**.
+
+Note: If an issued or balanced invoice remains, Care says that the order cannot be cancelled. Select **Close**, and cancel the invoice first.
+
+![The Mark as Abandoned dialog with the Confirm button outlined](/media/medications/medication-dispense/cancel-dispense-order-7.png)
+
+![The order at Status: Abandoned, outlined, with its dispenses listed under Cancelled Dispenses](/media/medications/medication-dispense/cancel-dispense-order-8.png)
+
+## Expected Outcome
+
+- The order shows the status Abandoned or Entered in Error. You cannot change its status again.
+- Care cancels every dispense of the order. If you abandon the order, its dispenses become Cancelled. If you mark it entered in error, its dispenses become Entered in Error.
+- Care cancels the charge items of those dispenses, and puts their quantities back into stock at the location.
+- Care sets the dispense status of the prescribed medicines back to Incomplete.
+- The patient card on the order shows **Print**, **Prescription Queue** and **Go to Dispenses**. If the patient has an account, it also shows **View Account**.
+- The order moves to the **History** tab of the **Dispense Orders** page.
+
+## Related
+
+Concepts:
+
+- [Dispense Order](../../../concepts/medications/dispense-order.mdx)
+- [Medication Dispense](../../../concepts/medications/medication-dispense.mdx)
+- [Invoice](../../../concepts/billing/invoice.mdx)
+
+Flows:
+
+- [Find and print a dispense order](./find-dispense-order.mdx)
+- [Put a dispense order on hold and resume it](./put-dispense-order-on-hold.mdx)
+- [Collect payment and complete a dispense order](./complete-dispense-order.mdx)
+- [Cancel an invoice](../../billing/invoice/cancel-invoice.mdx)

@@ -1,0 +1,115 @@
+---
+sidebar_position: 6
+---
+
+# Change items in an open dispense order
+
+## Overview
+
+<video src="/media/medications/medication-dispense/change-dispense-order-items.mp4" poster="/media/medications/medication-dispense/change-dispense-order-items.poster.png" controls width="720">
+  <track kind="captions" src="/media/medications/medication-dispense/change-dispense-order-items.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to change the [medication dispenses](../../../concepts/medications/medication-dispense.mdx) of an open [dispense order](../../../concepts/medications/dispense-order.mdx) at a pharmacy location before you complete it. You can change the lot, the quantity or the product of a dispense, change its status, or add a medicine to the order.
+
+## Pre-requisites
+
+- The dispense order is Draft or In Progress.
+- If you change the lot, quantity or product of a dispense, the dispense has no invoice, or only a draft invoice.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Write Medication Dispense | Change a dispense, change its status, and add a medicine to the order. You must hold it in a department of the pharmacy location. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold this permission. |
+| Pharmacist in Care | Open the dispense order. You must hold it in a department of the facility. By default, the Facility Admin and Pharmacist roles hold this permission. |
+| Medication Dispense Read | See the dispenses of the order. You must hold it in a department of the pharmacy location. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold this permission. |
+| Can Read Inventory Item | See the lots and their stock at the pharmacy location. You must hold it in a department of the location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can Read Product Knowledge | Search for a product when you substitute or add a medicine. You must hold it in a department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can Read Invoice | See the invoices of the order, and let Care find the draft invoice for the new charges. You must hold it in a department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can Write Invoice | Let Care add the new charges to the draft invoice. You must hold it in a department of the facility. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold this permission. |
+| Can Read Account | See the patient's account from the order. You must hold it in a department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can List Facility Locations | Open the pages of the pharmacy location, including the dispense order. You must hold it in a department of the location. By default, the Doctor, Facility Admin, Administrator, Nurse, Staff and Pharmacist roles hold this permission. |
+
+Without "Pharmacist in Care", a user needs "Can Read Supply Delivery" in a department of the pharmacy location, to open the order.
+
+## Steps
+
+### 1. Open the dispense order
+
+Open the dispense order on **Dispense Medicines**.
+
+To find the order, select **Pharmacy** > ℞ **Dispense** in the location sidebar. On the **Pending** tab, select **View Order** on the order. See [Find and print a dispense order](./find-dispense-order.mdx).
+
+![The Dispense Orders page with the View Order button of a Draft order outlined](/media/medications/medication-dispense/change-dispense-order-items-1.png)
+
+### 2. Change the lot, quantity or product of a dispense
+
+1. Select **Edit Dispense** (the pencil) on the row.
+2. Change the lot in **Select Lot**, or change the **Quantity**.
+3. If the dispense is for a prescribed medicine, you can dispense another product. Select **Substitute**, and fill in the **Substitute Medication** sheet.
+4. Select **Save Changes**. Care shows **Dispense updated successfully**.
+
+Note: **Edit Dispense** shows only for a dispense in Preparation, In Progress, On Hold or Completed. The dispense must have no invoice, or only a draft invoice.
+
+Note: If you keep the same lot, the new quantity can be up to the lot's stock plus the dispensed quantity.
+
+![The edit button of the Omeprazole dispense outlined in the Draft order](/media/medications/medication-dispense/change-dispense-order-items-2.png)
+
+![The Edit Dispense sheet with the Quantity field outlined, changed to 7](/media/medications/medication-dispense/change-dispense-order-items-3.png)
+
+### 3. Change the status of a dispense
+
+Select the new status in the **Status** column of the row. Care shows **Medication dispense status updated**.
+
+You can select Preparation, In Progress, On Hold or Completed.
+
+If the dispense has no invoice or only a draft invoice, you can also select Cancelled, Entered in Error, Stopped or Declined.
+
+Note: You cannot change a dispense that is cancelled, entered in error, stopped or declined.
+
+If you cancel a dispense that has a charge, Care takes the charge off the draft invoice. Care marks the medicine as not dispensed, and the quantity returns to stock.
+
+![The status list of the Amlodipine dispense open, with In Progress outlined](/media/medications/medication-dispense/change-dispense-order-items-4.png)
+
+### 4. Add a medicine to the order
+
+1. Below the tables, search for the product in **Add Medication**. Care opens the **Add Medication** sheet.
+2. Check the **Dosage** and the **Frequency**. These fields are mandatory. Care fills in a dose of 1, in the unit of the product, and the frequency "SOS (As needed)".
+3. If the medicine is not taken as needed, select the frequency and enter the **Duration**. Care disables **Duration** while the frequency is "SOS (As needed)".
+4. Check the **Required Quantity**, the lots and their quantities. Care calculates the quantity from the dose, the frequency and the duration.
+5. Select **Add Medication**. Care shows **Medication added successfully**.
+
+Note: **Add Medication** shows only when the new charges can go on an invoice that can still change.
+
+This is the case when the order has a draft invoice or no invoice yet. It is also the case when the order has dispenses that are not on an invoice.
+
+![The Add Medication sheet with Paracetamol selected and a lot already selected](/media/medications/medication-dispense/change-dispense-order-items-5.png)
+
+![The new Paracetamol dispense outlined at the top of the order, with the message Medication added successfully](/media/medications/medication-dispense/change-dispense-order-items-6.png)
+
+## Expected Outcome
+
+- When you edit a dispense, Care cancels the original dispense. Care creates a new dispense in the same order, with the same status.
+- The new dispense has the lot, quantity or product that you chose.
+- Care marks the new dispense as fully dispensed, so a prescribed medicine counts as dispensed.
+- When you add a medicine, Care creates one dispense for each lot, with the status Preparation and no prescription.
+- If the order has a draft invoice, Care adds the new charges to it.
+
+Next, collect the payment for the new charges and complete the order. See [Collect payment and complete a dispense order](./complete-dispense-order.mdx).
+
+## Related
+
+Concepts:
+
+- [Dispense Order](../../../concepts/medications/dispense-order.mdx)
+- [Medication Dispense](../../../concepts/medications/medication-dispense.mdx)
+- [Invoice](../../../concepts/billing/invoice.mdx)
+
+Flows:
+
+- [Collect payment and complete a dispense order](./complete-dispense-order.mdx)
+- [Bill and dispense prescribed medicines](./dispense-prescribed-medicines.mdx)
+- [Cancel a dispense order](./cancel-dispense-order.mdx)
+- [Find and print a dispense order](./find-dispense-order.mdx)

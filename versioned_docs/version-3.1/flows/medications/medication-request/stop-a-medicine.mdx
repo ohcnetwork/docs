@@ -1,0 +1,93 @@
+---
+sidebar_position: 5
+---
+
+# Stop a medicine
+
+## Overview
+
+<video src="/media/medications/medication-request/stop-a-medicine.mp4" poster="/media/medications/medication-request/stop-a-medicine.poster.png" controls width="720">
+  <track kind="captions" src="/media/medications/medication-request/stop-a-medicine.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to stop a medicine for a patient from the **Medicine Administration** sub-tab of the encounter. Stopping sets the status of the [medication request](../../../concepts/medications/medication-request.mdx) to Ended, and Care no longer offers its doses for [administration](../../../concepts/medications/medication-administration.mdx).
+
+## Pre-requisites
+
+- You open the encounter from your facility. Care shows an encounter that you open from an organization as read-only.
+- The status of the encounter is not Completed, Cancelled, Discontinued or Entered in error.
+- If you view an earlier encounter inside the encounter page, go back to the encounter that you opened. Care lets you stop a medicine only in that encounter.
+- The medicine is still active.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Update Encounter related clinical data | Stop the medicine. You must hold it in one of the encounter's departments, or in a department of the encounter's current location. By default, the Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can view clinical data about patients | Open the encounter, see the **Medications** tab, and load the medicines on the **Medicine Administration** sub-tab. You need this permission for the patient, or the next permission. By default, the Staff, Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can Read encounter related clinical data | Gives the same access as the permission above, when you hold it in one of the encounter's departments, or in a department of the encounter's current location. By default, the Doctor, Nurse and Facility Admin roles hold this permission. |
+
+## Steps
+
+### 1. Open the Medicine Administration sub-tab
+
+1. Open the encounter. Select the **Medications** tab.
+2. Select the **Medicine Administration** sub-tab.
+
+Each row shows one medicine. If the medicine was prescribed more than once, the row groups those entries and shows their number after the name.
+
+To find a medicine, enter its name in **Search Medication**.
+
+![The Medicine Administration sub-tab outlined, with a grid of active medicines and their time slots](/media/medications/medication-request/stop-a-medicine-1.png)
+
+### 2. Select what to stop
+
+Select one of these controls:
+
+- To stop every active entry of the medicine, select **Discontinue** on the row of the medicine. It is an icon with the tooltip **Discontinue**.
+- To stop one entry, select the expand button on the row. Then select **Stop** on that entry.
+
+Care shows these controls only for active entries.
+
+Note: Stopping is not the same as **Remove** on the prescription, which marks a medicine as Entered in Error. See [Edit a prescription](./update-prescription.mdx).
+
+![The Discontinue button at the end of the Paracetamol row outlined, with its tooltip](/media/medications/medication-request/stop-a-medicine-2.png)
+
+### 3. Confirm
+
+Care asks you to confirm:
+
+- After **Discontinue**, the dialog is **Discontinue Medication Group**.
+- After **Stop**, the dialog is **Discontinue Medication**.
+
+Select **Discontinue**. To close the dialog without a change, select **Cancel**.
+
+Note: **Discontinue Medication Group** stops every active entry of the medicine. It does not let you select one entry. To stop one entry, use **Stop**.
+
+![The Discontinue Medication Group dialog with the Discontinue button outlined](/media/medications/medication-request/stop-a-medicine-3.png)
+
+![Show discontinued selected, with Paracetamol struck through and marked Stopped, its name outlined](/media/medications/medication-request/stop-a-medicine-4.png)
+
+## Expected Outcome
+
+- Care sets the status of each stopped entry to Ended.
+- Care shows no message. Care updates the chart.
+- If the medicine has no active entry left, its row is hidden. To see the row, select **Show discontinued**. The row shows the **Stopped** badge, and its name is struck through.
+- In an expanded row, a stopped entry shows the status Ended.
+- Care no longer shows **Administer** for a stopped entry.
+- On the **Prescriptions** sub-tab, a stopped medicine is inactive. Care hides it until you show the inactive medicines, and then shows it dimmed.
+
+## Related
+
+Concepts:
+
+- [Medication request](../../../concepts/medications/medication-request.mdx)
+- [Medication administration](../../../concepts/medications/medication-administration.mdx)
+
+Flows:
+
+- [View the medicine administration chart](../medication-administration/view-medicine-administration.mdx)
+- [Administer a dose](../medication-administration/administer-dose.mdx)
+- [Edit a prescription](./update-prescription.mdx)
+- [View prescriptions and medicines for an encounter](./view-encounter-medications.mdx)

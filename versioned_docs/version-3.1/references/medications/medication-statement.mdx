@@ -2,159 +2,216 @@
 sidebar_position: 4
 ---
 
-# Medication Statement
+# Medication statement
 
-A `MedicationStatement` records a medication the patient is taking, has taken, or intends to take, as reported by the patient, a relative, or a clinician rather than actively prescribed or dispensed. Reach for it when you're capturing a medication history rather than driving an order. It aligns with the FHIR `MedicationStatement` resource.
+Technical reference for the `MedicationStatement` module in Care EMR. For what a medication statement is in the product, see the [Medication statement](../../concepts/medications/medication-statement.mdx) concept.
 
-The Django model stores `medication` and `effective_period` as opaque `JSONField`s. Their real structure comes from the Pydantic resource specs in `care/emr/resources/medication/statement/`, which define the enums, nested JSON shapes, validation, the value-set binding on `medication`, and the read/write API schemas. This page covers both layers.
+A medication statement records a medicine in the patient's medication history: its status, the period, the dosage text and who gave the information. It is recorded against an encounter.
 
 **Source:**
 
 - Model: [`care/emr/models/medication_statement.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/medication_statement.py)
 - Spec: [`care/emr/resources/medication/statement/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/statement/spec.py)
+- Viewset: [`care/emr/api/viewsets/medication_statement.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/medication_statement.py)
 - Value set: [`care/emr/resources/medication/valueset/medication.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/valueset/medication.py)
+
+The Django model stores `medication` and `effective_period` as JSON columns. The Pydantic resource specs define their shape, the enums, the validation, the value set on `medication` and the read and write schemas. This page covers both layers.
 
 ## Models
 
 | Model | Purpose |
 | --- | --- |
-| `MedicationStatement` | A record of a medication the patient is taking, has taken, or intends to take — as reported rather than actively prescribed |
+| `MedicationStatement` | A medicine in the patient's medication history, recorded against an encounter |
 
-`MedicationStatement` extends [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base that supplies `external_id`, audit fields `created_by`/`updated_by`, `created_date`/`modified_date`, `history`/`meta` JSON, and soft-delete semantics.
+`MedicationStatement` extends [`EMRBaseModel`](../foundation/base-model.mdx). It supplies `external_id`, `created_date`, `modified_date`, the soft-delete flag `deleted`, `created_by`, `updated_by`, `history` and `meta`.
 
 ## `MedicationStatement` fields
 
-**Type** is the Django storage type. **Spec shape** is the structured shape the Pydantic resource spec enforces when reading and writing over the API.
+In the tables below, the model type is the Django column and the spec type is what the API reads and writes. "Fixed" means that the update spec does not accept the field after create.
 
 ### Statement details
 
-| Field | Type | Spec shape | Notes |
-| --- | --- | --- | --- |
-| `status` | `CharField(100)` | `MedicationStatementStatus` enum | Required. See [Status values](#medicationstatementstatus-values). |
-| `reason` | `CharField(100)` | `str \| None` | Optional. Why the medication is being taken. |
-| `medication` | `JSONField` (`default=dict`) | `Coding` bound to the `system-medication` value set | Required on create. A single SNOMED CT `Coding`, not a full `CodeableConcept`. See [`Coding` shape](#coding-shape) and [Bound value set](#bound-value-set). |
-| `information_source` | `CharField(100)` | `MedicationStatementInformationSourceType` enum \| `None` | Optional. Who supplied the statement. See [Information-source values](#medicationstatementinformationsourcetype-values). |
-| `effective_period` | `JSONField` (`default=dict`) | `PeriodSpec` \| `None` | Optional. The period the medication is or was taken. See [`PeriodSpec` shape](#periodspec-shape). |
-| `dosage_text` | `TextField` | `str \| None` | Optional, free-text dosage instructions. The spec flags that a structured `Dosage` may replace this later. |
-| `note` | `TextField` | `str \| None` | Optional, free-text annotation. |
+| Field | Model type | Spec type | Required (API) | Notes |
+| --- | --- | --- | --- | --- |
+| `status` | `CharField(100)` | `MedicationStatementStatus` | Yes | Can change after create. See [status values](#medicationstatementstatus-values) |
+| `reason` | `CharField(100)`, nullable | `str \| None` | No | The spec does not limit the length. The column holds at most 100 characters. Fixed |
+| `medication` | `JSONField`, default `{}` | `ValueSetBoundCoding[system-medication]` | Yes | One `Coding` bound to the [Medication value set](#bound-value-set). Fixed |
+| `information_source` | `CharField(100)`, not nullable | `MedicationStatementInformationSourceType \| None` | No | The spec lets you leave it out, but the column is not nullable. See [information source values](#medicationstatementinformationsourcetype-values). Fixed |
+| `effective_period` | `JSONField`, default `{}` | `PeriodSpec \| None` | No | See [`PeriodSpec` shape](#periodspec-shape). Can change after create. Left out on create, the column keeps `{}` |
+| `dosage_text` | `TextField`, nullable | `str \| None` | No | Free text. A code comment suggests the `Dosage` of medication requests as a later replacement. Fixed |
+| `note` | `TextField`, nullable | `str \| None` | No | Can change after create. Sending `null` does not clear it |
 
 ### Relationships
 
-| Field | Type | Notes |
-| --- | --- | --- |
-| `patient` | `FK → Patient` | `on_delete=CASCADE`. The patient the statement is about. Derived server-side from the encounter — never accepted from clients. |
-| `encounter` | `FK → Encounter` | `on_delete=CASCADE`. The encounter the statement was recorded in. Supplied as a UUID on create. |
+| Field | Model type | Spec type | Notes |
+| --- | --- | --- | --- |
+| `patient` | `FK → Patient`, `CASCADE` | Not accepted | Copied from the encounter, on create only |
+| `encounter` | `FK → Encounter`, `CASCADE` | `UUID4`, required | Must exist ("Encounter not found"). Dropped from an update body. Read returns the encounter id |
 
 ```text
 patient   → FK Patient   (CASCADE)
 encounter → FK Encounter (CASCADE)
 ```
 
-Deleting a patient or encounter deletes its medication statements.
+Both links are `CASCADE`. The rule acts only when a row is removed from the database. The API delete and the model `delete()` are soft and do not trigger it.
 
 ## Enum values
 
+Enum values use underscores. They are the exact strings that the API accepts and returns.
+
 ### `MedicationStatementStatus` values
 
-`MedicationStatementStatus(str, Enum)` in `spec.py`, bound to `status`.
-
-| Value | Meaning |
-| --- | --- |
-| `active` | The medication is being taken |
-| `on_hold` | Taking has been paused |
-| `completed` | The course has finished |
-| `stopped` | The medication was stopped |
-| `unknown` | Status is not known |
-| `entered_in_error` | The record was entered in error |
-| `not_taken` | The patient is not taking the medication |
-| `intended` | The patient intends to take the medication |
+| Value |
+| --- |
+| `active` |
+| `on_hold` |
+| `completed` |
+| `stopped` |
+| `unknown` |
+| `entered_in_error` |
+| `not_taken` |
+| `intended` |
 
 ### `MedicationStatementInformationSourceType` values
 
-`MedicationStatementInformationSourceType(str, Enum)` in `spec.py`, bound to `information_source`.
-
-| Value | Meaning |
-| --- | --- |
-| `related_person` | A relative or related person reported it |
-| `practitioner` | A clinician reported it |
-| `patient` | The patient self-reported it |
+| Value |
+| --- |
+| `related_person` |
+| `practitioner` |
+| `patient` |
 
 ## Nested JSON shapes
 
 ### `Coding` shape
 
-`medication` is stored as JSON but typed as a single `Coding` (from `care/emr/resources/common/coding.py`), not a `CodeableConcept`. The spec sets `extra="forbid"`, so unrecognized keys are rejected.
+`medication` is one `Coding`, not a `CodeableConcept`. Unknown keys are refused.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `system` | `str \| None` | Code system URI (e.g. `http://snomed.info/sct`) |
-| `version` | `str \| None` | Code-system version |
-| `code` | `str` | Required. Validated against the bound value set |
-| `display` | `str \| None` | Human-readable label |
+| `system` | `str \| None` | Code system URI |
+| `version` | `str \| None` | Code system version |
+| `code` | `str` | Required. Checked against the bound value set |
+| `display` | `str \| None` | Display text |
 
 #### Bound value set
 
-`medication` is declared as `ValueSetBoundCoding[CARE_MEDICATION_VALUESET.slug]`. On write, `code` is validated against the **`system-medication`** value set ([`medication.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/valueset/medication.py)), which includes SNOMED CT concepts under the constraint `<< 763158003 |Medicinal product|`. Any code outside the set is rejected.
+`medication` is declared as `ValueSetBoundCoding[CARE_MEDICATION_VALUESET.slug]`. Every write checks its `code` against the `system-medication` value set: SNOMED CT concepts under `<< 763158003` Medicinal product. A code outside the set fails with "Code does not exist in the valueset".
 
-> The `care/emr/resources/medication/valueset/` directory holds further value sets for other medication resources (route, body site, administration method, additional instruction, as-needed reason, medication-not-given reason). `MedicationStatement` binds only `medication` → `system-medication`.
+Care checks codes against the copy of the value set in the database. A deployment can change that copy after it is loaded, so the codes allowed at a deployment can differ from that scope.
 
 ### `PeriodSpec` shape
 
-`effective_period` is stored as JSON but typed as `PeriodSpec` (from `care/emr/resources/base.py`).
+`effective_period` is a `PeriodSpec`.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `start` | `datetime \| None` | Must be timezone-aware if present; naive datetimes are rejected |
-| `end` | `datetime \| None` | Must be timezone-aware if present |
+| `start` | `datetime \| None` | Must carry a time zone when set ("Start Date must be timezone aware") |
+| `end` | `datetime \| None` | Must carry a time zone when set ("End Date must be timezone aware") |
 
-`validate_period` (mode `after`) rejects a naive `start`/`end` and requires `start` to be no greater than `end`.
+A `start` after the `end` fails with "Start Date cannot be greater than End Date".
 
 ## Resource specs (API schema)
 
-Every spec subclasses `EMRResource` (`care/emr/resources/base.py`), which provides `serialize` (DB object → pydantic) and `de_serialize` (pydantic → DB object). `__model__ = MedicationStatement`, and `__exclude__ = ["patient", "encounter"]` holds those two fields out of the generic field copy so the extra hooks set them instead.
+Resource specs never copy foreign keys automatically. Both statement specs also list `patient` and `encounter` in `__exclude__`.
 
-| Spec class | Role | Fields exposed |
+| Spec class | Role | Fields |
 | --- | --- | --- |
-| `BaseMedicationStatementSpec` | shared base | `id`, `status`, `reason`, `medication`, `dosage_text`, `effective_period`, `encounter`, `information_source`, `note` |
-| `MedicationStatementSpec` | write · create | Inherits `BaseMedicationStatementSpec`; adds `encounter` existence validation + extra deserialization |
-| `MedicationStatementUpdateSpec` | write · update | `status`, `effective_period`, `note` only |
-| `MedicationStatementReadSpec` | read · list & detail | Inherits base; adds `created_by`, `updated_by` (`UserSpec`), `created_date`, `modified_date` |
+| `BaseMedicationStatementSpec` | shared | `id`, `status`, `reason`, `medication`, `dosage_text`, `effective_period`, `encounter`, `information_source`, `note` |
+| `MedicationStatementSpec` | write · create | The shared fields. Adds the encounter check and copies `patient` from the encounter |
+| `MedicationStatementUpdateSpec` | write · update | Only `status` (required), `effective_period` and `note` |
+| `MedicationStatementReadSpec` | read · list and detail | Adds `created_by`, `updated_by`, `created_date`, `modified_date` and the `encounter` id |
 
-What the specs validate and maintain on your behalf:
+What the specs check and maintain:
 
-- **`encounter` must exist** — `MedicationStatementSpec.validate_encounter_exists`, a `field_validator` on `encounter`, raises `"Encounter not found"` unless an `Encounter` with that `external_id` exists.
-- **`patient` is derived server-side** — `MedicationStatementSpec.perform_extra_deserialization` runs only on create (`is_update` false): it resolves the `Encounter` from the supplied UUID and sets `obj.patient = obj.encounter.patient`. Clients never send `patient`.
-- **Updates are narrow** — `MedicationStatementUpdateSpec` accepts only `status`, `effective_period`, and `note`. `medication`, `reason`, `dosage_text`, `information_source`, and `encounter` can't be changed through it.
-- **Read serialization** — `MedicationStatementReadSpec.perform_extra_serialization` sets `id = obj.external_id`, `encounter = obj.encounter.external_id`, and serializes audit users via `serialize_audit_users` (`created_by`/`updated_by` as `UserSpec`).
-- **`medication` value-set check** — runs at validation time against `Coding.code` (see [Bound value set](#bound-value-set)).
-- **`effective_period` tz-awareness and ordering** — enforced by `PeriodSpec` (see [`PeriodSpec` shape](#periodspec-shape)).
-
-There is no `status_history`. `status` is a single current value, not an appended log.
+- The `encounter` must exist, or the create fails with "Encounter not found".
+- `patient` is copied from the encounter on create only.
+- `medication` is checked against its value set on every write.
+- `effective_period` must have time-zone-aware dates, with `start` not after `end`.
+- The update spec has no status-transition rule. Any status can follow any status, including a change back from `entered_in_error`.
+- There is no status history column. `status` holds only the current value.
+- Every create and update also writes a questionnaire response with structured type `medication_statement` and submit type `CREATE` or `UPDATE`.
 
 ## Methods & save behaviour
 
-- From [`EMRBaseModel`](../foundation/base-model.mdx): `external_id` (UUID), audit fields, soft delete. Deletes are soft — a removed statement stays in the table with `deleted=True` and is hidden by the default manager.
-- Create flow: client sends `MedicationStatementSpec` → `de_serialize` copies scalar/JSON fields → `perform_extra_deserialization` resolves `encounter` and back-fills `patient` → model saved.
-- Read flow: `MedicationStatementReadSpec.serialize(obj)` copies fields, then `perform_extra_serialization` injects `id`, `encounter` (as UUIDs), and audit users.
+- The model defines no `save()` or `delete()` override.
+- Create runs in this order: validate the body, authorize, build the record, save.
+- Fields left at their spec default are not written (`exclude_defaults=True`). So an update cannot clear an optional field by sending `null`.
+- An update body loses `id`, `external_id`, `patient` and `encounter` before validation.
+- Delete is soft: Care sets `deleted` and keeps the row. The default manager hides deleted rows.
 
 ## API integration notes
 
-- Exposed through Care's REST API, aligned with FHIR `MedicationStatement`. Use the spec field names above for payloads.
-- `medication` is a single SNOMED CT `Coding` object whose `code` must be in the `system-medication` value set — not a free CodeableConcept, and not a scalar string.
-- `effective_period` datetimes must be timezone-aware and ordered (`start ≤ end`).
-- `encounter` goes in as a UUID; `patient` is derived from it server-side and must not be sent.
-- Updates flow through `MedicationStatementUpdateSpec` and can touch only `status`, `effective_period`, and `note`.
-- `information_source` is what separates a self-reported or third-party statement from an actively managed prescription ([`MedicationRequest`](medication-request.mdx)).
-- `external_id` (UUID), `created_by`/`updated_by`, `created_date`/`modified_date`, `history`, and `meta` are platform-maintained — don't set them from clients.
+### Endpoints
+
+All paths are under `/api/v1/`.
+
+| Method | Path | Action |
+| --- | --- | --- |
+| `GET` | `patient/{patient_id}/medication/statement/` | List |
+| `POST` | `patient/{patient_id}/medication/statement/` | Create |
+| `GET` | `patient/{patient_id}/medication/statement/{id}/` | Retrieve |
+| `PUT`, `PATCH` | `patient/{patient_id}/medication/statement/{id}/` | Update. Both use `MedicationStatementUpdateSpec` |
+| `DELETE` | `patient/{patient_id}/medication/statement/{id}/` | Soft delete |
+| `POST` | `patient/{patient_id}/medication/statement/upsert/` | Batch create or update, see [Upsert](#upsert) |
+
+### Authorization
+
+"Clinical write" below means "Update Encounter related clinical data" held in one of the encounter's departments or its current location's departments. The encounter status must not be Completed, Cancelled, Entered in Error or Discontinued.
+
+| Action | Requirement |
+| --- | --- |
+| List | "Can view clinical data about patients" on the patient in the URL. Failing that, with `?encounter=`: "Can Read encounter related clinical data" on that encounter. Else 403 "Permission denied to user". The `encounter` filter then limits the results to that encounter. There is no pharmacist route |
+| Retrieve | The read check of the list runs first |
+| Create, upsert items without `id` | Clinical write on the encounter in the body. Else 403 "You do not have permission to update encounter" |
+| Update, delete | The read check of the list runs first. Then clinical write on the record's encounter |
+
+"Can view clinical data about patients" counts the user's roles on the patient. These come from the departments of the patient's open encounters (and of their current locations), the patient's organizations, and a direct patient link. Closed encounters do not count.
+
+Default role lists from the permission definitions:
+
+| Permission | Default roles |
+| --- | --- |
+| "Update Encounter related clinical data" | Doctor, Nurse, Facility Admin |
+| "Can Read encounter related clinical data" | Doctor, Nurse, Facility Admin |
+| "Can view clinical data about patients" | Staff, Doctor, Nurse, Facility Admin |
+
+The permission definitions also name an Admin role. Roles are matched by name, and the only role named Admin in the database is for role organizations, which the screen that links users to departments does not offer. The lists above leave it out.
+
+A permission refusal is HTTP 403 with the message in `detail`. A validation error is HTTP 400 with an `errors` list. A missing record is HTTP 404 with type `object_not_found`.
+
+### Filters and ordering
+
+| Parameter | Meaning |
+| --- | --- |
+| `encounter` | Encounter id |
+| `status` | Comma-separated statuses |
+| `name` | Medicine display contains the text, case-insensitive |
+| `ordering` | `created_date` or `modified_date`. Without it, newest record first |
+
+Lists are paginated with `limit` and `offset` (default 14, at most 200) and return `count` and `results`.
+
+### Upsert
+
+`POST .../upsert/` takes `{"datapoints": [...]}`. An item with `id` updates that record; an item without one creates a record.
+
+- An empty list fails with "No datapoints provided". More than `MAX_DATAPOINTS_PER_UPSERT` items (100 by default, set by environment variable) fails with "Too many datapoints provided".
+- All items run in one transaction. If any item fails, nothing is saved and the response is HTTP 400 with one result per item.
+
+### Notes
+
+- The Care frontend saves the Medication Statement form through this upsert. The save goes in one batch request (`POST /api/v1/batch_requests/`), which keeps nothing if any request in it fails.
+- The Care frontend never deletes a medication statement.
+- Send `medication` as one `Coding` object with a `code` from `system-medication`, not as a `CodeableConcept` or a plain string.
+- No deployment setting is specific to this resource.
 
 ## Related
 
-- Reference: [Medication Request](medication-request.mdx)
-- Reference: [Medication Administration](medication-administration.mdx)
-- Reference: [Medication Dispense](medication-dispense.mdx)
+- Concept: [Medication statement](../../concepts/medications/medication-statement.mdx)
+- Reference: [Medication request](medication-request.mdx)
+- Reference: [Medication administration](medication-administration.mdx)
+- Reference: [Medication dispense](medication-dispense.mdx)
 - Reference: [Patient](../clinical/patient)
 - Reference: [Encounter](../clinical/encounter.mdx)
-- Reference: [Base models & conventions](../foundation/base-model.mdx)
-- Source (model): [medication_statement.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/medication_statement.py)
-- Source (spec): [statement/spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/statement/spec.py)
-- Source (value set): [valueset/medication.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/valueset/medication.py)
+- Reference: [Base model](../foundation/base-model.mdx)
+- FHIR: [MedicationStatement](https://hl7.org/fhir/medicationstatement.html)
+- Source: [medication_statement.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/medication_statement.py) · [statement/spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/statement/spec.py) · [valueset/medication.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/medication/valueset/medication.py)

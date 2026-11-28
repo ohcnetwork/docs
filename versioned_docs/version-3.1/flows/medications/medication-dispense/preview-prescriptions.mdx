@@ -1,0 +1,122 @@
+---
+sidebar_position: 2
+---
+
+# Preview a patient's prescriptions
+
+## Overview
+
+<video src="/media/medications/medication-dispense/preview-prescriptions.mp4" poster="/media/medications/medication-dispense/preview-prescriptions.poster.png" controls width="720">
+  <track kind="captions" src="/media/medications/medication-dispense/preview-prescriptions.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to check a patient's [prescriptions](../../../concepts/medications/medication-request.mdx) in the **Prescription Preview** at a pharmacy location before you bill them. It also describes how to complete a prescription without billing, and how to reactivate a completed or cancelled prescription.
+
+## Pre-requisites
+
+- The patient has a prescription at your facility.
+- You can open the **Prescription Queue** at the pharmacy location. See [Open the prescription queue](./open-prescription-queue.mdx).
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Pharmacist in Care | Open the queue and the prescriptions, mark a prescription as completed, and reactivate a completed or cancelled prescription. You must hold it in a department of the facility. By default, the Facility Admin and Pharmacist roles hold this permission. |
+| Can Read Healthcare Service | Open the facility's list of services to reach the pharmacy location. You must hold it in a department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can List Facility Locations | Open the pharmacy location and its pages, including the **Prescription Preview**. You must hold it in a department of the location. By default, the Doctor, Facility Admin, Administrator, Nurse, Staff and Pharmacist roles hold this permission. |
+| Update Encounter related clinical data | Cancel a prescription while its encounter is open. You must hold it in a department of the encounter or of its current location. By default, the Doctor, Nurse and Facility Admin roles hold this permission. The Pharmacist role does not. |
+
+## Steps
+
+### 1. Open the preview
+
+Open the preview from the **Prescription Queue** in one of these ways:
+
+- Select **View Rx** on a row to open one prescription.
+- Select a patient's name, select the prescriptions, and then select **Preview Selected Rx**.
+
+Care opens the **Prescription Preview** with the patient's details at the top.
+
+If the patient has other unbilled prescriptions in this facility, Care shows how many. To open all of them, select **Show all**.
+
+![The View Rx link of a queue row outlined in the Prescription Queue](/media/medications/medication-dispense/preview-prescriptions-1.png)
+
+![The Prescription Preview page with the patient header outlined](/media/medications/medication-dispense/preview-prescriptions-2.png)
+
+### 2. Check the medicines
+
+To find a medicine, type its name in **Search Medications**.
+
+To filter the medicines, select a **Dispense Status**: **All**, **Incomplete**, **Partial** or **Complete**.
+
+Above the table, Care counts the prescriptions by the dispense status of their active medicines.
+
+Each prescription shows **Prescribed by**, the date and time, the number of items, the patient's current **Location** and any **Note**. A completed or cancelled prescription also shows its status.
+
+The table shows these columns:
+
+| Column | What it shows |
+| --- | --- |
+| **Medicine** | The prescribed medicine. |
+| Dose · Schedule · Duration / Instructions | The dosage instructions of the medicine. |
+| **Total to Dispense** | The total quantity of the medicine to dispense. |
+| **Dispense Status** | **Incomplete**, **Partial** or **Complete**. A medicine with no dispense status shows **Incomplete**. |
+| **Status** | The status of the medicine. |
+
+![The Search Medications box outlined, with Omeprazole typed and only that medicine shown](/media/medications/medication-dispense/preview-prescriptions-3.png)
+
+![A prescription card outlined, showing the prescriber, the note, and each medicine with its dose, total to dispense, dispense status and status](/media/medications/medication-dispense/preview-prescriptions-4.png)
+
+### 3. Print the prescriptions
+
+Select **Print Prescription**. When more than one prescription is open, this button is **Print All Prescriptions**.
+
+To print one prescription, select the print icon of that prescription.
+
+![The Print Prescription button outlined](/media/medications/medication-dispense/preview-prescriptions-5.png)
+
+### 4. Complete or reactivate a prescription
+
+Open the menu of the prescription.
+
+- If the prescription is active and you do not bill it, select **Mark as Completed**. Care shows **Prescription completed successfully**.
+- If the prescription is completed or cancelled, select **Reactivate Prescription** to make it active again. Care shows **Prescription reactivated successfully**.
+
+Note: With "Pharmacist in Care", you can complete or reactivate a prescription after the encounter is closed.
+
+Note: The menu of an active prescription also shows **Cancel Prescription**. Care accepts it only from a user who can update the encounter's clinical data, while the encounter is open. By default, the Pharmacist role cannot cancel a prescription.
+
+![The menu of a prescription open, with Mark as Completed outlined above Cancel Prescription](/media/medications/medication-dispense/preview-prescriptions-6.png)
+
+![A completed prescription with its menu open and Reactivate Prescription outlined](/media/medications/medication-dispense/preview-prescriptions-7.png)
+
+![The message Prescription reactivated successfully on the Prescription Preview page](/media/medications/medication-dispense/preview-prescriptions-8.png)
+
+### 5. Start billing
+
+Select **Start Billing**. Care opens **Bill Medications** with the active prescriptions that are open in the preview. See [Bill and dispense prescribed medicines](./dispense-prescribed-medicines.mdx).
+
+To bill one prescription, open its menu and select **Bill Prescription**.
+
+Note: **Start Billing** shows only when at least one open prescription is active. Press `b` to start billing.
+
+![The Bill Medications page, with the medicines of the prescription outlined, each with its lot, quantity and price](/media/medications/medication-dispense/preview-prescriptions-9.png)
+
+## Expected Outcome
+
+- Care shows the selected prescriptions, with the dispense status of each medicine.
+- If you completed a prescription, it moves to the **Completed** tab of the queue.
+- If you reactivated a prescription, it returns to the **Billing Pending** tab of the queue.
+
+## Related
+
+Concepts:
+
+- [Medication Request](../../../concepts/medications/medication-request.mdx)
+
+Flows:
+
+- [Open the prescription queue](./open-prescription-queue.mdx)
+- [Bill and dispense prescribed medicines](./dispense-prescribed-medicines.mdx)
+- [Print a prescription](../medication-request/print-prescription.mdx)

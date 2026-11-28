@@ -1,0 +1,140 @@
+---
+sidebar_position: 5
+---
+
+# Collect payment and complete a dispense order
+
+## Overview
+
+<video src="/media/medications/medication-dispense/complete-dispense-order.mp4" poster="/media/medications/medication-dispense/complete-dispense-order.poster.png" controls width="720">
+  <track kind="captions" src="/media/medications/medication-dispense/complete-dispense-order.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to collect the payment for a [dispense order](../../../concepts/medications/dispense-order.mdx) at a pharmacy location, and then complete the order. When you complete the order, Care sets the order and its dispenses to Completed.
+
+## Pre-requisites
+
+- You billed the medicines, and the dispense order is Draft or In Progress. See [Bill and dispense prescribed medicines](./dispense-prescribed-medicines.mdx) or [Dispense medicines without a prescription](./dispense-without-prescription.mdx).
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Pharmacist in Care | Open the dispense order and change its status, including **Complete Dispense**. You must hold it in a department of the facility. By default, the Facility Admin and Pharmacist roles hold this permission. |
+| Write Medication Dispense | Let Care set the dispenses to Completed with the order. You must hold it in a department of the pharmacy location. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold this permission. |
+| Medication Dispense Read | See the dispenses of the order. You must hold it in a department of the pharmacy location. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold this permission. |
+| Can Write Payment Reconciliation | Record the payment. You must hold it in a department of the facility. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold this permission. |
+| Can Write Invoice | Issue the invoice, and mark it as balanced. You must hold it in a department of the facility. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold this permission. |
+| Can Read Invoice | See the invoice and its payment status on the order. You must hold it in a department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can Read Account | See the patient's account from the order. You must hold it in a department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can List Facility Locations | Open the pages of the pharmacy location, including the dispense order. You must hold it in a department of the location. By default, the Doctor, Facility Admin, Administrator, Nurse, Staff and Pharmacist roles hold this permission. |
+
+By default, the Pharmacist role, held in a department of the pharmacy location, holds every permission in this table.
+
+Without "Pharmacist in Care", a user needs "Can Read Supply Delivery" to open the order and "Can Create Supply Delivery on Facility" to change its status, both in a department of the pharmacy location. By default, only the Facility Admin role holds "Can Create Supply Delivery on Facility".
+
+## Steps
+
+### 1. Open the dispense order
+
+After you bill the medicines, Care opens the dispense order.
+
+To open the order later, select **Pharmacy** > ℞ **Dispense** in the location sidebar. On the **Pending** tab, select **View Order** on the order. See [Find and print a dispense order](./find-dispense-order.mdx).
+
+Care opens **Dispense Medicines** with the status of the order at the top.
+
+If the order is Draft, select **Mark as In Progress** next to the status.
+
+![The Dispense Orders page with the View Order button of a Draft order outlined](/media/medications/medication-dispense/complete-dispense-order-1.png)
+
+![The Draft order open, with the Mark as In Progress button next to its status outlined](/media/medications/medication-dispense/complete-dispense-order-2.png)
+
+### 2. Check the dispenses
+
+Care groups the dispenses by invoice. Dispenses that are not yet on an invoice come first. Cancelled dispenses are last, under **Cancelled Dispenses**.
+
+The table shows these columns:
+
+| Column | What it shows |
+| --- | --- |
+| **Medicine** | The medicine, with its lot and expiry. |
+| **Instructions** | The dosage instructions. |
+| **Quantity** | The quantity dispensed. |
+| **Status** | The status of the dispense. |
+| **Actions** | The actions for the dispense, while the order is open. |
+
+To change a dispense before you complete the order, see [Change items in an open dispense order](./change-dispense-order-items.mdx).
+
+![The dispenses of the order outlined, each In Progress, with the medicine, batch, instructions and quantity](/media/medications/medication-dispense/complete-dispense-order-3.png)
+
+### 3. Issue the invoice
+
+Do this step only if the invoice is not issued yet.
+
+- If the banner shows **Invoice Not Generated**, select **Issue Invoice**. Care creates the invoice, issues it, and opens the payment sheet.
+- If the banner shows **Draft Invoice**, select **Issue Invoice**.
+
+Note: **Invoice Not Generated** shows when the order has charges that are not on an invoice yet. This happens, for example, when Care could not create the invoice when you billed. **Issue Invoice** shows only when the patient has an account.
+
+![The Issue Invoice button outlined in the Invoice Not Generated banner](/media/medications/medication-dispense/complete-dispense-order-4.png)
+
+### 4. Collect the payment
+
+The payment banner shows **Payment Pending**, the **Invoice Total** and the **Amount Due**.
+
+Select **Collect Payment**, and record the payment in the payment sheet. See [Record a payment](../../billing/payment-reconciliation/record-payment.mdx).
+
+Note: Right after you bill, Care opens the payment sheet for you. Press `Enter` to select **Collect Payment**.
+
+When the payments on the invoice equal its total, Care marks the invoice as balanced. Care shows **Invoice marked as balanced**.
+
+To settle the invoice without full payment, open the menu of the payment banner and select **Mark as balanced**. See [Mark an invoice as balanced](../../billing/invoice/mark-invoice-balanced.mdx).
+
+If the banner shows **Cash Collected** but the invoice is not balanced, select **Mark as balanced**.
+
+Note: If the invoice also holds charges that are not medicines, the banner says so. Select **View Invoice** to see all the charges.
+
+![The Collect Payment sheet with the amount paid, the amount received and the change to return](/media/medications/medication-dispense/complete-dispense-order-5.png)
+
+![The Collect Payment sheet showing Payment Recorded Successfully, with the amount received and the payment method](/media/medications/medication-dispense/complete-dispense-order-6.png)
+
+### 5. Complete the dispense
+
+When every charge of the order is settled in a balanced invoice, the footer says **Payment has been collected.**
+
+Select **Complete Dispense**.
+
+Note: Press `Shift+Enter` to complete the dispense.
+
+Note: **Complete Dispense** is disabled while the footer says **Settle all pending invoices before completing the dispense.** Collect the payment, or mark the invoice as balanced.
+
+![The Complete Dispense button outlined, with the payment status Fully Paid](/media/medications/medication-dispense/complete-dispense-order-7.png)
+
+![The order at Status: Completed, with the question Next pharmacy action? outlined beside Medication Return, Print and Prescription Queue](/media/medications/medication-dispense/complete-dispense-order-8.png)
+
+## Expected Outcome
+
+- Care sets the dispense order to Completed, and sets its open dispenses to Completed. Cancelled dispenses stay cancelled.
+- Care shows **Dispense Completed!** and **Next pharmacy action?**.
+- From there, you can select **Print** to print the order, or **Prescription Queue** to go back to the queue.
+- To take back medicines later, select **Medication Return**. A return needs "Can Write Medication Returns", which by default only the Facility Admin role holds. See [Return dispensed medicines](./return-medicines.mdx).
+
+## Related
+
+Concepts:
+
+- [Dispense Order](../../../concepts/medications/dispense-order.mdx)
+- [Medication Dispense](../../../concepts/medications/medication-dispense.mdx)
+- [Invoice](../../../concepts/billing/invoice.mdx)
+- [Payment Reconciliation](../../../concepts/billing/payment-reconciliation.mdx)
+
+Flows:
+
+- [Bill and dispense prescribed medicines](./dispense-prescribed-medicines.mdx)
+- [Change items in an open dispense order](./change-dispense-order-items.mdx)
+- [Put a dispense order on hold and resume it](./put-dispense-order-on-hold.mdx)
+- [Cancel a dispense order](./cancel-dispense-order.mdx)
+- [Return dispensed medicines](./return-medicines.mdx)
+- [Record a payment](../../billing/payment-reconciliation/record-payment.mdx)
+- [Mark an invoice as balanced](../../billing/invoice/mark-invoice-balanced.mdx)

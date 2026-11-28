@@ -1,56 +1,99 @@
 ---
-sidebar_position: 3
+sidebar_position: 2
 ---
 
-# Add medications from past records
+# Add medicines from past records
 
 ## Overview
 
-This flow describes how to add medicines from a patient's past records into a new prescription in Care. You start from the same screen that you use to prescribe a [medication request](../../../concepts/medications/medication-request.mdx).
+<video src="/media/medications/medication-request/add-medications-from-past-records.mp4" poster="/media/medications/medication-request/add-medications-from-past-records.poster.png" controls width="720">
+  <track kind="captions" src="/media/medications/medication-request/add-medications-from-past-records.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to copy medicines from a patient's past prescriptions and [medication statements](../../../concepts/medications/medication-statement.mdx) into a new prescription. You do this in the same form that you use to prescribe a [medication request](../../../concepts/medications/medication-request.mdx).
 
 ## Pre-requisites
 
-- The patient is registered in Care, and you record the encounter for that patient.
-- The encounter is open. You cannot add medicines when the encounter status is Completed, Cancelled, Discontinued, or Entered in Error.
-- You prescribe a medicine for the encounter. See [Prescribe a medication](./prescribe-medication.mdx).
+- You can prescribe medicines in the encounter. See the pre-requisites in [Prescribe medicines](./prescribe-medication.mdx).
+- You open the form to create a prescription. **Medication History** is not on the form when you edit a prescription.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Update Encounter related clinical data | Lets you add and change medicines for the encounter. |
+| Can view clinical data about patients | Load **Past Prescriptions** and **Medication Statements** in **Medication History**. You must hold it for the patient, because the lists include all of the patient's encounters. By default, the Staff, Doctor, Nurse and Facility Admin roles hold this permission. |
+| Update Encounter related clinical data | Save the medicines. You must hold it in one of the encounter's departments, or in a department of the encounter's current location. By default, the Doctor, Nurse and Facility Admin roles hold this permission. |
+
+Note: Read access to this encounter alone does not load **Medication History**. Care gives you access to the patient through the patient's open encounters, the patient's organizations, or a direct link to the patient. A closed encounter does not count.
 
 ## Steps
 
-### 1. Open the medication history
+### 1. Open the Medication Request form
 
-Select the **Medication History** action on the prescription screen. Care opens a picker.
+Open the form to create a prescription, as in [Prescribe medicines](./prescribe-medication.mdx).
 
-### 2. Review the past records
+![The encounter Overview tab with the Medication quick action outlined](/media/medications/medication-request/add-medications-from-past-records-1.png)
 
-The picker shows the patient's earlier medication requests. The picker also shows the patient's medication statements, which record the medicines that the patient reports or used before.
+### 2. Open the medication history
 
-### 3. Select the medicines to add
+Select **Medication History**.
 
-Select each past record that you want to add. Care adds each selected record to the current prescription as a new medicine row.
+![The Medication History sheet with the Past Prescriptions tab outlined, listing earlier medicines with their dosage, duration and prescriber](/media/medications/medication-request/add-medications-from-past-records-2.png)
 
-### 4. Review and save
+### 3. Select the past records
 
-Review each new medicine row. Change the details when you need to. Save the prescription.
+1. Select the tab that has the records.
+2. Select each record that you want to add.
+3. Select **Add Selected**.
+
+| Tab | What it lists |
+| --- | --- |
+| Past Prescriptions | The medicines prescribed for the patient in all encounters, in every status except Entered in Error. |
+| Medication Statements | The medication statements of the patient, in every status except Entered in Error. |
+
+Each tab groups the records under the date they were created, newest first.
+
+Note: **Add Selected** adds only the records that you selected on the open tab.
+
+![Two past prescriptions selected in the Medication History sheet, one row outlined, and 2 Past Prescriptions Selected at the bottom](/media/medications/medication-request/add-medications-from-past-records-3.png)
+
+![The Add Selected button outlined, with two past prescriptions selected](/media/medications/medication-request/add-medications-from-past-records-4.png)
+
+### 4. Complete the new rows
+
+Care adds each record to the form as a new medicine.
+
+- A medicine from **Past Prescriptions** comes with its dosage and other details. Care records you as its requester.
+- A medication statement brings only the medicine and its note. Enter the **Dosage** and the **Frequency**.
+
+To change other fields, follow steps 3 to 6 of [Prescribe medicines](./prescribe-medication.mdx).
+
+![The Medication Request form with new rows for Metformin and Omeprazole, the Duration field of the first row outlined](/media/medications/medication-request/add-medications-from-past-records-5.png)
+
+### 5. Save the medicines
+
+Select **Save Changes**.
+
+![The Medication Request form with the Save Changes button outlined](/media/medications/medication-request/add-medications-from-past-records-6.png)
+
+![The encounter Overview tab after the save, with the message Questionnaire submitted successfully outlined](/media/medications/medication-request/add-medications-from-past-records-7.png)
 
 ## Expected Outcome
 
-- Care adds the selected past medicines to the current prescription as new medicine rows.
-- You see the added medicines with the other medicines for the encounter. See [View prescriptions and medications for an encounter](./view-encounter-medications.mdx).
+- Care shows "Questionnaire submitted successfully" and opens the **Overview** tab of the encounter.
+- The added medicines are part of the new prescription of this save, with any other medicines that you added.
+- Care copies the records. The earlier medicines and medication statements do not change.
 
 ## Related
 
 Concepts:
 
-- [Medication Request](../../../concepts/medications/medication-request.mdx)
+- [Medication request](../../../concepts/medications/medication-request.mdx)
+- [Medication statement](../../../concepts/medications/medication-statement.mdx)
 
 Flows:
 
-- [Prescribe a medication](./prescribe-medication.mdx)
-- [View prescriptions and medications for an encounter](./view-encounter-medications.mdx)
+- [Prescribe medicines](./prescribe-medication.mdx)
+- [View prescriptions and medicines for an encounter](./view-encounter-medications.mdx)
+- [View medication statements](../medication-statement/view-medication-statements.mdx)

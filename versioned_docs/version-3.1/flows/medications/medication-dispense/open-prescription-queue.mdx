@@ -1,0 +1,131 @@
+---
+sidebar_position: 1
+---
+
+# Open the prescription queue
+
+## Overview
+
+<video src="/media/medications/medication-dispense/open-prescription-queue.mp4" poster="/media/medications/medication-dispense/open-prescription-queue.poster.png" controls width="720">
+  <track kind="captions" src="/media/medications/medication-dispense/open-prescription-queue.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to open the **Prescription Queue** at a pharmacy location. The queue lists the [prescriptions](../../../concepts/medications/medication-request.mdx) of the facility that wait for billing, so that you can preview, bill or complete them.
+
+## Pre-requisites
+
+- Your facility has a pharmacy service, and the pharmacy location is one of its locations.
+- The inventory usage of the pharmacy location is not None.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Pharmacist in Care | See the prescriptions in the queue, and mark a prescription as complete. You must hold it in a department of the facility. By default, the Facility Admin and Pharmacist roles hold this permission. |
+| Can Read Healthcare Service | Open the facility's list of services. You must hold it in a department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold this permission. |
+| Can List Facility Locations | Open the pharmacy location. You must hold it in a department of the location. By default, the Doctor, Facility Admin, Administrator, Nurse, Staff and Pharmacist roles hold this permission. |
+
+## Steps
+
+### 1. Open the pharmacy service
+
+1. In the facility sidebar, select **Services**.
+2. Select the pharmacy service. Care lists its locations under **Available Locations**.
+
+![The Services page with the Main Pharmacy service outlined](/media/medications/medication-dispense/open-prescription-queue-1.png)
+
+### 2. Open the pharmacy location
+
+Select **View Prescriptions** on the card of the pharmacy location. Care opens the **Prescription Queue** of that location.
+
+Care also remembers this pharmacy location in this browser. Care uses it when you [dispense medicines without a prescription](./dispense-without-prescription.mdx).
+
+Note: When you are already in the pharmacy location, you can select **Pharmacy** > **Prescription Queue** in the location sidebar. This way does not make Care remember the pharmacy location.
+
+Note: Care shows **Inventory and pharmacy aren't available here** if you cannot open the location. It shows the same if the location's inventory usage is None.
+
+![The Main Pharmacy service page with the Pharmacy location card outlined under Available Locations](/media/medications/medication-dispense/open-prescription-queue-2.png)
+
+### 3. Select a tab
+
+The queue opens on the **Billing Pending** tab, which lists the active prescriptions.
+
+To see other prescriptions, select the **Completed** tab or the **Cancelled** tab.
+
+Note: The queue lists the prescriptions of the whole facility, not only those of this pharmacy location.
+
+![The Prescription Queue with the Billing Pending tab outlined, listing patients with their encounter class, status and the View Rx and Bill Now actions](/media/medications/medication-dispense/open-prescription-queue-3.png)
+
+### 4. Find a prescription
+
+Use the filters above the queue.
+
+| Components | What it captures |
+| --- | --- |
+| **OR Search by ID** | Search for a patient. |
+| **Encounter Class** | Show only the prescriptions from encounters of one class. |
+| **Filters** | Filter by tags, or by the date the prescription was created. |
+
+The queue shows these columns:
+
+| Column | What it shows |
+| --- | --- |
+| **Patient Name** | The patient, who prescribed the medicines, and when. |
+| **Encounter / Status / Location** | The class and status of the encounter, and the patient's current location. |
+| **Tags** | The tags of the prescription. You can add or change the tags in this column. |
+| **Actions** | The actions for the prescription. |
+
+![The search and filter bar of the Prescription Queue outlined: Scan, Search by ID, Encounter Class and Filters](/media/medications/medication-dispense/open-prescription-queue-4.png)
+
+### 5. Show the prescriptions of one patient
+
+Select the patient's name in a row. Care shows only the prescriptions of that patient.
+
+On the **Billing Pending** tab, Care shows **Select prescriptions to bill** and selects every prescription on the page.
+
+To leave a prescription out, clear its checkbox.
+
+With one or more prescriptions selected, you can:
+
+- Select **Preview Selected Rx** to check the selected prescriptions.
+- Select **Print Selected Rx** to print them.
+- Select **Bill Selected Rx** to bill them.
+
+![The prescriptions of one patient selected, with Select All, Preview Selected Rx, Print Selected Rx and Bill Selected Rx outlined](/media/medications/medication-dispense/open-prescription-queue-5.png)
+
+### 6. Act on a prescription
+
+Use the actions of the row:
+
+- Select **View Rx** to open the prescription. See [Preview a patient's prescriptions](./preview-prescriptions.mdx).
+- Select **Bill Now** to bill the prescription. See [Bill and dispense prescribed medicines](./dispense-prescribed-medicines.mdx).
+- To close an active prescription without billing, open the row menu and select **Mark Prescription Complete**.
+
+Note: **Bill Now** shows only for an active prescription, when the queue shows all patients.
+
+![The menu of a prescription row open, with Mark Prescription Complete outlined](/media/medications/medication-dispense/open-prescription-queue-6.png)
+
+![The message Prescription completed successfully above the queue, with the completed prescription gone from the list](/media/medications/medication-dispense/open-prescription-queue-7.png)
+
+## Expected Outcome
+
+- Care shows the active prescriptions of the facility that wait for billing.
+- If no prescription matches the filters, Care shows **No prescriptions found**.
+- If you opened the queue from **Services**, Care remembers the pharmacy location in this browser.
+- If you marked a prescription as complete, Care shows **Prescription completed successfully** and moves it to the **Completed** tab.
+
+## Related
+
+Concepts:
+
+- [Medication Request](../../../concepts/medications/medication-request.mdx)
+- [Healthcare Service](../../../concepts/facility/healthcare-service.mdx)
+- [Location](../../../concepts/facility/location.mdx)
+
+Flows:
+
+- [Preview a patient's prescriptions](./preview-prescriptions.mdx)
+- [Bill and dispense prescribed medicines](./dispense-prescribed-medicines.mdx)
+- [Dispense medicines without a prescription](./dispense-without-prescription.mdx)
+- [Find and print a dispense order](./find-dispense-order.mdx)

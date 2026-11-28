@@ -6,65 +6,110 @@ sidebar_position: 3
 
 ## Overview
 
-This flow describes how to change a [medication statement](../../../concepts/medications/medication-statement.mdx) that you saved in Care.
+<video src="/media/medications/medication-statement/update-medication-statement.mp4" poster="/media/medications/medication-statement/update-medication-statement.poster.png" controls width="720">
+  <track kind="captions" src="/media/medications/medication-statement/update-medication-statement.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to change the status or the note of a [medication statement](../../../concepts/medications/medication-statement.mdx) that staff saved during an encounter. It also describes how to mark a statement as entered in error.
 
 ## Pre-requisites
 
-- The patient has a medication statement in Care.
-- The encounter of the medication statement is open. Care blocks the change when the encounter status is Completed, Cancelled, Discontinued, or Entered in Error.
+- Staff recorded the statement during this encounter. The form lists only the statements of the encounter that you open. See [Record a medication statement](./record-medication-statement.mdx).
+- Your facility has built an encounter form that contains the **Medication Statement** question.
+- The encounter is open. Care hides the quick actions when the encounter is Completed, Cancelled, Discontinued, or Entered in error.
+- You opened the encounter from the facility.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can view questionnaire responses on patient | Lets you open the **Updates** tab of the patient. |
-| Can submit questionnaire about patients | Lets you open a form for the patient and submit it. |
-| Update Encounter related clinical data | Lets you change a medication statement of the encounter. |
+| Update Encounter related clinical data | Lets you save the changes. You must hold it in one of the encounter's departments or in a department of its current location. By default, the Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can Read Questionnaires | Lets you find the form under **Forms** and open it. You must hold it in the facility's Administration department, in a department that the form is shared with, or in a department above that one. By default, the Staff, Doctor, Nurse, Facility Admin, Administrator, Volunteer and Pharmacist roles hold this permission. |
+| Can view clinical data about patients | Lets you use the **Forms** quick action, and lets the form load the statements of this encounter, when you hold it for the patient. You need this permission or the next one. By default, the Staff, Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can Read encounter related clinical data | Gives the same access for this encounter only, when you hold it in one of the encounter's departments or in a department of its current location. By default, the Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can submit questionnaire about patient encounters | Needed only if you also answer other questions in the form. You must hold it in one of the encounter's departments or in a department of its current location. By default, the Staff, Doctor, Nurse and Facility Admin roles hold this permission. |
 
 ## Steps
 
-### 1. Open the Medication Statement form
+### 1. Open the encounter
 
-Open the patient.
+Open the patient's encounter. Select the **Overview** tab.
 
-Select the **Updates** tab. Select **Add Patient Updates**.
+Care shows the quick actions at the top of the tab.
 
-Enter `Medication Statement` in the **Search Forms** box. Select **Medication Statement** in the results.
+![The encounter Overview tab with the quick actions outlined, including Forms](/media/medications/medication-statement/update-medication-statement-1.png)
 
-Care shows the medication statements that staff recorded before as entries in the form.
+### 2. Open the form
 
-### 2. Open the entry
+Select the **Forms** quick action. Care opens the **Forms** dialog.
 
-Select the entry of the medicine that you want to change.
+Enter the name of the form in the **Search Forms** box.
 
-### 3. Change the values
+Select the form with the **Medication Statement** question in the list. Care opens the form for the encounter.
 
-Change the **Status** of the entry.
+Note: When the quick actions are on the screen, press `f` to open the **Forms** dialog.
 
-Change the **Note** of the entry.
+![The Forms dialog with Medication typed and the Medication history form outlined](/media/medications/medication-statement/update-medication-statement-2.png)
 
-Note: You cannot change the medicine, the source, the dosage instructions, the period, or the reason of a saved entry. Care disables these fields.
+### 3. Find the statement
 
-Note: Care disables the full entry when its status is **Entered in Error**.
+In the **Medication Statement** question, Care shows the statements of this encounter.
 
-### 4. Submit the form
+Find the statement that you want to change.
 
-Select **Submit**.
+![The Medication history form with the saved statements, and Fexofenadine hydrochloride 120 mg oral tablet outlined](/media/medications/medication-statement/update-medication-statement-3.png)
+
+### 4. Change the status or the note
+
+To change the state of the statement, select a new **Status**.
+
+To change the note, edit the text in **Note**.
+
+Note: The form keeps the other fields of a saved statement read-only. These are the source, the dosage instructions, the dates, and the reason.
+
+![The Status field of the Fexofenadine statement outlined, changed to Completed](/media/medications/medication-statement/update-medication-statement-4.png)
+
+![The Note field of the Fexofenadine statement outlined, with a new note](/media/medications/medication-statement/update-medication-statement-5.png)
+
+### 5. Mark a statement as entered in error
+
+If staff recorded the statement by mistake, set its **Status** to **Entered in Error**.
+
+Note: The form offers **Entered in Error** only for a statement that staff saved before.
+
+Note: You can also select the remove button of the statement. Then select **Remove** in the **Remove Medication** dialog. Care sets the status of a saved statement to Entered in Error.
+
+![The Status field of the Metformin statement outlined, set to Entered in Error](/media/medications/medication-statement/update-medication-statement-6.png)
+
+### 6. Save the form
+
+Select **Save Changes**.
+
+Note: Press `Shift+Enter` to save the form.
+
+Note: Care saves the whole form in one step. If Care refuses one part of the form, it saves nothing.
+
+![The Save Changes button outlined](/media/medications/medication-statement/update-medication-statement-7.png)
+
+![The encounter Overview tab after the save, with the message Questionnaire submitted successfully](/media/medications/medication-statement/update-medication-statement-8.png)
 
 ## Expected Outcome
 
 - Care shows the message "Questionnaire submitted successfully".
-- Care shows the new status and the new note in the **Medication Statements** sub-tab of the **Medicines** tab.
+- Care returns to the **Overview** tab of the encounter.
+- The **Medication Statements** sub-tab of the **Medications** tab shows the new status and the new note.
+- If you marked the statement as entered in error, Care keeps the statement with that status. It no longer shows in the **Medication Statements** sub-tab.
+- When you open the form again, a statement marked Entered in Error is dimmed, and you cannot change it.
 
 ## Related
 
 Concepts:
 
-- [Medication Statement](../../../concepts/medications/medication-statement.mdx)
+- [Medication statement](../../../concepts/medications/medication-statement.mdx)
+- [Questionnaire](../../../concepts/definitions/questionnaire.mdx)
 
 Flows:
 
 - [Record a medication statement](./record-medication-statement.mdx)
-- [View medication statements for an encounter](./view-medication-statements.mdx)
-- [Mark a medication statement as entered in error](./medication-statement-entered-in-error.mdx)
+- [View medication statements](./view-medication-statements.mdx)

@@ -2,65 +2,79 @@
 sidebar_position: 2
 ---
 
-# Medication Administration
+# Medication administration
 
 ## Definition
 
-A **[medicine administration](https://build.fhir.org/medicationadministration.html)** in Care
-records a dose of medicine that staff gave to a patient. It is separate from the
-[medication request](../../concepts/medications/medication-request.mdx), which is the order. You record an
-administration against a medicine that is already prescribed on the encounter.
-
-Care shows the administrations of an encounter in the **Medicine Administration** sub-tab of
-the **Medicines** tab. The sub-tab shows a grid of medicines against six-hour time slots.
+A **[medication administration](https://build.fhir.org/medicationadministration.html)** in Care records one dose of a medicine for a patient: its status, when it started and when it ended. Each administration belongs to a [medication request](./medication-request.mdx), which is the order. Recording a dose does not change stock and does not create a charge.
 
 ## Key Attributes
 
 | Components | What it captures |
 | --- | --- |
-| Medicine | The prescribed medicine that this dose belongs to. This field is mandatory. |
-| Status | The state of the dose. See Status below. This field is mandatory. |
-| Start Time | When the dose started. This field is mandatory. Care sets the current date and time by default. |
-| End Time | When the dose ended. This field is optional. |
-| Dosage | The dose, the route, the site, and the method. Care copies these from the prescription. |
+| Medicine | The medication request that the dose belongs to. The form takes the medicine or product from that request. This field is mandatory. |
+| Status | The state of the dose. See Status below. This field is mandatory. The form selects Completed for a new dose. |
+| Start Time | When the dose started. This field is mandatory. The form sets the current time. You can enter an earlier time only for a new dose, after you answer Yes to **Is this administration for a past time**. The form does not accept a future time. |
+| End Time | When the dose ended. The form sets the current time, and requires an end time for a Completed dose. |
+| Dosage | The dose, the route, the site and the method. The form takes them from the first dosage instruction of the medication request. When the request has several dosage instructions with different doses, you choose one under **Select Dosage Instruction**. |
 | Administration Notes | Free text about the dose. This field is optional. |
-| Performer | The staff member who gave the dose, and their role in giving it. The administration form does not collect this field. Care records the user who saves the record. |
+| Performer | The users who performed, verified or witnessed the dose. The administration screens do not ask for it, so a dose recorded on screen has no performer. Care records who saved the record and who last changed it. |
+
+### Where Care shows administrations
+
+Care shows the administrations of an encounter in the **Medicine Administration** sub-tab of the **Medications** tab. The sub-tab shows a chart of the encounter's medicines against six-hour time slots, four slots at a time.
+
+Care shows all the medication requests for the same medicine in one row. Each time slot shows up to three recorded doses as buttons: green for Completed, yellow for In Progress, and red for every other status.
+
+**Administer** appears in the current time slot for a medicine that is active and inside its prescribed period. **Administer Medicine** at the top records doses for several medicines at once, and Care saves all of them or none.
+
+The **Medications** and **Nutrition** choice at the top shows either medicines or nutritional products.
+
+**View Drug Chart** opens a printable drug chart of the completed doses. The patient's **Past Medications** tab shows the same administrations, read-only.
+
+The same sub-tab is where you stop a medicine with **Stop** or **Discontinue**.
 
 ### Changes after you save
 
-After you save an administration, the form lets you change only the Status and the
-Administration Notes. You cannot change the medicine, the dosage, the start time, or the end
-time. Care keeps the record when you mark it as Entered in Error.
+After you save a dose, Care accepts changes to its status, its note and its end time. The medicine, the dosage and the start time stay fixed.
 
-## Status
+When you select a recorded dose, Care opens it in **Edit Administration**. There you can change the **Status** and the **Administration Notes**, but the **End Time** is read-only.
+
+No screen deletes a dose. You mark a dose that was recorded by mistake by setting its status to Entered in Error, and Care keeps the record.
+
+### Status
+
+The form offers every status except Unknown.
 
 | Status | Description |
 | --- | --- |
-| In Progress | Staff are giving the dose now. |
-| Completed | Staff gave the dose. |
+| Completed | Staff gave the dose. The form requires an end time, and only completed doses appear on the drug chart. |
+| In Progress | Staff are giving the dose. |
 | Not Done | Staff did not give the dose. |
-| On Hold | Staff paused the dose. |
-| Stopped | Staff stopped the dose before it finished. |
-| Cancelled | Staff cancelled the dose before they gave it. |
-| Entered in Error | Staff created the record by mistake. |
-| Unknown | The state of the dose is not known. |
-
-Note: The administration form offers all of these states except Unknown.
+| On Hold | The dose is on hold. |
+| Stopped | Staff stopped the dose. |
+| Cancelled | The dose was cancelled. |
+| Entered in Error | The record was made by mistake. Care keeps it. |
+| Unknown | Care accepts this status, but the form does not offer it. |
 
 ## Permissions
 
+Care gives permissions through the roles that a user holds in departments. The roles named below hold each permission by default; an installation can change the permissions of its roles.
+
 | Permission | What it allows |
 | --- | --- |
-| Update Encounter related clinical data | Record or update a medicine administration. Held by Doctor, Nurse, Admin, and Facility Admin. |
-| Can view clinical data about patients | View the medicine administrations of a patient. Held by Staff, Doctor, Nurse, Admin, and Facility Admin. |
-| Can Read encounter related clinical data | View the medicine administrations of one encounter. Held by Doctor, Nurse, Admin, and Facility Admin. |
+| Update Encounter related clinical data | Record a dose, and change the status or the notes of a recorded dose. You must hold it in one of the encounter's departments or a department of its current location. The encounter must not be Completed, Cancelled, Discontinued or Entered in Error. By default, the Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can view clinical data about patients | See the chart of medicines and doses. It counts through the patient: through a department of one of the patient's open encounters, through the patient's own organizations, or through a direct link to the patient. By default, the Staff, Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can Read encounter related clinical data | See the chart of one encounter, because the **Medicine Administration** sub-tab asks for the records of that encounter. You must hold it in one of the encounter's departments or a department of its current location. By default, the Doctor, Nurse and Facility Admin roles hold this permission. |
 
-To record or change an administration, you also need an open encounter. Care blocks changes when
-the encounter status is Completed, Cancelled, Discontinued, or Entered in Error.
+By default, the Staff role can see the chart but cannot record a dose. The Pharmacist and Volunteer roles hold none of these permissions by default, and there is no pharmacist access to administrations.
 
 ## Related
 
 - Flow: [Administer a dose](../../flows/medications/medication-administration/administer-dose.mdx)
-- Flow: [View the medicine administration record](../../flows/medications/medication-administration/view-medicine-administration.mdx)
-- Flow: [Update an administration record](../../flows/medications/medication-administration/update-administration-record.mdx)
-- Concept: [Medication Request](../../concepts/medications/medication-request.mdx)
+- Flow: [View the medicine administration chart](../../flows/medications/medication-administration/view-medicine-administration.mdx)
+- Flow: [Edit an administration record](../../flows/medications/medication-administration/update-administration-record.mdx)
+- Flow: [Print the drug chart](../../flows/medications/medication-administration/print-drug-chart.mdx)
+- Flow: [Stop a medicine](../../flows/medications/medication-request/stop-a-medicine.mdx)
+- Concept: [Medication request](./medication-request.mdx)
+- Reference: [Medication administration](../../references/medications/medication-administration.mdx)

@@ -1,69 +1,96 @@
 ---
-sidebar_position: 2
+sidebar_position: 12
 ---
 
-# View dispense history
+# View dispense history for an encounter
 
 ## Overview
 
-This flow describes how to view the [medicine dispense](../../../concepts/medications/medication-dispense.mdx) history for an encounter in Care.
+<video src="/media/medications/medication-dispense/view-dispense-history.mp4" poster="/media/medications/medication-dispense/view-dispense-history.poster.png" controls width="720">
+  <track kind="captions" src="/media/medications/medication-dispense/view-dispense-history.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to view the [medication dispenses](../../../concepts/medications/medication-dispense.mdx) of an encounter in Care, one [dispense order](../../../concepts/medications/dispense-order.mdx) at a time.
 
 ## Pre-requisites
 
 - The patient has an encounter at the facility.
-- You have the permission listed below.
+- You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Medication Dispense Read | Lets you view dispense records. Held by Facility Admin, Admin, Staff, Doctor, Nurse, and Pharmacist. |
+| Pharmacist in Care | Let Care list the dispense orders of the patient on the **Dispense History** sub-tab. You must hold it in a department of the facility. By default, the Facility Admin and Pharmacist roles hold this permission. |
+| Medication Dispense Read | See the dispenses of the encounter. You must hold it in a department of the encounter or of its current location. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold this permission. |
+| Can view clinical data about patients | Open the encounter and the **Medications** tab. You need this permission or "Can Read encounter related clinical data". It counts when you hold it for the patient, for example in a department of an open encounter of the patient. By default, the Staff, Doctor, Nurse and Facility Admin roles hold this permission. |
+| Can Read encounter related clinical data | Open the encounter and the **Medications** tab. You must hold it in a department of the encounter or of its current location. By default, the Doctor, Nurse and Facility Admin roles hold this permission. |
+
+By default, only the Facility Admin role holds all of these permissions.
+
+Note: Without "Pharmacist in Care", Care does not list the dispense orders. The sub-tab then shows **No dispense history found**, also when the encounter has dispenses. By default, this is what the Staff, Doctor and Nurse roles see.
 
 ## Steps
 
 ### 1. Open the Dispense History sub-tab
 
 1. Open the encounter.
-2. Select the **Medicines** tab.
+2. Select the **Medications** tab.
 3. Select the **Dispense History** sub-tab.
 
-Note: Press `g` then `m` to go to the **Medicines** tab.
+Note: Press `g` then `m` to go to the **Medications** tab.
 
-### 2. Select a Dispense Order
+![The Dispense History sub-tab outlined, with the list of dispense orders on the left](/media/medications/medication-dispense/view-dispense-history-1.png)
 
-A list on one side shows the Dispense Orders of the patient. Each entry shows the name of the order, or the date and time of the order when the order has no name. Each entry also shows the location.
+### 2. Select a dispense order
 
-Care selects the first Dispense Order in the list. Select another Dispense Order to see the items of that order.
+A list on one side shows the dispense orders of the patient in the facility. It includes orders from other encounters of the patient.
+
+Each entry shows the name of the order, or its date and time when the order has no name. Each entry also shows the location of the order.
+
+Care selects the first dispense order in the list. Select another dispense order to see its dispenses.
 
 Note: On a small screen, select **Select Dispense Order** to open the **Dispense Orders** list.
 
-### 3. Read the dispensed items
+Note: The table shows only the dispenses of this encounter. For an order from another encounter, Care shows **No dispense history found**.
 
-Care shows the items of the selected Dispense Order in a table with these columns:
+![A dispense order outlined in the list, with its dispenses in the table on the right](/media/medications/medication-dispense/view-dispense-history-2.png)
+
+### 3. Read the dispenses
+
+Care shows the dispenses of the selected order in a table with these columns:
 
 | Column | What it shows |
 | --- | --- |
-| Medicine | The name of the medicine or supply item. |
-| Dosage | The dose of the medicine. |
-| Frequency | How often the patient takes the medicine. |
-| Quantity | The quantity that the pharmacy dispensed. |
-| Location | The location that the pharmacy dispensed from. |
-| Status | The status of the dispense. |
-| Bill Time | The date and time when the pharmacy prepared the item. |
-| Actions | The action to open the item in the pharmacy screen. Care shows this action only for an item that is not Completed. |
+| **Medicine** | The name of the product. |
+| **Dosage** | The dose from each dosage instruction of the dispense. The cell is empty when the dispense has no dosage instructions. |
+| **Frequency** | How often the patient takes the medicine, from the same instructions. The cell is empty when the dispense has no dosage instructions. |
+| **Quantity** | The quantity dispensed. |
+| **Location** | The location that the dispense was made from. |
+| **Status** | The status of the dispense. |
+| **Bill Time** | The date and time when the dispense was prepared. |
+| **Actions** | **Dispense**, which opens the dispense order at its pharmacy location. Care shows it only for a dispense that is not Completed. |
 
-Note: If the patient has no dispense record, Care shows **No dispense history found**.
+Note: Dispenses from an encounter's **Dispense** drawer have no dosage instructions. For them, the **Dosage** and **Frequency** cells are empty.
+
+Note: If the selected order has no dispenses in this encounter, Care shows **No dispense history found**.
+
+![The table of dispenses outlined, with the Medicine, Dosage, Frequency, Quantity, Location, Status and Bill Time columns](/media/medications/medication-dispense/view-dispense-history-3.png)
+
+![The table of another dispense order, with its Paracetamol dispense outlined](/media/medications/medication-dispense/view-dispense-history-4.png)
 
 ## Expected Outcome
 
-- You see the medicines and supply items that the pharmacy dispensed for the encounter.
+- You see the medicines and other products dispensed for the encounter, one dispense order at a time.
 
 ## Related
 
 Concepts:
 
-- [Medicine Dispense](../../../concepts/medications/medication-dispense.mdx)
+- [Medication Dispense](../../../concepts/medications/medication-dispense.mdx)
+- [Dispense Order](../../../concepts/medications/dispense-order.mdx)
 
 Flows:
 
-- [Dispense a medication](./dispense-medication.mdx)
+- [Dispense from an encounter](./dispense-medication.mdx)
+- [Find and print a dispense order](./find-dispense-order.mdx)

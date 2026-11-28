@@ -192,6 +192,7 @@ When many videos are wanted, hand them to helpers (subagents) that record in par
 - Record one at a time. Browsers recording at once make one another's videos stutter. Every recording and every render goes through `./withlock.sh` from `assets/finishing/`, which waits for `.recording.lock` in the media folder: `EZ_OUT=out/<run> ./withlock.sh npx playwright test <spec>`. Never delete the lock by hand; a lock older than 30 minutes is cleared by the script.
 - Give each run its own output folder (`EZ_OUT=out/<run>`), so runs do not overwrite one another's files.
 - Each helper creates its own patients and encounters off camera, with invented names it has checked are not in the database yet, and changes nothing it did not create.
+- Care can refuse a new encounter when a patient already has too many active ones at the facility (`MAX_ACTIVE_ENCOUNTERS_PER_PATIENT_IN_FACILITY`, 5 by default in November 2026). With a small cast and one fresh encounter per flow, helpers hit it within a few flows. Close each encounter a flow created once its take is accepted, or spread the flows over several patients.
 - Anything created on camera gets a real-sounding name, the kind a hospital would use for a form, a workspace, a schedule or a value set. Never "Test" or "Demo".
 
 ## When the screen does not match the page
