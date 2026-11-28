@@ -1,0 +1,130 @@
+---
+sidebar_position: 3
+---
+
+# Action
+
+## Definition
+
+An **action** tells Care what to do after staff submit a questionnaire or book an appointment. Each action has conditions under **When** and instructions under **Then**. If the conditions are true, Care carries out the instructions in order, for example to show a message or to tag the patient. You add actions to a questionnaire, or to an action configuration that runs when staff book an appointment from a slot.
+
+## Key Attributes
+
+| Components | What it captures |
+| --- | --- |
+| When | The conditions that decide if the action runs. Each condition compares an answer or a patient detail with a value. With no conditions, the action runs every time, and Care shows **Runs on every submission**. |
+| Then | The instructions that Care carries out, in order, when the conditions are true. An action needs at least one instruction. |
+
+An action has no name. Care numbers the actions in a list by their place, as Action 1, Action 2, and so on, and checks them in that order.
+
+### When
+
+Each condition has a **Field**, an **Operator** and a **Value**. The field is an answer to a question of the questionnaire, listed under **Answers**. It can also be a detail of the patient, such as **Patient › Age**, listed under **Patient details**. An action configuration has no questions, so it offers only **Patient details**.
+
+On an Encounter questionnaire, **Patient details** also lists details of the encounter: **Encounter › Status**, **Encounter › Encounter class** and **Encounter › Priority**.
+
+Some questions cannot be used in a condition: for example groups, Display questions, questions inside a repeating section, and Choice questions that take more than one answer from a valueset. Care lists them with the reason.
+
+The operators depend on the field. For example, **Greater Than** and **Less Than** are offered for numbers, and **Contains** and **Does not contain** for a Choice question with custom options that takes more than one answer.
+
+With two or more conditions, **Run when** sets how Care combines them. Choose **All conditions are true (AND)** or **Any condition is true (OR)**.
+
+You can also select **Edit as expression** to write the condition as text, and **Back to conditions** to return to the rows.
+
+An action needs an answer to every question that its conditions use. Care does not let an action use a question that is shown only in some cases. If a question that an action uses is not required, Care warns you and offers to mark it required.
+
+### Then
+
+Each instruction under **Then** is one thing that Care does. Care offers only the instructions that fit the questionnaire or the action configuration.
+
+| Instruction | What it does | Offered in |
+| --- | --- | --- |
+| Show a message | Shows a message to the person who submits the questionnaire or books the appointment. You can insert answers and patient details into the message. | Encounter questionnaires, Patient questionnaires, and action configurations |
+| Set encounter priority | Changes the [priority](../clinical/encounter.mdx#priority) of the encounter to the priority that you choose. | Encounter questionnaires |
+| Tag the encounter | Adds the tag that you choose to the encounter. If the encounter already has the tag, Care skips it. | Encounter questionnaires |
+| Tag the patient | Adds the tag that you choose to the patient. If the patient already has the tag, Care skips it. | Encounter questionnaires, Patient questionnaires, and action configurations |
+
+For the tag instructions, Care lists only active [tags](./tagging.mdx) for that type of record. Parent tags show as headings, and you choose a tag under them. In an action configuration, Care lists only instance-wide tags.
+
+### Actions on a questionnaire
+
+You add actions in the question editor, which opens from **Edit Questions** on the questionnaire. The **Actions** row in the outline opens the **Actions** panel, which says "Run after this form is submitted."
+
+Actions run only for Patient and Encounter questionnaires. For any other subject type, the panel says "Actions run only for patient and encounter forms." and you cannot add an action.
+
+Patient questionnaires exist only for the whole Care instance, and only a superuser of the Care instance can edit them, so in a facility you add actions to Encounter questionnaires.
+
+Care saves the actions with the questionnaire when you select **Save Changes**. A change to the actions alone does not make a new version of the questionnaire.
+
+The actions run when staff submit the questionnaire, in the same save as the answers. If the conditions of no action are true, Care saves the answers and does nothing more.
+
+### Action configurations
+
+An action configuration is a named list of actions, kept in the Admin area under **Actions**. **Runs for** sets when its actions run. In this version, the only choice is **Appointments**, which Care describes as "Evaluated when an appointment is booked."
+
+| Components | What it captures |
+| --- | --- |
+| Name | The name of the action configuration. This field is required and has at most 254 characters. |
+| Description | A text that Care shows under the name in the list. This field is optional. |
+| Runs for | When the actions run. The only choice is **Appointments**. You cannot change it after you create the configuration. |
+| Can be run on demand | Whether staff can run the configuration by hand on a record. It is off by default. No screen in this version runs a configuration by hand. You cannot change it after you create the configuration. |
+| Actions | The actions of the configuration, each with its conditions and instructions. |
+
+Every action configuration applies to the whole Care instance. When staff book an appointment from a slot in any facility, Care runs every action configuration for **Appointments**. This includes configurations that cannot be run on demand.
+
+Action configurations do not run for bookings that patients make themselves, or when an appointment is rescheduled, cancelled, or edited.
+
+When you delete an action configuration, it stops running. Records that it already acted on do not change.
+
+### What staff see when actions run
+
+Before Care sends a questionnaire, it checks the questions that the actions use. If such a question is shown and has no answer, Care shows "This answer is needed by the form's actions" under it. Care does not send the questionnaire.
+
+After a save, Care shows a result message for each instruction that returns a message. The title of a result message is the name of the instruction, for example **Show a message**. If there are more than three, Care shows them together in one result message. Result messages stay on the screen for 15 seconds.
+
+**Show a message** shows its message, with the inserted answers filled in. **Set encounter priority** reports the new priority, and a tag instruction reports the tag that it added.
+
+Care applies a tag as the person who submits the questionnaire. If that person is not allowed to apply the tag, Care still saves the questionnaire, but does not add the tag. The result message says that the person does not have permission to apply the tag.
+
+If an action fails to run, Care saves nothing, not even the answers. Care shows "This form's actions failed to run, so nothing was saved. Ask the form's author to check its actions."
+
+When staff book an appointment from a slot, Care shows the result messages of the action configurations after "Appointment created successfully". If an action fails, the appointment is not booked.
+
+## Permissions
+
+### Who can add actions to a questionnaire
+
+| Permission | Access |
+| --- | --- |
+| Can Create/Update Questionnaires | Shows **Edit Questions** and lets you add, change, and remove the actions of a facility questionnaire. Care checks this permission in the facility's root organization, **Administration**. By default, the Facility Admin role holds it. |
+| Can Apply Tag Config to Resources | Needed for **Tag the encounter** and **Tag the patient**. Care checks it where the tag is managed. For a tag that a department manages, you need it in that department or a department above it. A role in the root organization does not reach such a tag. For a tag that an organization outside the facility manages, you need it in that organization or one above it. For a facility tag with no managing organization, any organization of the facility is enough. By default, the Facility Admin, Staff, Doctor, Nurse, and Pharmacist roles hold it. |
+| Can Read Questionnaires | Lets you find and open the questionnaire. Care checks it in the facility's root organization, in a department that the questionnaire is shared with, or in a department above one. By default, the Facility Admin, Administrator, Doctor, Nurse, Staff, Pharmacist, and Volunteer roles hold it. |
+| Can Read Tag Config | Lists the tags that you can choose for a tag instruction. Care checks it in any organization of the facility. By default, the Facility Admin, Administrator, Doctor, Nurse, Staff, Pharmacist, and Volunteer roles hold it. |
+
+Care checks the tag permission twice: for you when you save the questionnaire, and for the person who submits it when the action runs.
+
+If a questionnaire has tag instructions, everyone who saves changes to it must be allowed to apply those tags.
+
+If you hold the Facility Admin role in **Administration**, you have all four permissions, except for a tag that a department or an organization outside the facility manages.
+
+The person who submits the questionnaire needs no extra permission for the actions. The only exception is a tag: Care applies it only if that person holds Can Apply Tag Config to Resources where the tag is managed.
+
+### Who can manage action configurations
+
+Only a superuser can create, change, or delete an action configuration. No role grants this.
+
+Only a superuser sees the **Admin Dashboard** button on the home dashboard, which leads to the Admin area.
+
+Your deployment can also have custom roles with other sets of permissions.
+
+## Related
+
+- Flow: [Add actions to a questionnaire](../../flows/platform/action/add-actions-to-a-questionnaire.mdx)
+- Flow: [Submit a form that has actions](../../flows/platform/action/submit-a-form-that-has-actions.mdx)
+- Flow: [Create an action configuration](../../flows/platform/action/create-an-action-configuration.mdx)
+- Flow: [Edit or delete an action configuration](../../flows/platform/action/edit-or-delete-an-action-configuration.mdx)
+- Concept: [Questionnaire](../definitions/questionnaire.mdx)
+- Concept: [Tag](./tagging.mdx)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Patient](../clinical/patient)
+- Concept: [Appointment Booking](../scheduling/booking.mdx)

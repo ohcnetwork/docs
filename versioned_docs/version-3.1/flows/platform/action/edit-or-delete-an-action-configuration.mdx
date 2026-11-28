@@ -1,0 +1,137 @@
+---
+sidebar_position: 4
+---
+
+# How to edit or delete an action configuration
+
+## Overview
+
+<video src="/media/platform/action/edit-or-delete-an-action-configuration.mp4" poster="/media/platform/action/edit-or-delete-an-action-configuration.poster.png" controls width="720">
+  <track kind="captions" src="/media/platform/action/edit-or-delete-an-action-configuration.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how a superuser of the Care instance edits or deletes an [action configuration](../../../concepts/platform/action.mdx): a named list of actions that Care runs when staff book an [appointment](../../../concepts/scheduling/booking.mdx) from a slot.
+
+You can change the name, the description and the actions, but not **Runs for** or the on-demand setting.
+
+## Pre-requisites
+
+- You sign in as a superuser. Care shows **Admin Dashboard** on the home dashboard only to superusers.
+- The action configuration is saved in Admin > Actions. See [How to create an action configuration](./create-an-action-configuration.mdx).
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Superuser of the Care instance | Only a superuser can change or delete an action configuration. No role gives this access, and Care refuses the change from every other user. |
+
+## Steps
+
+### 1. Open Actions
+
+On the home dashboard, select **Admin Dashboard**.
+
+In the admin sidebar, under **Configuration**, select **Actions**.
+
+![Actions in the admin sidebar](/media/platform/action/edit-or-delete-an-action-configuration-1.png)
+
+### 2. Open the action configuration
+
+The list shows the **Name**, **Runs for**, **Actions** and **On demand** of each configuration.
+
+Select the row or the name of the configuration. Care opens the configuration.
+
+The configuration shows who created it under **Created By**, and who changed it last under **Last updated by**.
+
+Note: The list has no delete control. To delete a configuration, open it first.
+
+![An action configuration row on the Actions page](/media/platform/action/edit-or-delete-an-action-configuration-2.png)
+
+### 3. Change the name or the description
+
+Change the **Name** or the **Description**.
+
+| Components | What it captures |
+| --- | --- |
+| **Name** | The name of the configuration in the list. This field is required. It holds at most 254 characters. |
+| **Description** | More information about the configuration. The list shows it under the name. This field is optional. |
+
+**Runs for** shows as a badge. If the configuration can be run on demand, an **On demand** badge shows next to it.
+
+You cannot change these badges. Care shows "The context and the on-demand setting are fixed once created."
+
+Note: The on-demand setting decides if staff can run the configuration by hand. No screen in this version runs a configuration by hand.
+
+![The name and description of the configuration being changed](/media/platform/action/edit-or-delete-an-action-configuration-3.png)
+
+### 4. Change an action
+
+Each action shows as a card titled "Action 1", "Action 2" and so on. A summary of the action shows under the title. Every card starts closed.
+
+Select the "Action N" header of the action that you want to change. The card opens, and any other open card closes.
+
+Change the conditions under **When**, or the instructions under **Then**. For details, see [How to create an action configuration](./create-an-action-configuration.mdx).
+
+![An action card opened to change its conditions and instructions](/media/platform/action/edit-or-delete-an-action-configuration-4.png)
+
+### 5. Add or remove an action
+
+To add an action, select **Add action**. Set its conditions under **When** and its instructions under **Then**.
+
+To remove an action:
+
+1. On the card of the action, select the bin button "Remove action N".
+2. Care asks "Remove action N?". Select **Remove**.
+
+Note: Care removes the action from the saved configuration only when you select **Save**.
+
+### 6. Save the changes
+
+Select **Save**.
+
+Note: **Save** stays disabled until you change something.
+
+If the name is empty or too long, Care shows "This field is required" or "Maximum 254 characters are allowed".
+
+If an action has a problem, Care shows the problem in an error message and opens that action. Care does not save. Fix the action, then select **Save** again.
+
+Note: If you leave the configuration before you save, Care asks "You have unsaved changes. Leave without saving?"
+
+![The success message after saving the configuration](/media/platform/action/edit-or-delete-an-action-configuration-5.png)
+
+### 7. Delete the action configuration
+
+Follow this step only when the configuration must stop running. You do not need steps 3 to 6.
+
+Select **Delete**.
+
+Care asks "Delete this configuration?" and tells you that the configuration stops running. Records it already acted on are not changed.
+
+Select **Delete**. To keep the configuration, select **Cancel**.
+
+![The delete confirmation dialog](/media/platform/action/edit-or-delete-an-action-configuration-6.png)
+
+![The success message after deleting the configuration](/media/platform/action/edit-or-delete-an-action-configuration-7.png)
+
+## Expected Outcome
+
+- After you save, Care shows "Action configuration updated", and the configuration stays open.
+- When staff book an appointment from a slot after you save, Care runs the changed configuration.
+- The change applies in every facility, because action configurations in Admin > Actions belong to the whole Care instance.
+- Care does not run the changed configuration on appointments that are already booked, even when staff edit or reschedule them.
+- After you delete, Care shows "Action configuration deleted" and goes back to the list.
+- A deleted configuration leaves the list and no longer runs. Records it already acted on are not changed.
+
+## Related
+
+Concepts:
+
+- [Action](../../../concepts/platform/action.mdx)
+- [Appointment Booking](../../../concepts/scheduling/booking.mdx)
+
+Flows:
+
+- [How to create an action configuration](./create-an-action-configuration.mdx)
+- [How to submit a form that has actions](./submit-a-form-that-has-actions.mdx)
+- [How to add actions to a questionnaire](./add-actions-to-a-questionnaire.mdx)

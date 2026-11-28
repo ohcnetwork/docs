@@ -1,0 +1,145 @@
+---
+sidebar_position: 2
+---
+
+# How to submit a form that has actions
+
+## Overview
+
+<video src="/media/platform/action/submit-a-form-that-has-actions.mp4" poster="/media/platform/action/submit-a-form-that-has-actions.poster.png" controls width="720">
+  <track kind="captions" src="/media/platform/action/submit-a-form-that-has-actions.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to submit an encounter questionnaire that has [actions](../../../concepts/platform/action.mdx), and what Care shows when the actions run. The actions run when you save the questionnaire, as part of the same save.
+
+## Pre-requisites
+
+- The patient has an encounter, and you fill in an encounter questionnaire for that encounter.
+- The encounter is not closed. Care treats an encounter as closed when its status is Completed, Cancelled, Entered in error or Discontinued.
+- The questionnaire has the status Active. The **Forms** dialog lists only active questionnaires.
+- If the questionnaire belongs to a facility, the encounter is at that facility.
+- A form builder added actions to the questionnaire, as described in [How to add actions to a questionnaire](./add-actions-to-a-questionnaire.mdx).
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can submit questionnaire about patient encounters | Lets you save the questionnaire for the encounter. You must hold it in an organization that the encounter belongs to, or in an organization of the encounter's current location. By default, the Staff, Doctor, Nurse and Facility Admin roles hold it. |
+| Can list patients | Lets you open the encounter. You must hold it through a role on the patient: in an organization of one of the patient's open encounters or its location, or in an organization that the patient belongs to. A direct link to the patient also counts. You need this permission or Can Read encounter. By default, the Staff, Doctor, Nurse, Administrator, Facility Admin, Volunteer and Pharmacist roles hold it. |
+| Can Read encounter | Lets you open the encounter. You must hold it in an organization that the encounter belongs to, or in an organization of the encounter's current location. You need this permission or Can list patients. By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can view clinical data about patients | Shows **Forms** on the **Overview** tab of the encounter. You must hold it among your permissions on the patient. You need this permission or Can Read encounter related clinical data. By default, the Staff, Doctor, Nurse and Facility Admin roles hold it. |
+| Can Read encounter related clinical data | Shows **Forms** on the **Overview** tab of the encounter. You must hold it in an organization of the encounter or of its current location. You need this permission or Can view clinical data about patients. By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can Read Questionnaires | Lets you find the questionnaire in the **Forms** dialog and open it. For a questionnaire of the facility, you must hold it in Administration, the root organization of the facility. You can also hold it in a department that the questionnaire is shared with, or in a department above one. By default, the Facility Admin, Administrator, Doctor, Nurse, Staff, Pharmacist and Volunteer roles hold it. |
+| Can Apply Tag Config to Resources | Lets a **Tag the encounter** or **Tag the patient** instruction apply its tag when you submit. For a tag managed by a department, you must hold it in that department or in a department above it. For a tag managed by an organization outside the facility, you must hold it in that organization or in one above it. For a facility tag with no managing organization, any organization of the facility is enough. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold it. |
+
+Note: The actions need no other permission. If you do not hold Can Apply Tag Config to Resources where the tag requires it, Care does not apply the tag. Care still saves the questionnaire, and the result of the instruction says that you cannot apply the tag.
+
+## Steps
+
+### 1. Open the questionnaire
+
+Open the encounter from the facility. The encounter opens on the **Overview** tab.
+
+On the **Overview** tab, select **Forms**. You can also press `f`.
+
+In the **Forms** dialog, type the name of the questionnaire in **Search Forms**. Select the questionnaire.
+
+The dialog lists at most 15 questionnaires. Search for the questionnaire if you do not see it.
+
+If the questionnaire is one of your favorite forms, you can also select it on the **Overview** tab.
+
+Note: Care shows **Forms** only when the encounter is open. You also need the clinical data access listed under Permissions.
+
+![The Forms button on the encounter Overview tab](/media/platform/action/submit-a-form-that-has-actions-1.png)
+
+![The questionnaire found with Search Forms in the Forms dialog](/media/platform/action/submit-a-form-that-has-actions-2.png)
+
+### 2. Answer the questions
+
+Answer the questions in the questionnaire. The conditions of the actions can use your answers.
+
+![The answer entered in the questionnaire](/media/platform/action/submit-a-form-that-has-actions-3.png)
+
+### 3. Save the questionnaire
+
+Select **Save Changes**. You can also press `Shift+Enter`.
+
+Care checks your answers before it sends the questionnaire. If the check passes, Care saves your answers and runs the actions.
+
+Care runs the instructions of each action whose conditions are true. An action with no conditions runs on every submission.
+
+![The Save Changes button for the questionnaire](/media/platform/action/submit-a-form-that-has-actions-4.png)
+
+### 4. Answer the questions that the actions need
+
+If a question on the screen has no answer, and an action needs it, Care does not send the questionnaire.
+
+Care shows "This answer is needed by the form's actions" on that question.
+
+Care also shows "Validation failed" and scrolls to the first question with a problem. Because Care sends nothing, no action runs.
+
+Answer the question. Select **Save Changes** again.
+
+### 5. Read the results of the actions
+
+Care shows "Questionnaire submitted successfully".
+
+Care also shows a result message for each instruction that ran and returned a result text.
+
+The title of a result message is the name of the instruction, for example **Tag the patient**. The text is the result of the instruction.
+
+If more than three instructions return a result, Care shows one summary message instead.
+
+The heading of the summary message gives the number of results, for example "4 instruction results". It lists the title and the text of each result.
+
+Each result message stays on the screen for 15 seconds. The summary message stays for the same time.
+
+If the conditions of every action are false, no instruction runs. Care then shows only "Questionnaire submitted successfully".
+
+Each instruction can return these results:
+
+| Instruction | Result | What it means |
+| --- | --- | --- |
+| **Show a message** | The text that the form builder wrote for the instruction. | A message from the form builder to the person who submits the questionnaire. If the form builder inserted an answer into the text, the result shows your answer. |
+| **Set encounter priority** | "Encounter priority set to X", where X is the new priority. | Care changed the priority of the encounter. |
+| **Set encounter priority** | "Encounter priority is already X". | The encounter already had this priority. Care did not change it. |
+| **Tag the encounter** or **Tag the patient** | "Tagged with “X”", where X is the name of the tag. | Care added the tag to the encounter or to the patient. |
+| **Tag the encounter** or **Tag the patient** | "Tag already set". | The encounter or the patient already has the tag. Care did not change it. |
+| **Tag the encounter** or **Tag the patient** | "You do not have permission to apply tag 'X'". | You are not allowed to apply this tag. Care did not apply it, but saved the questionnaire. |
+| **Tag the encounter** or **Tag the patient** | "Tag no longer exists". | The tag was deleted after the form builder chose it. Care did not apply a tag. |
+
+Note: Action configurations also run when staff book an appointment from a slot. Care then shows "Appointment created successfully" and the same result messages.
+
+![Result messages from the actions after the questionnaire is saved](/media/platform/action/submit-a-form-that-has-actions-5.png)
+
+### 6. Ask for help if the actions fail
+
+If an action fails to run, Care shows "This form's actions failed to run, so nothing was saved. Ask the form's author to check its actions."
+
+Care does not save your answers.
+
+Ask the form builder to check the actions of the questionnaire.
+
+## Expected Outcome
+
+- Care saves your answers as a [questionnaire response](../../../concepts/clinical/questionnaire-response.mdx) and shows "Questionnaire submitted successfully".
+- Care runs the instructions of each action whose conditions are true. For example, the encounter gets a new priority, or the patient gets a tag. A tag instruction can be refused, and its result then says why.
+- Care shows the result of each instruction in a result message, or in one summary message if there are more than three results.
+- If an action fails to run, Care does not save your answers.
+
+## Related
+
+Concepts:
+
+- [Action](../../../concepts/platform/action.mdx)
+- [Questionnaire](../../../concepts/definitions/questionnaire.mdx)
+- [Questionnaire Response](../../../concepts/clinical/questionnaire-response.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+- [Tag](../../../concepts/platform/tagging.mdx)
+
+Flows:
+
+- [How to add actions to a questionnaire](./add-actions-to-a-questionnaire.mdx)
+- [View questionnaire responses](../../clinical/questionnaire-response/view-questionnaire-responses.mdx)
+- [Manage encounter tags](../../clinical/encounter/manage-encounter-tags.mdx)

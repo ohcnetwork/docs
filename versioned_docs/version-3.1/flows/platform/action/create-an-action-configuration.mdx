@@ -1,0 +1,170 @@
+---
+sidebar_position: 3
+---
+
+# How to create an action configuration
+
+## Overview
+
+<video src="/media/platform/action/create-an-action-configuration.mp4" poster="/media/platform/action/create-an-action-configuration.poster.png" controls width="720">
+  <track kind="captions" src="/media/platform/action/create-an-action-configuration.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how a superuser of the Care instance creates an [action configuration](../../../concepts/platform/action.mdx) in the Admin area of Care. Care runs the configuration every time a staff member books an [appointment](../../../concepts/scheduling/booking.mdx) from a slot, in any facility.
+
+## Pre-requisites
+
+- You sign in to Care as a superuser.
+- If an action tags the patient, an active patient [tag](../../../concepts/platform/tagging.mdx) exists for the whole Care instance.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| A superuser of the Care instance | Only a superuser can create an action configuration. No role gives this access, and Care refuses the save from every other user. Only superusers see the **Admin Dashboard** button on the home dashboard. |
+
+## Steps
+
+### 1. Open the Actions page
+
+On the home dashboard, select **Admin Dashboard**.
+
+In the admin sidebar, under **Configuration**, select **Actions**.
+
+The **Actions** page lists the action configurations in the columns **Name**, **Runs for**, **Actions** and **On demand**. If there are no configurations, the page shows "No action configurations yet".
+
+![The Admin Dashboard button on the home page](/media/platform/action/create-an-action-configuration-1.png)
+
+### 2. Start a new configuration
+
+Select **New action configuration**.
+
+Care opens the new configuration. It has the details of the configuration and an **Actions** section.
+
+![The New action configuration button on the Actions page](/media/platform/action/create-an-action-configuration-2.png)
+
+### 3. Fill in the details
+
+Complete these components.
+
+| Components | What it captures |
+| --- | --- |
+| **Name** | The name that the **Actions** list shows. This field is required. Use at most 254 characters. |
+| **Description** | More information about the configuration. The list shows it under the name. This field is optional. |
+| **Runs for** | What the configuration runs for. **Appointments** is the only choice, and it is selected by default. Care shows the hint "Evaluated when an appointment is booked." |
+| **Can be run on demand** | A switch that is off by default. Its hint says "Lets staff trigger this configuration on a record by hand, besides its automatic run." |
+
+Note: No screen in this version of Care runs a configuration by hand. The configuration runs when staff book an appointment, whether the switch is on or off.
+
+Note: You cannot change **Runs for** or **Can be run on demand** after you save the configuration.
+
+![The details of the new action configuration filled in](/media/platform/action/create-an-action-configuration-3.png)
+
+### 4. Add an action
+
+Under **Actions**, select **Add action**.
+
+Care adds a card named "Action 1" and opens it. The card has a **When** section for conditions and a **Then** section for instructions.
+
+Until you add a condition, **When** shows **Runs on every submission**. The action then runs for every appointment that staff book.
+
+![A new action card in the Actions section](/media/platform/action/create-an-action-configuration-4.png)
+
+### 5. Add conditions
+
+If the action must run for every appointment, skip this step.
+
+Select **Add a condition**. Care adds "Condition 1".
+
+| Components | What it captures |
+| --- | --- |
+| **Field** | The patient detail to test, for example **Patient › Age**. The list shows only **Patient details**. |
+| **Operator** | How Care compares the detail with the value: **Equals**, **Not Equals**, **Greater Than**, **Greater Than or Equal**, **Less Than** or **Less Than or Equal**. |
+| **Value** | The value to compare with. Depending on the field, this is a number box, a list of options, a date field or a text box. |
+
+For an action configuration, **Field** offers these patient details:
+
+- **Patient › Age**: the age in whole years.
+- **Patient › Gender**
+- **Patient › Name**
+- **Patient › Phone number**
+- **Patient › Date of birth**
+- **Patient › Year of birth**
+- **Patient › Blood group**
+- **Patient › Deceased**: whether a date of death is recorded.
+
+For example, to run the action only for patients over 60, select **Patient › Age** and **Greater Than**. Enter 60 in **Value**.
+
+To add another condition, select **Add a condition** again.
+
+If there are two or more conditions, select an option in **Run when**: **All conditions are true (AND)** or **Any condition is true (OR)**.
+
+Note: You can also select **Edit as expression** to write the condition as text. To go back to the condition rows, select **Back to conditions**.
+
+![A condition on a patient detail in the action](/media/platform/action/create-an-action-configuration-5.png)
+
+### 6. Add instructions
+
+Under **Then**, select **Add instruction**.
+
+Open the **Instruction** list. Select one of these instructions.
+
+| Instruction | What it does |
+| --- | --- |
+| **Show a message** | Shows your text to the staff member who books the appointment, after the booking. Type the text in **Message**. |
+| **Tag the patient** | Adds a tag to the patient of the appointment. Select the tag in **Tag**. |
+
+Note: **Set encounter priority** and **Tag the encounter** are not offered for an action configuration that runs for appointments.
+
+To put a patient detail in the message, select **Insert an answer or patient detail**. The **Preview:** line shows the message with the detail.
+
+The **Tag** list shows only active patient tags that belong to the whole Care instance. A parent tag is a heading in the list and cannot be selected.
+
+If the patient already has the tag, Care does not add it again.
+
+Note: Care applies the tag on behalf of the staff member who books the appointment. If that person is not allowed to apply the tag, Care does not tag the patient. The appointment is still booked.
+
+To add another instruction to the same action, select **Add instruction** again. Care runs the instructions of an action in order.
+
+To add another action, select **Add action** again. Care checks the actions in order. It runs the instructions of each action whose conditions are true.
+
+![The Then section with a Show a message instruction](/media/platform/action/create-an-action-configuration-6.png)
+
+### 7. Save the configuration
+
+Select **Save**.
+
+If **Name** is empty, Care shows "This field is required".
+
+If an action has a problem, Care shows the first problem in an error message and opens that action. Care does not save the configuration.
+
+Correct the problem. Then select **Save** again.
+
+Some problems and what to do:
+
+- "An action needs at least one step": add an instruction under **Then**.
+- "Choose what each action step does": select an instruction in each **Instruction** list.
+- "Fill in the required inputs of the action's steps": fill in each required input. Care marks a required input with an asterisk.
+
+![The new configuration listed on the Actions page](/media/platform/action/create-an-action-configuration-7.png)
+
+## Expected Outcome
+
+- Care shows the message "Action configuration created" and goes back to the **Actions** page.
+- The new configuration appears in the list. Its row shows **Appointments** under **Runs for** and the number of actions, for example "1 action". It shows **Yes** or **No** under **On demand**.
+- From now on, Care runs the configuration each time staff book an appointment from a slot, in any facility.
+- Care runs it together with all other action configurations for appointments. It runs whether **Can be run on demand** is on or off.
+- The configuration does not run for bookings that patients make themselves. It also does not run when an appointment is rescheduled, cancelled or edited.
+
+## Related
+
+Concepts:
+
+- [Action](../../../concepts/platform/action.mdx)
+- [Appointment Booking](../../../concepts/scheduling/booking.mdx)
+- [Tag](../../../concepts/platform/tagging.mdx)
+
+Flows:
+
+- [How to edit or delete an action configuration](./edit-or-delete-an-action-configuration.mdx)
