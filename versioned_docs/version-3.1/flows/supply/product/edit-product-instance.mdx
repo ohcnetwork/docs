@@ -2,74 +2,148 @@
 sidebar_position: 4
 ---
 
-# Edit a product instance
+# Edit a product
 
 ## Overview
 
-This flow describes how to change the details of a [product](../../../concepts/supply/product.mdx) instance at a facility.
+<video src="/media/supply/product/edit-product-instance.mp4" poster="/media/supply/product/edit-product-instance.poster.png" controls width="720">
+  <track kind="captions" src="/media/supply/product/edit-product-instance.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to change the details of a [product](../../../concepts/supply/product.mdx) at your facility. A product is one batch of a Product Knowledge that your facility holds.
 
 ## Pre-requisites
 
-- Someone added the product instance at the facility.
-- You are a member of the facility.
+- You belong to a department of the facility.
+- Your facility has the product that you want to change. Care creates products when you receive stock. For the steps, see [Add a product](./add-product-instance.mdx).
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create Product on Facility | Lets you add and edit product instances at the facility. Facility Admin and Admin have this permission. |
+| Can Create Product on Facility | Lets you save your changes to the product. You must hold it in the facility's root organization, Administration. By default, the Facility Admin role holds this permission. |
+| Can Read Product | Lets you see the **Products** list, open a product, and load it in the edit form. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Read Product Knowledge | Lets you use the Product Knowledge filter on the **Products** list. The edit form also reads the facility's Product Knowledge when it opens. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Read Resource Category | Lets you open the categories in the Product Knowledge filter and in the charge item definition picker. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Read Charge Item Definition | Lets you see and select charge item definitions in the charge item definition picker. You can hold it in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+
+Note: Care shows **Edit** to every user who can open a product. If you hold Can Create Product on Facility only in departments other than Administration, Care does not save your changes.
 
 ## Steps
 
-### 1. Open the facility settings
+### 1. Open the products
 
-Go to the facility.
+1. Open your facility.
+2. In the sidebar, select **Settings**.
+3. In the settings sidebar, in the **Inventory** group, select **Product**.
 
-Click **Settings**.
+Care opens the **Products** page.
 
-### 2. Open the product
+![The facility settings sidebar with Product outlined in the Inventory group](/media/supply/product/edit-product-instance-1.png)
 
-Click **Products**.
+### 2. Find the product
 
-Click the product that you want to change.
+Each row is one product. **Name** shows the Product Knowledge of the product. The list shows the newest products first.
 
-### 3. Start the edit
+Use **Lot Number** and **Expires** to find the batch that you want to change.
 
-Click **Edit**.
+![The Products list with the row of the product outlined](/media/supply/product/edit-product-instance-2.png)
 
-### 4. Change the details
+Note: The list shows only Active products until you change the **Status** filter. To see products with any status, set **Status** to **All**.
+
+Note: To see only the products of one Product Knowledge, select it in the Product Knowledge filter above the list.
+
+### 3. Open the product
+
+Select **View** on the row of the product. Care opens the product page.
+
+![The Products list with the View button of the product outlined](/media/supply/product/edit-product-instance-3.png)
+
+Make sure that the **Product Details** card shows the batch that you want to change.
+
+Note: Selecting the row itself does not open the product. Use the buttons in the row.
+
+Note: To open the edit form directly, select **Edit** on the row. Then go to step 5.
+
+Note: On a narrow screen, the list shows cards instead of rows. Each card has the same **View** and **Edit** buttons.
+
+### 4. Start the edit
+
+Select **Edit**. Care opens the **Edit Product** form with the current details of the product.
+
+![The product page with the Edit button outlined](/media/supply/product/edit-product-instance-4.png)
+
+### 5. Change the details
 
 Change the fields that you want to update.
 
 | Components | What it captures |
 | --- | --- |
-| Status | The current state of the product instance. |
-| Lot Number | The manufacturer lot number of the product instance. |
-| Expiration Date | The date after which you cannot use the product instance. |
-| Standard Pack Size | The quantity in one standard pack. |
-| Purchase Price | The price that the facility paid for the product instance. |
-| Charge Item Definition | The charge item definition that Care links to the product instance. |
+| Status | The status of the product: **Active**, **Inactive**, or **Entered in Error**. |
+| Lot Number | The manufacturing lot or batch number. |
+| Expiration Date | The date after which the product should not be used. You enter a date only, with no time. This field is required. |
+| Standard Pack Size | The number of units in one pack of the batch. This field is optional. |
+| Purchase Price | The purchase price of one unit, not of one pack. This field is optional. |
+| Charge Item Definition | The charge item definition that Care uses when it makes charges for this product. The field is in the **Billing Information** section. This field is optional. |
 
-Note: You cannot change the product knowledge that the product instance is based on.
+To select a charge item definition, open the picker under **Charge Item Definition**. Then do one of these steps:
 
-Note: There is no delete action. To remove a product instance from use, set the Status to **Inactive** or **Entered in Error**.
+- Open a category. Then select a charge item definition in it. A category can contain other categories.
+- Type the title in **Search charge item definitions**. Then select the charge item definition in the results.
 
-### 5. Save the changes
+The picker shows only Active charge item definitions of your facility.
 
-Click **Save**.
+![The Edit Product form with the charge item definition picker open on a category and a charge item definition outlined](/media/supply/product/edit-product-instance-5.png)
+
+![The Edit Product form with the new Standard Pack Size and the selected charge item definition outlined](/media/supply/product/edit-product-instance-6.png)
+
+Note: The form has no Product Knowledge field. You cannot change the Product Knowledge of a product.
+
+Note: You cannot remove the charge item definition from a product. You can only replace it with a different one.
+
+Note: You can clear the charge item definition in the picker. If you then save, Care keeps the charge item definition that the product had.
+
+Note: If you clear **Purchase Price** and then save, Care keeps the purchase price that the product had.
+
+Note: Care has no delete action for products.
+
+Note: Care does not offer an **Inactive** or **Entered in Error** product as an existing batch when you receive stock. The **Products** list also hides such a product until you change the **Status** filter.
+
+### 6. Save the changes
+
+Select **Update**. Care shows **Product updated successfully** and opens the product page.
+
+![The Edit Product form with the Update button outlined](/media/supply/product/edit-product-instance-7.png)
+
+![The product page after the update, with the Charge Item Definition card outlined](/media/supply/product/edit-product-instance-8.png)
+
+Note: Until you change a field, **Update** is unavailable.
+
+Note: To leave the form without saving, select **Cancel**.
+
+If Care shows a message, use this table.
+
+| If Care shows | What to do |
+| --- | --- |
+| Cannot write product | You do not hold Can Create Product on Facility in Administration. Ask your facility administrator for a role that holds it in Administration, for example Facility Admin. |
+| **Required** under **Expiration Date** | The product has no expiration date. Enter the expiration date. Then select **Update**. |
 
 ## Expected Outcome
 
-- Care saves the new details of the product instance.
-- The product page shows the updated details.
+- Care saves the new details of the product.
+- The product page shows the new details in the **Product Details** card.
+- If you selected a different charge item definition, the **Charge Item Definition** card shows it.
 
 ## Related
 
 Concepts:
 
 - [Product](../../../concepts/supply/product.mdx)
+- [Product Knowledge](../../../concepts/definitions/product-knowledge.mdx)
+- [Charge Item Definition](../../../concepts/definitions/charge-item-definition.mdx)
 
 Flows:
 
-- [Add a product instance](./add-product-instance.mdx)
+- [Add a product](./add-product-instance.mdx)
+- [Update or retire product knowledge](./edit-retire-catalog-entry.mdx)
