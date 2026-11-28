@@ -62,6 +62,8 @@ curl -s -m 15 -o /dev/null -w '%{http_code}\n' "<SNOWSTORM_DEPLOYMENT_URL>/metad
 
 If it does not, record the other flows and come back to these later.
 
+Your tool may refuse this check, because the server is an outside address. Do not work around the refusal. Record anyway: the backend calls the server during the flow, so a failed search or save shows in the recording and in `<slug>.api.json`, and you check the server then.
+
 ### One recording at a time per environment
 
 Two sessions recording against the same database spoil each other's data. Take a lock before recording and release it after:
@@ -131,6 +133,11 @@ Name it `<flow-slug>.demo.ts`. Start from `example.demo.ts`.
 - Each flow creates what it changes. Do not rely on what another recording left behind.
 - Respect the data policy. Under "create allowed", name records so they are recognisably yours.
 - Use invented people, the same small cast in every recording. If `$EZ/personas.md` exists, use it. If not, propose a few clearly fictional names that suit the deployment's region, get the user's agreement, and save them there.
+- Give a helper that writes setup or specs the cast and the memory rules about names and addresses in its brief. It does not read memory itself. On 28 November 2026 a helper invented three patient names, and real towns and PIN codes, against both standing preferences.
+- On a stack that several sessions share, the cast's patients may already be taken. Before setup, look up each cast name on the stack. A name that is taken, or exists several times, belongs to another session: change nothing about that patient. If no cast patient is free, ask the user whether to add new ones to the cast. Do not make one more copy of a taken name.
+- Give each cast patient two facility patient tags before you record, with neutral names such as "Regular follow-up" and "Outpatient clinic" (category admin). In Care 3.1 the patient header squeezes the name when the patient has no tags. On Patient Details and on the Service Request page, "Thomas Varghese" wrapped onto two lines. One tag still wraps; two keep the name on one line. On a shared stack, look for the tags before you create them, and create them under the recording lock. Then take a screenshot of each header the flow shows, and check the name before you record. On 27 and 28 November 2026, two sessions re-recorded six videos for this.
+- `personas.md` is shared by every session. Add lines to it; never rewrite the file. On 28 November 2026 one session replaced the whole cast while another session's recordings still used it.
+- Run only tools that the session already installed. `npx <tool>` downloads a package from npm when the tool is not in `node_modules`. `npx tsc` without TypeScript fetches an unrelated stub package.
 
 **Keep it watchable.** Aim for under a minute per flow; split a longer flow into two pages. Assert only what you need in order to wait for the screen to settle.
 

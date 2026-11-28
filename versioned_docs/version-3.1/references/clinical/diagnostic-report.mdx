@@ -4,142 +4,383 @@ sidebar_position: 7
 
 # Diagnostic Report
 
-A `DiagnosticReport` records the results and interpretation of a diagnostic test, tied to the `ServiceRequest` that ordered it. You create one to report on an investigation, then read it back with its observations, encounter, and requester embedded.
+Technical reference for the `DiagnosticReport` module in Care EMR. For what a diagnostic report is and how Care's screens use it, see the [Diagnostic Report concept](../../concepts/clinical/diagnostic-report.mdx).
 
-The Django model (`care/emr/models/diagnostic_report.py`) imposes no shape: it persists `category` and `code` as opaque `JSONField`s and `status` as a free `CharField`. Shape and validation come from the Pydantic resource specs (`care/emr/resources/diagnostic_report/`) — the status enum, the coded-concept structure, the bound value sets, and the separate read/write API schemas. The specs build on `EMRResource` and serialize between the API and the model.
+A diagnostic report holds the outcome of one service request for one patient and one encounter. Its results are not fields of the report: they are `Observation` rows that point to it.
 
 **Source:**
+
 - Model: [`care/emr/models/diagnostic_report.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/diagnostic_report.py)
-- Spec: [`care/emr/resources/diagnostic_report/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/diagnostic_report/spec.py)
-- Valueset: [`care/emr/resources/diagnostic_report/valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/diagnostic_report/valueset.py)
+- Specs: [`care/emr/resources/diagnostic_report/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/diagnostic_report/spec.py) · [`valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/diagnostic_report/valueset.py)
+- Value set of `code`: [`care/emr/resources/observation/valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/observation/valueset.py)
+- Viewset: [`care/emr/api/viewsets/diagnostic_report.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/diagnostic_report.py)
+- Authorization: [`care/security/authorization/service_request.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/authorization/service_request.py) · [`care/security/permissions/diagnostic_report.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/permissions/diagnostic_report.py)
+
+The Django model is the storage layer. It stores `status` as free text, `category` and `code` as nullable JSON fields, and `note` and `conclusion` as nullable text.
+
+The Pydantic resource specs give these fields their shape: the status enum, the `Coding` structure, the bound value sets, and separate read and write schemas.
+
+The viewset adds the routes, the list filters, the `upsert_observations` action that saves results, and the authorization checks.
 
 ## Models
 
 | Model | Purpose |
 | --- | --- |
-| `DiagnosticReport` | Results and interpretation of a diagnostic test or investigation, tied to a `ServiceRequest` |
+| `DiagnosticReport` | The outcome of one service request for one patient and one encounter. Its results are `Observation` rows linked to it |
 
-`DiagnosticReport` extends [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base that provides `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON.
+`DiagnosticReport` extends [`EMRBaseModel`](../foundation/base-model.mdx). Through it, each report has `external_id`, `created_date`, `modified_date`, the soft-delete flag `deleted`, `created_by`, `updated_by`, `history` and `meta`.
 
 ## `DiagnosticReport` fields
 
 ### Classification
 
-| Field | Model type | Spec shape | Notes |
+| Field | Model type | Spec type | Notes |
 | --- | --- | --- | --- |
-| `status` | `CharField(255)` | `DiagnosticReportStatusChoices` (enum, required) | Lifecycle status. Stored as free text but constrained to the enum below on write. Optional on update. |
-| `category` | `JSONField` (null) | `Coding { system, version?, code, display? }`, **required** | Service section the report belongs to. `code` is validated against the **Diagnostic Service Sections** value set. |
-| `code` | `JSONField` (null) | `Coding { system, version?, code, display? }`, optional | The test or panel performed. `code` is validated against the **Observation** value set (LOINC). Nullable. |
-
-The `Coding` shape (from `care/emr/resources/common/coding.py`, `extra="forbid"`):
-
-| Field | Type | Required | Notes |
-| --- | --- | --- | --- |
-| `system` | `str` | optional | Code system URI (e.g. `http://terminology.hl7.org/CodeSystem/v2-0074`, `http://loinc.org`) |
-| `version` | `str` | optional | Code system version |
-| `code` | `str` | **required** | The code; validated against the bound value set |
-| `display` | `str` | optional | Human-readable label |
+| `status` | `CharField(max_length=255)` | `DiagnosticReportStatusChoices` | Required on create. Optional on update: when it is left out, the stored value stays. Free text in the database; the spec accepts only the enum values below |
+| `category` | `JSONField(null=True, blank=True)` | `Coding` bound to `system-diagnostic-service-sections-code` | Required on create and on every update |
+| `code` | `JSONField(null=True, blank=True)` | `Coding` bound to `system-observation` | Optional. What the report is for. An update cannot clear it by sending null |
 
 ### Narrative
 
-| Field | Model type | Spec shape | Notes |
+| Field | Model type | Spec type | Notes |
 | --- | --- | --- | --- |
-| `note` | `TextField` (null) | `str \| None` | Free-text comments. Not parsed by the platform. |
-| `conclusion` | `TextField` (null) | `str \| None` | Clinical interpretation/summary of the results. Not parsed by the platform. |
+| `note` | `TextField(null=True, blank=True)` | `str \| None` | Optional free text. The Care frontend has no input for it. An update cannot clear it by sending null |
+| `conclusion` | `TextField(null=True, blank=True)` | `str \| None` | Optional free text. The Care frontend edits it in a rich text editor. An update cannot clear it by sending null |
 
 ### Relationships
 
+| Field | Type | Set by | Notes |
+| --- | --- | --- | --- |
+| `facility` | `FK → facility.Facility`, `PROTECT`, nullable, default `None` | Care, from the encounter of the service request | A facility that has reports cannot be hard-deleted |
+| `patient` | `FK → emr.Patient`, `CASCADE` | Care, from the patient in the URL | Must be the patient of the service request; otherwise create fails with "Invalid Request" |
+| `encounter` | `FK → emr.Encounter`, `CASCADE` | Care, from the service request | Not in any write spec |
+| `service_request` | `FK → emr.ServiceRequest`, `CASCADE` | The client, on create only | Sent on create as the service request's `external_id`. `__exclude__` keeps it out of the generic field mapping. List and detail reads return it as an embedded object. The update spec has no such field, so it cannot change |
+
+### Inherited from `EMRBaseModel`
+
 | Field | Type | Notes |
 | --- | --- | --- |
-| `facility` | `FK → facility.Facility` | `PROTECT`, nullable. Facility the report is scoped to. Set server-side; not a writable spec field. |
-| `patient` | `FK → emr.Patient` | `CASCADE`. Subject of the report. Set server-side; not a writable spec field. |
-| `encounter` | `FK → emr.Encounter` | `CASCADE`. Encounter the report was produced under. Set server-side; not a writable spec field. |
-| `service_request` | `FK → emr.ServiceRequest` | `CASCADE`. The order this report fulfils. Write-only on create (resolved from `external_id`); excluded from base serialization via `__exclude__`. |
+| `external_id` | `UUIDField(default=uuid4, unique=True, db_index=True)` | The report's public ID. Reads return it as `id`, and the report routes look the report up by it. The report's files use it as `associating_id` |
+| `created_date`, `modified_date` | `DateTimeField` | Set automatically. Returned in list and detail reads. The list can be ordered by either |
+| `deleted` | `BooleanField(default=False, db_index=True)` | Soft-delete flag. The API has no delete action |
+| `created_by`, `updated_by` | Foreign keys to the user | On create, both are the requesting user. Every update sets `updated_by`. The detail read returns both as user objects |
+| `history`, `meta` | `JSONField(default=dict)` | Shared JSON fields of every EMR model |
+
+### `Coding` shape
+
+`category` and `code` each hold one `Coding`. Care rejects any key that is not in this table.
+
+| Key | Required | Notes |
+| --- | --- | --- |
+| `system` | No | `str \| None` |
+| `version` | No | `str \| None` |
+| `code` | Yes | `str`. Must be in the bound value set |
+| `display` | No | `str \| None` |
 
 ## Enum values
 
-### `DiagnosticReportStatusChoices`
+### `DiagnosticReportStatusChoices` values
 
-From `spec.py`. (`modified` is defined in source but commented out and is **not** an active value.)
+The spec accepts only these four values on write. The second column is the label that the Care frontend shows for the value.
 
-| Value | Meaning |
-| --- | --- |
-| `registered` | Report exists / has been registered |
-| `partial` | Some results available, report incomplete |
-| `preliminary` | Provisional results pending verification |
-| `final` | Verified, complete report |
+| Value | Label in the Care frontend | Use in the Care frontend |
+| --- | --- | --- |
+| `registered` | **Registered** | No screen sets it |
+| `partial` | **Partial** | No screen sets it |
+| `preliminary` | **Preliminary** | Every report created in the Care frontend starts with this status. Results are saved while the report has it |
+| `final` | **Final** | Set by **Approve Results**. On the service request page, the report's results, conclusion and files are then read-only |
+
+- The Care frontend never sets `registered` or `partial`. It creates every report as **Preliminary** and sets **Final** only by approval.
+- In the Care frontend, **Save Results** and **Approve Results** are shown only for a **Preliminary** report.
+- The value `modified` is commented out of the backend enum, so the API rejects it.
+- The status list of the Care frontend still has `modified`, with the label **Modified**. No screen sends it.
+- The API enforces no order of statuses. An update can set any of the four values from any status, `final` included. See "Update" under "Methods & save behaviour".
+- Report templates print the status as "Registered", "Partial", "Preliminary" or "Final".
 
 ## Bound value sets
 
-Coded fields validate their `code` against a registered Care value set (`ValueSetBoundCoding`). A `code` outside the bound set is rejected at deserialization.
+Each coded field checks its `code` against a Care value set. A code outside the set fails with "Code does not exist in the valueset".
 
-| Field | Value set | Slug | Included system(s) |
+| Field | Value set | Slug | Default content |
 | --- | --- | --- | --- |
-| `category` | Diagnostic Service Sections | `system-diagnostic-service-sections-code` | `http://terminology.hl7.org/CodeSystem/v2-0074` |
-| `code` | Observation | `system-observation` | `http://loinc.org` |
+| `category` | Diagnostic Service Sections | `system-diagnostic-service-sections-code` | HL7 v2 table 0074 (`http://terminology.hl7.org/CodeSystem/v2-0074`) |
+| `code` | Observation | `system-observation` | LOINC (`http://loinc.org`) |
 
-## Resource specs (API schema)
-
-Every spec extends `EMRResource` (`care/emr/resources/base.py`) through `DiagnosticReportSpecBase`. `serialize` builds the read payload from the model (mapping `external_id` → `id`); `de_serialize` writes spec fields back to the model. The `perform_extra_serialization`/`perform_extra_deserialization` hooks handle server-side behaviour — resolving foreign keys on write, embedding related resources on read.
-
-| Spec class | Role | Fields / behaviour |
-| --- | --- | --- |
-| `DiagnosticReportSpecBase` | shared base | `id?`, `status` (enum, required), `category` (bound Coding, required), `code?` (bound Coding), `note?`, `conclusion?`. `__model__ = DiagnosticReport`, `__exclude__ = ["service_request"]`. |
-| `DiagnosticReportCreateSpec` | write · create | Base + `service_request: UUID4` (required, the request's `external_id`). `perform_extra_deserialization` resolves it via `get_object_or_404(ServiceRequest, external_id=...)` and sets `obj.service_request`. |
-| `DiagnosticReportUpdateSpec` | write · update | Base, but `status` is optional (`DiagnosticReportStatusChoices \| None`). `service_request` is **not** writable on update. |
-| `DiagnosticReportListSpec` | read · list | Base + `created_date`, `modified_date`, `service_request: dict \| None`. `perform_extra_serialization` sets `id = external_id` and embeds the linked request via `BaseServiceRequestSpec.serialize(...)`. |
-| `DiagnosticReportRetrieveSpec` | read · detail | Extends `ListSpec` + `observations: list[dict]`, `encounter: dict`, `created_by?`, `updated_by?`, `requester?`. See serialization below. |
-
-### `DiagnosticReportRetrieveSpec.perform_extra_serialization` (server-side, read)
-
-The detail read enriches the list payload so a viewer gets the report, its observations, and its context in one call:
-
-- Calls the `ListSpec` hook (sets `id`, embeds `service_request`).
-- `serialize_audit_users` → populates `created_by` / `updated_by` from cache (`UserSpec`).
-- `observations` → all `Observation` rows where `diagnostic_report == obj`, each via `ObservationRetrieveSpec.serialize(...)`.
-- `requester` → if `service_request.requester_id` is set, loaded from cache via `UserSpec`.
-- `encounter` → `EncounterListSpec.serialize(obj.encounter)`, with `encounter["patient"]` set to `PatientRetrieveSpec.serialize(obj.encounter.patient, facility=obj.facility)`.
-
-These embedded fields (`service_request`, `observations`, `encounter`, `requester`, audit users) are **read-only** and are not accepted on create/update.
+- Both are system value sets. A management command writes them to the database, and admins can then edit them. A deployment's content can therefore differ from these defaults.
+- The Care frontend creates every report with the category Laboratory (code `LAB`, system v2-0074).
+- The `diagnostic_report_codes` of an activity definition use the same Observation value set as `code`.
 
 ## Related models
 
-`DiagnosticReport` is the only model defined in this file. It sits downstream of a `ServiceRequest` and is anchored to a patient and encounter:
+`DiagnosticReport` is the only model in its file. It has no specimen, performer, reviewer, effective-date or issued-date field. Its foreign keys are:
 
 ```text
-diagnostic_report
-  facility        → FK facility.Facility (PROTECT, nullable)
-  patient         → FK emr.Patient (CASCADE)
-  encounter       → FK emr.Encounter (CASCADE)
-  service_request → FK emr.ServiceRequest (CASCADE)
+DiagnosticReport
+  facility        → FK facility.Facility    (PROTECT, nullable)
+  patient         → FK emr.Patient          (CASCADE)
+  encounter       → FK emr.Encounter        (CASCADE)
+  service_request → FK emr.ServiceRequest   (CASCADE)
 ```
 
-Deleting a `Patient`, `Encounter`, or `ServiceRequest` cascades to its diagnostic reports; the `facility` link is `PROTECT`ed. Routine deletes are soft, via `EMRBaseModel`. On retrieve, related `Observation` records are pulled in through the reverse FK (`Observation.diagnostic_report`).
+A hard delete of a patient, encounter or service request also removes its reports. The shared `BaseModel.delete()` is a soft delete that sets `deleted`. The `facility` link is protected.
+
+Other models that work with diagnostic reports:
+
+| Model | Link | Notes |
+| --- | --- | --- |
+| `Observation` | `diagnostic_report`: nullable FK, `CASCADE`; at most one report per observation | The report's results. The detail read lists all of them, entered-in-error ones included |
+| [File Upload](../platform/file-upload.mdx) | `file_type` `diagnostic_report`, `associating_id` = the report's `external_id` | Files attached to the report. See "Files" under "API integration notes" |
+| `ServiceRequest` | Reverse of `service_request` | A service request can have several reports. Its detail embeds a summary of each one |
+| `ActivityDefinition` | `diagnostic_report_codes`: a list of `Coding`, default empty | Each entry is a report type. The Care frontend offers one report per report type, one at a time. With no entries, it offers one report per service request |
+
+## Resource specs (API schema)
+
+`DiagnosticReportSpecBase` extends `EMRResource`. It sets `__model__ = DiagnosticReport` and `__exclude__ = ["service_request"]`, so the create spec and the read specs handle `service_request` themselves.
+
+| Spec | Role | Fields and behaviour |
+| --- | --- | --- |
+| `DiagnosticReportSpecBase` | shared base | `id?`, `status` (required), `category` (bound `Coding`, required), `code?` (bound `Coding`), `note?`, `conclusion?` |
+| `DiagnosticReportCreateSpec` | write · create | Base + `service_request: UUID4` (required). Resolves the service request with `get_object_or_404` |
+| `DiagnosticReportUpdateSpec` | write · update | Base with `status` optional. `category` stays required. No `service_request` field |
+| `DiagnosticReportListSpec` | read · list | Base + `created_date`, `modified_date`, and `service_request` as an embedded `BaseServiceRequestSpec` object |
+| `DiagnosticReportRetrieveSpec` | read · detail | The list fields + `observations`, `encounter`, `created_by`, `updated_by`, `requester` |
+| `UpsertObservationRequest` | write · results item | One item of an `upsert_observations` request: `observation`, `observation_id?`, `observation_definition?` |
+
+### Create body: `DiagnosticReportCreateSpec`
+
+The body of `POST /api/v1/patient/{patient_external_id}/diagnostic_report/`.
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `service_request` | `UUID4` | Yes | The service request's `external_id`. An unknown ID returns 404. A service request of another patient fails with "Invalid Request" |
+| `status` | `DiagnosticReportStatusChoices` | Yes | The Care frontend sends `preliminary` |
+| `category` | `Coding` | Yes | In `system-diagnostic-service-sections-code` |
+| `code` | `Coding \| None` | No | In `system-observation` |
+| `note` | `str \| None` | No | |
+| `conclusion` | `str \| None` | No | |
+
+### Update body: `DiagnosticReportUpdateSpec`
+
+The body of `PUT` or `PATCH /api/v1/patient/{patient_external_id}/diagnostic_report/{external_id}/`.
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `status` | `DiagnosticReportStatusChoices` | No | When left out, the stored value stays |
+| `category` | `Coding` | Yes | Must be sent with every update |
+| `code` | `Coding \| None` | No | Sending null does not clear it |
+| `note` | `str \| None` | No | Sending null does not clear it |
+| `conclusion` | `str \| None` | No | Sending null does not clear it |
+
+### Read payloads: `DiagnosticReportListSpec` and `DiagnosticReportRetrieveSpec`
+
+| Field | List | Detail | Notes |
+| --- | --- | --- | --- |
+| `id` | Yes | Yes | The report's `external_id` (a UUID), not the database ID |
+| `status`, `category`, `code`, `note`, `conclusion` | Yes | Yes | |
+| `created_date`, `modified_date` | Yes | Yes | |
+| `service_request` | Yes | Yes | The linked service request as an object (`BaseServiceRequestSpec`). It is serialized from `obj.service_request`, not through `model_from_cache` |
+| `observations` | No | Yes | Every observation linked to the report, with no status filter: entered-in-error observations are included |
+| `encounter` | No | Yes | `EncounterListSpec`, with `patient` inside it as `PatientRetrieveSpec` for the report's facility |
+| `created_by`, `updated_by` | No | Yes | User objects from the user cache (`model_from_cache`) |
+| `requester` | No | Yes | The requester of the service request, from the user cache |
+
+The write specs accept none of the embedded objects.
+
+### Results body: `upsert_observations`
+
+The body of `POST /api/v1/patient/{patient_external_id}/diagnostic_report/{external_id}/upsert_observations/`.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `observations` | list of `UpsertObservationRequest` | One item per observation |
+| `observations[].observation` | `ObservationUpdateSpec` | The observation's data |
+| `observations[].observation_id` | `UUID4 \| None` | An existing observation to update. Used only when `observation_definition` is not set. It must belong to this report; otherwise the request returns 404 |
+| `observations[].observation_definition` | `str \| None` | The slug of an observation definition of the report's facility. An unknown slug returns 404 |
 
 ## Methods & save behaviour
 
-- **Create** (`DiagnosticReportCreateSpec.de_serialize`): writes `status`, `category`, `code`, `note`, `conclusion` onto the model; `perform_extra_deserialization` resolves `service_request` from its `external_id` (404 if missing). `facility`, `patient`, and `encounter` come from the request context in the view layer, not the payload.
-- **Update** (`DiagnosticReportUpdateSpec`): same base fields, but `status` is optional, so a partial status change is allowed. `service_request` cannot be reassigned.
-- **Read** (`List`/`Retrieve`): no model writes; all enrichment happens in `perform_extra_serialization` (see above). User and service-request lookups go through the serializer cache (`model_from_cache`).
-- Coded fields are validated at deserialization: `category.code` must be in the Diagnostic Service Sections value set; `code.code` (when present) must be in the Observation value set. `status` must be a `DiagnosticReportStatusChoices` value.
+### Create
+
+- Care sets `patient` from the URL, `encounter` from the service request, and `facility` from that encounter. A request body cannot set them.
+- If the service request belongs to another patient than the one in the URL, Care refuses the request with "Invalid Request".
+- Care sets `created_by` and `updated_by` to the requesting user.
+- Create checks the write permission and that the service request belongs to the patient. It does not check the service request's status, the number of reports the service request already has, or the encounter's status.
+- The backend does not check specimens on create. Only the Care frontend waits for the specimens to be collected.
+
+### Update
+
+- Care writes only fields whose value differs from the field's default. A field that is left out or sent as null keeps its stored value.
+- So an update cannot clear `code`, `note` or `conclusion`, and an update without `status` keeps the stored status.
+- `category` must be sent with every update, `PATCH` included.
+- `service_request` is not in the update spec, so a report stays on its service request.
+- Update checks only the write permission. It does not look at the report's current status.
+- The API therefore accepts updates to a report with status `final`, and its status can be set to any of the four values.
+- Among the write actions, only `upsert_observations` refuses a `final` report.
+- After an update sets a `final` report back to `preliminary`, `upsert_observations` accepts results for it again.
+- On the service request page, the Care frontend shows the results, conclusion and files of a **Final** report read-only. Its approval dialog says "This action cannot be undone."
+- Care sets `updated_by` to the requesting user.
+- `PATCH` runs exactly like `PUT`: the partial flag does not reach validation, so the body is checked against the full update spec. The Care frontend uses `PUT`.
+
+### Entering results: `upsert_observations`
+
+- An item with `observation_definition` creates a new observation from that definition, even when the item also has `observation_id`. Care then ignores the ID.
+- That new observation starts with status `final` and takes its category and code from the definition. Values in the request can override them.
+- An item with `observation_id` and no `observation_definition` updates that observation of the report.
+- An item with neither creates a new observation that is not linked to a definition.
+- Every saved observation gets the report's encounter and patient, the encounter as its subject, and a link to the report.
+- For an observation linked to an observation definition, Care computes the interpretation and the reference range from the definition's ranges on every save.
+- The computed values replace the stored ones. When no range matches, Care clears both.
+- An observation's status is `final`, `amended` or `entered_in_error`. The Care frontend removes a saved result by sending it with `entered_in_error`.
+- While the report's status is `final`, Care refuses the request with "Cannot update observations for a final diagnostic report".
+- This check runs before the permission check. A caller without the write permission gets this message, not a permission error, for a `final` report.
+- A successful request answers "Observations updated successfully".
+- The observation API has no update action. It marks an observation as entered in error only when the observation is not linked to a report or a questionnaire response.
+- A report's observations therefore change only through `upsert_observations`.
+
+### Approval
+
+- There is no separate review or approval endpoint. Setting `status` to `final` with an update is the approval, and it needs the same permission as any update.
+- The report has no reviewer field. Care records the approving user only as `updated_by`.
+
+### No delete
+
+- The viewset has no destroy action, so the API cannot delete a diagnostic report.
 
 ## API integration notes
 
-- Diagnostic reports are exposed through Care's REST API and align with the FHIR `DiagnosticReport` resource; payload field names follow the spec classes above.
-- `category` and `code` are coded concepts (`Coding`: `system`/`code`/`display`), not free strings. Populate `code` from the bound value set — anything outside it is rejected, and `Coding` forbids extra keys.
-- `status` is stored as a free `CharField`, but the spec restricts writes to the `DiagnosticReportStatusChoices` enum (`registered`, `partial`, `preliminary`, `final`).
-- A report fulfils exactly one `service_request`. Create the [Service Request](../clinical/service-request.mdx) first, then pass its `external_id` as `service_request` on create.
-- `note` and `conclusion` carry human-readable narrative and are not parsed by the platform.
-- The detail (`Retrieve`) payload embeds the linked service request, its requester, the encounter (with patient), audit users, and all child observations — none of which are writable.
+### Endpoints
+
+All routes are under `/api/v1/`, nested under the patient. Every action sees only the reports of the patient in the URL.
+
+| Action | Method and path | Body | Notes |
+| --- | --- | --- | --- |
+| List | `GET /api/v1/patient/{patient_external_id}/diagnostic_report/` | None | Items in the list read shape. Filters below |
+| Create | `POST /api/v1/patient/{patient_external_id}/diagnostic_report/` | `DiagnosticReportCreateSpec` | |
+| Retrieve | `GET /api/v1/patient/{patient_external_id}/diagnostic_report/{external_id}/` | None | The detail read shape |
+| Update | `PUT` or `PATCH /api/v1/patient/{patient_external_id}/diagnostic_report/{external_id}/` | `DiagnosticReportUpdateSpec` | Approval is an update with `status` `final` |
+| Enter results | `POST /api/v1/patient/{patient_external_id}/diagnostic_report/{external_id}/upsert_observations/` | `observations` list | See "Entering results" above |
+| Delete | None | None | No destroy action |
+
+- Successful list, retrieve, create and update calls answer HTTP 200. Create answers 200 with the new report, not 201.
+- Invalid data answers 400 with an `errors` list. An unknown report, patient or service request answers 404 with the error type `object_not_found`.
+- A permission refusal answers 403 with the refusal message as `detail`.
+
+### List filters and ordering
+
+| Query parameter | Effect |
+| --- | --- |
+| `status` | Case-insensitive exact match on the status |
+| `encounter` | The encounter's `external_id`. A caller without "Can view clinical data about patients" can then pass with "Can Read encounter related clinical data"; see "Authorization" |
+| `service_request` | The service request's `external_id`. The list then needs "Can Read Diagnostic Report" on that service request instead of the clinical-data permissions; see "Authorization" |
+| `ordering` | `created_date` or `modified_date` |
+| `limit` | Reports per page. Default 14, at most 200 |
+| `offset` | Reports to skip |
+
+The list body is `count` (the total) and `results`, with no next or previous links. Without `ordering`, the list returns the newest reports first.
+
+### Authorization
+
+The table uses these places:
+
+- "On the service request": a role with the permission in a facility organization of the service request's encounter, or of that encounter's current location. Failing that, a role in a facility organization of the location that the service request is for.
+- The encounter's facility organizations include its organizations, their parent organizations, and the facility's root organization "Administration".
+- "On the patient": roles from the facility organizations and current locations of the patient's open encounters. An encounter is closed when it is completed, cancelled, discontinued or entered in error. Roles from the patient's organizations, and a role given directly on the patient, also count.
+- "In the encounter": the encounter's facility organizations, or those of its current location.
+
+| Action | Handler | Permission | Held where | Refusal message |
+| --- | --- | --- | --- | --- |
+| Create | `can_write_diagnostic_report` | "Can Create Diagnostic Report on Facility" | On the service request named in the body | "You do not have permission to write this diagnostic report" |
+| Retrieve | `can_read_diagnostic_report` | "Can Read Diagnostic Report" | On the report's service request | "You do not have permission to read this diagnostic report" |
+| Update (`PUT`, `PATCH`) | `can_write_diagnostic_report` | "Can Create Diagnostic Report on Facility" | On the report's service request | "You do not have permission to write this diagnostic report" |
+| `upsert_observations` | `can_write_diagnostic_report`, after the `final` check | "Can Create Diagnostic Report on Facility" | On the report's service request | "You do not have permission to write this diagnostic report" |
+| List with `service_request` | `can_read_diagnostic_report` | "Can Read Diagnostic Report" | On that service request | "You do not have permission to read this diagnostic report for this service request" |
+| List without `service_request` | `can_view_clinical_data` | "Can view clinical data about patients" | On the patient | "Permission denied to user" when the request has no `encounter` filter; with one, Care tries the next row |
+| List without `service_request`, with `encounter` | `can_view_encounter_clinical_data` | "Can Read encounter related clinical data" | In the encounter named in `encounter` | "Permission denied to user" when neither this row nor the previous one passes |
+| List or open a report's files | `can_read_diagnostic_report` | "Can Read Diagnostic Report" | On the report's service request | "Cannot View File" |
+| Upload, rename, mark upload complete or archive a report's file | `can_write_diagnostic_report` | "Can Create Diagnostic Report on Facility" | On the report's service request | "Cannot View File" |
+| Attach a report to a referral | `can_read_diagnostic_report` | "Can Read Diagnostic Report" | On the report's service request | "Permission denied to read this resource" |
+
+- A list without `service_request` does not use "Can Read Diagnostic Report". Without `encounter`, it passes only with "Can view clinical data about patients".
+- For retrieve, update and `upsert_observations`, finding the report adds no check of its own. Each action then runs its own check.
+- No write check looks at the encounter's status. A report can be created, updated and given results after its encounter is completed.
+- The file checks do not look at the report's status, so files can be uploaded to and archived from a `final` report.
+- A superuser passes every check. A list returns every report of the patient to a superuser without a check.
+- Opening a service request needs only "Can Read Service Request". Its detail embeds a summary of each report (status, category, code, note, conclusion). Care checks no diagnostic report permission for that summary.
+
+Default roles per permission:
+
+| Permission | Slug | Default roles |
+| --- | --- | --- |
+| "Can Create Diagnostic Report on Facility" | `can_write_diagnostic_report` | Facility Admin, Admin, Doctor, Nurse |
+| "Can Read Diagnostic Report" | `can_read_diagnostic_report` | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer |
+| "Can view clinical data about patients" | `can_view_clinical_data` | Staff, Doctor, Nurse, Admin, Facility Admin |
+| "Can Read encounter related clinical data" | `can_read_encounter_clinical_data` | Admin, Doctor, Nurse, Facility Admin |
+| "Can Read Service Request" | `can_read_service_request` | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+
+- By default, Pharmacist holds neither diagnostic report permission.
+- "Admin" in this table is the facility and government organization Admin role. A second default role is also named "Admin" (the role-organization Admin), and none of these permissions name it.
+- These role lists are defaults. Care reads the links between roles and permissions from the database at run time.
+- A superuser can create and change roles through the role API. The sync command rebuilds the default links of system roles on every run.
+
+### Files
+
+- A report's files are [file uploads](../platform/file-upload.mdx) with `file_type` `diagnostic_report` and `associating_id` set to the report's `external_id`.
+- Routes: `/api/v1/files/` (list, create), `/api/v1/files/{id}/` (retrieve, update), `/api/v1/files/{id}/mark_upload_completed/` and `/api/v1/files/{id}/archive/`.
+- A list needs `file_type` and `associating_id`; otherwise it fails with "Cannot filter files". It returns only files whose upload is complete.
+- A file is removed by archiving it, which needs an archive reason. Archived files are kept.
+
+### What the Care frontend sends
+
+The Care frontend makes only three kinds of report write.
+
+| Action in the Care frontend | Request | Content |
+| --- | --- | --- |
+| **Create Report** | `POST .../diagnostic_report/` | `status` `preliminary`, the category Laboratory (`LAB`), the service request, and the chosen report type as `code` when the activity definition has `diagnostic_report_codes` |
+| **Save Results** | `POST /api/v1/batch_requests/` that holds `upsert_observations` (when results changed) and a `PUT` on the report | The `PUT` resends the stored `status`, `category`, `code` and `note` with the edited conclusion |
+| **Approve Results**, then **Approve** | `PUT .../diagnostic_report/{external_id}/` | `status` `final` and the conclusion shown in the review card |
+
+- A batch request runs all its calls in one transaction. If one call fails, Care rolls all of them back.
+- When an inner call is refused, the whole batch answers 400 and returns the status code and body of each inner call.
+- Each call in a batch request is authorized as if it were sent on its own.
+- The Care frontend creates a report only after the specimens are collected; the backend does not check this. For every specimen requirement of the activity definition, the service request must have a specimen of that definition with status `available`.
+- No screen sets `registered`, `partial` or `modified`, edits the note, or changes the category or code after create.
+- The encounter's **Diagnostic Reports** tab lists reports with the `encounter` filter. The print preview for a whole service request lists only `final` reports, with `service_request` and `status=final`.
+- The service request page takes its reports from the service request detail, not from the report list.
+
+### Other integrations
+
+- Service request detail: `GET /api/v1/facility/{facility_external_id}/service_request/{external_id}/` embeds a summary of every report of the request.
+- Referrals: a report can be attached to a referral as a resource of type `diagnostic_report`. The Care frontend's referral picker lists the patient's reports with no filter.
+- A report of another patient is refused with "Resource does not belong to the referral patient". A report already attached is refused with "Resource is already attached to this referral".
+- Report templates: templates for an encounter reach its reports through the encounter field "Diagnostic Reports". The encounter-based report types are "Discharge Summary" and "Encounter Report".
+- No report-template type exists for a single diagnostic report.
+- The "Diagnostic Reports" field includes every report of the encounter, whatever its status, unless the template filters by status.
+- For each report, a template can show "Title", "Status", "Category", "Observations", "Conclusion", "Notes", "Service Request" and "Uploaded Files". "Title" is the display of the report's code, and "Service Request" is the title of the service request.
+- For each observation, a template can show "Observation Title", "Observation Value", "Observation Component", "Observation Status", "Effective DateTime", "Interpretation" and "Reference Range". The data point does not filter out entered-in-error observations.
+- For each file, a template can show "Filename" and "File URL". Archived files are left out.
+- Printing one report in the Care frontend happens in the browser and uses no backend report template.
 
 ## Related
 
+- Concept: [Diagnostic Report](../../concepts/clinical/diagnostic-report.mdx)
+- Flow: [Enter diagnostic report results](../../flows/clinical/diagnostic-report/enter-diagnostic-report-results.mdx)
+- Flow: [Review and approve diagnostic report results](../../flows/clinical/diagnostic-report/review-and-approve-diagnostic-report-results.mdx)
+- Flow: [View a diagnostic report](../../flows/clinical/diagnostic-report/view-a-diagnostic-report.mdx)
+- Flow: [Print a diagnostic report](../../flows/clinical/diagnostic-report/print-a-diagnostic-report.mdx)
 - Reference: [Service Request](../clinical/service-request.mdx)
 - Reference: [Observation](../clinical/observation.mdx)
 - Reference: [Specimen](../clinical/specimen.mdx)
 - Reference: [Encounter](../clinical/encounter.mdx)
 - Reference: [Patient](../clinical/patient)
-- Reference: [Base Model](../foundation/base-model.mdx)
-- Source: [diagnostic_report.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/diagnostic_report.py)
-- Source: [resources/diagnostic_report/spec.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/diagnostic_report/spec.py)
-- Source: [resources/diagnostic_report/valueset.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/diagnostic_report/valueset.py)
+- Reference: [Activity Definition](../definitions/activity-definition.mdx)
+- Reference: [Observation Definition](../definitions/observation-definition.mdx)
+- Reference: [Value Set](../definitions/valueset.mdx)
+- Reference: [File Upload](../platform/file-upload.mdx)
+- Reference: [Report & Templates](../platform/report.mdx)
+- Reference: [Permission](../access-governance/permission.mdx)
+- Reference: [Role](../access-governance/role.mdx)
+- Reference: [Organization](../access-governance/organization.mdx)
+- Base: [Base models & conventions](../foundation/base-model.mdx)
+- Source (model): [diagnostic_report.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/diagnostic_report.py)
+- Source (specs): [resources/diagnostic_report on GitHub](https://github.com/ohcnetwork/care/tree/develop/care/emr/resources/diagnostic_report)
+- Source (viewset): [api/viewsets/diagnostic_report.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/diagnostic_report.py)

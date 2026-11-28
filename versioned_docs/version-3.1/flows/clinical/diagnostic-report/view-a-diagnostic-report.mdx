@@ -1,24 +1,67 @@
 ---
-sidebar_position: 2
+sidebar_position: 3
 ---
 
 # View a diagnostic report
 
 ## Overview
 
-This flow describes how to open and read a [diagnostic report](../../../concepts/clinical/diagnostic-report.mdx) for an encounter in Care.
+<video src="/media/clinical/diagnostic-report/view-a-diagnostic-report.mp4" poster="/media/clinical/diagnostic-report/view-a-diagnostic-report.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/diagnostic-report/view-a-diagnostic-report.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to open and read a [diagnostic report](../../../concepts/clinical/diagnostic-report.mdx) in the **Diagnostic Reports** tab of an encounter.
+
+You can also read diagnostic reports in three other places:
+
+- The **Diagnostic Reports** tab of the patient's **Clinical History**.
+- The service request page (the page that **See Details** opens).
+- The report page (opened with **View Report**).
 
 ## Pre-requisites
 
-- The patient has an encounter at the facility, and you view the reports for that encounter.
-- A user entered a diagnostic report for the encounter.
+- The patient has an encounter at the facility, and you can open that encounter.
+- A user created a diagnostic report for a service request of that encounter. To create one, see [Enter diagnostic report results](./enter-diagnostic-report-results.mdx).
+- If you use the report page, the diagnostic report is **Final**: a user approved its results. See [Review and approve diagnostic report results](./review-and-approve-diagnostic-report-results.mdx).
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Read Diagnostic Report | Lets you open and read diagnostic reports. Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, and Volunteer have this permission. |
+| "Can Read Diagnostic Report" | Lets you open the selected diagnostic report and see its files. You must hold it on the report's service request: in a department of the encounter or of its current location, or in a department of the location that the service request is for. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse and Volunteer roles hold it. |
+| "Can view clinical data about patients" | Shows the **Diagnostic Reports** tab and lets Care load its list of diagnostic reports. It is also one of the permissions that let you into the encounter page. You must hold it through a role on the patient. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| "Can Read encounter related clinical data" | Does the same as "Can view clinical data about patients" when you hold it in a department of the encounter or of its current location. It does not depend on whether the encounter is open. By default, the Admin, Doctor, Nurse and Facility Admin roles hold it. |
+| "Can list patients" | Lets Care open the encounter for you when you hold it through a role on the patient. By default, the Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer and Pharmacist roles hold it. |
+| "Can Read encounter" | Lets Care open the encounter for you when you have no role on the patient, for example after the encounter is closed. You must hold it in a department of the encounter or of its current location. By default, the Admin, Doctor, Nurse and Facility Admin roles hold it. |
+| "Can Read Activity Definition" | Fills the filter box above the list with the facility's activity definitions. The list of diagnostic reports does not need it. The service request page also needs it to load. You must hold it in any department of the facility. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse and Volunteer roles hold it. |
+| "Can Read Service Request" | Lets you open the service request page, and from there the report page. The **Diagnostic Reports** tab does not need it. You must hold it on the service request, in the same places as "Can Read Diagnostic Report". By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+
+In these role lists, "Admin" is the Admin role of a facility or government organization, not the Admin role of a role organization.
+
+You have a role on the patient when you hold a role in one of these places:
+
+- A department of an open encounter of the patient, or of the current location of that encounter.
+- An organization that the patient belongs to.
+- The patient itself, through a role given to you directly on the patient.
+
+An encounter that is **Completed**, **Cancelled**, **Discontinued** or **Entered in error** gives no role on the patient.
+
+The departments of an encounter include their parent departments and the root organization of the facility, "Administration".
+
+What each way of reading needs, with the default roles:
+
+- In the **Diagnostic Reports** tab of the encounter, the Facility Admin, Admin, Doctor and Nurse roles hold every permission the tab needs. They can read the reports also after the encounter is closed.
+- Of the two clinical-data permissions, the Staff role holds only "Can view clinical data about patients". With Staff, you see the tab only while the patient has an open encounter in your departments.
+- The Volunteer and Administrator roles hold "Can Read Diagnostic Report" but neither clinical-data permission, so they do not see the tab.
+- The patient's **Clinical History** needs "Can view clinical data about patients" through a role on the patient. A permission held only in the encounter does not count.
+- After all the patient's encounters are closed, a department gives no role on the patient. Then only an organization of the patient, or a role given to you directly on the patient, shows the **Clinical History** tab.
+- The service request page needs "Can Read Service Request" on the service request and "Can Read Activity Definition" in the facility.
+- To reach the service request page from the encounter, the **Service Requests** tab needs a clinical-data permission. Listing the service requests of the encounter needs "Can Read Service Request" in a department of the encounter or of its current location.
+- To reach the service request page from a location, you need "Can Read Service Request" in a department of that location. To use **Services** in the facility sidebar, you need "Can Read Healthcare Service" in any department of the facility.
+- By default, these roles hold the permissions for the service request page from the encounter: Facility Admin, Admin, Doctor, Nurse and Staff, while the encounter is open. From a location: Facility Admin, Administrator, Admin, Staff, Doctor, Nurse and Volunteer.
+- The Pharmacist role holds "Can Read Service Request" but not "Can Read Activity Definition". For a Pharmacist, the service request page shows only "Error loading service request or activity definition details."
+- The report page itself needs only "Can Read Diagnostic Report" on the report's service request. You reach it from the service request page, so you need the permissions of that page too.
 
 ## Steps
 
@@ -26,56 +69,200 @@ This flow describes how to open and read a [diagnostic report](../../../concepts
 
 Open the encounter of the patient.
 
-Select the **Diagnostic Reports** tab.
+Select the **Diagnostic Reports** tab. You can also press G, then D.
 
-Care shows a two-panel layout. The left panel lists the diagnostic reports of the encounter. The right panel shows the detail of the selected report.
+If you do not see the tab, check the clinical-data permissions above. An encounter workspace can also hide the tab.
+
+On a phone, select the **Diagnostic Reports** button to open the list.
+
+The tab shows the list of diagnostic reports on the left. It shows the selected diagnostic report in a report card on the right.
+
+![The encounter page with the Diagnostic Reports tab outlined in the encounter menu on the left](/media/clinical/diagnostic-report/view-a-diagnostic-report-1.png)
 
 ### 2. Find the report in the list
 
-Read the entries in the left panel. Each entry shows the information in the table below.
+Each entry in the list shows this information.
 
 | Component | What it shows |
 | --- | --- |
-| Title | The title of the related service request |
-| Created date | The date when Care created the report |
-| Status badge | The status of the report: Registered, Preliminary, Partial, or Final |
-| Category | The category of the report |
+| Title | The title of the service request. If it has none, the entry shows "Diagnostic Report". |
+| Date | The date and time when the diagnostic report was created. |
+| Status badge | The status, for example **Preliminary** or **Final**. A diagnostic report is **Preliminary** until a user approves its results. Then it is **Final**. |
+| Category | The category of the diagnostic report. |
+
+The list shows the newest diagnostic report first. Care loads 14 reports at a time, and more as you scroll down.
+
+To narrow the list, select the filter box above the list. It shows **All** until you choose an activity definition.
+
+Type part of the activity definition title in **Search**. Then select the activity definition.
+
+The list then shows only the diagnostic reports whose service request title matches the title of the activity definition.
+
+The filter applies only to the diagnostic reports that Care has already loaded in the list.
+
+If no loaded report matches, the tab shows "No Diagnostic Reports Found". Select **Remove filter** to show the full list again.
+
+If the encounter has no diagnostic reports, the tab also shows "No Diagnostic Reports Found".
+
+![The list of diagnostic reports outlined, newest first, each entry with its title, date and time, status badge and category, beside the report card of the first report](/media/clinical/diagnostic-report/view-a-diagnostic-report-2.png)
 
 ### 3. Select the report
 
-Click the entry of the report that you want to read.
+Select the entry of the diagnostic report in the list. Care shows it in the report card on the right.
 
-Care shows the full detail of the report in the right panel.
+Until you select an entry, the report card shows the first diagnostic report of the list.
 
-### 4. Read the report detail
+### 4. Read the report details
 
-Read the detail of the report in the right panel. The panel shows the information in the table below.
+The header of the report card shows the title of the service request, the status badge and a **Print** icon.
+
+To print the diagnostic report, select the **Print** icon, or press P. Care opens the print preview. See [Print a diagnostic report](./print-a-diagnostic-report.mdx).
+
+The report card shows these details.
 
 | Component | What it shows |
 | --- | --- |
-| Status | The status of the report |
-| Category | The category of the report |
-| Code | The code of the report |
-| Conclusion | The conclusion of the report |
-| Note | The note that the user recorded on the report |
-| Results | The observation results of the report, in a results table |
-| Requester | The user who requested the report, taken from the related service request |
-| Files | The files that a user attached to the report |
+| **Report** | The report type of the diagnostic report. It shows only when the diagnostic report has a report type. |
+| **Procedure** | The code of the service request. It shows only when the service request has a code. |
+| **Category** | The category of the diagnostic report. |
+| **Report Date** | The date and time when the diagnostic report was created. |
+| **Requested By** | The requester of the service request. |
+| **filed by** | The user who created the diagnostic report. |
+| **Notes** | The note on the diagnostic report. It shows only when the diagnostic report has a note. |
+| **Conclusion** | The conclusion of the diagnostic report. It shows only when the diagnostic report has a conclusion. |
+
+![The report card of a Final report outlined, with Report, Procedure, Category, Report Date, Requested By, filed by and Conclusion above the Test Results table, and the Print icon in its header](/media/clinical/diagnostic-report/view-a-diagnostic-report-3.png)
+
+### 5. Read the results and files
+
+Under **Test Results**, the report card shows the results of the diagnostic report in a table.
+
+| Column | What it shows |
+| --- | --- |
+| **Test** | The name of the test, from the observation definition of the result. |
+| **Result** | The result value, with its unit. |
+| **Reference Range** | The reference range of the result. |
+| **Interpretation** | The interpretation of the result. For a result with an observation definition, Care computes it from the ranges of that definition. The column shows only when a result has an interpretation. |
+
+A result with several parts shows each part in an indented row under it, with the name of that part.
+
+The table leaves out results that a user removed. Care marks a removed result **Entered in Error**.
+
+In the encounter tab, you can select the name of a result to open its history chart.
+
+Under **Uploaded files**, the report card lists the files attached to the diagnostic report. This part shows only when the diagnostic report has files.
+
+The files are read-only here. Each file offers only **Download**.
+
+![The Test Results table of the report card outlined, with the Test, Result, Reference Range and Interpretation columns and an indented row for each part of the result](/media/clinical/diagnostic-report/view-a-diagnostic-report-4.png)
+
+### 6. See removed results
+
+If the diagnostic report has a result that is not removed, the report card has a results menu. Its button is an icon with no text. Select it.
+
+Select **View Observation History**.
+
+Care opens the **Observation History** panel. The panel lists only the results that a user removed.
+
+Each removed result shows the **Entered in Error** badge, **Modified Date**, **Interpretation** and **Recorded by**. A result with a single value also shows **Value**. A result with parts shows a **Components** list instead.
+
+If no result was removed, the panel shows "No Deleted Observation".
+
+![The Observation History panel with one removed result, marked Entered In Error, showing Modified Date, Interpretation, Recorded by and a Components list](/media/clinical/diagnostic-report/view-a-diagnostic-report-5.png)
+
+### 7. Read diagnostic reports in other places
+
+You can also read diagnostic reports in three other places. Each part below starts from the beginning.
+
+#### In the patient's Clinical History
+
+The **Diagnostic Reports** tab of the patient's **Clinical History** lists the diagnostic reports of all the patient's encounters.
+
+1. Open the **Clinical History** of the patient in one of these ways:
+   - In the encounter, on the **Overview** tab, select **Clinical History** beside the **Overview** heading. You can also press H.
+   - In the encounter, open **Encounter Actions**. Select **See Clinical History**.
+   - Open the profile of the patient, as [View a patient's profile](../patient/view-patient-profile.mdx) describes. Select the **Clinical History** tab.
+2. Select the **Diagnostic Reports** tab.
+3. Use the list and the report card as steps 2 to 6 describe.
+
+In the **Clinical History**, the name of a result does not open its history chart.
+
+The filter box shows only when you open the **Clinical History** from a facility.
+
+A workspace that configures the **Clinical History** can hide its **Diagnostic Reports** tab.
+
+#### On the service request page
+
+1. Open the service request page in one of these ways:
+   - In the encounter, select the **Service Requests** tab. Select **See Details** on the row of the service request. This button shows only while the encounter is open.
+   - In the facility sidebar, select **Services**. Select the healthcare service of the laboratory. Under **Available Locations**, select **View Requests** on the location that the service request is for. Then select **See Details** on the row of the service request.
+   - If you are already on a page of that location, select **Service Requests** in the sidebar of the location. Then select **See Details** on the row of the service request.
+2. On a phone, select the **Review** tab to go to the review section.
+3. Find the **Review Test Results** section. Each diagnostic report of the service request has a review card there.
+4. Select the header of the review card to expand it. The header has a double-chevron icon and no text.
+
+The ways from the location also work after the encounter is closed.
+
+When every diagnostic report is **Final**, the section heading is **Diagnostic Report** or **Diagnostic Reports** instead of **Review Test Results**.
+
+When you expand the review card, Care loads the diagnostic report and its files.
+
+The title of the review card is the name of the report type. If the diagnostic report has no report type, the title is the title of the service request.
+
+The review card shows the results in the same table as step 5, without the removed results. If no result is left, the review card shows "No observations entered".
+
+The review card also shows the conclusion and the files. For a **Final** report, the conclusion and the files are read-only.
+
+For a **Preliminary** report, the review card has **Approve Results**. See [Review and approve diagnostic report results](./review-and-approve-diagnostic-report-results.mdx).
+
+For a **Final** report, the review card has **Print Report** and **View Report**.
+
+#### On the report page
+
+1. On the review card of a **Final** report, select **View Report**. This is the only link to the report page.
+
+The report page shows the patient header and a summary of the diagnostic report.
+
+The title of the summary is the name of the report type, with its system and code under it. If the diagnostic report has no report type, the title is the title of the service request.
+
+The summary shows **Category**, **Status**, **Report Date**, **Requested By**, **Notes** and **Conclusion**. Here **Report Date** shows the date only.
+
+The **Test Results** card shows the same table, without the removed results. It has the same results menu with **View Observation History**.
+
+The **Uploaded files** card lists the files of the diagnostic report.
+
+To print the diagnostic report, select **Print**, or press P. Care opens the print preview.
+
+To leave the report page, select **Back**.
 
 ## Expected Outcome
 
-- Care shows the selected diagnostic report of the encounter in the right panel.
-- The panel shows the status, the category, the code, the conclusion, and the note.
-- The panel also shows the observation results, the requester, and the attached files.
+- You see the diagnostic reports of the encounter in the **Diagnostic Reports** tab, with the newest first.
+- You see the details, the results and the files of the selected diagnostic report.
+- In the patient's **Clinical History**, you see the diagnostic reports of all the patient's encounters.
+- On the service request page, you see a review card for each diagnostic report of the service request.
+
+### If something goes wrong
+
+| If you see | It means | What to do |
+| --- | --- | --- |
+| "You do not have permission to view this encounter" | You cannot read clinical data for the patient or the encounter, and you do not hold "Can Read encounter" in the encounter. | Ask your administrator for one of the clinical-data permissions above. |
+| "You do not have permission to view this patient's clinical history" | You hold neither "Can view clinical data about patients" nor "Can view questionnaire responses on patient" on the patient. | Ask your administrator for "Can view clinical data about patients" through a role on the patient. |
+| "Error loading service request or activity definition details." | Care cannot load the service request or its activity definition. | Check that you have "Can Read Service Request" on the service request and "Can Read Activity Definition" in the facility. |
 
 ## Related
 
 Concepts:
 
 - [Diagnostic Report](../../../concepts/clinical/diagnostic-report.mdx)
+- [Service Request](../../../concepts/clinical/service-request.mdx)
+- [Observation](../../../concepts/clinical/observation.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
 
 Flows:
 
 - [Enter diagnostic report results](./enter-diagnostic-report-results.mdx)
-- [Update a diagnostic report](./update-a-diagnostic-report.mdx)
+- [Review and approve diagnostic report results](./review-and-approve-diagnostic-report-results.mdx)
 - [Print a diagnostic report](./print-a-diagnostic-report.mdx)
+- [View service requests](../service-request/view-service-requests.mdx)
+- [View a patient's profile](../patient/view-patient-profile.mdx)
