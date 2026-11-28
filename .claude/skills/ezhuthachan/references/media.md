@@ -62,6 +62,10 @@ curl -s -m 15 -o /dev/null -w '%{http_code}\n' "<SNOWSTORM_DEPLOYMENT_URL>/metad
 
 If it does not, record the other flows and come back to these later.
 
+A third one: file uploads. Care stores files in an S3-style bucket (`BUCKET_*` and `FILE_UPLOAD_*` in `config/settings/base.py`), and the browser uploads to it directly. A native stack without Docker has no bucket, so every flow that attaches a file fails at the upload. On 28 November 2026 a session-only MinIO worked: `brew install minio` (with the user's agreement; about 100 MB), run on its own port with its data in the session folder, a bucket created with `boto3` from the Care virtualenv, and `BUCKET_PROVIDER=MINIO`, `BUCKET_ENDPOINT`, `BUCKET_EXTERNAL_ENDPOINT` (the address the browser can reach), `FILE_UPLOAD_BUCKET` and the keys passed to the backend as environment variables. Keep the generated keys in a mode 600 file in the session and delete it at cleanup.
+
+Dependencies do not have to be installed again for every stack. When another session's checkout is at the same commit with an identical lock file (`Pipfile.lock`, `package-lock.json`), clone its `.venv` and `node_modules` with `cp -Rc` (an APFS clone: seconds, almost no disk). Compare the lock files first, and never write into the other session's folders.
+
 ### One recording at a time per environment
 
 Two sessions recording against the same database spoil each other's data. Take a lock before recording and release it after:
@@ -130,7 +134,7 @@ Name it `<flow-slug>.demo.ts`. Start from `example.demo.ts`.
 - Do the preparation off camera: if the flow needs a record that another flow creates, make it before the recorded page opens, in a separate browser context or through the API.
 - Each flow creates what it changes. Do not rely on what another recording left behind.
 - Respect the data policy. Under "create allowed", name records so they are recognisably yours.
-- Use invented people, the same small cast in every recording. If `$EZ/personas.md` exists, use it. If not, propose a few clearly fictional names that suit the deployment's region, get the user's agreement, and save them there.
+- Use invented people, the same small cast in every recording. If `$EZ/personas.md` exists, use it. If not, propose a few clearly fictional names that suit the deployment's region, get the user's agreement, and save them there. When you hand recording to a helper, put the cast's names in its brief: on 28 November 2026 a helper told only to "use personas.md" picked up the older cast that the file says it replaces.
 
 **Keep it watchable.** Aim for under a minute per flow; split a longer flow into two pages. Assert only what you need in order to wait for the screen to settle.
 
