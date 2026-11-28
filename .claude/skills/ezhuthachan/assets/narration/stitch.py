@@ -216,11 +216,15 @@ def encode(slug, plan, vlen, shift):
             if at > 0:
                 piece(a, a + at)
             piece(a + at, b, f",tpad=start_mode=clone:start_duration={p['hold']:.3f}")
-    parts.append("".join(pieces) + f"concat=n={len(pieces)}:v=1:a=0[v]")
+    # Each held frame rounds to whole frames, so pad the picture and cut it to the sound's length.
+    parts.append("".join(pieces) + f"concat=n={len(pieces)}:v=1:a=0,"
+                 f"fps=30,tpad=stop_mode=clone:stop_duration=1,trim=end={total:.3f}[v]")
     for i, p in enumerate(plan):
         parts.append(f"[{i + 1}:a]adelay={int(round(p['voice_at'] * 1000))}:all=1[a{i}]")
+    # Some clips peak near -0.9 dB; a limiter at -2 dB keeps the encoded peak under -1 dB.
     parts.append("".join(f"[a{i}]" for i in range(n))
-                 + f"amix=inputs={n}:normalize=0:dropout_transition=0,apad,atrim=end={total:.3f}[a]")
+                 + f"amix=inputs={n}:normalize=0:dropout_transition=0,alimiter=limit=0.794:level=0:latency=1,"
+                 f"apad,atrim=end={total:.3f}[a]")
     os.makedirs(OUT, exist_ok=True)
     mp4 = os.path.join(OUT, f"{slug}.mp4")
     run(args + ["-filter_complex", ";".join(parts), "-map", "[v]", "-map", "[a]",
