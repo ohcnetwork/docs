@@ -34,6 +34,15 @@ File a finding only when it is a defect on its own, with nothing left to interpr
 
 If you would put "potential" in the title, do not file it. A permission that is stricter than the button, a list that includes more than you expected, and anything you would describe as "this may be intended" stay in `report.md`. They are notes, not issues.
 
+## Security findings stay private
+
+A finding that lets someone see or change data they should not have access to is a security finding. It never becomes a GitHub issue, a comment, or a line in a pull request, however certain it is. `SECURITY.md` in `care` says to report such findings privately to the maintainers and not to mention them anywhere in the project.
+
+- Write the report into the session folder, in `security/`, and tell the user. Ask how it should reach the team, and send nothing yourself unless they ask you to.
+- Keep its mechanism out of every page, even when a page would only describe the code accurately: the docs repository is public.
+- Never describe a security finding in this skill, in a commit message, or in a pull request body.
+- In `report.md`, mark the finding as security and say where the private report is.
+
 ## Ask first
 
 Show the user the findings you are sure of, together, before you create anything. For each one give the repository, the title, and one sentence on why it is a defect. File only the ones they approve. Leave the others in `report.md`.
