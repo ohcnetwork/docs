@@ -6,60 +6,87 @@ sidebar_position: 12
 
 ## Definition
 
-**Clinical Notes** is the space where staff record and exchange written notes about a patient. Care groups the messages into titled discussions, so different topics stay separate. You find Clinical Notes in the **Notes** tab, which shows a panel called **Discussions**.
-
-Clinical Notes is a Care feature for staff collaboration. Care does not map Clinical Notes to an FHIR R5 resource.
+**Notes** in Care is the space where staff users exchange written messages about a patient. Care groups the messages into discussions, and each discussion has a title. A discussion belongs to one patient, and it can also belong to one [encounter](../clinical/encounter.mdx) of that patient. You find the discussions on the patient's **Notes** tab and in the **Notes** section of an encounter.
 
 ## Key Attributes
 
-A discussion groups related messages under one title. A message is one entry in a discussion.
-
 | Components | What it captures |
 | --- | --- |
-| Title | The subject of the discussion. The title holds up to 255 characters. |
-| Message | The text of one entry in a discussion. The text supports Markdown formatting. |
-| Author | The staff member who wrote the message. Care records this for you. |
-| Time | The date and time of the message. Care records this for you. |
+| Title | The subject of the discussion. A title is required and holds up to 255 characters. Anyone who can see and write in the discussion can change it later. When you start a discussion, Care refuses a title that a discussion in the same list already has. A rename does not check this. |
+| Encounter | The encounter that the discussion belongs to, if any. A discussion that you start in an encounter's **Notes** section belongs to that encounter. You cannot move a discussion to another encounter later. |
+| Message | The text of one entry in a discussion. Care shows the text with Markdown formatting. The message box has no field of its own for attachments or mentions. |
+| Author | The user who wrote the message. Care records this for you. Only the author can edit a message. |
+| Time | The date and time when the message was posted. Care records this for you. |
+| Edit history | The earlier versions of a message that its author edited. An edited message shows **Edited**. The edit history lists each earlier version with its author and the time of the edit, newest first. Care keeps every earlier version. |
 
-A discussion holds a title only. A message holds text only. This module has no status, no category, and no coded value.
+### Patient discussions and encounter discussions
 
-### Encounter discussions and patient discussions
+- A patient discussion belongs to the patient and to no encounter. You see it on the patient's **Notes** tab.
+- An encounter discussion belongs to one encounter of the patient. You see it only in the **Notes** section of that encounter.
 
-Care keeps two separate spaces for discussions:
+The two lists never overlap. The patient's **Notes** tab does not show encounter discussions, and an encounter's **Notes** section shows only the discussions of that encounter.
 
-- Encounter discussions belong to one [encounter](../../concepts/clinical/encounter.mdx). You see them in the Notes tab of that encounter.
-- Patient discussions belong to the patient. You see them in the Notes tab of the patient profile.
+A discussion has no facility or department of its own. Who can see it and write in it depends on the patient and, for an encounter discussion, on its encounter. An encounter discussion stays with the patient after the encounter closes, but from then on nobody can add a message to it, rename it, or edit its messages.
 
-The two lists never overlap. A patient discussion never appears inside an encounter. An encounter discussion never appears on the patient profile.
+## Permissions
 
-### Order of discussions and messages
+Care checks four patient and encounter permissions for Notes. It looks for each one in a set place:
 
-Care lists the discussions with the most recent first. Inside a discussion, the newest message appears at the bottom. Care loads older messages 20 at a time as you scroll up.
+- On the patient. You hold a role in one of these places:
+  - A department of one of the patient's open encounters, at any facility, or a department that owns the current location of that encounter.
+  - The patient's organization, or an organization above it.
+  - The patient directly, because someone gave you a role on the patient.
+- On the encounter. You hold a role in a department of the encounter, or in a department that owns its current location.
 
-### Permanence
+A department of an encounter includes the departments above it and the root organization of the facility, named Administration.
 
-Care shows no way to delete a discussion. Care shows no way to delete a message. After you send a message, the message stays in the discussion.
+| Permission | Access |
+| --- | --- |
+| Can Update a Patient's data | Start a patient discussion and post messages in it. To rename a patient discussion or edit your messages in it, you also need "Can view clinical data about patients". You must hold this permission on the patient. By default, Staff, Doctor, Nurse, Administrator, Admin and Facility Admin hold it. |
+| Can view clinical data about patients | See the patient's discussions and their messages on the patient's **Notes** tab. You must hold this permission on the patient. By default, Staff, Doctor, Nurse, Admin and Facility Admin hold it. |
+| Update Encounter related clinical data | Start an encounter discussion and post messages in it. To rename an encounter discussion or edit your messages in it, you also need a permission that lets you see the discussion. You must hold this permission on the encounter. By default, Admin, Doctor, Nurse and Facility Admin hold it. |
+| Can Read encounter related clinical data | See an encounter's discussions and their messages in its **Notes** section. You must hold this permission on the encounter. It still works after the encounter closes. By default, Admin, Doctor, Nurse and Facility Admin hold it. |
 
-### Attachments and mentions
+The table lists only the permissions that Notes itself checks. To reach the **Notes** tab or an encounter's **Notes** section, you also need permissions to open the patient and the encounter. Each flow lists the full set.
 
-Care does not support file attachments in messages. Care does not support user mentions in messages.
+In this table, Admin is the Admin role of a facility or a government organization. A second default role is also named Admin, and it does not hold these permissions.
 
-### Who can see and write
+For an encounter's discussions, Care also accepts "Can view clinical data about patients" on the patient.
 
-| Action | Permission | Roles |
-| --- | --- | --- |
-| See encounter discussions and messages | Can Read encounter related clinical data | Doctor, Nurse, Admin, Facility Admin |
-| Start an encounter discussion, or post a message in one | Update Encounter related clinical data | Doctor, Nurse, Admin, Facility Admin |
-| See patient discussions and messages | Can view clinical data about patients | Staff, Doctor, Nurse, Admin, Facility Admin |
-| Start a patient discussion, or post a message in one | Can Update a Patient's data | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
+Only the author of a message can edit it, and only while the author can still write in the discussion.
 
-If the encounter is closed, you cannot start a discussion in it. You also cannot post a message in it. Care treats an encounter as closed when its status is Completed, Cancelled, Discontinued, or Entered in error.
+If an encounter is closed, nobody can start a discussion in it, post a message in its discussions, rename them, or edit their messages. An encounter is closed when its status is Completed, Cancelled, Discontinued or Entered in error. A Discharged encounter is not closed.
 
-Note: No deployment setting changes how Clinical Notes behaves.
+In the **Notes** section of a closed encounter, Care still lists the discussions and shows their messages, read-only. In place of the message box, Care shows "You do not have permission to send or edit messages in this discussion."
+
+Care then shows no **New** button, no pencil button (**Rename discussion**) and no **Edit message** button.
+
+A role that you hold only through the departments of an encounter stops counting for the patient's discussions when that encounter closes. You can still see the closed encounter's discussions with "Can Read encounter related clinical data" on that encounter.
+
+Care offers the controls to write in an encounter's discussions only when you open the encounter from its facility. You must also stay in that encounter: in an encounter that you pick from **Encounter History**, you can only read.
+
+With the default roles, Administrator holds "Can Update a Patient's data" but not "Can view clinical data about patients". Care lets an Administrator start a patient discussion and post messages in it, because these actions need only the write permission. Care does not let an Administrator see the patient's discussions.
+
+On the screen, an Administrator cannot use the patient's **Notes** tab. With the default settings, an Administrator whose role reaches the patient only through a department sees "Patient Not Found" in place of the patient profile. Where the profile opens, the tab shows only "You cannot access this discussion."
+
+With the default roles, Staff hold both patient permissions but neither encounter permission. Staff cannot start an encounter discussion or post a message in one.
+
+Care allows Staff to read an encounter's discussions, because it accepts "Can view clinical data about patients" on the patient. On the screen, however, the encounter's **Notes** section shows a Staff user only "You cannot access this discussion."
+
+Your deployment can turn on a setting for global patient edit access. With this setting on, "Can Update a Patient's data" in any department or organization lets you start patient discussions and post in them. You then need no role on the patient. This setting is off by default, and it does not change who can see the discussions.
+
+No role can delete a discussion or a message, because Care has no action to delete either.
+
+The roles in the table hold these permissions by default. Your deployment can change the permissions of each role.
 
 ## Related
 
 - Flow: [Start a discussion](../../flows/clinical/notes/start-a-discussion.mdx)
-- Flow: [Post a message to a discussion](../../flows/clinical/notes/post-a-message.mdx)
-- Flow: [Find discussions for a patient or an encounter](../../flows/clinical/notes/find-discussions.mdx)
-- Concept: [Encounter](../../concepts/clinical/encounter.mdx)
+- Flow: [Post a message](../../flows/clinical/notes/post-a-message.mdx)
+- Flow: [Edit a message](../../flows/clinical/notes/edit-a-message.mdx)
+- Flow: [Rename a discussion](../../flows/clinical/notes/rename-a-discussion.mdx)
+- Flow: [Find discussions](../../flows/clinical/notes/find-discussions.mdx)
+- Concept: [Patient](../clinical/patient)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Facility Organization](../access-governance/facility-organization.mdx)
+- Reference: [Notes](../../references/clinical/notes.mdx)

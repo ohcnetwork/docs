@@ -6,51 +6,125 @@ sidebar_position: 1
 
 ## Overview
 
-<video src="/media/clinical/notes/1.%20Start%20a%20discussion.mp4" poster="/media/clinical/notes/1.%20Start%20a%20discussion.png" controls width="720"></video>
+This flow describes how to start a new discussion in [Notes](../../../concepts/clinical/notes.mdx). You can start it on the **Notes** tab of the patient or in the **Notes** section of an encounter.
 
-[Watch the demo](/media/clinical/notes/1.%20Start%20a%20discussion.mp4) — starting a discussion from the encounter Notes tab.
-
-This flow describes how to start a new discussion in [Clinical Notes](../../../concepts/clinical/notes.mdx). A discussion groups related messages under one title.
-
-You can start a discussion in two contexts. A discussion that you start in an encounter belongs to that encounter. A discussion that you start on the patient profile belongs to the patient and to no encounter.
+<video src="/media/clinical/notes/start-a-discussion.mp4" poster="/media/clinical/notes/start-a-discussion.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/notes/start-a-discussion.vtt" srcLang="en" label="English" default />
+</video>
 
 ## Pre-requisites
 
+- You are signed in to Care as a staff user.
 - The patient is registered in Care.
-- If you start the discussion in an encounter, the encounter is open. You cannot start a discussion in a closed encounter. Care treats an encounter as closed when its status is Completed, Cancelled, Discontinued, or Entered in error.
+- If you start an encounter discussion, these conditions apply:
+  - You opened the encounter from your facility, not from an organization.
+  - You did not pick the encounter from **Encounter History**.
+  - The encounter is not closed. Care treats an encounter as closed when its status is Completed, Cancelled, Discontinued or Entered in error. A Discharged encounter is not closed.
+- If your deployment turns on global patient edit access, these changes apply:
+  - For a patient discussion, "Can Update a Patient's data" in any of your departments or organizations is enough.
+  - Care opens the profile of any patient for you.
+  - This setting is off by default.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Update Encounter related clinical data | Lets you start a discussion inside an encounter. Doctor, Nurse, Admin, and Facility Admin hold this permission. |
-| Can Update a Patient's data | Lets you start a discussion on the patient profile. Staff, Doctor, Nurse, Administrator, Admin, and Facility Admin hold this permission. |
+| Can Update a Patient's data | Patient discussion: lets you start the discussion. You need it through a role on the patient. By default, the Staff, Doctor, Nurse, Administrator, Admin and Facility Admin roles hold it. |
+| Update Encounter related clinical data | Encounter discussion: lets you start the discussion while the encounter is open. You need it in the encounter. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can view clinical data about patients | Patient discussion: lets Care load the discussions on the **Notes** tab. Without it, Care shows only "You cannot access this discussion." and no **New** button. Encounter discussion: shows the **Notes** section, and lets Care give you the discussions of the encounter. It also lets Care open the patient, which the patient profile and the encounter page both need. You need it through a role on the patient. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Read encounter related clinical data | Encounter discussion: shows the **Notes** section, and lets Care give you the discussions of this encounter without "Can view clinical data about patients". You need it in the encounter. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Read encounter | Encounter discussion: lets you open the encounter page. You need it in the encounter. Without it, the encounter page also opens with "Can list patients" through a role on the patient, together with one of the two read permissions above. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can list encounters | Encounter discussion: shows the encounter in the encounter list of the facility. You need it in the encounter. In any department of the facility, it also shows **Search patients** and the encounter list in the facility sidebar. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can list patients | Through a role on the patient, it lists the encounters on the **Encounters** tab of the patient profile. With one of the two read permissions above, it also opens the encounter page without "Can Read encounter". Held in the patient's organization, or an organization above it, it lets Care open the patient without "Can view clinical data about patients". A department does not count for this. By default, the Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer and Pharmacist roles hold it. |
+| Can Read Tag Config | Care needs it to open the patient in this facility, for the patient profile and for the encounter page. You need it in a department of the facility. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can update bookings on Object | Shows **Search patients** and the encounter list in the facility sidebar. "Can list encounters" or "Can Create encounter" does the same. You need one of the three in a department of the facility. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Create encounter | Shows **Search patients** and the encounter list in the facility sidebar, as "Can update bookings on Object" does. You need it in a department of the facility. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+
+You have a role on the patient when you hold a role in one of these places:
+
+- A department of an encounter of the patient that is not closed. The departments of the current location of that encounter also count.
+- The patient's organization, or an organization above it.
+- The patient, when someone gave you a role directly on the patient.
+
+You hold a permission in the encounter when a role in a department of the encounter gives it to you. These departments are the departments that the encounter is assigned to, the departments above them, and "Administration", the root organization of the facility. The departments of the current location of the encounter also count.
+
+By default, a Staff, Doctor, Nurse, Admin or Facility Admin role gives everything that a patient discussion needs. Hold the role in a department of an open encounter of the patient in this facility.
+
+By default, a Doctor, Nurse, Admin or Facility Admin role gives everything that an encounter discussion needs. Hold the role in a department of the encounter, while the encounter is open.
+
+In this section, Admin is the Admin role of a facility or a government organization. A second default role is also named Admin, and it does not hold the permissions that Care checks to read or write discussions.
+
+Your deployment can change which roles hold a permission.
 
 ## Steps
 
-### 1. Go to the Notes tab
+### 1. Open Notes
 
-Choose the context for the new discussion.
+Open **Notes** for the patient or for the encounter. The place where you start decides where the discussion belongs.
 
-- For an encounter discussion, open the encounter. Go to the **Notes** tab. Keyboard shortcut: press `g`, then press `n`.
-- For a patient discussion, open the patient profile. Go to the **Notes** tab.
+A discussion that you start in the **Notes** section of an encounter belongs to that encounter. A discussion that you start on the **Notes** tab of the patient belongs to no encounter.
 
-Note: The two lists never overlap. A discussion that you start in an encounter does not show on the patient profile. A discussion that you start on the patient profile does not show in the encounter.
+If your screen is narrower than 768 px, the facility sidebar is closed. Select the sidebar button (**Toggle Sidebar**) to open it.
+
+For a patient discussion, open the **Notes** tab of the patient profile:
+
+1. Select **Search patients** in the facility sidebar.
+2. Select the patient in the results. Care opens the home page of the patient. See [Search for a patient](../patient/search-patient.mdx).
+3. Select the name of the patient. Then select **View Profile**.
+4. Select the **Notes** tab.
+
+From an encounter, you can also select **View Profile** on the patient card. Then select the **Notes** tab.
+
+If Care shows "Patient Not Found" in place of the patient profile, you cannot open this patient. Check the permissions above.
+
+For an encounter discussion, open the encounter:
+
+1. Select the encounter list under **Encounters & Locations** in the facility sidebar. The entry reads **All Encounters**, or the name of your default encounter class, such as Inpatient.
+2. Select **View Encounter** on the encounter. In the **List** view, you can also select the row of the encounter.
+
+From the profile of the patient, you can also select the **Encounters** tab. Then select **View Encounter** on the encounter.
+
+Care opens the encounter on its **Overview** section.
+
+In this flow, a large screen is at least 1024 px wide, at the default text size. A small screen is narrower.
+
+Then open **Notes** in one of these ways:
+
+- On a large screen, select **Notes** in the list of sections on the left.
+- On a small screen, select **Encounter section**. Then select **Notes** in the list of sections.
+- Select **Encounter Actions**, or press `Shift+E`. Under **Go to**, select **Notes**.
+- On a large screen, you can also press `g`, then `n`. On a small screen, this shortcut does nothing.
+
+If you chose an encounter workspace, the **Notes** section shows only when that workspace includes it.
 
 ### 2. Open the Start New Discussion dialog
 
-Select **New** above the discussion list. On a small screen, select **New Thread** at the bottom of the screen.
+If Care shows only "You cannot access this discussion.", you cannot read the discussions of this list. Care then shows no **New** button. Check the permissions above.
 
-If the list holds no discussion yet, you can also select **Start New Discussion** in the middle of the screen.
+On a large screen, select **New** at the top of the **Discussions** list.
 
-Care opens the **Start New Discussion** dialog. Select the information icon next to the title to read this note: "Create a new discussion thread to organize your conversation topics."
+On a small screen, select **New Thread** in the bar at the bottom of the screen.
 
-### 3. Enter the discussion title
+If the list holds no discussion, Care shows "Welcome to Discussions". You can also select **Start New Discussion** there.
+
+Care opens the **Start New Discussion** dialog.
+
+Select or point at the information icon next to the dialog title. Care shows "Create a new discussion thread to organize your conversation topics."
+
+In an encounter, Care does not show **New** or **New Thread** in these cases, and **Start New Discussion** is unavailable:
+
+- You picked the encounter from **Encounter History**.
+- You opened the encounter from an organization.
+- The encounter is closed. Care then shows "You do not have permission to send or edit messages in this discussion." in place of the message box.
+
+### 3. Enter the title
 
 The dialog shows "Choose a template or enter a custom title".
 
-Select one of the suggested titles, or type your own title in the box with the placeholder "Enter discussion title...".
+Select one of the suggested titles, or type a title in the box with the placeholder "Enter discussion title...".
+
+A suggested title only fills the box. You can change the text before you create the discussion.
 
 The dialog suggests these titles:
 
@@ -62,35 +136,48 @@ The dialog suggests these titles:
 - Referral Notes
 - Lab Results Discussion
 
-Care removes a suggested title from the list when a discussion in this list already uses that title. After all suggestions are used, the dialog shows "Please enter a custom title for thread".
+The suggested titles are always in English.
 
-Note: A title holds a maximum of 255 characters.
+Care removes a suggested title when a discussion in this list already has that exact title. If no suggested title is left, the dialog shows "Please enter a custom title for thread".
 
-Note: Two discussions in the same list cannot share a title. If the title is already in use, Care shows "Thread with this title already exists". Care does not create the discussion.
+A title can have up to 255 characters. The box lets you type more, but Care then cannot create the discussion.
+
+If a discussion in this list already has the same title, Care shows "Thread with this title already exists". Care does not create the discussion.
+
+Care compares the title only with the discussions in this list, and only when you create a discussion. A rename does not check the title, so two discussions can have the same title.
+
+![The Start New Discussion dialog with the suggested titles, and Care Coordination entered as the title](/media/clinical/notes/start-a-discussion-1.png)
 
 ### 4. Create the discussion
 
-Select **Create**. The **Create** button stays unavailable while the title box is empty.
+Select **Create**.
+
+**Create** is unavailable while the box is empty or holds only spaces. It is also unavailable while Care creates the discussion.
 
 To stop without a new discussion, select **Cancel**.
 
-If Care cannot create the discussion, Care shows "Failed to create thread".
+Care shows **New** without checking your permission to start a discussion. If you do not have it, Care refuses the discussion when you select **Create**.
+
+If Care cannot create the discussion, Care shows "Failed to create thread". Care also shows the reason that the server gives, for example "You do not have permission for this action".
 
 ## Expected Outcome
 
 - Care shows "Thread created successfully".
-- Care opens the new discussion. You can post the first message.
-- The new discussion shows only in the list of the context that you started it in.
-
-Note: Care shows no way to delete a discussion after you create it.
+- Care closes the dialog and opens the new discussion.
+- The new discussion is at the top of the list, because the list shows the newest discussion first.
+- The new discussion has no messages. Care shows "Start the Conversation" and "Be the first to send a message". To post the first message, see [Post a message](./post-a-message.mdx).
+- The discussion shows only in the list where you started it. A patient discussion does not show in an encounter. An encounter discussion does not show on the **Notes** tab of the patient.
+- You cannot delete a discussion. To change its title, see [Rename a discussion](./rename-a-discussion.mdx).
 
 ## Related
 
 Concepts:
 
-- [Clinical Notes](../../../concepts/clinical/notes.mdx)
+- [Notes](../../../concepts/clinical/notes.mdx)
 
 Flows:
 
-- [Post a message to a discussion](./post-a-message.mdx)
-- [Find discussions for a patient or an encounter](./find-discussions.mdx)
+- [Post a message](./post-a-message.mdx)
+- [Edit a message](./edit-a-message.mdx)
+- [Rename a discussion](./rename-a-discussion.mdx)
+- [Find discussions](./find-discussions.mdx)
