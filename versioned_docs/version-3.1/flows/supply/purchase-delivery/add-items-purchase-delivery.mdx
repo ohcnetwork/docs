@@ -6,63 +6,209 @@ sidebar_position: 2
 
 ## Overview
 
-This flow describes how to add the delivered items to a [purchase delivery](../../../concepts/supply/purchase-delivery.mdx) in Care. Each item records the product, the quantity, and the condition of the goods.
+<video src="/media/supply/purchase-delivery/add-items-purchase-delivery.mp4" poster="/media/supply/purchase-delivery/add-items-purchase-delivery.poster.png" controls width="720">
+  <track kind="captions" src="/media/supply/purchase-delivery/add-items-purchase-delivery.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to record the items that a supplier delivers in a [purchase delivery](../../../concepts/supply/purchase-delivery.mdx) in Care. Each delivery item records one [product](../../../concepts/supply/product.mdx) and the quantity of it that you receive. A product is one batch of a Product Knowledge, with its own batch number.
+
+You add items while the status of the purchase delivery is **Draft**. Saving an item does not add anything to the stock of the store location: the stock increases only later, when you receive the item.
+
+This page describes how to record an item from a batch that the facility already holds. When the supplier delivers a new batch, Care creates a new product for it when you save the item, and [Add a product](../product/add-product-instance.mdx) describes that case in detail.
 
 ## Pre-requisites
 
-- You created the purchase delivery at your facility. See [Create a purchase delivery](./create-purchase-delivery.mdx).
-- The purchase delivery is not Completed, Abandoned, or Entered in Error.
+- You belong to a department of the facility.
+- The facility has a store location, that is, a location whose inventory usage is **Store**.
+- A service of the facility lists the store location under **Available Locations**.
+- The store location has a purchase delivery with the status **Draft**. If it has none, see [Create a purchase delivery](./create-purchase-delivery.mdx).
+- The Product Knowledge of each item exists, and its status is **Active**. If it does not exist, see [Add a product to the catalog](../product/add-product-to-catalog.mdx).
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create External Supply Delivery on Facility | Lets you add delivered items to a purchase delivery at the facility. Facility Admin and Admin have this permission. |
+| Can Create External Supply Delivery on Facility | Lets you save items in the purchase delivery, and change or cancel saved items. You must hold this permission in one of the departments of the store location. By default, the Facility Admin role holds this permission. |
+| Can Create Product on Facility | Lets you save an item for which Care creates a new product, such as a new batch. You need it only in that case. You must hold this permission in the facility's root organization, Administration. By default, the Facility Admin role holds this permission. |
+| Can Create Charge Item Definition on Facility | Lets you save an item for which Care also creates a charge item definition. You need it only in that case. You must hold this permission in Administration. By default, the Facility Admin role holds this permission. |
+| Can Read Healthcare Service | Lets you open **Services** and the service that lists the store location. You can hold this permission in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can List Facility Locations | Lets you open the store location. You must hold this permission in one of the departments of the store location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, and Pharmacist roles hold this permission. |
+| Can Read Supply Delivery | Lets you see the purchase deliveries of the store location, open one, and see its saved items. You must hold this permission in one of the departments of the store location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Read Inventory Item | Lets you see the stock of each existing batch at the store location. You must hold this permission in one of the departments of the store location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Read Product Knowledge | Lets you select a Product Knowledge in the **Product** column. You can hold this permission in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Read Product | Lets you see the existing batches of the Product Knowledge, and lets Care fill the row from them. You can hold this permission in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Read Resource Category | Lets you browse the categories in the **Product** picker, and select a **Category** in the row. You can hold this permission in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Read Supply Request | Lets you see the Pending purchase orders of the store location in **Select order**. You must hold this permission in one of the departments of the store location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+
+The departments of a location are the departments linked to it or to a location that contains it, the parents of those departments, and Administration.
+
+Care counts only the roles that you hold in the departments of the facility.
+
+Note: Care shows **Add Item** and **Save Changes** to every user who can open a purchase delivery in **Draft**. If Care creates a new product for an item, you must hold Can Create Product on Facility in Administration. A role in another department does not count. If you do not hold it there, Care does not save the item. The same applies to Can Create Charge Item Definition on Facility when Care creates a charge item definition.
 
 ## Steps
 
 ### 1. Open the purchase delivery
 
-Open the purchase delivery that you want to update.
+1. Open your facility.
+2. In the sidebar, select **Services**.
+3. Select the service that lists the store location.
+4. Under **Available Locations**, select the store location.
+5. In the location sidebar, select **Inventory**.
+6. Under **External Supply**, select **Purchase Deliveries**.
+7. On the **Inward Purchase Entries** page, select the **Created** tab.
+8. Find the purchase delivery with the status **Draft**.
+9. In its row, select **View Details**.
 
-Note: If you start the delivery from a purchase order, Care can load the requested items of that order automatically.
+![The location sidebar with Purchase Deliveries outlined under External Supply](/media/supply/purchase-delivery/add-items-purchase-delivery-1.png)
 
-### 2. Start a new item
+![The Created tab with the Draft purchase delivery outlined](/media/supply/purchase-delivery/add-items-purchase-delivery-2.png)
 
-Click **Add Item**.
+Care opens the purchase delivery. Its saved items show under **Items to Receive**.
+
+Note: The location card depends on the service type. For a Store service, it shows **View Inventory**. For a pharmacy service, it shows **View Prescriptions** and opens the **Prescription Queue**. In both cases, the location sidebar shows **Inventory**.
+
+Note: If the inventory usage of the location is not **Store**, the sidebar does not show **External Supply**.
+
+Note: You can add items only while the status of the purchase delivery is **Draft**.
+
+### 2. Add an item
+
+Under **Add delivery items**, select **Add Item**.
+
+![The purchase delivery page with the Add Item button outlined](/media/supply/purchase-delivery/add-items-purchase-delivery-3.png)
+
+Care adds a row under **Pending changes** and opens the **Product** picker of the row.
+
+Note: With **Add Item**, you add one item at a time. To add the next item, save this item first.
+
+Note: Under **Pending changes**, **Item Type** sets the type of the new item: **Product** or **Device**. The default is **Product**. The choice changes nothing else in the row. The saved items table does not show it.
+
+Note: A purchase delivery can hold up to 100 items with the status **In Progress**. Your deployment can set another limit. At the limit, Care disables **Add Item** and shows **You cannot add more than 100 items in a single delivery.**
+
+To add the items of a Pending purchase order of the store location, use these steps instead of **Add Item**:
+
+1. If Care shows **Select order**, select the purchase order in it.
+2. Select **Load from order**.
+3. In **Select Items to Add**, untick the items that you do not receive. Care selects all items first.
+4. Select **Done**.
+
+Care adds one row for each selected item. Each row has the Product Knowledge of that item, **Pack Qty** 1, and **Pack Size** 1. Care fills the other values as in step 3. Complete each row as in steps 4 and 5.
 
 ### 3. Select the product
 
-Select the [product](../../../concepts/supply/product.mdx) that the supplier delivers. Select an existing product instance, or create a new product instance for a new batch.
+In the **Product** picker, select the Product Knowledge of the item.
 
-For a new product instance, enter the values below.
+![The Product picker of the new row with a Product Knowledge outlined](/media/supply/purchase-delivery/add-items-purchase-delivery-4.png)
+
+Care offers only Active Product Knowledge, from your facility or shared across the Care instance. The picker also lists the Product Knowledge categories of the facility.
+
+If the facility has Active products of this Product Knowledge, Care fills the row from the most recent one. Care fills the batch number, expiry, pack size, purchase price, category, sale price, taxes, and discounts.
+
+Note: If you change the Product Knowledge, Care resets the row.
+
+### 4. Select the batch
+
+Make sure that the **Batch** column shows the batch that the supplier delivers.
+
+![The batch list with an existing batch outlined under Existing Batches](/media/supply/purchase-delivery/add-items-purchase-delivery-5.png)
+
+If Care filled the correct batch, keep it. Then go to step 5.
+
+If the supplier delivers another existing batch, select it:
+
+1. Select the field in the **Batch** column.
+2. Delete the batch number in the field. Care lists all existing batches.
+3. Under **Existing Batches**, select the batch.
+
+Care fills the row from that batch.
+
+Note: Do not select **Create batch** for a batch that already exists. Care then creates a new product with the same lot number.
+
+**Existing Batches** lists the Active products of this Product Knowledge. Each batch shows its batch number, its expiry month, and its stock at this location.
+
+Note: If you select an existing batch and change only **Pack Qty**, Care uses that product and creates no new product. If you change any other value, Care creates a new product.
+
+If the supplier delivers a new batch, add it:
+
+1. Select the field in the **Batch** column.
+2. If the field shows the batch number of an earlier batch, delete that number.
+3. Type the batch number of the new batch.
+4. Select the **Create batch** option that shows your batch number.
+
+The field turns green, and the row shows **New**. Care creates a new product for the item when you save it. For the other values of a new batch, see [Add a product](../product/add-product-instance.mdx).
+
+Note: If the Product Knowledge has no batches yet, the list shows **Type a batch number**. Then add a new batch.
+
+### 5. Enter the quantity
+
+In **Pack Qty**, enter the number of packs that you receive. Then check the other values of the row.
+
+![The row with Pack Qty outlined](/media/supply/purchase-delivery/add-items-purchase-delivery-6.png)
+
+![The Sale and Purchase columns of the row with TPR outlined](/media/supply/purchase-delivery/add-items-purchase-delivery-7.png)
 
 | Components | What it captures |
 | --- | --- |
-| Lot Number | The batch number of the delivered goods. |
-| Expiration Date | The date on which the batch expires. |
-| Purchase Price | The price that you pay for the product. |
-| Pack Size | The number of units in one pack. |
+| Pack Qty | The number of packs that you receive, as a whole number of at least 1. This field is required. |
+| Pack Size | The number of units in one pack. Care fills it from the batch. If you change it, Care creates a new product. |
+| Qty | The total quantity: **Pack Qty** multiplied by **Pack Size**. Care calculates it. You cannot change it. |
+| TPR | Under **Purchase**, the purchase price of one pack. If you keep an existing batch unchanged, Care fills it after you enter **Pack Qty**. |
+| PR | Under **Purchase**, the purchase price of one unit: **TPR** divided by **Pack Size**. Care calculates it. You cannot change it. |
+| Item Price | Under **Sale**, the sale price of one unit. Care fills it from the batch. |
 
-### 4. Enter the delivered quantity
+If you change **TPR** or **Item Price**, Care creates a new product for the item. See [Add a product](../product/add-product-instance.mdx).
 
-Enter the quantity that the supplier delivers. You can enter the pack quantity and the pack size instead.
-
-### 5. Enter the charges and the condition
-
-Enter the tax amount and the discount amount for the item. Select the condition of the delivered goods: **Normal** or **Damaged**.
-
-Note: Which fields are mandatory depends on your deployment's configuration.
+Note: Your Care instance can add more columns under **Sale**, such as MRP.
 
 ### 6. Save the item
 
-Save the item. Repeat the steps above for each delivered product.
+Select **Save Changes**.
+
+![The bar under the row with the Save Changes button outlined](/media/supply/purchase-delivery/add-items-purchase-delivery-8.png)
+
+![The saved item under Items to Receive with the item name outlined](/media/supply/purchase-delivery/add-items-purchase-delivery-9.png)
+
+Care saves the item and shows **1 item created successfully**.
+
+The panel shows **Add delivery items** again.
+
+The item shows under **Items to Receive**, with the status **In Progress** and the condition **Normal**.
+
+Note: The row has no condition field. You select **Normal** or **Damaged** later, when you receive the item. See [Receive and complete a purchase delivery](./receive-purchase-delivery.mdx).
+
+Care checks the row before it saves. If a value is missing, Care shows a message and does not save the item.
+
+The number at the end of a message is the row number. If you used **Add Item**, the row number is 1.
+
+| If Care shows | What to do |
+| --- | --- |
+| **Please fix the errors in the highlighted fields and try submitting again.** | Make sure that you selected a Product Knowledge. Make sure that **Pack Qty** and **Pack Size** are whole numbers of at least 1. |
+| **Batch number is required at row 1** | Enter the batch number in the **Batch** column, as in step 4. |
+| **Expiry date is required at row 1** | Select a date in **Expiry**. |
+| **Category is required at row 1** | Select a **Category**. |
+| **Unit price is required at row 1** | Enter the **Item Price**. |
+| **This item could not be saved. Your changes are still here; try saving again.** | Check the row. Then select **Save Changes** again. Care does not create the product a second time for this row. If you do not hold the permissions listed above, ask your facility administrator for them. |
+
+Note: To remove all unsaved rows, select **Discard Changes**. Care removes them at once, without a confirmation. To remove one row, select **Remove** in the **Actions** column of the row.
+
+Note: While the purchase delivery is **Draft**, you can change or cancel a saved item that is **In Progress**. In the **Actions** column of the item, open the ⋮ menu.
+
+- To change the item, select **Edit**. Care loads the item into a new row, and the saved item shows **Editing**.
+- Change the row. Then select **Save Changes**. Care marks the original item **Abandoned**, adds the changed item, and shows **1 item saved successfully**.
+- To cancel the item, select **Mark as entered in error** or **Mark as Abandoned**. Care changes the status at once, without a confirmation, and shows **Status updated successfully**.
+- Care hides cancelled items. To see them, select **Show cancelled items (N)**. N is the number of hidden items.
+- If other unsaved rows exist, Care does not start the edit. Care shows **Save or discard your item changes before updating this order.**
 
 ## Expected Outcome
 
-- Care adds the item to the purchase delivery.
-- The purchase delivery shows each delivered product, its quantity, and its condition.
+- Each saved item shows under **Items to Receive**, with the status **In Progress** and the condition **Normal**.
+- If you kept an existing batch and changed only **Pack Qty**, the item uses that product. Care creates no new product.
+- If you added a new batch or changed another value, Care creates a new product for the item. See [Add a product](../product/add-product-instance.mdx).
+- If you loaded the item from a purchase order, **Requested Qty.** shows the quantity that the order requested.
+- The item name links to the product in **Settings**.
+- The stock at the store location does not change yet. The stock increases when you receive the items. See [Receive and complete a purchase delivery](./receive-purchase-delivery.mdx).
 
 ## Related
 
@@ -70,8 +216,12 @@ Concepts:
 
 - [Purchase Delivery](../../../concepts/supply/purchase-delivery.mdx)
 - [Product](../../../concepts/supply/product.mdx)
+- [Purchase Order](../../../concepts/supply/purchase-order.mdx)
+- [Inventory Item](../../../concepts/supply/inventory-item.mdx)
 
 Flows:
 
 - [Create a purchase delivery](./create-purchase-delivery.mdx)
 - [Receive and complete a purchase delivery](./receive-purchase-delivery.mdx)
+- [View a purchase delivery](./view-purchase-delivery.mdx)
+- [Add a product](../product/add-product-instance.mdx)

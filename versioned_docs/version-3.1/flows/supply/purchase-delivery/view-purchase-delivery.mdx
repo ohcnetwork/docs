@@ -6,70 +6,179 @@ sidebar_position: 4
 
 ## Overview
 
-This flow describes how to open a [purchase delivery](../../../concepts/supply/purchase-delivery.mdx) in Care and read its details. You can also print a copy of the delivery.
+<video src="/media/supply/purchase-delivery/view-purchase-delivery.mp4" poster="/media/supply/purchase-delivery/view-purchase-delivery.poster.png" controls width="720">
+  <track kind="captions" src="/media/supply/purchase-delivery/view-purchase-delivery.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to open a [purchase delivery](../../../concepts/supply/purchase-delivery.mdx) of a store location in Care, read its details and its items, and print a copy of it.
+
+Viewing needs only read access. By default, most facility roles can view and print the purchase deliveries of a store location, although by default only the Facility Admin role can create or change them.
 
 ## Pre-requisites
 
-- You are a member of the facility that receives the delivery.
-- Someone created the purchase delivery at that facility.
+- You belong to a department of the facility.
+- The facility has a store location, that is, a location whose inventory usage is **Store**.
+- A service of the facility lists the store location under **Available Locations**.
+- The store location has a purchase delivery. If it has none, see [Create a purchase delivery](./create-purchase-delivery.mdx).
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Read Supply Delivery | Lets you open a purchase delivery and read its details. |
+| Can Read Supply Delivery | Lets you see the purchase deliveries of the store location, open one, see its items, and print it. You must hold this permission in one of the departments of the store location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Read Healthcare Service | Lets you open **Services** and the service that lists the store location. You can hold this permission in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can List Facility Locations | Lets you open the store location. You must hold this permission in one of the departments of the store location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, and Pharmacist roles hold this permission. |
 
-Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, and Pharmacist have this permission.
+The departments of a location are the departments linked to it or to a location that contains it, the parents of those departments, and Administration.
+
+Care counts only the roles that you hold in the departments of the facility.
+
+Note: By default, the Volunteer role holds Can Read Supply Delivery but not Can List Facility Locations. With only the Volunteer role, you cannot open the store location.
+
+Note: Care shows **Add Tags** to every user who can open the purchase delivery, and **Edit Order** while it is **Draft**. With only the permissions above, you can read and print the purchase delivery. Care does not save a change that you make.
 
 ## Steps
 
-### 1. Open the facility
+### 1. Open Purchase Deliveries
 
-Go to the facility that receives the delivery.
+1. Open your facility.
+2. In the sidebar, select **Services**.
+3. Select the service that lists the store location.
+4. Under **Available Locations**, select the store location.
+5. In the location sidebar, select **Inventory**.
+6. Under **External Supply**, select **Purchase Deliveries**.
 
-### 2. Select the location
+![The location sidebar with Purchase Deliveries outlined under External Supply](/media/supply/purchase-delivery/view-purchase-delivery-1.png)
 
-Select the location that holds the delivered items.
+Care shows the **Inward Purchase Entries** page. It lists the purchase deliveries of the store location.
 
-### 3. Open Inventory
+Note: The location card depends on the service type. For a Store service, it shows **View Inventory**. For a pharmacy service, it shows **View Prescriptions** and opens the **Prescription Queue**. In both cases, the location sidebar shows **Inventory**.
 
-Click **Inventory**. Care shows the list of external deliveries for the location.
+Note: If the inventory usage of the location is not **Store**, the sidebar does not show **External Supply**.
 
-### 4. Open the delivery
+### 2. Find the delivery
 
-Select a delivery in the list. Care opens the delivery page.
+1. Select the tab for the status of the purchase delivery.
+   - **Created** shows the purchase deliveries with the status **Draft** or **Pending**.
+   - **Completed** shows the purchase deliveries with the status **Completed**, **Abandoned**, or **Entered in Error**.
+2. If you know the supplier, select it in **Search by supplier**.
+3. Find the purchase delivery in the list.
 
-### 5. Read the delivery details
+![The Completed tab with a completed purchase delivery outlined](/media/supply/purchase-delivery/view-purchase-delivery-2.png)
 
-The delivery page shows the following details.
+Each row shows the **Name**, **Supplier**, **Deliver To**, **Status**, **Tags**, and **Created By** of a purchase delivery.
+
+**Supplier** shows the name of the supplier. **Created By** shows the user who created the purchase delivery, and the date and time.
+
+Care shows 14 purchase deliveries on each page.
+
+If no purchase delivery matches the tab and the supplier, Care shows **No orders found**.
+
+### 3. Open the delivery
+
+In the row of the purchase delivery, select **View Details**.
+
+![The row of the purchase delivery with View Details outlined](/media/supply/purchase-delivery/view-purchase-delivery-3.png)
+
+Care opens the purchase delivery. The page heading is the name of the purchase delivery. The line under it names the supplier and the store location.
+
+Note: The row itself does not open the purchase delivery. You must select **View Details**.
+
+Note: To go back to the list, select the back arrow in the page header.
+
+### 4. Read the details
+
+The details card shows these components.
+
+![The details card of the purchase delivery outlined](/media/supply/purchase-delivery/view-purchase-delivery-4.png)
+
+![The items table of the purchase delivery outlined](/media/supply/purchase-delivery/view-purchase-delivery-5.png)
 
 | Components | What it shows |
 | --- | --- |
-| Name | The name of the delivery. |
-| Note | The note that a user added to the delivery. |
-| Vendor | The vendor that supplies the items. |
-| Destination | The location that receives the items. |
-| Status | The current status of the delivery. |
-| Delivered items | The product, quantity, price, and condition of each item. |
+| Deliver To | The store location that receives the purchase delivery. |
+| Supplier | The supplier of the purchase delivery. |
+| Status | The status of the purchase delivery: **Draft**, **Pending**, **Completed**, **Abandoned**, or **Entered in Error**. |
+| Note | The note of the purchase delivery. Care shows it only when the purchase delivery has a note. |
+| Tags | The tags of the purchase delivery, and a button to change them. The button reads **Add Tags**, or **Tags** when the purchase delivery has tags. |
+| Created By | The user who created the purchase delivery, and the date and time. |
 
-### 6. Print the delivery
+Note: Your Care instance can add more fields to the details card.
 
-Click **Print** to produce a printable copy of the delivery.
+Note: You can add or remove tags on this card in any status. Care saves each change and shows **Tags updated successfully**. You can also change the tags in the **Tags** column of the list.
+
+Note: To change tags, you need Can Create External Supply Delivery on Facility in a department of the store location. To add a tag, you also need Can Apply Tag Config to Resources for that tag. To see the tags that you can add, you need Can Read Tag Config in any department of the facility. By default, the Facility Admin role holds all three permissions.
+
+The items card lists the items of the purchase delivery. The card is titled **Items to Receive**. After the purchase delivery is completed, the title is **Items updated to stock**.
+
+The first columns of the items table are **Item**, **Batch**, **Expiry**, **Requested Qty.**, **Pack Size**, and **Pack Qty**. The other columns are **Dispatched Qty**, **Dispatched Date**, **Sale**, **Purchase**, **Tax**, **Disc.**, **Status**, and **Condition**.
+
+The item name links to the product in **Settings**. **Batch** shows the lot number of the product.
+
+**Requested Qty.** shows the quantity that the purchase order requested. For an item added without a purchase order, it shows a dash.
+
+**Dispatched Qty** shows the quantity of the item. **Dispatched Date** shows the date when the item was saved.
+
+**Sale** shows the **Item Price** and other amounts for information. **Purchase** shows **PR** and **TPR**. **PR** is the purchase price of one unit of the product. **TPR** is the purchase price of one pack.
+
+**Status** shows **In Progress**, **Completed**, **Abandoned**, or **Entered in Error**. **Condition** shows **Normal** or **Damaged**.
+
+Care hides the items with the status **Abandoned** or **Entered in Error**. To see them, select **Show cancelled items (N)**. N is the number of hidden items. To hide them again, select **Hide cancelled items**.
+
+Note: In a **Draft** purchase delivery with **In Progress** items, the table also has an **Actions** column. In a **Pending** purchase delivery, each **In Progress** item has a checkbox.
+
+### 5. Print the delivery
+
+In the page header, select **Print**.
+
+![The purchase delivery page with the Print button outlined](/media/supply/purchase-delivery/view-purchase-delivery-6.png)
+
+![The printable delivery order](/media/supply/purchase-delivery/view-purchase-delivery-7.png)
+
+Care opens a print preview of the purchase delivery. Its title is **Delivery Order**, followed by the name of the purchase delivery. Care makes the document with the print template of the facility.
+
+The printed document has the heading **Delivery Order**, and shows these components.
+
+| Components | What it shows |
+| --- | --- |
+| Deliver To | The store location that receives the purchase delivery. |
+| Supplier | The supplier of the purchase delivery. |
+| Date | The date of printing. |
+| Status | The status of the purchase delivery. |
+| Supply Deliveries | A table of the items, with **Product**, **Quantity**, **Status**, and **Condition**. It lists every item, including the items that Care hides on the page. It does not show the batch or the expiry. |
+
+The document also shows the name of the purchase delivery as a title, and its note. The footer says that the document is computer generated, and shows the time that Care made it.
+
+If the purchase delivery has no items, Care shows **No Supply Deliveries Found** instead of the preview.
+
+To print the document, select **Print**.
+
+To leave the print preview, select **Back**.
+
+Note: On a touch device that supports sharing, the button reads **Share** instead of **Print**.
+
+Note: If auto print is on in the print template of the facility, the print dialog opens by itself.
+
+Note: On the purchase delivery page, you can press P to open the print preview. In the print preview, press P to print. Press Esc to go back.
 
 ## Expected Outcome
 
-- You see the name, note, vendor, destination, and status of the purchase delivery.
-- You see the product, quantity, price, and condition of each delivered item.
-- You get a printable copy of the delivery when you click **Print**.
+- You see the store location, the supplier, the status, the note, the tags, and the creator of the purchase delivery.
+- You see the items of the purchase delivery, with their batch, quantities, prices, status, and condition.
+- You get a printable copy of the purchase delivery, made with the print template of the facility.
+- Viewing and printing do not change the purchase delivery.
 
 ## Related
 
 Concepts:
 
 - [Purchase Delivery](../../../concepts/supply/purchase-delivery.mdx)
+- [Purchase Order](../../../concepts/supply/purchase-order.mdx)
+- [Product](../../../concepts/supply/product.mdx)
 
 Flows:
 
 - [Create a purchase delivery](./create-purchase-delivery.mdx)
+- [Add delivered items to a purchase delivery](./add-items-purchase-delivery.mdx)
 - [Receive and complete a purchase delivery](./receive-purchase-delivery.mdx)

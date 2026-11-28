@@ -6,52 +6,124 @@ sidebar_position: 1
 
 ## Overview
 
-This flow describes how to create a [purchase delivery](../../../concepts/supply/purchase-delivery.mdx) for a location in a facility. The delivery starts as a Draft.
+<video src="/media/supply/purchase-delivery/create-purchase-delivery.mp4" poster="/media/supply/purchase-delivery/create-purchase-delivery.poster.png" controls width="720">
+  <track kind="captions" src="/media/supply/purchase-delivery/create-purchase-delivery.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to create a [purchase delivery](../../../concepts/supply/purchase-delivery.mdx) in Care. A purchase delivery records the goods that a supplier delivers to a store location of the facility.
+
+A new purchase delivery has the status **Draft** and no items. After you create it, you add the delivered items to it. The stock of the store location changes only when you receive the items later.
 
 ## Pre-requisites
 
-- You are a member of the facility that receives the delivery.
-- Your facility has the location that receives the delivery.
-- If you start from a purchase order, someone created that [purchase order](../../../concepts/supply/purchase-order.mdx) at your facility.
+- You belong to a department of the facility.
+- The facility has a store location, that is, a location whose inventory usage is **Store**.
+- A service of the facility lists the store location under **Available Locations**.
+- The supplier is in Care as an organization of the type product supplier. The **Vendor/Distributor** list shows only these organizations.
+- If you start from a purchase order, the status of the purchase order is **Pending**.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create External Supply Delivery on Facility | Lets you create a purchase delivery for a location in the facility. Facility Admin and Admin have this permission. |
+| Can Create External Supply Delivery on Facility | Lets you create the purchase delivery. You must hold this permission in one of the departments of the store location. By default, the Facility Admin role holds this permission. |
+| Can Read Healthcare Service | Lets you open **Services** and the service that lists the store location. You can hold this permission in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can List Facility Locations | Lets you open the store location. You must hold this permission in one of the departments of the store location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, and Pharmacist roles hold this permission. |
+| Can Read Supply Delivery | Lets you see the purchase deliveries of the store location, and open the new purchase delivery after you create it. You must hold this permission in one of the departments of the store location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Read Tag Config | Lets you see the tags in **Tags**. You need it only if you add tags. You can hold this permission in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can Apply Tag Config to Resources | Lets you add tags to the purchase delivery when you create it. You need it only if you add tags. Where you must hold this permission depends on the tag. By default, the Facility Admin, Staff, Doctor, Nurse, and Pharmacist roles hold this permission. |
+| Can Read Supply Request | Needed only if you start from a purchase order. Lets you see the purchase orders of the store location. You must hold this permission in one of the departments of the store location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+
+The departments of a location are the departments linked to it or to a location that contains it, the parents of those departments, and Administration.
+
+Care counts only the roles that you hold in the departments of the facility.
+
+Note: Care shows **Create Delivery** and **Create** to every user who can open **Purchase Deliveries**. Care checks Can Create External Supply Delivery on Facility when you select **Create**. Without it in a department of the store location, Care does not create the purchase delivery.
 
 ## Steps
 
-### 1. Open the inventory of the location
+### 1. Open Purchase Deliveries
 
-Open the facility. Select the location that receives the delivery. Select **Inventory**. Go to the external deliveries area.
+1. Open your facility.
+2. In the sidebar, select **Services**.
+3. Select the service that lists the store location.
+4. Under **Available Locations**, select the store location.
+5. In the location sidebar, select **Inventory**.
+6. Under **External Supply**, select **Purchase Deliveries**.
+
+![The location sidebar with Purchase Deliveries outlined under External Supply](/media/supply/purchase-delivery/create-purchase-delivery-1.png)
+
+Care shows the **Inward Purchase Entries** page, with the purchase deliveries of the location.
+
+Note: The location card depends on the service type. For a Store service, it shows **View Inventory**. For a pharmacy service, it shows **View Prescriptions** and opens the **Prescription Queue**. In both cases, the location sidebar shows **Inventory**.
+
+Note: If the inventory usage of the location is not **Store**, the sidebar does not show **External Supply**.
 
 ### 2. Start the delivery
 
-Click **Create Delivery**.
+Select **Create Delivery**.
 
-Note: You can also start the delivery from an existing purchase order. Care fills the name, the vendor, the destination, and the tags for you. Care locks the destination.
+![The Inward Purchase Entries page with the Create Delivery button outlined](/media/supply/purchase-delivery/create-purchase-delivery-2.png)
+
+Care opens the **Create Delivery** page. The status badge beside the title shows **Draft**.
+
+Note: **Create Delivery** shows the keyboard shortcut C. To select **Create Delivery** with the keyboard, press C.
+
+Note: You can also start from a purchase order. Under **External Supply**, select **Purchase Orders**. Open the purchase order. Then select **Create Delivery Order**. Care shows this button only while the status of the purchase order is **Pending**.
+
+If you start from a purchase order, Care fills **Name**, **Note**, and **Vendor/Distributor** from the purchase order. The destination of the purchase delivery is the destination of the purchase order.
+
+Care does not lock **Vendor/Distributor** when it fills the field from a purchase order. You can select a different supplier.
 
 ### 3. Enter the delivery details
 
+Complete the fields of the form.
+
+![The Create Delivery form with Name, Vendor/Distributor, and Note filled in](/media/supply/purchase-delivery/create-purchase-delivery-3.png)
+
 | Components | What it captures |
 | --- | --- |
-| Name | The name of the delivery. |
-| Note | More information about the delivery. This field is optional. |
-| Vendor/Distributor | The vendor or distributor that supplies the items. |
-| Destination | The location that receives the items. Care sets the current location by default. |
+| Name | The name of the purchase delivery. Care puts the cursor in this field when the page opens. This field is required. |
+| Vendor/Distributor | The supplier of the goods. Select the supplier in the list. To find a supplier, type its name in **Search vendor**. This field is required. |
+| Note (Optional) | More information about the purchase delivery. This field is optional. |
+| Tags | The tags of the purchase delivery. Select **Add Tags**. Then select the tags. This field is optional. |
 
-If you start from a purchase order, check the filled values.
+The form has no destination field. Care sets the store location that you opened as the destination.
+
+Make sure that you select the correct supplier. After you create the purchase delivery, Care does not save a change to the supplier.
+
+Note: **Tags** shows only when you create the purchase delivery. You can change the tags later on the page of the purchase delivery.
+
+Note: Your Care instance can add more fields to this form, after **Tags**.
 
 ### 4. Create the delivery
 
-Create the delivery. Care saves the delivery with the status Draft.
+Select **Create**.
+
+![The Create Delivery form with the Create button outlined](/media/supply/purchase-delivery/create-purchase-delivery-4.png)
+
+![The new purchase delivery with the status Draft](/media/supply/purchase-delivery/create-purchase-delivery-5.png)
+
+Care creates the purchase delivery and shows **Order created successfully**. Then Care opens the page of the new purchase delivery, with the status **Draft**.
+
+Care checks the required fields before it creates the purchase delivery. If a required field is empty, Care shows a message and does not create the purchase delivery.
+
+| If Care shows | What to do |
+| --- | --- |
+| **Name is required** | Enter a name in **Name**. |
+| **Supplier is required** | Select a supplier in **Vendor/Distributor**. |
+
+Note: To leave the form without creating a purchase delivery, select **Cancel** or the close button at the top right. Care goes back to the page that you came from.
 
 ## Expected Outcome
 
-- Care creates the purchase delivery with the status Draft.
-- The delivery contains no items. You add the items in a separate step.
+- Care creates the purchase delivery with the status **Draft**.
+- On the page of the purchase delivery, **Deliver To** shows the store location. If you started from a purchase order, it shows the destination of the purchase order.
+- The purchase delivery has no items yet. The page of the purchase delivery shows **Add delivery items**, where you add the delivered items. See [Add delivered items to a purchase delivery](./add-items-purchase-delivery.mdx).
+- If you started from a purchase order with requested items, the page shows **Load from order**. It replaces **Select order**.
+- On the **Inward Purchase Entries** page, the purchase delivery shows in the **Created** tab.
+- The stock of the store location does not change.
 
 ## Related
 
@@ -63,4 +135,5 @@ Concepts:
 Flows:
 
 - [Add delivered items to a purchase delivery](./add-items-purchase-delivery.mdx)
+- [Receive and complete a purchase delivery](./receive-purchase-delivery.mdx)
 - [View a purchase delivery](./view-purchase-delivery.mdx)
