@@ -6,46 +6,166 @@ sidebar_position: 3
 
 ## Overview
 
-This flow describes how to approve a [purchase delivery](../../../concepts/supply/purchase-delivery.mdx), record the goods you receive, and complete the delivery in Care. When you complete the delivery, Care updates the stock counts of the [inventory items](../../../concepts/supply/inventory-item.mdx) at the destination location.
+<video src="/media/supply/purchase-delivery/receive-purchase-delivery.mp4" poster="/media/supply/purchase-delivery/receive-purchase-delivery.poster.png" controls width="720">
+  <track kind="captions" src="/media/supply/purchase-delivery/receive-purchase-delivery.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to receive the items of a [purchase delivery](../../../concepts/supply/purchase-delivery.mdx) at a store location, and how to complete the delivery in Care.
+
+The flow has three stages. First, you approve the delivery. Its status changes from **Draft** to **Pending**, and you can no longer add, edit, or remove items.
+
+Next, you receive the items. You mark each ticked item **Completed** or **Abandoned**. Care adds the quantity of each completed item to the stock of the store location at once.
+
+Last, you complete the delivery. This closes the purchase delivery but adds no stock, because Care already added the stock when you received the items.
 
 ## Pre-requisites
 
-- You created the purchase delivery, and you added the delivered items to it. See [Add delivered items to a purchase delivery](./add-items-purchase-delivery.mdx).
-- The purchase delivery is in the Draft status.
-- You have the permission listed below.
+- You belong to a department of the facility.
+- The facility has a store location, that is, a location whose inventory usage is **Store**.
+- A service of the facility lists the store location under **Available Locations**.
+- The purchase delivery has at least one item with the status **In Progress**. If it has none, see [Add delivered items to a purchase delivery](./add-items-purchase-delivery.mdx).
+- The status of the purchase delivery is **Draft** or **Pending**.
+- The goods of the purchase delivery arrived at the store location.
+- You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create External Supply Delivery on Facility | Lets you approve, receive, and complete a purchase delivery at the facility. Facility Admin and Admin have this permission. |
+| Can Create External Supply Delivery on Facility | Lets you approve the purchase delivery, receive its items, and complete it. It also lets you return the delivery to **Draft** or cancel it. You must hold this permission in one of the departments of the store location. By default, the Facility Admin role holds this permission. |
+| Can Read Healthcare Service | Lets you open **Services** and the service that lists the store location. You can hold this permission in any department of the facility. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+| Can List Facility Locations | Lets you open the store location. You must hold this permission in one of the departments of the store location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, and Pharmacist roles hold this permission. |
+| Can Read Supply Delivery | Lets you see the purchase deliveries of the store location, open one, and see its items. You must hold this permission in one of the departments of the store location. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer, and Pharmacist roles hold this permission. |
+
+The departments of a location are the departments linked to it or to a location that contains it, the parents of those departments, and Administration.
+
+Care counts only the roles that you hold in the departments of the facility.
+
+Note: Care shows the buttons of this flow to every user who can open the purchase delivery. Care checks Can Create External Supply Delivery on Facility when you save each change. If you do not hold it in a department of the store location, Care does not save the change.
 
 ## Steps
 
 ### 1. Open the purchase delivery
 
-Open the purchase delivery that you want to receive.
+1. Open your facility.
+2. In the sidebar, select **Services**.
+3. Select the service that lists the store location.
+4. Under **Available Locations**, select the store location.
+5. In the location sidebar, select **Inventory**.
+6. Under **External Supply**, select **Purchase Deliveries**.
+7. On the **Inward Purchase Entries** page, select the **Created** tab.
+8. In the row of your purchase delivery, select **View Details**.
+
+![The location sidebar with Purchase Deliveries outlined under External Supply](/media/supply/purchase-delivery/receive-purchase-delivery-1.png)
+
+![The Created tab with the purchase delivery outlined](/media/supply/purchase-delivery/receive-purchase-delivery-2.png)
+
+Care opens the purchase delivery. The page heading is the name of the purchase delivery.
+
+Note: The **Created** tab lists the purchase deliveries with the status **Draft** or **Pending**.
+
+Note: The location card depends on the service type. For a Store service, it shows **View Inventory**. For a pharmacy service, it shows **View Prescriptions** and opens the **Prescription Queue**. In both cases, the location sidebar shows **Inventory**.
+
+Note: If the inventory usage of the location is not **Store**, the sidebar does not show **External Supply**.
 
 ### 2. Approve the delivery
 
-Click **Mark as Approved**. Care moves the delivery from Draft to Pending.
+If the status of the purchase delivery is **Pending**, skip this step.
 
-### 3. Record the goods you receive
+In the page header, select **Mark as Approved**. Care does not ask you to confirm.
 
-Wait until the goods arrive at the destination location. Mark the delivery as received. Confirm the condition of each item. Select Normal or Damaged for each item.
+![The Draft purchase delivery with the Mark as Approved button outlined](/media/supply/purchase-delivery/receive-purchase-delivery-3.png)
 
-### 4. Complete the delivery
+Care changes the status to **Pending** and shows **Order marked as approved successfully.**
 
-Click **Mark as Completed**. Care updates the stock counts of the inventory items at the destination location.
+**Mark as Approved** is disabled in these cases:
 
-Note: If the delivery is linked to a patient, the delivery is a medication return. Care then creates a refund [invoice](../../../concepts/billing/invoice.mdx) and reversed charge items on the billing account of that patient.
+- The purchase delivery has unsaved item rows. The page then shows **Save or discard your item changes before updating this order.** Save or discard the rows first.
+- The purchase delivery has no item with the status **In Progress** or **Completed**.
+
+Note: After you approve the delivery, Care no longer shows the controls to add, edit, or remove items. **Edit Order** is also not available.
+
+Note: To change the items after approval, return the delivery to **Draft**. In the page header, open the ⋮ menu. Select **Mark as Draft**. Then select **Confirm**.
+
+### 3. Select the items you receive
+
+When the page opens, Care ticks every item with the status **In Progress** under **Items to Receive**.
+
+![The Pending purchase delivery with every item ticked](/media/supply/purchase-delivery/receive-purchase-delivery-4.png)
+
+1. Make sure that each item that arrived is ticked.
+2. Untick each item that did not arrive.
+
+Note: Only items with the status **In Progress** have a checkbox. To tick or untick all of them, use the checkbox in the table header.
+
+### 4. Receive the items
+
+In the header of **Items to Receive**, select **Receive & Update Stock**. Care opens a dialog with the same name.
+
+![The Receive & Update Stock dialog with Receiving Status and Item Condition?](/media/supply/purchase-delivery/receive-purchase-delivery-5.png)
+
+| Components | What it captures |
+| --- | --- |
+| Receiving Status | The new status of the ticked items. Select **Completed** to add the items to the stock. Select **Abandoned** to close the items without adding stock. The default is **Completed**. |
+| Item Condition? | The condition of the items: **Normal** or **Damaged**. The default is **Normal**. Care shows this field only when **Receiving Status** is **Completed**. |
+
+Complete the fields. Then select **Confirm**.
+
+Care updates the ticked items and shows **Supply deliveries updated successfully**. Care then clears the ticks.
+
+If you selected **Completed**, Care adds the quantity of each item to the stock of the store location at once. Items with the condition **Damaged** count in the stock, the same as **Normal** items.
+
+Each received item shows the status **Completed** and the condition that you selected.
+
+Note: Care hides items with the status **Abandoned** or **Entered in Error** from the table. To see them, select **Show cancelled items (N)**. N is the number of hidden items.
+
+Note: To update the ticked items without the dialog, open the ⋮ menu beside **Receive & Update Stock**. Care applies your choice at once and does not ask you to confirm.
+
+- **Mark as Damaged** sets the ticked items to **Completed** with the condition **Damaged**. Care adds them to the stock.
+- **Mark as Abandoned** sets the ticked items to **Abandoned**.
+
+Warning: After an item is **Completed** or **Abandoned**, you cannot change its status. To take received stock back out, cancel the whole purchase delivery, as described in step 5.
+
+| If Care shows | What to do |
+| --- | --- |
+| **Please select at least one delivery** | Tick at least one item. Then select the option again. |
+| **Error updating supply deliveries** | Care did not update any of the ticked items. If you do not hold the permissions listed above, ask your facility administrator for them. Then try again. |
+
+### 5. Complete the delivery
+
+1. Make sure that every item has the status **Completed**, **Abandoned**, or **Entered in Error**.
+2. Make sure that no item is ticked.
+3. In the page header, select **Mark as Completed**.
+
+![The purchase delivery with the Mark as Completed button outlined](/media/supply/purchase-delivery/receive-purchase-delivery-6.png)
+
+![The completed purchase delivery with the Items updated to stock card](/media/supply/purchase-delivery/receive-purchase-delivery-7.png)
+
+Care does not ask you to confirm. Care changes the status to **Completed** and shows **Order successfully marked as Completed**.
+
+The items card is now titled **Items updated to stock**, and it has no checkboxes.
+
+Completing the delivery does not change the stock. Care added the stock when you received the items in step 4.
+
+Note: If an item did not arrive, receive it as **Abandoned** in step 4 before you complete the delivery. If you do not, **Mark as Completed** stays disabled.
+
+Note: You cannot return a completed purchase delivery to **Draft**. You can only cancel it. Care shows **Mark as Draft** in the ⋮ menu, but does not save the change.
+
+Note: To cancel a purchase delivery, open the ⋮ menu in the page header. Select **Mark as Abandoned** or **Mark as entered in error**. Then select **Confirm**.
+
+When you cancel a purchase delivery, these things happen:
+
+- Care sets each item that is not already **Abandoned** or **Entered in Error** to the new status of the delivery. This includes received items.
+- Care removes the quantity of each received item from the stock of the store location.
+- If the store location no longer holds that quantity, Care does not cancel the delivery. Nothing changes. For example, this happens when the received stock was already dispensed.
+- After the cancellation, you cannot change the status of the delivery again. The page header then shows only **Print**.
 
 ## Expected Outcome
 
-- The purchase delivery is in the Completed status.
-- The stock counts of the inventory items at the destination location show the goods you receive.
-- Each delivered item shows the condition that you confirm: Normal or Damaged.
-- For a delivery that is linked to a patient, the billing account of that patient shows a refund invoice and reversed charge items.
+- The status of the purchase delivery is **Completed**. The delivery shows in the **Completed** tab of **Purchase Deliveries**.
+- Each item has the status **Completed**, with the condition **Normal** or **Damaged**, or the status **Abandoned**.
+- The stock of the store location includes the quantity of each **Completed** item, **Damaged** items included. Care added it when you received the items.
+- The items card is titled **Items updated to stock**.
 
 ## Related
 
@@ -53,9 +173,10 @@ Concepts:
 
 - [Purchase Delivery](../../../concepts/supply/purchase-delivery.mdx)
 - [Inventory Item](../../../concepts/supply/inventory-item.mdx)
-- [Invoice](../../../concepts/billing/invoice.mdx)
 
 Flows:
 
+- [Create a purchase delivery](./create-purchase-delivery.mdx)
 - [Add delivered items to a purchase delivery](./add-items-purchase-delivery.mdx)
 - [View a purchase delivery](./view-purchase-delivery.mdx)
+- [Add a product](../product/add-product-instance.mdx)
