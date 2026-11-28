@@ -1,0 +1,146 @@
+---
+sidebar_position: 4
+---
+
+# Rename a discussion
+
+## Overview
+
+This flow describes how to change the title of a discussion in [Notes](../../../concepts/clinical/notes.mdx). Anyone who can see and write in the discussion can rename it, not only the person who started it.
+
+<video src="/media/clinical/notes/rename-a-discussion.mp4" poster="/media/clinical/notes/rename-a-discussion.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/notes/rename-a-discussion.vtt" srcLang="en" label="English" default />
+</video>
+
+## Pre-requisites
+
+- Someone started the discussion. See [Start a discussion](./start-a-discussion.mdx).
+- You are signed in to Care as a staff user.
+- If the discussion belongs to an encounter, these conditions apply:
+  - You opened the encounter from your facility, not from an organization.
+  - You did not pick the encounter from **Encounter History**.
+  - The encounter is not closed. Care treats an encounter as closed when its status is Completed, Cancelled, Discontinued or Entered in error. A Discharged encounter is not closed.
+- If your deployment turns on global patient edit access, these changes apply:
+  - For a patient discussion, "Can Update a Patient's data" in any of your departments or organizations is enough.
+  - Care opens the profile of any patient for you.
+  - This setting is off by default.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Update a Patient's data | For a patient discussion: lets you save the new title. You need it through a role on the patient. By default, the Staff, Doctor, Nurse, Administrator, Admin and Facility Admin roles hold it. |
+| Update Encounter related clinical data | For an encounter discussion: lets you save the new title. You need it in the encounter, and the encounter must be open. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can view clinical data about patients | For a patient discussion: lets you load the discussions on the **Notes** tab. Care also checks it before it saves the new title. For an encounter discussion, it can replace "Can Read encounter related clinical data". It also lets Care open the patient, which the patient profile and the encounter page both need. You need it through a role on the patient. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Read encounter related clinical data | For an encounter discussion: lets you see the **Notes** section and load its discussions. Care also checks that you can read the discussion before it saves the new title. You need it in the encounter. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Read encounter | For an encounter discussion: lets you open the encounter page. You need it in the encounter. Without it, the encounter page also opens with "Can list patients" through a role on the patient, together with one of the two read permissions above. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can list encounters | For an encounter discussion: shows the encounter in the encounter list of the facility. You need it in the encounter. In any department of the facility, it also shows **Search patients** and the encounter list in the facility sidebar. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can list patients | Through a role on the patient, it lists the encounters on the **Encounters** tab of the patient profile. With one of the two read permissions above, it also opens the encounter page without "Can Read encounter". Held in the patient's organization, or an organization above it, it lets Care open the patient without "Can view clinical data about patients". A department does not count for this. By default, the Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer and Pharmacist roles hold it. |
+| Can Read Tag Config | Care needs it to open the patient in this facility, for the patient profile and for the encounter page. You need it in a department of the facility. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can update bookings on Object | Shows **Search patients** and the encounter list in the facility sidebar. "Can list encounters" or "Can Create encounter" does the same. You need one of the three in a department of the facility. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Create encounter | Shows **Search patients** and the encounter list in the facility sidebar, as "Can update bookings on Object" does. You need it in a department of the facility. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+
+You have a role on the patient when you hold a role in one of these places:
+
+- A department of an encounter of the patient that is not closed, or of the current location of that encounter.
+- The patient's organization, or an organization above it.
+- The patient itself, when someone gave you a role directly on the patient.
+
+You hold a permission in the encounter when a role in a department of the encounter gives it to you. These departments are the departments that the encounter is assigned to, the departments above them, and "Administration", the root organization of the facility. The departments of the current location of the encounter also count.
+
+By default, a Staff, Doctor, Nurse, Admin or Facility Admin role gives everything that a patient discussion needs. Hold the role in a department of an open encounter of the patient in this facility.
+
+By default, a Doctor, Nurse, Admin or Facility Admin role gives everything that an encounter discussion needs. Hold the role in a department of the encounter, while the encounter is open.
+
+In this section, Admin is the Admin role of a facility or a government organization. A second default role is also named Admin, and it does not hold the permissions that Care checks to read or write discussions.
+
+The role lists above are the defaults. A deployment can change which permissions a role holds.
+
+## Steps
+
+### 1. Open the discussion
+
+Go to the list that holds the discussion.
+
+If your screen is narrower than 768 px, the facility sidebar is closed. Select the sidebar button (**Toggle Sidebar**) to open it.
+
+For a patient discussion, open the **Notes** tab of the patient profile:
+
+1. Select **Search patients** in the facility sidebar.
+2. Select the patient in the results. Care opens the home page of the patient.
+3. Select the name of the patient. Then select **View Profile**.
+4. Select the **Notes** tab.
+
+A large screen is at least 1024 px wide, at the default text size. A small screen is narrower.
+
+For an encounter discussion, open the **Notes** section of the encounter:
+
+1. Select the encounter list under **Encounters & Locations** in the facility sidebar. Then select **View Encounter** on the encounter.
+2. Go to the **Notes** section. On a large screen, select **Notes** in the list of encounter sections. On a small screen, select **Encounter section**, then **Notes**.
+
+On a small screen, first select **Threads** at the bottom of the screen.
+
+Select the title of the discussion in the list.
+
+If you select no discussion, Care opens the newest discussion.
+
+For more ways to reach a discussion, see [Find discussions](./find-discussions.mdx).
+
+### 2. Open the Rename discussion dialog
+
+In the heading of the discussion, select the pencil button (**Rename discussion**).
+
+Care opens the **Rename discussion** dialog. The dialog says "Give this discussion a title that helps the care team find it."
+
+On the patient's **Notes** tab, Care shows the pencil button. In an encounter, Care shows it only when the encounter conditions in Pre-requisites are true.
+
+After Care refuses a change in the discussion, Care hides the pencil button.
+
+In a closed encounter, Care shows no pencil button. It shows "You do not have permission to send or edit messages in this discussion." in place of the message box.
+
+Note: Care shows the pencil button without checking "Can Update a Patient's data" or "Update Encounter related clinical data". Care checks them when you save the new title.
+
+### 3. Change the title
+
+The **Discussion title** field shows the current title. Change the title.
+
+The title is required. It holds a maximum of 255 characters.
+
+Care removes the spaces at the start and at the end of the title.
+
+Note: Care does not warn you if another discussion already uses the same title.
+
+![The Rename discussion dialog with Follow-up Appointments entered as the Discussion title](/media/clinical/notes/rename-a-discussion-1.png)
+
+### 4. Save the new title
+
+Select **Save Changes**. **Save Changes** stays unavailable while the title is empty.
+
+To close the dialog without a change, select **Cancel**.
+
+If Care cannot save the title, Care shows "The discussion title could not be saved. Try again."
+
+If Care refuses the change, Care shows "You do not have permission to send or edit messages in this discussion." A missing permission is one cause. Care then treats the discussion as read-only while you stay on the page.
+
+## Expected Outcome
+
+- Care closes the dialog.
+- Care reloads the discussion list. The list shows the new title.
+- The discussion keeps its messages and stays in the same list. Renaming changes only the title.
+- Other users see the new title when their discussion list reloads. The refresh button (**Refresh discussion**) also reloads the list.
+
+Note: Care offers no way to delete a discussion. To correct a wrong title, rename the discussion.
+
+## Related
+
+Concepts:
+
+- [Notes](../../../concepts/clinical/notes.mdx)
+
+Flows:
+
+- [Start a discussion](./start-a-discussion.mdx)
+- [Post a message](./post-a-message.mdx)
+- [Edit a message](./edit-a-message.mdx)
+- [Find discussions](./find-discussions.mdx)

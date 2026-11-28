@@ -113,11 +113,14 @@ export class Pointer {
     const offscreen = await target.evaluate((el) => {
       const r = el.getBoundingClientRect();
       const margin = 32;
+      // The margin applies only vertically. Horizontally, scroll only when the element is really
+      // outside the window: a navigation item near the left edge (x = 29) used to count as off
+      // screen, and the centring scroll moved the whole page down by 200 px (Notes, 2026-11-28).
       return (
         r.top < margin ||
         r.bottom > window.innerHeight - margin ||
-        r.left < margin ||
-        r.right > window.innerWidth - margin
+        r.left < 0 ||
+        r.right > window.innerWidth
       );
     });
     if (!offscreen) return;

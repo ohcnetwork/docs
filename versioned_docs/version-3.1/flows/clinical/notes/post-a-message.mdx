@@ -2,84 +2,193 @@
 sidebar_position: 2
 ---
 
-# Post a message to a discussion
+# Post a message
 
 ## Overview
 
-This flow describes how you select a discussion in [Clinical Notes](../../../concepts/clinical/notes.mdx), read its messages, and post a new message. The screen is the same in the encounter Notes tab and in the patient profile Notes tab.
+This flow describes how to select a discussion in [Notes](../../../concepts/clinical/notes.mdx), read its messages and post a new message. The screen is the same on the **Notes** tab of the patient and in the **Notes** section of an encounter.
 
-<video src="/media/clinical/notes/2.%20Post%20a%20message%20to%20a%20discussion.mp4" poster="/media/clinical/notes/2.%20Post%20a%20message%20to%20a%20discussion.png" controls width="720"></video>
-
-[Watch the demo](/media/clinical/notes/2.%20Post%20a%20message%20to%20a%20discussion.mp4) — selecting a discussion and posting a message in the encounter Notes tab.
+<video src="/media/clinical/notes/post-a-message.mp4" poster="/media/clinical/notes/post-a-message.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/notes/post-a-message.vtt" srcLang="en" label="English" default />
+</video>
 
 ## Pre-requisites
 
-- Someone started a discussion in the list that you look at. If the list holds no discussion, [start a discussion](./start-a-discussion.mdx) first.
-- If you post in an encounter discussion, the encounter is open. Care treats an encounter as closed when its status is Completed, Cancelled, Discontinued, or Entered in error.
+- You are signed in to Care as a staff user.
+- If the list holds no discussion, [start a discussion](./start-a-discussion.mdx) first.
+- If you post in an encounter discussion, these conditions apply:
+  - You opened the encounter from your facility, not from an organization.
+  - You did not pick the encounter from **Encounter History**.
+  - The encounter is not closed. Care treats an encounter as closed when its status is Completed, Cancelled, Discontinued or Entered in error. A Discharged encounter is not closed.
+- If your deployment turns on global patient edit access, these changes apply:
+  - For a patient discussion, "Can Update a Patient's data" in any of your departments or organizations is enough.
+  - Care opens the profile of any patient for you.
+  - This setting is off by default.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Read encounter related clinical data | Read the messages in an encounter discussion. Doctor, Nurse, Admin, and Facility Admin hold this permission. |
-| Update Encounter related clinical data | Post a message in an encounter discussion. Doctor, Nurse, Admin, and Facility Admin hold this permission. |
-| Can view clinical data about patients | Read the messages in a patient discussion. Staff, Doctor, Nurse, Admin, and Facility Admin hold this permission. |
-| Can Update a Patient's data | Post a message in a patient discussion. Staff, Doctor, Nurse, Administrator, Admin, and Facility Admin hold this permission. |
+| Can Update a Patient's data | Patient discussion: lets you post a message. You need it through a role on the patient. By default, the Staff, Doctor, Nurse, Administrator, Admin and Facility Admin roles hold it. |
+| Update Encounter related clinical data | Encounter discussion: lets you post a message while the encounter is open. You need it in the encounter. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can view clinical data about patients | Patient discussion: lets you see the discussions on the **Notes** tab and read their messages. Encounter discussion: shows the **Notes** section, and lets Care give you the discussions of the encounter and their messages. It also lets Care open the patient, which the patient profile and the encounter page both need. You need it through a role on the patient. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Read encounter related clinical data | Encounter discussion: shows the **Notes** section, and lets Care give you the discussions of this encounter and their messages without "Can view clinical data about patients". You need it in the encounter. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Read encounter | Encounter discussion: lets you open the encounter page. You need it in the encounter. Without it, the encounter page also opens with "Can list patients" through a role on the patient, together with one of the two read permissions above. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can list encounters | Encounter discussion: shows the encounter in the encounter list of the facility. You need it in the encounter. In any department of the facility, it also shows **Search patients** and the encounter list in the facility sidebar. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can list patients | Through a role on the patient, it lists the encounters on the **Encounters** tab of the patient profile. With one of the two read permissions above, it also opens the encounter page without "Can Read encounter". Held in the patient's organization, or an organization above it, it lets Care open the patient without "Can view clinical data about patients". A department does not count for this. By default, the Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer and Pharmacist roles hold it. |
+| Can Read Tag Config | Care needs it to open the patient in this facility, for the patient profile and for the encounter page. You need it in a department of the facility. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can update bookings on Object | Shows **Search patients** and the encounter list in the facility sidebar. "Can list encounters" or "Can Create encounter" does the same. You need one of the three in a department of the facility. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Create encounter | Shows **Search patients** and the encounter list in the facility sidebar, as "Can update bookings on Object" does. You need it in a department of the facility. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+
+You have a role on the patient when you hold a role in one of these places:
+
+- A department of an encounter of the patient that is not closed. The departments of the current location of that encounter also count.
+- The patient's organization, or an organization above it.
+- The patient, when someone gave you a role directly on the patient.
+
+You hold a permission in the encounter when a role in a department of the encounter gives it to you. These departments are the departments that the encounter is assigned to, the departments above them, and "Administration", the root organization of the facility. The departments of the current location of the encounter also count.
+
+By default, a Staff, Doctor, Nurse, Admin or Facility Admin role gives everything that a patient discussion needs. Hold the role in a department of an open encounter of the patient in this facility.
+
+By default, a Doctor, Nurse, Admin or Facility Admin role gives everything that an encounter discussion needs. Hold the role in a department of the encounter, while the encounter is open.
+
+In this section, Admin is the Admin role of a facility or a government organization. A second default role is also named Admin, and it does not hold the permissions that Care checks to read or write discussions.
+
+Your deployment can change which roles hold a permission.
 
 ## Steps
 
-### 1. Open the Notes tab
+### 1. Open Notes
 
-Go to the **Notes** tab of the encounter or of the patient profile. In an encounter, press `g` and then `n` to go to the Notes tab.
+Open **Notes** for the patient or for the encounter of the discussion.
+
+If your screen is narrower than 768 px, the facility sidebar is closed. Select the sidebar button (**Toggle Sidebar**) to open it.
+
+For a patient discussion, open the **Notes** tab of the patient profile:
+
+1. Select **Search patients** in the facility sidebar.
+2. Select the patient in the results. Care opens the home page of the patient. See [Search for a patient](../patient/search-patient.mdx).
+3. Select the name of the patient. Then select **View Profile**.
+4. Select the **Notes** tab.
+
+From an encounter, you can also select **View Profile** on the patient card. Then select the **Notes** tab.
+
+If Care shows "Patient Not Found" in place of the patient profile, you cannot open this patient. Check the permissions above.
+
+For an encounter discussion, open the encounter:
+
+1. Select the encounter list under **Encounters & Locations** in the facility sidebar. The entry reads **All Encounters**, or the name of your default encounter class, such as Inpatient.
+2. Select **View Encounter** on the encounter. In the **List** view, you can also select the row of the encounter.
+
+From the profile of the patient, you can also select the **Encounters** tab. Then select **View Encounter** on the encounter.
+
+Care opens the encounter on its **Overview** section.
+
+In this flow, a large screen is at least 1024 px wide, at the default text size. A small screen is narrower.
+
+Then open **Notes** in one of these ways:
+
+- On a large screen, select **Notes** in the list of sections on the left.
+- On a small screen, select **Encounter section**. Then select **Notes** in the list of sections.
+- Select **Encounter Actions**, or press `Shift+E`. Under **Go to**, select **Notes**.
+- On a large screen, you can also press `g`, then `n`. On a small screen, this shortcut does nothing.
+
+If you chose an encounter workspace, the **Notes** section shows only when that workspace includes it.
 
 ### 2. Select a discussion
 
-Select a discussion in the list on the left. On a small screen, select **Threads** at the bottom of the screen. Then select the discussion.
+If Care shows only "You cannot access this discussion.", you cannot read the discussions of this list. Check the permissions above.
 
-Care opens the most recent discussion if you select none.
+Care opens the newest discussion of the list.
 
-Before you select a discussion, the screen shows "Welcome to Discussions" and "Start a new discussion or select an existing thread to begin messaging". The heading area shows "Select or create a thread to start messaging".
+To open another discussion on a large screen, select its title in the **Discussions** list on the left. Care highlights the selected discussion.
 
-The heading of the discussion shows how many people took part. It also shows how many messages the discussion holds.
+On a small screen, select **Threads** in the bar at the bottom of the screen. The button also shows the number of discussions.
+
+Care opens the **All Discussions** panel. Select the discussion. The panel closes.
+
+The heading of the discussion shows its title and the number of messages in it.
+
+The heading also has the refresh button (**Refresh discussion**). It can also show the pencil button (**Rename discussion**). See [Rename a discussion](./rename-a-discussion.mdx).
 
 ### 3. Read the messages
 
-Read the messages in the discussion. The newest message is at the bottom.
+The newest message is at the bottom.
 
-Each message shows the author's picture and name. Each message also shows how long ago the author sent it.
+Your own messages are on the right. Messages from other users are on the left.
 
-Point at the time to see the full date and time. Select the author's picture to open that user's profile.
+Each message shows the picture and the name of its author. If Care does not know the author, it shows "Unknown author".
 
-Care loads older messages while you scroll up. Care loads 20 messages at a time.
+Select the picture of the author to open the profile of that user. Point at the picture to see the username.
+
+Each message shows when the author sent it. Point at the time to see the full date and time.
+
+For a message posted today, the time reads "today at" and the time, for example "today at 9:06 AM". The full date and time looks like "09:06 AM; 27/11/2026".
+
+Care shows the text of each message with its Markdown formatting.
+
+If a message shows **Edited**, its author changed it. The earlier text is in the edit history under the message. See [Edit a message](./edit-a-message.mdx).
+
+If the discussion has older messages, select **Load older messages** at the top. Care loads 20 messages at a time.
+
+Care checks for new messages every 30 seconds while the discussion is open. To check now, select the refresh button (**Refresh discussion**).
 
 ### 4. Type your message
 
-Type in the box with the placeholder "Type your message...". The box gets taller as you type more lines.
+Type in the box with the placeholder "Type your message...". The box gets taller as you type, up to 30% of the screen height. Then it scrolls.
 
-You can format the text with Markdown. Care shows the formatted result.
+To start a new line, press `Enter`.
 
-Note: Care does not support file attachments. Care does not support mentions of other users.
+You can format the text with Markdown. The posted message shows the formatting. Single line breaks stay, and web addresses become links.
+
+The message box has no attachments and no mentions of other users. Your deployment can add its own controls next to the box.
+
+If Care shows "You do not have permission to send or edit messages in this discussion." in place of the box, you cannot write in this discussion.
+
+In an encounter discussion, this happens when you picked the encounter from **Encounter History**, or opened it from an organization.
+
+It also happens when the encounter is closed. You can still read the messages of its discussions.
+
+![An encounter's Notes section with the Medication Notes discussion open and a reply typed in the message box](/media/clinical/notes/post-a-message-1.png)
 
 ### 5. Send the message
 
-Select the send button. On a computer, you can also press `Shift` and `Enter` together to send. On a touch screen, use the send button.
+Select **Send message**, the send button next to the box.
 
-Note: If Care cannot send the message, Care shows no error. Look at the discussion to make sure that your message is there.
+**Send message** is unavailable while the box is empty, and while Care sends the message.
+
+Care removes the spaces and blank lines at the start and at the end of the message.
+
+If Care shows "Your message could not be sent. The draft is still available; try again.", Care did not post the message. Your text stays in the box. Select **Send message** again.
+
+If Care shows "We could not confirm whether your message was delivered. Refresh and check the discussion before sending it again.", Care does not know if it posted the message. Care locks the box. Do these steps:
+
+1. Select **Check delivery**. Care loads the messages again.
+2. If your message is in the discussion, select **The message was delivered**. Care clears the box.
+3. If your message is not in the discussion, select **I checked; retry sending**. Care sends the message again.
+
+Care shows the message box without checking your permission to post. If you do not have it, Care refuses the message when you send it.
+
+If Care shows "You do not have permission to send or edit messages in this discussion." after you send, Care refused the message. Your text stays in the box. Care then shows the discussion as read-only.
 
 ## Expected Outcome
 
-- Care adds your message at the bottom of the discussion.
-- Care moves the view to your new message.
-- Care shows no way to delete a message.
+- Care clears the box and adds your message at the bottom of the discussion.
+- Care scrolls to your new message.
+- Care also loads the discussion list again.
+- Other users who have the discussion open see your message within 30 seconds. They can also select the refresh button (**Refresh discussion**).
+- You cannot delete a message. You can change your own message later. See [Edit a message](./edit-a-message.mdx).
 
 ## Related
 
 Concepts:
 
-- [Clinical Notes](../../../concepts/clinical/notes.mdx)
+- [Notes](../../../concepts/clinical/notes.mdx)
 
 Flows:
 
 - [Start a discussion](./start-a-discussion.mdx)
-- [Find discussions for a patient or an encounter](./find-discussions.mdx)
+- [Edit a message](./edit-a-message.mdx)
+- [Rename a discussion](./rename-a-discussion.mdx)
+- [Find discussions](./find-discussions.mdx)

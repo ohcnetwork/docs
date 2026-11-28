@@ -1,84 +1,185 @@
 ---
-sidebar_position: 3
+sidebar_position: 5
 ---
 
-# Find discussions for a patient or an encounter
+# Find discussions
 
 ## Overview
 
-This flow describes how to find [Clinical Notes](../../../concepts/clinical/notes.mdx) discussions in Care. Care keeps two separate lists. One list belongs to the encounter. The other list belongs to the patient alone.
+This flow describes how to find and read discussions in [Notes](../../../concepts/clinical/notes.mdx). Each encounter has its own discussion list, and the patient has one list for the discussions that belong to no encounter.
 
-<video src="/media/clinical/notes/3.%20Find%20discussions%20for%20a%20patient%20or%20an%20encounter.mp4" poster="/media/clinical/notes/3.%20Find%20discussions%20for%20a%20patient%20or%20an%20encounter.png" controls width="720"></video>
-
-[Watch the demo](/media/clinical/notes/3.%20Find%20discussions%20for%20a%20patient%20or%20an%20encounter.mp4) — the encounter Notes tab's discussion list, then the separate patient profile Notes tab list.
-
-Note: The two lists never overlap. A discussion appears in one list only.
+<video src="/media/clinical/notes/find-discussions.mp4" poster="/media/clinical/notes/find-discussions.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/notes/find-discussions.vtt" srcLang="en" label="English" default />
+</video>
 
 ## Pre-requisites
 
 - The patient is registered in Care.
-- If you look for encounter discussions, the patient has an encounter at the facility.
+- If you look for encounter discussions, the patient has an encounter.
+- You are signed in to Care as a staff user.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Read encounter related clinical data | See the discussions of an encounter. Doctor, Nurse, Admin, and Facility Admin hold this permission. |
-| Can view clinical data about patients | See the discussions of a patient. Staff, Doctor, Nurse, Admin, and Facility Admin hold this permission. |
+| Can view clinical data about patients | For patient discussions: lets you read the discussions and messages on the **Notes** tab. For encounter discussions, it can replace "Can Read encounter related clinical data". It also lets Care open the patient, which the patient profile and the encounter page both need. You need it through a role on the patient. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Read encounter related clinical data | For encounter discussions: lets you see the **Notes** section of the encounter and read its discussions and messages. You need it in the encounter. It still works after the encounter is closed. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Read encounter | For encounter discussions: lets you open the encounter page. You need it in the encounter. Without it, the encounter page also opens with "Can list patients" through a role on the patient, together with one of the two read permissions above. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can list encounters | For encounter discussions: shows the encounter in the encounter list of the facility. You need it in the encounter. In any department of the facility, it also shows **Search patients** and the encounter list in the facility sidebar. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can list patients | Through a role on the patient, it lists the encounters on the **Encounters** tab of the patient profile. With one of the two read permissions above, it also opens the encounter page without "Can Read encounter". Held in the patient's organization, or an organization above it, it lets Care open the patient without "Can view clinical data about patients". A department does not count for this. By default, the Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer and Pharmacist roles hold it. |
+| Can Read Tag Config | Care needs it to open the patient in this facility, for the patient profile and for the encounter page. You need it in a department of the facility. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can update bookings on Object | Shows **Search patients** and the encounter list in the facility sidebar. "Can list encounters" or "Can Create encounter" does the same. You need one of the three in a department of the facility. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Create encounter | Shows **Search patients** and the encounter list in the facility sidebar, as "Can update bookings on Object" does. You need it in a department of the facility. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+
+You have a role on the patient when you hold a role in one of these places:
+
+- A department of an encounter of the patient that is not closed, or of the current location of that encounter.
+- The patient's organization, or an organization above it.
+- The patient itself, when someone gave you a role directly on the patient.
+
+A role that you hold only through the departments of an encounter stops counting for the patient when that encounter is closed.
+
+You hold a permission in the encounter when a role in a department of the encounter gives it to you. These departments are the departments that the encounter is assigned to, the departments above them, and "Administration", the root organization of the facility. The departments of the current location of the encounter also count.
+
+By default, a Doctor, Nurse, Admin or Facility Admin role in a department of the encounter gives every encounter permission in the table.
+
+In this section, Admin is the Admin role of a facility or a government organization. A second default role is also named Admin, and it does not hold the permissions that Care checks to read or write discussions.
+
+The role lists above are the defaults. A deployment can change which permissions a role holds.
 
 ## Steps
 
-### 1. Find the discussions of an encounter
+### 1. Open a discussion list
 
-1. Open the encounter.
-2. Select the **Notes** tab. You can also press `g` and then `n`.
-3. Read the list of discussions.
+In this flow, a large screen is at least 1024 px wide, at the default text size. A small screen is narrower.
+
+If your screen is narrower than 768 px, the facility sidebar is closed. Select the sidebar button (**Toggle Sidebar**) to open it.
+
+For the discussions of an encounter, open the **Notes** section of the encounter:
+
+1. Select the encounter list under **Encounters & Locations** in the facility sidebar. Then select **View Encounter** on the encounter. Care opens its **Overview** section.
+2. Go to the **Notes** section. On a large screen, select **Notes** in the list of encounter sections. On a small screen, select **Encounter section**, then **Notes**.
+
+Care shows the discussions under the **Notes** heading.
+
+The encounter list entry in the sidebar reads **All Encounters**, or the name of your default encounter class, such as Inpatient. In the **List** view, you can also select the row of the encounter.
+
+You can also open the encounter from the **Encounters** tab of the patient profile. Select **View Encounter** on the encounter.
+
+You can also select **Encounter Actions**, or press `Shift+E`. Under **Go to**, select **Notes**.
+
+Keyboard shortcut: on a large screen, press `g`, then press `n`, to go to the **Notes** section. On a small screen, this shortcut does nothing.
 
 The list shows only the discussions that belong to this encounter. Discussions that belong to the patient alone do not appear here.
 
-Note: The **Notes** tab appears only if you can read clinical data for the patient or for the encounter.
+Note: The **Notes** section shows only if you can read clinical data of the patient or of the encounter. If you chose an encounter workspace, it can also hide the **Notes** section.
 
-### 2. Find the discussions of a patient
+You can still read the discussions after the encounter is closed. Care then shows "You do not have permission to send or edit messages in this discussion." in place of the message box.
 
-1. Open the patient profile.
-2. Select the **Notes** tab.
-3. Read the list of discussions.
+For the discussions of the patient alone, open the **Notes** tab of the patient profile:
+
+1. Select **Search patients** in the facility sidebar.
+2. Select the patient in the results. Care opens the home page of the patient. See [Search for a patient](../patient/search-patient.mdx).
+3. Select the name of the patient. Then select **View Profile**.
+4. Select the **Notes** tab. The patient profile always shows this tab.
+
+From an encounter, you can also select **View Profile** on the patient card.
+
+If Care shows "Patient Not Found" in place of the patient profile, you cannot open this patient. Check the permissions above.
 
 The list shows only the discussions that belong to the patient and to no encounter. Discussions that belong to an encounter do not appear here.
 
-### 3. Open a discussion
+### 2. Read the discussion list
 
-1. Read the titles in the list. Care shows no search box and no filter for discussions.
-2. Select a discussion. Care shows the messages of that discussion.
+On a large screen, the list is on the left, under the heading **Discussions**.
 
-Care shows the most recent discussion first.
+On a small screen, select **Threads** at the bottom of the screen. The button shows the number of discussions. Care opens the list in a side panel, **All Discussions**.
 
-Note: On a small screen, select **Threads** at the bottom of the screen to open the list of discussions.
+Each entry in the list shows only the title of the discussion.
+
+The newest discussion is at the top. Care sorts the list by the date when someone started each discussion.
+
+Care shows all the discussions in one list. Care has no search box and no filter for discussions.
 
 If the list holds no discussion, Care shows "No discussions yet".
 
-### 4. Find the discussions of another encounter
+If you cannot read the discussions, Care shows only "You cannot access this discussion."
 
-Each encounter keeps its own discussions.
+If the list does not load for another reason, Care shows "The discussion could not be refreshed. Try again." Select **Retry** to load the list again.
 
-1. Open the other encounter.
-2. Select the **Notes** tab.
-3. Read the list of discussions.
+![An encounter's Notes section with the Discussions list outlined, the newest discussion at the top](/media/clinical/notes/find-discussions-1.png)
+
+### 3. Open a discussion
+
+Select the title of a discussion. On a small screen, the side panel closes when you select a discussion.
+
+If you select no discussion, Care opens the newest discussion.
+
+The heading shows the title of the discussion and the number of its messages.
+
+The newest message is at the bottom. Care first shows the 20 newest messages.
+
+To see earlier messages, select **Load older messages** above the messages. Care loads 20 more messages each time.
+
+### 4. Read the messages
+
+Your own messages are on the right. Messages from other people are on the left.
+
+Each message shows the picture and the name of its author. If Care does not know the author, the message shows "Unknown author".
+
+Point at the picture to see the username of the author. Select the picture to open the profile of the author.
+
+Each message shows when its author sent it.
+
+For a message posted today, the time reads "today at" and the time, for example "today at 9:06 AM".
+
+Point at the time to see the full date and time, for example "09:06 AM; 27/11/2026".
+
+### 5. Read the edit history of a message
+
+If the author changed a message, the message shows **Edited** next to its time.
+
+An edited message also has a collapsed section that counts the changes, for example "Edit history (1 change)". Select it to open the section.
+
+The section lists the earlier versions, newest first. Each version shows the username of the author, the date and time of the change, and the earlier text.
+
+To change one of your own messages, see [Edit a message](./edit-a-message.mdx).
+
+### 6. Keep the discussion up to date
+
+While a discussion is open, Care checks for new messages every 30 seconds.
+
+To check now, select the refresh button (**Refresh discussion**) in the heading. Care reloads the messages and the discussion list.
+
+### 7. Find the discussions of another encounter
+
+Each encounter keeps its own discussions. To work in them, open that encounter and go to its **Notes** section, as step 1 describes.
+
+To only read them, you can stay in the current encounter:
+
+1. Select **Encounter History**.
+2. Under **Other Encounters**, select the other encounter.
+3. Go to the **Notes** section. Care shows the discussions of the encounter that you selected.
+
+In an encounter that you chose in **Encounter History**, you can only read the discussions. Care does not let you start, post, edit or rename there. Care shows "You do not have permission to send or edit messages in this discussion." below the messages.
 
 ## Expected Outcome
 
-- You see the discussions of the encounter in the **Notes** tab of that encounter.
-- You see the discussions of the patient in the **Notes** tab of the patient profile.
-- You read the messages of the discussion that you select.
+- You see the discussions of an encounter in the **Notes** section of that encounter.
+- You see the discussions of the patient on the **Notes** tab of the patient profile.
+- You read the messages of the discussion that you select, and the edit history of each edited message.
 
 ## Related
 
 Concepts:
 
-- [Clinical Notes](../../../concepts/clinical/notes.mdx)
+- [Notes](../../../concepts/clinical/notes.mdx)
 
 Flows:
 
 - [Start a discussion](./start-a-discussion.mdx)
-- [Post a message to a discussion](./post-a-message.mdx)
+- [Post a message](./post-a-message.mdx)
+- [Edit a message](./edit-a-message.mdx)
+- [Rename a discussion](./rename-a-discussion.mdx)
+- [Search for a patient](../patient/search-patient.mdx)

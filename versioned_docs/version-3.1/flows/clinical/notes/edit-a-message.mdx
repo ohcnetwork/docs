@@ -1,0 +1,171 @@
+---
+sidebar_position: 3
+---
+
+# Edit a message
+
+## Overview
+
+This flow describes how to change the text of a message that you posted in a discussion in [Notes](../../../concepts/clinical/notes.mdx). The steps are the same on the **Notes** tab of the patient and in the **Notes** section of an encounter.
+
+<video src="/media/clinical/notes/edit-a-message.mp4" poster="/media/clinical/notes/edit-a-message.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/notes/edit-a-message.vtt" srcLang="en" label="English" default />
+</video>
+
+## Pre-requisites
+
+- You are signed in to Care as a staff user.
+- You posted the message. Only the author of a message can edit it.
+- If the message is in an encounter discussion, these conditions apply:
+  - You opened the encounter from your facility, not from an organization.
+  - You did not pick the encounter from **Encounter History**.
+  - The encounter is not closed. Care treats an encounter as closed when its status is Completed, Cancelled, Discontinued or Entered in error. A Discharged encounter is not closed.
+- If your deployment turns on global patient edit access, these changes apply:
+  - For a patient discussion, "Can Update a Patient's data" in any of your departments or organizations is enough.
+  - Care opens the profile of any patient for you.
+  - This setting is off by default.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Update a Patient's data | Patient discussion: lets you save a change to your message. You need it through a role on the patient. By default, the Staff, Doctor, Nurse, Administrator, Admin and Facility Admin roles hold it. |
+| Update Encounter related clinical data | Encounter discussion: lets you save a change to your message while the encounter is open. You need it in the encounter. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can view clinical data about patients | Patient discussion: lets you see the discussions on the **Notes** tab and read their messages. Care also checks it when you save the change. Encounter discussion: shows the **Notes** section, and lets Care give you the discussions of the encounter and their messages. It also lets Care open the patient, which the patient profile and the encounter page both need. You need it through a role on the patient. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Read encounter related clinical data | Encounter discussion: shows the **Notes** section, and lets Care give you the discussions of this encounter and their messages without "Can view clinical data about patients". Care accepts it when you save the change. You need it in the encounter. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Read encounter | Encounter discussion: lets you open the encounter page. You need it in the encounter. Without it, the encounter page also opens with "Can list patients" through a role on the patient, together with one of the two read permissions above. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can list encounters | Encounter discussion: shows the encounter in the encounter list of the facility. You need it in the encounter. In any department of the facility, it also shows **Search patients** and the encounter list in the facility sidebar. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can list patients | Through a role on the patient, it lists the encounters on the **Encounters** tab of the patient profile. With one of the two read permissions above, it also opens the encounter page without "Can Read encounter". Held in the patient's organization, or an organization above it, it lets Care open the patient without "Can view clinical data about patients". A department does not count for this. By default, the Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer and Pharmacist roles hold it. |
+| Can Read Tag Config | Care needs it to open the patient in this facility, for the patient profile and for the encounter page. You need it in a department of the facility. By default, the Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can update bookings on Object | Shows **Search patients** and the encounter list in the facility sidebar. "Can list encounters" or "Can Create encounter" does the same. You need one of the three in a department of the facility. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Create encounter | Shows **Search patients** and the encounter list in the facility sidebar, as "Can update bookings on Object" does. You need it in a department of the facility. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+
+You have a role on the patient when you hold a role in one of these places:
+
+- A department of an encounter of the patient that is not closed. The departments of the current location of that encounter also count.
+- The patient's organization, or an organization above it.
+- The patient, when someone gave you a role directly on the patient.
+
+You hold a permission in the encounter when a role in a department of the encounter gives it to you. These departments are the departments that the encounter is assigned to, the departments above them, and "Administration", the root organization of the facility. The departments of the current location of the encounter also count.
+
+By default, a Staff, Doctor, Nurse, Admin or Facility Admin role gives everything that a patient discussion needs. Hold the role in a department of an open encounter of the patient in this facility.
+
+By default, a Doctor, Nurse, Admin or Facility Admin role gives everything that an encounter discussion needs. Hold the role in a department of the encounter, while the encounter is open.
+
+In this section, Admin is the Admin role of a facility or a government organization. A second default role is also named Admin, and it does not hold the permissions that Care checks to read or write discussions.
+
+Your deployment can change which roles hold a permission.
+
+## Steps
+
+### 1. Open Notes
+
+Open **Notes** for the patient or for the encounter of the discussion.
+
+If your screen is narrower than 768 px, the facility sidebar is closed. Select the sidebar button (**Toggle Sidebar**) to open it.
+
+For a patient discussion, open the **Notes** tab of the patient profile:
+
+1. Select **Search patients** in the facility sidebar.
+2. Select the patient in the results. Care opens the home page of the patient. See [Search for a patient](../patient/search-patient.mdx).
+3. Select the name of the patient. Then select **View Profile**.
+4. Select the **Notes** tab.
+
+From an encounter, you can also select **View Profile** on the patient card. Then select the **Notes** tab.
+
+If Care shows "Patient Not Found" in place of the patient profile, you cannot open this patient. Check the permissions above.
+
+For an encounter discussion, open the encounter:
+
+1. Select the encounter list under **Encounters & Locations** in the facility sidebar. The entry reads **All Encounters**, or the name of your default encounter class, such as Inpatient.
+2. Select **View Encounter** on the encounter. In the **List** view, you can also select the row of the encounter.
+
+From the profile of the patient, you can also select the **Encounters** tab. Then select **View Encounter** on the encounter.
+
+Care opens the encounter on its **Overview** section.
+
+In this flow, a large screen is at least 1024 px wide, at the default text size. A small screen is narrower.
+
+Then open **Notes** in one of these ways:
+
+- On a large screen, select **Notes** in the list of sections on the left.
+- On a small screen, select **Encounter section**. Then select **Notes** in the list of sections.
+- Select **Encounter Actions**, or press `Shift+E`. Under **Go to**, select **Notes**.
+- On a large screen, you can also press `g`, then `n`. On a small screen, this shortcut does nothing.
+
+If you chose an encounter workspace, the **Notes** section shows only when that workspace includes it.
+
+### 2. Select the discussion
+
+Care opens the newest discussion of the list.
+
+To open another discussion on a large screen, select its title in the **Discussions** list on the left.
+
+On a small screen, select **Threads** in the bar at the bottom of the screen. Then select the discussion in the **All Discussions** panel.
+
+### 3. Find your message
+
+Your own messages are on the right of the discussion.
+
+If you cannot see your message, select **Load older messages** at the top of the discussion.
+
+Each of your messages has an **Edit message** button next to its time.
+
+Care shows **Edit message** only on your own messages. Care does not check your permission to edit before it shows the button. Care checks it when you save the change.
+
+If Care shows "You do not have permission to send or edit messages in this discussion." below the messages, you cannot edit.
+
+In an encounter discussion, this happens when you picked the encounter from **Encounter History**, or opened it from an organization.
+
+It also happens when the encounter is closed. Care then shows no **Edit message** button, even on your own messages.
+
+### 4. Change the text
+
+Select **Edit message**.
+
+Care replaces the message with a text box. The box holds the current text of the message.
+
+Change the text. You cannot leave the box empty.
+
+You can format the text with Markdown, as in a new message.
+
+![A message by Dr. Arjun Rao open for editing, with the changed text and the Save Changes and Cancel buttons](/media/clinical/notes/edit-a-message-1.png)
+
+### 5. Save the change
+
+Select **Save Changes**.
+
+**Save Changes** is unavailable while the box is empty. Care removes the spaces at the start and at the end of the text.
+
+To stop without a change, select **Cancel**.
+
+If Care shows "Your changes could not be saved. The draft is still available; try again.", Care did not save the change. Select **Save Changes** again.
+
+If the save fails with a network error or a server error, Care reads the message again. If the saved text matches your change, Care treats the change as saved.
+
+If Care shows "You do not have permission to send or edit messages in this discussion." after you save, Care refused the change. Care then shows the discussion as read-only.
+
+## Expected Outcome
+
+- Care saves the new text of the message.
+- The message shows **Edited** next to its time.
+- Under the message, Care shows "Edit history (1 change)". After more changes, it shows the number of changes, for example "Edit history (2 changes)".
+- Select the edit history to open it. It lists each earlier text, newest first, with the username of the author and the date and time of the change.
+- Every user who can read the discussion sees **Edited** and the edit history.
+- Other users who have the discussion open see the change within 30 seconds. They can also select the refresh button (**Refresh discussion**).
+- You can edit the message again. Each change adds one more earlier text to the edit history.
+- You cannot delete the message or its earlier text.
+
+## Related
+
+Concepts:
+
+- [Notes](../../../concepts/clinical/notes.mdx)
+
+Flows:
+
+- [Start a discussion](./start-a-discussion.mdx)
+- [Post a message](./post-a-message.mdx)
+- [Rename a discussion](./rename-a-discussion.mdx)
+- [Find discussions](./find-discussions.mdx)

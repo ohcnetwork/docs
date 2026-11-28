@@ -4,125 +4,228 @@ sidebar_position: 9
 
 # Notes
 
-Notes are threaded discussions attached to a patient. A `NoteThread` groups messages; a `NoteMessage` is one message in that thread, carrying a server-maintained edit history.
-
-The Django models (`care/emr/models/notes.py`) store the data: `NoteThread` holds the patient and optional encounter link, and `NoteMessage` stores each body next to an opaque `message_history` `JSONField`. The Pydantic resource specs (`care/emr/resources/notes/`) extend `EMRResource` and define what the API exposes — the shape of `message_history`, the read/write schema split, and the edit-history logic that runs on every update.
+Technical reference for the `NoteThread` and `NoteMessage` models in Care EMR. For the plain-language view, see the [Notes concept](../../concepts/clinical/notes.mdx).
 
 **Source:**
 
 - Model: [`care/emr/models/notes.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/notes.py)
-- Specs: [`resources/notes/thread_spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/notes/thread_spec.py), [`resources/notes/notes_spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/notes/notes_spec.py)
-- Base: [`resources/base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)
+- Specs: [`care/emr/resources/notes/thread_spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/notes/thread_spec.py) · [`notes_spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/notes/notes_spec.py) · [`constants.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/notes/constants.py)
+- Viewset: [`care/emr/api/viewsets/notes.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/notes.py)
+- Shared bases: [`care/emr/resources/base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py) · [`care/emr/api/viewsets/base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/base.py)
+
+A discussion (`NoteThread`) belongs to one patient and, optionally, to one encounter of that patient. A message (`NoteMessage`) is one entry in a discussion.
+
+The Django models are the storage layer. `NoteThread` stores the title, the thread type and the links to the patient and the encounter. `NoteMessage` stores the text and an opaque `message_history` JSON field.
+
+The Pydantic resource specs define the read and write schemas, the shape of `message_history`, and the edit-history logic. The viewsets define the API actions, the list filters and the authorization checks.
 
 ## Models
 
 | Model | Purpose |
 | --- | --- |
-| `NoteThread` | A discussion thread attached to a patient (optionally scoped to an encounter) |
-| `NoteMessage` | An individual message posted within a `NoteThread` |
+| `NoteThread` | A discussion: a titled group of messages about one patient. Linked to one encounter of that patient, or to none |
+| `NoteMessage` | One message in a `NoteThread`. Keeps the earlier versions of its text after each edit |
 
-Both extend [`EMRBaseModel`](../foundation/base-model.mdx), which supplies `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and the `history`/`meta` JSON fields.
+Both extend [`EMRBaseModel`](../foundation/base-model.mdx). It supplies `external_id`, `created_date` and `modified_date`, soft delete through `deleted`, `created_by` and `updated_by`, and the `history` and `meta` JSON fields.
 
 ## `NoteThread` fields
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `title` | `CharField(255)` | Nullable and blank-allowed in the column, but the spec requires it on write (`title: str`, `max_length=255`) |
-| `patient` | `FK → Patient` | `on_delete=CASCADE`; deleting the [patient](../clinical/patient) deletes the thread. Excluded from spec serialization (`__exclude__`) and set from the URL/viewset context, never the request body |
-| `encounter` | `FK → Encounter` | Nullable, blank-allowed, `on_delete=CASCADE`. Scopes the thread to one [encounter](../clinical/encounter.mdx). Excluded from spec serialization; on create it is resolved from a UUID in the request body (see specs below) |
+| `title` | `CharField(255)`, `null=True`, `blank=True` | The specs require it on create and on update: `str`, at most 255 characters, no minimum length. No uniqueness rule: two discussions of a patient can have the same title |
+| `thread_type` | `CharField(100)`, default `"patient"` | One of `NoteThreadType`. Read-only on the API: create always sets it to `patient`, and `PUT` or `PATCH` cannot change it |
+| `patient` | `FK → emr.Patient`, required, `on_delete=CASCADE` | Not in any spec. Create sets it to the patient in the URL. Update cannot change it. The read response does not include it |
+| `encounter` | `FK → emr.Encounter`, `null=True`, `blank=True`, `on_delete=CASCADE` | Optional `UUID4` on create, validated as described under "Validation". Update cannot change it. The read response does not include it |
 
-A thread with no `encounter` is patient-level; a thread with an `encounter` is pinned to that visit. A `TODO` in the source flags organization-based access restriction as planned but not yet implemented.
+A discussion without an encounter is a patient discussion. A discussion with an encounter is an encounter discussion, and it also belongs to the patient of that encounter.
+
+The model has no facility or organization field. A TODO in the model plans organizations to restrict access further; it is not implemented.
+
+`on_delete=CASCADE` applies only to a delete in the database. On these models, `delete()` is a soft delete that sets `deleted=True`, and the default manager hides such rows. The Notes API has no delete action.
+
+## Enum values
+
+### `NoteThreadType` values
+
+| Value | Use in the Notes API |
+| --- | --- |
+| `patient` | The default. Every discussion that the Notes API creates has this type |
+| `referral` | The Notes API does not create this type. The Notes routes work with `patient` discussions only |
 
 ## Related models
 
 ### `NoteMessage`
 
-One message inside a thread.
+One message in a discussion.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `thread` | `FK → NoteThread` | `on_delete=CASCADE`; deleting the thread deletes its messages. Excluded from spec serialization (`__exclude__`) and set from the URL/viewset context |
-| `message` | `TextField` | Free-text body. Required on write (`message: str`) |
-| `message_history` | `JSONField` | Defaults to `{}`. Opaque at the model layer; the spec gives it the shape below and rewrites it server-side on each edit. Read-only on the API |
+| `thread` | `FK → NoteThread`, `on_delete=CASCADE` | Not in any spec. Create takes the discussion from the URL, never from the body |
+| `message` | `TextField`, not nullable | The specs require it on create and on update: `str`, no length limit |
+| `message_history` | `JSONField`, default `{}` | Not writable: the write specs have no `message_history` field. Care appends one entry on each edit, in the shape below. Returned on read |
+
+A message has no patient or encounter field. It reaches the patient and the encounter through its discussion.
 
 #### `message_history` shape
 
-The update spec writes a fixed structure, not a free-form blob. Each edit appends the *previous* message body to a `history` list:
+Each edit appends one entry to `history`. The entry holds the text as it was before that edit, so the oldest edit comes first.
 
-```jsonc
+```text
+message_history: { "history": [ HistoryEntry, ... ] }      # {} until the first edit
+
+HistoryEntry
 {
-  "history": [
-    {
-      "message": "string",           // the prior message body (pre-edit)
-      "created_by": {
-        "username": "string",
-        "external_id": "uuid"        // editor of the prior version
-      },
-      "edited_at": "datetime str",   // timezone.now() at the time of this edit
-      "created_at": "datetime str"   // the prior version's modified_date
-    }
-    // ... one entry per edit, oldest first
-  ]
+  "message":    str,                                      # the text that this edit replaced
+  "created_by": { "username": str, "external_id": str },  # the author of the message
+  "edited_at":  str,                                      # date and time of this edit
+  "created_at": str                                       # modified_date of the replaced version
 }
 ```
 
-Clients never write `message_history`. It is read-only on the API and rebuilt server-side on each edit (see `NoteMessageUpdateSpec` below).
+- `created_by` is the author of the message. Only the author can edit a message, so the editor and the author are the same user.
+- `created_at` is the `modified_date` of the replaced version. For the first edit, that is the time the message was posted. For a later edit, it is the time of the edit before it.
+- Care writes both times as strings.
 
 ## Resource specs (API schema)
 
-Every spec extends `EMRResource` (`resources/base.py`), which provides `serialize` (DB object → pydantic, via `perform_extra_serialization`) and `de_serialize` (pydantic → DB object, via `perform_extra_deserialization`). Fields named in `__exclude__` are skipped in both directions and handled by hand.
+Every spec extends `EMRResource`. Its automatic field mapping skips foreign keys and the fields in `__exclude__`. So `patient` and `thread` come from the URL, and `encounter` goes through a create hook.
+
+The discussion viewset uses the create spec to create, the update spec to update, and the read spec for reads. It sets no retrieve spec, so the list and a single discussion return the same fields.
 
 ### Thread specs
 
-| Spec | Role | Fields exposed | Notes |
+| Spec | Role | Fields | Notes |
 | --- | --- | --- | --- |
-| `NoteThreadSpec` | shared base | `id` (UUID, read), `title` (str, required, ≤255) | `__model__ = NoteThread`; `__exclude__ = ["patient", "encounter"]` |
-| `NoteThreadCreateSpec` | write · create | base + `encounter` (UUID, optional) | Validates `encounter` exists (raises `Encounter not found`), then resolves the UUID to an `Encounter` FK in `perform_extra_deserialization` |
-| `NoteThreadUpdateSpec` | write · update | base (`title`) | No extra behaviour; `encounter` and `patient` cannot be reassigned through update |
-| `NoteThreadReadSpec` | read · detail/list | base + `created_by`, `updated_by` (dict, nullable), `created_date`, `modified_date` (datetime) | `perform_extra_serialization` sets `id = external_id` and serializes audit users via `serialize_audit_users` |
-
-Validation and server behaviour:
-
-- `title` is required on write at the spec layer (`Field(..., max_length=255)`), even though the column is nullable.
-- `NoteThreadCreateSpec.encounter` runs `validate_encounter_exists`: a non-null value must match an existing `Encounter.external_id`, or it raises `ValueError("Encounter not found")`.
-- On create, `perform_extra_deserialization` looks up the `Encounter` by `external_id` and assigns the FK. `patient` belongs to no thread spec — it comes from the request context.
+| `NoteThreadSpec` | shared base | `id` (`UUID4 \| None`), `title` (`str`, required, at most 255 characters) | `__model__ = NoteThread`; `__exclude__ = ["patient", "encounter"]` |
+| `NoteThreadCreateSpec` | write · create | base + `encounter` (`UUID4 \| None`) | Checks that the encounter exists. `perform_extra_deserialization` resolves the UUID to the `encounter` foreign key |
+| `NoteThreadUpdateSpec` | write · update | base (`title`) | Adds nothing. An update cannot move a discussion to another patient or encounter |
+| `NoteThreadReadSpec` | read · list and detail | base + `thread_type` (`NoteThreadType`), `created_by`, `updated_by` (`dict \| None`), `created_date`, `modified_date` (`datetime`) | `perform_extra_serialization` sets `id` from `external_id` and fills the audit users. Has no `patient` or `encounter` field |
 
 ### Message specs
 
-| Spec | Role | Fields exposed | Notes |
+| Spec | Role | Fields | Notes |
 | --- | --- | --- | --- |
-| `NoteMessageSpec` | shared base | `id` (UUID, read), `message` (str, required) | `__model__ = NoteMessage`; `__exclude__ = ["thread"]` |
-| `NoteMessageCreateSpec` | write · create | base (`message`) | No extra behaviour |
-| `NoteMessageUpdateSpec` | write · update | base (`message`) | `perform_extra_deserialization` appends the pre-edit message to `message_history["history"]` (see below) |
-| `NoteMessageReadSpec` | read · detail/list | base + `message_history` (dict), `created_by`, `updated_by` (dict, nullable), `created_date`, `modified_date` (datetime) | `perform_extra_serialization` sets `id = external_id` and serializes audit users |
+| `NoteMessageSpec` | shared base | `id` (`UUID4 \| None`), `message` (`str`, required) | `__model__ = NoteMessage`; `__exclude__ = ["thread"]` |
+| `NoteMessageCreateSpec` | write · create | base (`message`) | Adds nothing |
+| `NoteMessageUpdateSpec` | write · update | base (`message`) | `perform_extra_deserialization` appends the replaced version to `message_history["history"]` |
+| `NoteMessageReadSpec` | read | base + `message_history` (`dict`), `created_by`, `updated_by` (`dict \| None`), `created_date`, `modified_date` (`datetime`) | `perform_extra_serialization` sets `id` from `external_id` and fills the audit users |
 
-Validation and server behaviour:
+The audit users `created_by` and `updated_by` are user objects read from the cached `UserSpec`.
 
-- `message` is required on create and update.
-- `thread` is never in the request body (`__exclude__`); it comes from the URL/viewset context.
-- On update, `NoteMessageUpdateSpec.perform_extra_deserialization` fetches the existing `NoteMessage` by `external_id`, initializes `message_history["history"] = []` if empty, then appends an entry: the prior `message`, the prior author (`username` + `external_id`), `edited_at` (`timezone.now()`), and `created_at` (the prior `modified_date`). Clients cannot write `message_history` directly.
+### Validation
+
+- `title`: required on create and on update, at most 255 characters. No minimum length is set.
+- `message`: required on create and on update. No length limit is set.
+- `encounter` on create: a UUID that matches no encounter fails with "Encounter not found". This spec check does not look at the patient.
+- `encounter` on create: an encounter of another patient fails later, in the viewset, with "Patient Mismatch".
+- On update, Care drops `id`, `external_id`, `patient` and `encounter` from the request body before validation.
 
 ## Methods & save behaviour
 
-- `NoteThread` and `NoteMessage` inherit save and audit behaviour from [`EMRBaseModel`](../foundation/base-model.mdx): `external_id`, `created_by`/`updated_by`, `created_date`/`modified_date`, and soft delete via `deleted`.
-- Read specs populate audit users through `EMRResource.serialize_audit_users`, which resolves `created_by`/`updated_by` to cached `UserSpec` dicts.
-- `message_history` changes only inside `NoteMessageUpdateSpec.perform_extra_deserialization` — never from client input.
-- Cascade deletes flow downward: deleting a patient removes its threads, and deleting a thread removes its messages.
+- Create runs in this order: spec validation, the create authorization, `de_serialize`, then `perform_create`.
+- Discussion create: `perform_create` sets `thread_type` to `patient` and `patient` to the patient in the URL. Then it refuses an encounter of another patient with "Patient Mismatch".
+- Message create: `perform_create` takes the discussion from the URL.
+- Message create also reads an optional `encounter` from the request body. An unknown ID returns 404, and an encounter of another patient fails with "Patient Mismatch". `NoteMessage` has no column for it, so Care does not store it.
+- Create sets `created_by` and `updated_by` to the user who sends the request. Rename and edit set `updated_by` to that user.
+- Message edit: `NoteMessageUpdateSpec` appends the replaced version to `message_history` before the save. Outside tests and migrations, no other code writes `message_history`.
 
 ## API integration notes
 
-Payload field names follow the spec classes above, not the Django model names.
+### Routes
 
-- `patient` and `thread` never appear in a request body; they come from the URL/viewset context.
-- Send `encounter` on create as the encounter's `external_id` (UUID); it is validated to exist. It cannot be reassigned on update.
-- `title` and `message` are required on write, even though the underlying columns are nullable.
-- `message_history` is read-only. Each edit appends the previous body and authorship to `history` server-side.
-- `created_by`, `updated_by`, `created_date`, and `modified_date` are read-only audit fields from `EMRBaseModel`; soft deletes use `deleted`.
+All routes are under `/api/v1/` and are nested under the patient. No route is nested under the encounter: the discussion list takes an `encounter` filter instead.
+
+| Action | Method and path | Request body |
+| --- | --- | --- |
+| List discussions | `GET /api/v1/patient/{patient}/thread/` | None |
+| Create a discussion | `POST /api/v1/patient/{patient}/thread/` | `title`, and optionally `encounter` |
+| Open a discussion | `GET /api/v1/patient/{patient}/thread/{thread}/` | None |
+| Rename a discussion | `PUT /api/v1/patient/{patient}/thread/{thread}/` | `title` |
+| List messages | `GET /api/v1/patient/{patient}/thread/{thread}/note/` | None |
+| Post a message | `POST /api/v1/patient/{patient}/thread/{thread}/note/` | `message` |
+| Open a message | `GET /api/v1/patient/{patient}/thread/{thread}/note/{note}/` | None |
+| Edit a message | `PUT /api/v1/patient/{patient}/thread/{thread}/note/{note}/` | `message` |
+| Delete a discussion or a message | None | None |
+
+- On message routes, Care finds `{thread}` by the discussion's `external_id`, which reads return as `id`.
+- The discussion routes reach only `patient` discussions of the patient in the URL.
+
+### List filters, ordering and pages
+
+| Query parameter | Applies to | Effect |
+| --- | --- | --- |
+| `encounter` | Discussion list | Encounter UUID. Returns only the discussions of that encounter |
+| `encounter_isnull` | Discussion list | `true` returns only patient discussions. `false` returns only encounter discussions |
+| `limit` | Both lists | Items per page. Default 14, at most 200 |
+| `offset` | Both lists | Items to skip |
+
+- Without a filter, the discussion list returns the patient discussions and the encounter discussions of the patient.
+- The discussion list is ordered by the `created_date` of the discussion, newest first.
+- The message list returns the messages of the discussion in the URL, ordered by `created_date`, newest first.
+- Both lists answer with `count` and `results`.
+- A discussion in a response does not say which encounter it belongs to. To find the discussions of an encounter, filter the list with `encounter`.
+- The Care frontend sends `encounter_isnull=true` for the patient's discussions and `encounter=<id>` for an encounter's discussions, so the two lists do not overlap.
+
+### Authorization
+
+The tables below use these terms:
+
+- "Closed": the encounter status is `completed`, `cancelled`, `entered_in_error` or `discontinued`. Any other status is open, `discharged` included.
+- "A role on the patient": a role that the user holds in one of these places.
+  - A facility organization of an open encounter of the patient, or of that encounter's current location.
+  - The patient's organization, or an organization above it, read from the patient's `organization_cache`.
+  - The patient directly, through a role given on the patient.
+- "The read check": the check that the list and open routes run, and that rename and edit run first. It refuses with "Permission denied to user".
+- "In the encounter": in one of the encounter's facility organizations, or in an organization of its current location.
+- The facility organizations of an encounter are the organizations it is assigned to, their parents, and the facility's root organization "Administration".
+
+| Check | Permission (display name) | Held where | Condition |
+| --- | --- | --- | --- |
+| `can_view_clinical_data` | "Can view clinical data about patients" | A role on the patient | None |
+| `can_write_patient_obj` | "Can Update a Patient's data" | A role on the patient | If the setting `PATIENT_GLOBAL_EDIT_ACCESS_ENABLED` is on, any facility organization or organization is enough. The setting is off by default |
+| `can_view_encounter_clinical_data` | "Can Read encounter related clinical data" | In the encounter | Any encounter status |
+| `can_update_encounter_clinical_data` | "Update Encounter related clinical data" | In the encounter | Always refused when the encounter is closed |
+
+| Route | Checks, in order | Refusal message |
+| --- | --- | --- |
+| List or open discussions, list or open messages | The read check | "Permission denied to user" |
+| Create a patient discussion (no `encounter` in the body) | `can_write_patient_obj` on the patient in the URL | "You do not have permission for this action" |
+| Create an encounter discussion | `can_update_encounter_clinical_data` on the encounter in the body. Then the encounter must belong to the patient in the URL | "You do not have permission for this action", then "Patient Mismatch" |
+| Rename a discussion | The read check. Then `can_update_encounter_clinical_data` on the encounter of the discussion, or `can_write_patient_obj` on its patient for a patient discussion | "Permission denied to user", then "You do not have permission for this action" |
+| Post a message | `can_update_encounter_clinical_data` on the encounter of the discussion, or `can_write_patient_obj` on its patient for a patient discussion. No read check | "You do not have permission for this action" |
+| Edit a message | The read check. Then the user must be the author of the message. Then the same write check as for posting | "Permission denied to user", then "Cannot Update Message Created by Other User", then "You do not have permission for this action" |
+
+- Every write to an encounter discussion is refused while its encounter is closed: create, rename, post and edit.
+- For who can do what in plain language, see the [Notes concept](../../concepts/clinical/notes.mdx).
+
+### Errors
+
+`PermissionDenied` answers HTTP 403, and `ValidationError` answers HTTP 400.
+
+| Message | Raised as | When |
+| --- | --- | --- |
+| "Permission denied to user" | `PermissionDenied` (403) | The read check fails |
+| "You do not have permission for this action" | `PermissionDenied` (403) | A write check fails, including any write to a discussion of a closed encounter |
+| "Cannot Update Message Created by Other User" | `PermissionDenied` (403) | A user edits a message that another user posted |
+| "Patient Mismatch" | `ValidationError` (400) | The `encounter` of a new discussion, or of a new message, belongs to another patient |
+| "Thread does not belong to the patient" | `ValidationError` (400) | A message route names a discussion of another patient |
+| "Message does not belong to the thread" | `ValidationError` (400) | A request opens or edits a message under a discussion that does not hold it |
+| "Encounter not found" | Spec validation error | A new discussion names an `encounter` UUID that matches no encounter |
+| `No <Model> matches the given query.` | `Http404` (404) | An unknown or malformed patient, discussion, message or encounter ID in the URL or the query. Also a discussion that is not of type `patient` on a message route |
+
+- A missing `title` or `message`, or a `title` longer than 255 characters, fails spec validation.
 
 ## Related
 
-- Source: [notes.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/notes.py)
-- Specs: [thread_spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/notes/thread_spec.py), [notes_spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/notes/notes_spec.py)
+- Concept: [Notes](../../concepts/clinical/notes.mdx)
+- Flow: [Start a discussion](../../flows/clinical/notes/start-a-discussion.mdx)
+- Flow: [Post a message](../../flows/clinical/notes/post-a-message.mdx)
+- Flow: [Edit a message](../../flows/clinical/notes/edit-a-message.mdx)
+- Flow: [Rename a discussion](../../flows/clinical/notes/rename-a-discussion.mdx)
+- Flow: [Find discussions](../../flows/clinical/notes/find-discussions.mdx)
 - Reference: [Patient](../clinical/patient)
 - Reference: [Encounter](../clinical/encounter.mdx)
-- Reference: [Base model](../foundation/base-model.mdx)
+- Base: [Base models & conventions](../foundation/base-model.mdx)
+- Source (model): [notes.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/notes.py)
+- Source (specs): [resources/notes on GitHub](https://github.com/ohcnetwork/care/tree/develop/care/emr/resources/notes)
+- Source (viewset): [api/viewsets/notes.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/notes.py)
