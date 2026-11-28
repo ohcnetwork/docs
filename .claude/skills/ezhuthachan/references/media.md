@@ -74,6 +74,8 @@ rm -r "$EZ/locks/<backend-host>"
 
 If `mkdir` fails, another session holds it. Read `owner`, tell the user, and wait or ask.
 
+When another session owns the environment and the user approved sharing it, also wait for that session's `.recording.lock` in its media folder, the lock `withlock.sh` takes, before each of your takes. Two sessions recording on one backend at once spoil each other's videos, and the environment lock alone does not stop it, because both hold it. A copy of `withlock.sh` with `LOCK` pointing at the owner's folder does this (Procedure session, 28 November 2026).
+
 ## Set up the recording kit
 
 Copy the kit into the session and install Playwright at the version the product uses, so the two agree on browser builds:
@@ -131,6 +133,8 @@ Name it `<flow-slug>.demo.ts`. Start from `example.demo.ts`.
 - Each flow creates what it changes. Do not rely on what another recording left behind.
 - Respect the data policy. Under "create allowed", name records so they are recognisably yours.
 - Use invented people, the same small cast in every recording. If `$EZ/personas.md` exists, use it. If not, propose a few clearly fictional names that suit the deployment's region, get the user's agreement, and save them there.
+
+**Coded searches.** In a value-set search, an option's accessible name can hold the matched synonym before the display ("Appendectomy Appendicectomy"), and the row added to the form can show the synonym rather than the display. Find the option with the name a dry run shows, and the row by its text on screen. When a search opens in a popover with its own input, wait for that input and type into it. A pointer click aimed at it can land while the popover is still moving, and the typing is lost.
 
 **Keep it watchable.** Aim for under a minute per flow; split a longer flow into two pages. Assert only what you need in order to wait for the screen to settle.
 

@@ -60,6 +60,7 @@ These patterns occur in Care. Whether each applies to your module is something t
 - **Frontend and backend disagreeing.** The frontend hides a button the backend would allow, or shows one the backend refuses. Record both sides. The page describes what the backend does. Do not ask which side to document. File the disagreement only when `issues.md` says it is a certain defect and the user has agreed.
 - **Two roles, one name.** More than one default role can have the same display name in different contexts. When you name a role, make sure the reader can tell which.
 - **Custom roles.** If the pinned version lets administrators create or edit roles, the role lists in the code are defaults. Then write "by default, the Doctor and Nurse roles hold this permission".
+- **Parent records load first.** A screen inside a record also loads the record it belongs to, and that read has its own rule. On 28 November 2026 the encounter page loaded the patient as well as the encounter, and showed only its loading state until both arrived. The patient read had its own rule, separate from the encounter's: one permission through a role on the patient, or another in one of the patient's organizations. A closed encounter gave no role on the patient. Three reviewed drafts had missed this gate. Trace the parent read of every screen as part of gate 5.
 
 ## Recording a path
 
