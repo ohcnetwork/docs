@@ -6,84 +6,136 @@ sidebar_position: 8
 
 ## Definition
 
-A **[consent](https://build.fhir.org/consent.html)** in Care is a record of the permission or the refusal that a patient gives for a treatment, for a research study, or for the sharing of information. Each consent belongs to one encounter. Care shows the consents of an encounter on the **Consents** tab of that encounter, as a list of cards.
+A **[consent](https://build.fhir.org/consent.html)** in Care is a record of a patient's decision to permit or deny something, such as a treatment, taking part in research, or the sharing of information. You can attach files to a consent, such as photos or PDF files.
+
+Each consent belongs to one encounter, and Care lists it on the **Consents** tab of that encounter. A consent recorded in one encounter is not listed on the **Consents** tab of another encounter of the same patient.
 
 ## Key Attributes
 
 | Components | What it captures |
 | --- | --- |
-| Status | The current state of the consent. |
-| Category | The subject that the patient gives permission or refusal for. |
-| Consent Decision | Whether the patient permits or denies the subject of the consent. |
-| Consent Given On | The date and time when the patient gives the consent. |
-| Consent Valid From | The date and time from which the consent is valid. |
-| Consent Valid Until | The date and time until which the consent is valid. |
-| Note | Free text that records more information about the consent. |
-| Supporting Documents | Files that you attach to the consent, for example a scanned signed consent form. |
+| Category | What the consent is about, such as Treatment or Research. The form starts with Treatment. |
+| Decision | Whether the patient permits or denies it. The form starts with Permit. |
+| Status | One of five statuses, such as **Active** or **Draft**. The form starts with **Active**. |
+| Consent Given On | The date and time when the consent was given. It is required, and the form starts with the current date and time. |
+| Consent Valid From | The date and time from which the consent is valid. It is optional, and the form starts with the current date and time. When you record a consent, it cannot be before Consent Given On. |
+| Consent Valid Until | The date and time until which the consent is valid. It is optional, and it cannot be before Consent Valid From. |
+| Note | Free text about the consent. It is optional. |
+| Supporting Documents | The files attached to the consent. In the app, these are jpg, jpeg, png or pdf files of up to 100 MB each. |
+| Encounter | The encounter that the consent belongs to. Care takes it from the encounter where you record the consent. |
+| Verifications | Entries that users add to the consent, each with a yes-or-no value and a type. Only the Care API adds, shows and removes them. |
 
-### Consent Decision
+In the app, the edit form changes only the **Status** and the **Note** of a consent. It does not show Category, Decision, Consent Given On or the validity dates, and it sends their saved values again unchanged.
 
-Consent Decision records the answer of the patient. Select one of these values:
-
-| Consent Decision | Description |
-| --- | --- |
-| Permit | The patient allows the subject of the consent. |
-| Deny | The patient refuses the subject of the consent. |
-
-On the consent card, Care shows **Permitted** for Permit, and **Denied** for Deny.
+These fields are locked only in the app: the Care API accepts changes to all of them. The encounter of a consent cannot change.
 
 ### Category
 
-Category records the subject of the consent. The consent form shows these categories, with a short description for each one:
+The form offers six categories. Each option shows the category and a short description:
 
 | Category | Description |
 | --- | --- |
-| Research | Consent to take part in a research protocol and to share information. |
-| Privacy Consent | Consent to collect, access, use, or share information. |
-| Treatment | Consent to undergo a specific treatment. |
-| Do Not Resuscitate | Consent to not receive CPR or resuscitation in a cardiac event. |
-| Advance Directive | Consent that the patient gives before a possible need for medical treatment. |
-| Advance Care Directive | Consent for the actions to take if the patient can no longer decide. |
+| Research | Consent to participate in research protocol and information sharing |
+| Privacy Consent | Consent to collect, access, use or disclose (share) information |
+| Treatment | Consent to undergo a specific treatment |
+| Do Not Resuscitate | Consent to not receive CPR or resuscitation initiated in case of a cardiac event |
+| Advance Directive | Consent given in anticipation of a potential need for medical treatment |
+| Advance Care Directive | Consent for actions to be taken if they are no longer able to make decisions for themselves |
 
-Note: Care also holds a **Comfort Care** category, but the consent form has no option for it. You cannot select Comfort Care. This is a known gap in the product.
+The Care API also accepts one more category, which the app does not offer and has no label for.
 
-### Verification
+### Decision
 
-Care can hold a verification for a consent. A verification records who confirmed the consent, when they confirmed it, and the type of the confirmation. The type is **Family** for a confirmation by a family member or a representative. The type is **Validation** for a confirmation by the patient.
+The decision is **Permit** or **Deny**. In the form, this field is **Consent Decision**. The consent card and the consent details page show the decision as **Permitted** or **Denied**.
 
-Note: The current version of Care has no screen to add, show, or remove a verification. This is a known gap in the product. For more information, see [Verify a consent](../../flows/clinical/consent/verify-a-consent.mdx).
+### Supporting Documents
 
-### Changes after creation
+When you record a consent, you can attach files from your device or take a photo with the camera.
 
-Care fixes the Category, the Consent Decision, the Consent Given On date, and the validity period when you record the consent. The edit form does not show these fields. After creation, you can change the Status and the Note.
+Later, you can add more files with **Add Files** on the consent details page. The edit form has no file section.
 
-## Status
+The consent details page lists the files of the consent. Each file has a **View** button and a **Download** button.
 
-| Status | Description |
-| --- | --- |
-| Draft | You prepared the consent, but it is not in effect. |
-| Active | The consent is in effect. |
-| Inactive | The consent is no longer in effect. |
-| Not Done | The consent did not happen. |
-| Entered in Error | Someone recorded the consent by mistake. |
+The files of a consent are not shown on the **Files** tab of the encounter.
+
+### Encounter
+
+Each consent belongs to one encounter, and it cannot move to another encounter later.
+
+Care refuses any change to the consents of a closed encounter. You cannot record, change or delete a consent, add files to it, or add or remove a verification. An encounter is closed when its status is **Completed**, **Cancelled**, **Discontinued** or **Entered in error**.
+
+A **Discharged** encounter is not closed, so Care still accepts changes to its consents.
+
+On a closed encounter, the app does not show **Add Consent**, **Edit** or **Add Files**.
+
+### Verifications
+
+A verification is an entry that a user adds to a consent. Care 3.1 has no screen to add, show or remove a verification, so you can work with verifications only through the Care API.
+
+Each verification records a yes-or-no value, a type and an optional note, and Care adds the user who made it and the time. Care stores the entry whatever the yes-or-no value is.
+
+The type says whether a family member gave the consent or the patient validated it. Each user can verify a consent only once.
+
+### Status
+
+The status is one of these values, in the order that the form lists them:
+
+- **Active**
+- **Inactive**
+- **Draft**
+- **Not Done**
+- **Entered in Error**
+
+The form starts with **Active**. You can choose any status when you record a consent, and change it later in the edit form. Care has no rule about which status can follow which.
+
+Care does not change the status by itself, and the status does not change what you can do with the consent. A consent with the status **Entered in Error** stays on the **Consents** tab, and you can still change it.
+
+When the **Consent Valid Until** date has passed, the consent card shows an **Expired** badge, whatever the status is.
+
+The app has no control to delete a consent. Through the Care API, a user who can change a consent can also delete it, and Care then no longer shows it.
 
 ## Permissions
 
-| Action | Permission |
-| --- | --- |
-| View a consent | Can view clinical data about patients, or Can Read encounter related clinical data. |
-| Record a consent | Update Encounter related clinical data. |
-| Update a consent | Update Encounter related clinical data. |
+Care controls access to consents with patient and encounter permissions, and where you hold each permission matters. You need a staff account to use the consent screens.
 
-The Admin, Doctor, Nurse, and Facility Admin roles hold the **Update Encounter related clinical data** permission.
+A role on the patient is a role that you hold in one of these places:
 
-Note: Care shows the buttons that record and change a consent only when the encounter is active, and only when you open the encounter from the facility.
+- An organization of an open encounter of the patient, or of the current location of that encounter.
+- An organization that the patient belongs to.
+- A direct link between you and the patient.
+
+A closed encounter gives no role on the patient.
+
+A permission held in the encounter is one that a role gives you in one of these organizations:
+
+- An organization that the encounter is assigned to, or a parent organization of one of them.
+- The root organization of the facility, "Administration".
+- An organization of the current location of the encounter.
+
+The System Roles column lists the roles that hold each permission by default. Roles can be created and changed, so the roles in your deployment can differ. Admin is the Admin role of a facility or a government organization, not the Admin role of a role organization.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Update Encounter related clinical data | Record a consent with its files, change a consent, and add files to it. You must hold it in the encounter, and the encounter must not be closed. To change a consent or add files to it, you also need "Can view clinical data about patients", because you do both from the consent details page. Through the Care API, this permission also lets you delete a consent and add or remove verifications; these also need a permission that lets you see the consent. | Admin, Doctor, Nurse, Facility Admin |
+| Can view clinical data about patients | See the consents on the **Consents** tab. Open the consent details page, where you view and download files, change a consent and add files. You must hold it through a role on the patient. | Staff, Doctor, Nurse, Admin, Facility Admin |
+| Can Read encounter related clinical data | See the consents on the **Consents** tab. You must hold it in the encounter, and it counts also when the encounter is closed. It does not open the consent details page: Care shows "Consent not found". | Admin, Doctor, Nurse, Facility Admin |
+| Can Read encounter | Open the encounter page, where the **Consents** tab is. You must hold it in the encounter. | Admin, Doctor, Nurse, Facility Admin |
+| Can list patients | Open the encounter page without "Can Read encounter". You must hold it through a role on the patient, and you also need one of the two permissions above that let you see consents. | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer, Pharmacist |
+| Can list encounters | Find the encounter in the encounter list of the facility. You must hold it in the encounter. Care also uses it to show the encounter list in the sidebar, if you hold it in a team, a department or the root organization of the facility. | Admin, Doctor, Nurse, Facility Admin |
+
+A role in an organization of an open encounter counts as a role on the patient and as a role held in the encounter. So by default, the Doctor, Nurse, Admin or Facility Admin role in such an organization lets you open the encounter, and see, record and change its consents.
+
+Note: The app shows **Add Consent**, **Edit** and **Add Files** without checking your permissions. It shows them when you opened the encounter from a facility, the encounter is the one in view and not another selected encounter, and the encounter is not closed. If you do not hold "Update Encounter related clinical data" in the encounter, Care refuses when you save. For a new consent Care shows "Error creating consent", and for an edit "Error updating consent". Care also refuses the files that you add with **Add Files**.
+
+Note: If you open the encounter from an organization instead of a facility, Care shows its consents read-only.
 
 ## Related
 
-- Concept: [Encounter](../../concepts/clinical/encounter.mdx)
-- Concept: [Files](../../concepts/clinical/files.mdx)
 - Flow: [Record a consent](../../flows/clinical/consent/record-a-consent.mdx)
 - Flow: [View consents](../../flows/clinical/consent/view-consents.mdx)
+- Flow: [Add files to a consent](../../flows/clinical/consent/add-files-to-a-consent.mdx)
 - Flow: [Update a consent](../../flows/clinical/consent/update-a-consent.mdx)
-- Flow: [Verify a consent](../../flows/clinical/consent/verify-a-consent.mdx)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Patient](../clinical/patient)
+- Concept: [Files](../clinical/files.mdx)
+- Reference: [Consent](../../references/clinical/consent.mdx)

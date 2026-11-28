@@ -6,64 +6,201 @@ sidebar_position: 2
 
 ## Overview
 
-This flow describes how to view the [consents](../../../concepts/clinical/consent.mdx) recorded for an encounter. You can review each consent as a card, or open its full record.
+<video src="/media/clinical/consent/view-consents.mp4" poster="/media/clinical/consent/view-consents.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/consent/view-consents.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to see the [consents](../../../concepts/clinical/consent.mdx) of an encounter on the Consents tab, open the details of one consent, and view or download its files.
 
 ## Pre-requisites
 
-- The patient is registered in Care, and you open an encounter of that patient.
-- A member of staff recorded at least one consent for the encounter.
+- You sign in with a staff account.
+- The patient has an encounter. Each consent belongs to one encounter.
+- At least one consent is recorded for the encounter. If no consent is recorded, the Consents tab shows "No Consents found".
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can view clinical data about patients | Lets you view the consents of any patient you have access to. |
-| Can Read encounter related clinical data | Lets you view the consents of the encounters you have access to. |
+| Can view clinical data about patients | Lets you see the consents on the **Consents** tab, open the consent details, and view or download the files. It is the only permission that opens the consent details. You hold it through a role on the patient. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Read encounter related clinical data | Lets you see the consents on the **Consents** tab, also when the encounter is closed. It does not open the consent details. You hold it in the encounter. By default, the Admin, Doctor, Nurse and Facility Admin roles hold it. |
+| Can list encounters | Lets you find the encounter in the encounter list of the facility. You hold it in the encounter. Care also uses it to show the encounter list in the sidebar. For this, you hold it in a team, a department or the root organization of the facility. By default, the Admin, Doctor, Nurse and Facility Admin roles hold it. |
+| Can Read encounter | Lets you open the encounter page. You hold it in the encounter. By default, the Admin, Doctor, Nurse and Facility Admin roles hold it. |
+| Can list patients | Lets you open the encounter page without "Can Read encounter". If the encounter is not **Completed**, Care also checks it to list the encounters of the patient in **Encounter History** on the encounter page. For both, you hold it through a role on the patient. By default, the Staff, Doctor, Nurse, Administrator, Admin, Facility Admin, Volunteer and Pharmacist roles hold it. |
+
+To see the consents, you need one of the first two permissions. To open the consent details, you need "Can view clinical data about patients".
+
+A permission held in the encounter comes from a role in an organization of the encounter or its current location. These include their parent organizations and the root organization of the facility, "Administration".
+
+A role on the patient is a role in one of these places:
+
+- An organization of an encounter of the patient that is not closed, or of its current location.
+- An organization that the patient belongs to.
+- A direct link between you and the patient.
+
+A closed encounter has the status **Completed**, **Cancelled**, **Discontinued** or **Entered in error**. A role that you hold only through a closed encounter does not count for the patient.
+
+To open the encounter page, you need "Can Read encounter". Without it, you need "Can list patients" and one of the first two permissions.
+
+Care also loads the facility. Care shows a facility only to a member of one of its organizations, or of its geo organization or a parent organization of it. This is a membership, not a permission.
+
+By default, the Doctor, Nurse, Admin and Facility Admin roles hold all these permissions. For example, a Doctor role in a department of the encounter gives all of them, while the encounter is not closed.
+
+Admin in this table is the Admin role of a facility or a government organization. Roles can be created and edited, so the roles in your deployment can differ.
 
 ## Steps
 
 ### 1. Open the Consents tab
 
-Open the encounter of the patient. Select the **Consents** tab. Care shows each consent as a card.
+1. In the sidebar of the facility, under **Encounters & Locations**, select the encounter list.
+2. Find the encounter of the patient. Select **View Encounter** on its card.
+3. Select the **Consents** tab.
 
-### 2. Review the consent cards
+![The Consents tab of an encounter with three consent cards, and Consents in the encounter navigation outlined](/media/clinical/consent/view-consents-1.png)
+
+The encounter list item in the sidebar shows the name of your default list, such as **All Encounters**.
+
+By default, the **All Encounters** list shows only the encounters that were created in Care today. Its date filter shows **Today**.
+
+If the encounter was created on an earlier day, select **Today**. Then select a longer range, or select **Custom Date Range** and choose the dates.
+
+In the list view, select the row of the encounter in place of **View Encounter**.
+
+Care opens the encounter on the **Overview** tab.
+
+On a narrow screen, select **Consents** in the **Encounter section** list.
+
+You can also open the Consents tab in these ways:
+
+- On the encounter page, press `g c`.
+- In the encounter header, select **Encounter Actions**, or press `Shift+E`. Under **Go to**, select **Consents**.
+- On the **Overview** tab, select **Actions**. Then select **Manage Consents**.
+
+Care shows the **Actions** tab only if you opened the encounter from a facility. The encounter must also be the one in view and not closed.
+
+On a screen narrower than extra-wide, the **Actions** tab shows only if you have one of the first two permissions.
+
+If the encounter workspace shows the **Actions** panel as a widget, the panel has no **Manage Consents**.
+
+If the active encounter workspace hides the Consents page, Care hides the tab and the **Consents** item under **Go to**.
+
+If you can read neither the encounter nor its clinical data, Care shows "You do not have permission to view this encounter". Then Care goes back.
+
+Care shows the consents of this encounter as cards, newest first. Each page shows up to 12 cards.
+
+If the encounter has more than 12 consents, use the page controls below the cards.
+
+If you opened the encounter from an organization, not from a facility, the consents are read-only. Care shows no **Add Consent** on the Consents tab, and no **Edit** or **Add Files** on the consent details page.
+
+### 2. Read the consent cards
 
 Each card shows the details below.
 
 | Component | What it shows |
 | --- | --- |
-| Category badge | The category of the consent. |
-| Expired badge | Care shows this badge when the validity period has passed. |
-| Supporting documents | The names of the attached files. Care shows "No files attached" when the consent has no files. |
-| Decision badge | The decision of the consent: **Permitted** or **Denied**. |
-| Status badge | The status of the consent. |
-| Consent Given On | The date and time when the patient gave the consent. |
-| Valid Period | The period for which the consent stays valid. |
+| Category badge | The category of the consent, in capital letters. |
+| **Expired** | Shows when the consent has a Consent Valid Until date that is in the past. |
+| File names | The name of the first file. If the consent has more files, the card adds how many other files it has: "+1 more file" for one other file, or "+2 more files" and so on for more. If the consent has no files, the card shows "No files attached". |
+| Decision badge | **Permitted** or **Denied**. |
+| Status badge | The status of the consent: **Active**, **Inactive**, **Draft**, **Not Done** or **Entered in Error**. |
+| **Consent Given On** | The date the consent was given. |
+| **Valid Period** | The Consent Valid From and Consent Valid Until dates. Care shows **N/A** for a date that is not set. |
+| **See Details** | Opens the consent details page. |
 
-### 3. Search for a consent
+![A consent card outlined: the TREATMENT badge, the first file name with +1 more file, the Permitted and Active badges, the dates, and See Details](/media/clinical/consent/view-consents-2.png)
 
-Enter a file name in the search box above the cards. Care shows only the consents that have an attached file with that name.
+![A consent card outlined with the RESEARCH and EXPIRED badges, No files attached, and a Valid Period that has an end date](/media/clinical/consent/view-consents-3.png)
 
-### 4. Open the full consent record
+### 3. Search the consents by file name
 
-Select **See Details** on the card. Care opens the consent record. The record shows the supporting documents, the note, and a **Consent Details** card with the category, the date, the valid period, the decision, and the status.
+1. Select the **Search existing consent** box. Type the first character of the file name.
+2. Select the box again.
+3. Type the rest of the text.
 
-You can view or download each attached file from this record.
+![The Search existing consent box outlined with the text page in it, and only the matching consent card left](/media/clinical/consent/view-consents-4.png)
+
+After the first character, Care goes back to page 1 and the box loses focus. The next characters do not go into the box until you select it again.
+
+Care shows only the consents on the current page that have a file whose name contains the text. Upper case and lower case do not matter.
+
+The search does not look at other pages. A consent on another page does not show, even when its file name matches.
+
+A consent with no files never matches the search.
+
+If the search does not work as you expect, do as the table says.
+
+| When | What to do |
+| --- | --- |
+| The box shows only the first character that you typed. | Select the box again. Then type the rest of the text. |
+| Care shows "No Consents found". | No consent on the current page has a file whose name contains the text. Change the text, or delete it to see all the consents of the page again. |
+
+### 4. Open the consent details
+
+Select **See Details** on the card.
+
+Care opens the consent details page. It shows the parts below.
+
+The consent details page shows the sidebar of the facility, not the tabs of the encounter. To go back to the **Consents** tab, select **Back**.
+
+| Component | What it shows |
+| --- | --- |
+| **Supporting Documents** | The files of the consent. Each file shows its number, its name, its upload date and time, and a badge. |
+| **Uploaded** or **Error uploading file** | The badge of each file. **Error uploading file** shows when the upload of the file did not complete. |
+| **View** and **Download** | The buttons of each file. Step 5 tells you how to use them. |
+| "No files attached" | Shows in place of the files when the consent has no files, with "Attach supporting documents to the consent." |
+| **Note** | The note of the consent. Care shows this section only when the consent has a note. |
+| **Consent Details** | The Category, Consent Given On, Valid Period, Decision and Status of the consent. Decision shows **Permitted** or **Denied**. |
+
+![The Supporting Documents section of the consent details outlined: two files, each with its number, name, Uploaded badge, upload date and time, View and Download](/media/clinical/consent/view-consents-5.png)
+
+![The Consent Details card outlined, showing Category, Consent Given On, Valid Period, Decision and Status, next to the files and the Note](/media/clinical/consent/view-consents-6.png)
+
+**Edit** is beside **Consent Details**, and **Add Files** is in **Supporting Documents**.
+
+Care shows **Edit** and **Add Files** only if you opened the encounter from a facility. The encounter must also be the one in view and not closed.
+
+To change the status or the note, see [Update a consent](./update-a-consent.mdx). To add files, see [Add files to a consent](./add-files-to-a-consent.mdx).
+
+If Care shows "Consent not found", the consent did not load.
+
+Care shows "Consent not found" when you see the cards only through "Can Read encounter related clinical data". To open the consent details, you need "Can view clinical data about patients" through a role on the patient.
+
+### 5. View or download a file
+
+1. In **Supporting Documents**, find the file.
+2. To open the file in Care, select **View**.
+3. To save the file to your device, select **Download**.
+
+**View** opens the file in the **File Preview** dialog.
+
+![The File Preview dialog showing a scanned consent form, with the file name, Download, and the zoom and rotate controls](/media/clinical/consent/view-consents-7.png)
+
+Every consent file has **View**, because Care can preview all the file types that a consent accepts.
+
+After you select **Download**, Care shows "Downloading file..." and then "File download completed".
+
+![The Downloading file and File download completed messages, with Download outlined on a file row](/media/clinical/consent/view-consents-8.png)
+
+If the download fails, Care shows "Failed to download file".
 
 ## Expected Outcome
 
-- You see all the consents of the encounter as cards.
-- You see the full record of the consent that you select.
+- You see the consents of the encounter as cards, newest first, up to 12 on each page.
+- You find a consent on the current page by part of a file name.
+- You see the files, the note and the **Consent Details** of the consent that you open.
+- You view or download the files of the consent.
 
 ## Related
 
 Concepts:
 
 - [Consent](../../../concepts/clinical/consent.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+- [Files](../../../concepts/clinical/files.mdx)
 
 Flows:
 
 - [Record a consent](./record-a-consent.mdx)
+- [Add files to a consent](./add-files-to-a-consent.mdx)
 - [Update a consent](./update-a-consent.mdx)
-- [Verify a consent](./verify-a-consent.mdx)
