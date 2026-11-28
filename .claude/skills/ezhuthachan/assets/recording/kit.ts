@@ -178,6 +178,21 @@ export class Recording {
  * before the first page loads, or the video has no visible cursor.
  */
 export async function startRecording(page: Page, name: string): Promise<Recording> {
+  // The dev server adds TanStack devtools buttons that production builds do not have. They cover
+  // buttons near the bottom-right corner (for example Proceed to Dispense), so keep them out of frame.
+  await page.addInitScript(() => {
+    const css =
+      'button[aria-label="Open TanStack Router Devtools"], button[aria-label="Open Tanstack query devtools"], .tsqd-parent-container { display: none !important; }';
+    const add = () => {
+      const root = document.head ?? document.documentElement;
+      if (!root) return false;
+      const style = document.createElement("style");
+      style.textContent = css;
+      root.appendChild(style);
+      return true;
+    };
+    if (!add()) document.addEventListener("DOMContentLoaded", add, { once: true });
+  });
   await installCursor(page);
   const recording = new Recording(page, name);
   // EZ_CAPTURE=1 (Playwright's own video is then off, see playwright.config.ts) records a sharp 2x

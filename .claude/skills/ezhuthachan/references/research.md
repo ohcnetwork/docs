@@ -153,6 +153,10 @@ Send one researcher to the backend and one to the frontend, in parallel. Give ea
 
 A researcher's report is a lead until you have checked it. Open the cited lines for every permission, role and label it reports before the fact goes into `facts.md`. Spot-check the rest.
 
+When several subagents add facts at once (researchers, then writers, reviewers and recorders), give each a range of fact numbers of its own (E1 to E399, E400 to E799, ...) and its own file, `facts/<name>.md`. You merge them into `facts.md` between stages. Two agents writing one `facts.md`, or numbering from the same start, lose or duplicate facts. Put what every writer or reviewer needs in one brief file in the session (`drafts/WRITER-BRIEF.md`, `drafts/REVIEWER-BRIEF.md`) and keep each prompt to its own pages and range. On 27 November 2026 this kept seven writers and four reviewers working in parallel without a clash.
+
+Some tools stop a subagent from writing report-like files ("return findings as text"). Ask subagents to put findings in `findings/<name>.md` or in their reply, and write `report.md` yourself.
+
 ## Before you leave research
 
 - Every fact in `facts.md` has a source you opened in this session, at the pinned commit.

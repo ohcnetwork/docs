@@ -88,6 +88,8 @@ def draft(slugs):
 
 def main():
     args = sys.argv[1:]
+    if not args or args[0] in ("-h", "--help"):
+        sys.exit(__doc__)
     if args[:1] == ["--draft"]:
         draft(args[1:])
         return

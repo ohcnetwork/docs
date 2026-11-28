@@ -226,7 +226,9 @@ def encode(slug, plan, vlen, shift):
     run(args + ["-filter_complex", ";".join(parts), "-map", "[v]", "-map", "[a]",
                 "-c:v", "libx264", "-profile:v", "high", "-pix_fmt", "yuv420p", "-crf", "22", "-preset", "slow",
                 "-r", "30", "-c:a", "aac", "-b:a", "96k", "-ac", "1", "-ar", "48000",
-                "-movflags", "+faststart", mp4])
+                # Frame rounding across many held pieces can leave the picture a frame or two short of the
+                # sound; end both at the shorter one (the sound's tail is silence after the last line).
+                "-shortest", "-movflags", "+faststart", mp4])
     with open(os.path.join(OUT, f"{slug}.vtt"), "w", encoding="utf-8") as f:
         f.write("WEBVTT\n")
         for i, p in enumerate(plan):
