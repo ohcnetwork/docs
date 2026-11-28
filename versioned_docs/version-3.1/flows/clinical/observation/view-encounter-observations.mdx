@@ -1,0 +1,135 @@
+---
+sidebar_position: 3
+---
+
+# View the observations of an encounter
+
+## Overview
+
+This flow describes how to see the [observations](../../../concepts/clinical/observation.mdx) recorded in an [encounter](../../../concepts/clinical/encounter.mdx) in Care, on the encounter's **Observations** tab. From an entry, you can open the history panel of that observation.
+
+<video src="/media/clinical/observation/view-encounter-observations.mp4" poster="/media/clinical/observation/view-encounter-observations.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/observation/view-encounter-observations.vtt" srcLang="en" label="English" default />
+</video>
+
+## Pre-requisites
+
+- Observations are recorded in the encounter, with a questionnaire or as test results on a diagnostic report.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can view clinical data about patients | Lets you see the **Observations** tab and the observations of the encounter. You must hold it through a role on the patient. By default, the Staff, Doctor, Nurse, Admin and Facility Admin roles hold it. |
+| Can Read encounter related clinical data | Lets you see the **Observations** tab of this encounter without a role on the patient. You must hold it in the encounter. By default, the Doctor, Nurse, Admin and Facility Admin roles hold it. |
+
+You need one of the two permissions, not both.
+
+You have a role on the patient when you have a role in one of these places:
+
+- A department of an open encounter of the patient, or a department of that encounter's current location.
+- A geographic organization of the patient.
+- The patient itself, when someone gave you a role directly on the patient.
+
+A closed encounter gives no role on the patient. An encounter is closed when its status is **Completed**, **Cancelled**, **Discontinued** or **Entered in error**.
+
+You hold a permission in the encounter when you have a role in a department of the encounter. These are the departments the encounter is assigned to, their parent departments, the facility's root department "Administration", and the departments of the encounter's current location.
+
+What this means for the default roles:
+
+- A Doctor, Nurse, Admin or Facility Admin role in a department of the encounter is enough, whatever the status of the encounter.
+- The Staff role holds only the permission on the patient. On an open encounter, a Staff role in a department of the encounter is enough.
+- On a closed encounter, the Staff role sees the tab only through another role on the patient. Examples are a role in a department of another open encounter of the patient, or a direct role on the patient.
+
+## Steps
+
+### 1. Open the Observations tab
+
+Open the patient's encounter.
+
+Open the **Observations** tab in one of these ways:
+
+- Select the **Observations** tab.
+- Press `g`, then `o`.
+- Select **Encounter Actions**, or press `Shift+E`. Under **Go to**, select **Observations**.
+
+A workspace of your deployment can hide the **Observations** tab.
+
+![The Observations tab in the encounter menu](/media/clinical/observation/view-encounter-observations-1.png)
+
+### 2. Read the list
+
+The tab groups the observations by date, newest date first.
+
+A date heading shows the date. For today and yesterday, it shows "Today" or "Yesterday" followed by the date in brackets.
+
+Under each date, the newest observation comes first.
+
+Each entry shows these parts:
+
+| Part | What it shows |
+| --- | --- |
+| Time | The time of the observation. |
+| Value | The value of the observation. A choice answer, or a test result whose values are in components, shows no value in this list. |
+| Note | The note recorded with the observation, if there is one. |
+| Name | The name of the observation. If it has no name, the entry shows its code, or **Unknown**. |
+| **filed by** | The user who entered the observation. Test results entered on a diagnostic report show no **filed by** line. |
+
+The list leaves out group observations. For an ordinary group of questions, each answer inside the group is listed on its own.
+
+A group of questions set up as components is saved as one group observation, with its answers inside it. The list shows neither that group nor its answers.
+
+Note: The list can include observations marked as entered in error, and it shows no marker for them. The history panel, and the **Graph** and **Recent Data** tabs of the charts on the **Plots** tab, leave them out.
+
+![The Observations tab under the date heading Today, with entries that each show the time, the value, the name and filed by with the user; the two CBC panel entries show no value](/media/clinical/observation/view-encounter-observations-2.png)
+
+### 3. Load more observations
+
+The tab loads 20 observations at a time.
+
+Scroll to the end of the list to load the next observations. While more observations exist, the end of the list shows **Load More**.
+
+![Further down the list, more observations loaded under the date heading November 26, 2026](/media/clinical/observation/view-encounter-observations-3.png)
+
+### 4. Open the history of an observation
+
+Select an entry to open its history panel.
+
+If an observation has no code, its entry does not open.
+
+The history panel shows the observation over time, as a chart and as a table. To read it, see [Chart observations over time](./chart-observations-over-time.mdx).
+
+The tab has no other action on an observation. You cannot change or remove an observation from this tab.
+
+![The Body temperature history panel opened from an entry, showing All Encounters, 8 recordings and a chart of the values](/media/clinical/observation/view-encounter-observations-4.png)
+
+## Expected Outcome
+
+- You see the observations of the encounter, grouped by date, newest first.
+- You can open the history panel of each observation that has a code.
+
+If you see one of these situations, use this table.
+
+| If you see | What it means | What to do |
+| --- | --- | --- |
+| **No Observations** | The encounter has no observations to list. | To record observations, see [Record observations with a form](./record-observations-with-a-form.mdx). |
+| An entry shows no value | The observation is a choice answer, or a test result whose values are in components. | Select the entry. If it opens, select the **Table** tab of the history panel. The table shows the chosen answer, or each component under its own code. |
+| A test result is wrong | You cannot change it on this tab. | If the diagnostic report is not approved yet, see [Correct or remove a test result](./correct-or-remove-a-test-result.mdx). |
+| A questionnaire answer is wrong | You cannot change it on this tab. | Mark the whole questionnaire response as entered in error. Care then marks its observations too. By default, you can do this only within 120 minutes after the response was submitted. The encounter must also be open. See [Mark a response as entered in error](../questionnaire-response/mark-a-response-as-entered-in-error.mdx). |
+| The encounter has no **Observations** tab | You hold neither permission listed above in the right place, or your deployment hides the tab. | Ask the person who manages user roles in your facility, or the team that runs your deployment. |
+
+## Related
+
+Concepts:
+
+- [Observation](../../../concepts/clinical/observation.mdx)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+
+Flows:
+
+- [Record observations with a form](./record-observations-with-a-form.mdx)
+- [Check a patient's vital signs](./check-vital-signs.mdx)
+- [Chart observations over time](./chart-observations-over-time.mdx)
+- [Correct or remove a test result](./correct-or-remove-a-test-result.mdx)
+- [Mark a response as entered in error](../questionnaire-response/mark-a-response-as-entered-in-error.mdx)

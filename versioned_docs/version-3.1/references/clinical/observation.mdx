@@ -4,89 +4,146 @@ sidebar_position: 5
 
 # Observation
 
-An `Observation` is one named, coded data point about a subject — almost always a patient: a blood pressure reading, a temperature, a coded answer captured through a questionnaire. `main_code` records *what* was observed (usually bound to LOINC) and `value` holds the result. You rarely create one by hand; most observations are materialized when a questionnaire is submitted.
+Technical reference for the `Observation` module in Care EMR. For the plain-language view, see the [Observation concept](../../concepts/clinical/observation.mdx).
 
 **Source:**
-- Model: [`care/emr/models/observation.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/observation.py)
-- Resource spec: [`care/emr/resources/observation/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/observation/spec.py)
-- Value sets: [`care/emr/resources/observation/valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/observation/valueset.py)
 
-The model is just storage; several fields are opaque `JSONField`s. Their real structure lives in the Pydantic resource specs under `care/emr/resources/observation/`, which own the enums, nested JSON shapes, validation, and the read/write schema split. Each field row below gives the storage column first, then the shape the spec enforces on top of it.
+- Model: [`care/emr/models/observation.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/observation.py)
+- Specs: [`care/emr/resources/observation/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/observation/spec.py) · [`valueset.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/observation/valueset.py)
+- Viewset: [`care/emr/api/viewsets/observation.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/observation.py) · read and write checks in [`encounter_authz_base.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/encounter_authz_base.py)
+- Other write paths: [`care/emr/resources/questionnaire/utils.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/questionnaire/utils.py) (questionnaire submission) · [`care/emr/api/viewsets/diagnostic_report.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/diagnostic_report.py) (test results) · [`compute_observation_interpretation.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/utils/compute_observation_interpretation.py)
+
+An observation is one recorded result about a patient in an encounter: a value or a coded answer for one code at one effective time.
+
+The Django model is the storage layer. It keeps the codes, the value, the reference ranges, the interpretation and the components as JSON fields.
+
+The Pydantic resource specs give those fields their shape. They also define the enums, the bound value sets, and the separate read and write schemas.
+
+Three paths write observations: questionnaire submission, test results on a diagnostic report (`upsert_observations`), and direct create on the observation API. Each path sets different fields. See "Methods & save behaviour".
+
+The observation API has no update. A `DELETE` does not remove the record: it marks the observation entered in error.
 
 ## Models
 
 | Model | Purpose |
 | --- | --- |
-| `Observation` | A single coded measurement or finding about a patient, captured within an encounter |
+| `Observation` | One recorded result about a patient, linked to one encounter: a value or coded answer for one code at one effective time |
 
-`Observation` extends [`EMRBaseModel`](../foundation/base-model.mdx), the shared Care EMR base that supplies `external_id`, `created_date`/`modified_date`, soft-delete via `deleted`, `created_by`/`updated_by`, and `history`/`meta` JSON.
+`Observation` extends [`EMRBaseModel`](../foundation/base-model.mdx). Through it, each observation also has `history` and `meta` JSON fields and `created_by` / `updated_by` user links.
+
+The API identifies an observation by its `external_id`, which read responses return as `id`.
 
 ## `Observation` fields
 
-### Classification & coding
+### Status and grouping
 
-| Field | Storage type | Spec shape / notes |
+| Field | Storage | API and write paths |
 | --- | --- | --- |
-| `status` | `CharField(255)` | Enum `ObservationStatus` — `final`, `amended`, `entered_in_error`. Required in specs. Questionnaire-sourced observations land as `final` |
-| `is_group` | `BooleanField` | Default `False`. `True` marks a grouping/panel observation that holds `component`/child observations instead of a single value. Not exposed in the resource specs |
-| `category` | `JSONField` (default `{}`) | Spec: optional `Coding { system?, version?, code, display? }`. FHIR observation category, derived from the questionnaire |
-| `main_code` | `JSONField` (default `{}`) | Spec: optional `Coding`. What is being observed, typically LOINC (`CARE_OBSERVATION_VALUSET`, system `http://loinc.org`) |
-| `alternate_coding` | `JSONField` (default `[]`) | Spec: optional `CodeableConcept { id?, coding?: Coding[], text }`. Same concept expressed in other code systems |
+| `status` | `CharField(255)` | `ObservationStatus`. Required in the shared spec. Direct create accepts only `final`, which is also its default. Values and the paths that set them are listed under "Enum values" |
+| `is_group` | `BooleanField`, default `False` | No code sets it. A group observation is marked by `value_type` `group` instead |
 
-### Subject & context
+### Codes
 
-| Field | Storage type | Spec shape / notes |
+| Field | Storage | API and write paths |
 | --- | --- | --- |
-| `subject_type` | `CharField(255)` | Enum `SubjectType` — `patient`, `encounter`. Spec defaults to `encounter` |
-| `subject_id` | `UUIDField` | The subject entity's id. Set server-side; not in the spec body |
-| `patient` | `FK → Patient` | `CASCADE`. Set server-side, not in the spec body |
-| `encounter` | `FK → Encounter` | `CASCADE`. Spec field is `UUID4 \| None`. Where the observation was recorded |
-| `effective_datetime` | `DateTimeField` | When the observation was effective. Nullable in storage, but the spec requires a tz-aware `datetime` on create; optional on update |
+| `main_code` | `JSONField`, default `{}` | `Coding`. Required on direct create, and not checked against a value set there. Questionnaire: the question's code, which must be in the "Observation" value set. Test results: the observation definition's code |
+| `category` | `JSONField`, default `{}` | `Coding`, optional on direct create. Questionnaires never set it, because a stored question has no category. Test results: the observation definition's category |
+| `alternate_coding` | `JSONField`, default `[]` | `CodeableConcept`, optional on direct create. The storage default is a list, while the spec type is one object |
 
-### Author & performer
+### Subject and context
 
-| Field | Storage type | Spec shape / notes |
+| Field | Storage | API and write paths |
 | --- | --- | --- |
-| `data_entered_by` | `FK → users.User` | `CASCADE`, nullable. `related_name="observations_entered"`. Write specs accept `data_entered_by_id: int`; read specs serialize a nested `UserSpec` |
-| `performer` | `JSONField` (default `{}`) | Spec: optional `Performer { type: PerformerType (related_person\|user), id: str }`. Use it when the performer differs from the data-entry user |
+| `subject_type` | `CharField(255)` | `SubjectType`, default `encounter` in the shared spec. Direct create and test results set `encounter`. Questionnaires set the questionnaire's subject type, and only submissions with an encounter store observations |
+| `subject_id` | `UUIDField` | Not in the create spec. Direct create: the encounter's ID. Questionnaire: the submission's resource ID, which the Care frontend sets to the encounter's ID |
+| `patient` | `FK → emr.Patient`, `CASCADE` | Set by Care: from the encounter (direct create), from the report (test results), or from the questionnaire submission |
+| `encounter` | `FK → emr.Encounter`, `CASCADE`, required | `UUID4`, required on direct create. The encounter must belong to the patient in the URL. Read responses return `null` |
+| `effective_datetime` | `DateTimeField`, nullable | Timezone-aware datetime, required on direct create. Optional in `ObservationUpdateSpec`. Questionnaire: the moment of submission. Test results from the Care frontend: the moment of saving |
+
+### Author and performer
+
+| Field | Storage | API and write paths |
+| --- | --- | --- |
+| `data_entered_by` | `FK → users.User`, `CASCADE`, nullable | Direct create rejects `data_entered_by_id` and records the signed-in user. Questionnaire: the submitting user. Test results: not set. Read responses include it as a user object when it is set |
+| `performer` | `JSONField`, default `{}` | `Performer`, optional on direct create |
 
 ### Value
 
-| Field | Storage type | Spec shape / notes |
+| Field | Storage | API and write paths |
 | --- | --- | --- |
-| `value_type` | `CharField(255)` | Enum `QuestionType` (from the questionnaire module). Tells the client how to read `value` — see the table below. Required in specs |
-| `value` | `JSONField` | Spec: `QuestionnaireSubmitResultValue { value?: str, unit?: Coding, coding?: Coding }`. Required on create, optional on update. `value` holds the raw/string result, `unit` the quantity unit, `coding` the coded answer |
-| `note` | `TextField` | Spec: `str \| None`. Free-text note |
+| `value_type` | `CharField(255)` | `QuestionType`, required on direct create. Questionnaire: the question's type. Test results from the Care frontend: the definition's data type, or `decimal` when it has none |
+| `value` | `JSONField`, no default, not nullable | `QuestionnaireSubmitResultValue`, required on direct create. Optional in `ObservationUpdateSpec`. Shape and the way each path fills it are under "Nested JSON shapes" |
+| `note` | `TextField` | Optional on direct create. Questionnaires copy the note of the answer |
 
-### Clinical qualifiers
+### Qualifiers
 
-| Field | Storage type | Spec shape / notes |
+| Field | Storage | API and write paths |
 | --- | --- | --- |
-| `body_site` | `JSONField` (default `{}`) | Spec: optional `Coding` bound to `CARE_BODY_SITE_VALUESET` (slug `system-body-site-observation`, SNOMED CT). FHIR `Observation.bodySite` |
-| `method` | `JSONField` (default `{}`) | Spec: optional `Coding` bound to `CARE_OBSERVATION_COLLECTION_METHOD` (slug `system-collection-method`, SNOMED CT). FHIR `Observation.method` |
-| `reference_range` | `JSONField` (default `[]`) | Spec: `ReferenceRange[]` (shape below), default `[]`. Reference ranges for the value, usually carried over from the observation definition |
-| `interpretation` | `JSONField` (default `{}`) | Spec: free `dict`, default `{}`. Coded interpretation against the reference range (high/low/normal). Normal/abnormal/critical value sets exist (below) but are not enforced on this dict |
-| `interpretation_old` | `CharField(255)` | Nullable. Legacy free-text interpretation, kept for backward compatibility. Not in the specs |
+| `body_site` | `JSONField`, default `{}` | `Coding` bound to the "Body Site" value set (`system-body-site-observation`), optional. Questionnaires never store it |
+| `method` | `JSONField`, default `{}` | `Coding` bound to the "Observation Method" value set (`system-collection-method`), optional. Questionnaires never store it |
 
-### Structure & relationships
+### Interpretation and ranges
 
-| Field | Storage type | Spec shape / notes |
+| Field | Storage | API and write paths |
 | --- | --- | --- |
-| `parent` | `UUIDField` | Nullable. Spec: `UUID4 \| None` — the `external_id` of a parent observation, for nesting related observations |
-| `component` | `JSONField` (default `[]`) | Spec: `Component[]` (shape below), default `[]`. Sub-observations sharing this context but carrying their own codes and values (FHIR `Observation.component`) |
-| `questionnaire_response` | `FK → QuestionnaireResponse` | `CASCADE`, nullable. Spec field is `UUID4 \| None`. The submission that produced this observation |
-| `diagnostic_report` | `FK → DiagnosticReport` | `CASCADE`, nullable. The report this observation belongs to, if any. Not in the write specs |
-| `observation_definition` | `FK → ObservationDefinition` | `CASCADE`, nullable. The definition this observation templates from. Serialized as `BaseObservationDefinitionSpec` only in `ObservationRetrieveSpec` |
+| `reference_range` | `JSONField`, default `[]` | List of `ReferenceRange`. Not accepted on direct create. Test results linked to a definition: computed by Care. Questionnaire: never set |
+| `interpretation` | `JSONField`, default `{}` | A free object (`dict`, default `{}`) in the shared spec. Not accepted on direct create. Test results linked to a definition: computed by Care. Questionnaire: never set |
+| `interpretation_old` | `CharField(255)`, nullable | Legacy text column |
 
-## Enum & value-set reference
+### Structure and links
+
+| Field | Storage | API and write paths |
+| --- | --- | --- |
+| `parent` | `UUIDField`, nullable, not a foreign key | Optional `UUID4` in the shared spec. Rejected on direct create. Questionnaire: each child of an ordinary group points to the group observation |
+| `component` | `JSONField`, default `[]` | List of `Component`, default `[]`. Allowed on direct create. Questionnaire: filled from a component group. Test results: each matching component gets its own interpretation |
+| `questionnaire_response` | `FK → emr.QuestionnaireResponse`, `CASCADE`, nullable | Optional `UUID4` in the shared spec. Rejected on direct create. Set by questionnaire submission. Read responses return `null` |
+| `diagnostic_report` | `FK → emr.DiagnosticReport`, `CASCADE`, nullable | Rejected on direct create. Set by `upsert_observations` |
+| `observation_definition` | `FK → emr.ObservationDefinition`, `CASCADE`, nullable | Not accepted on direct create. Set by `upsert_observations` when the item names a definition. Retrieve returns it |
+
+## Enum values
 
 ### `ObservationStatus` values
 
-| Value | Meaning |
+| Value | Label in the locale file | Set by |
+| --- | --- | --- |
+| `final` | **Final** | Direct create (the only value it accepts), questionnaire submission, and new test results created from a definition |
+| `amended` | None: the locale file has no key for it | No backend code sets it, and the Care frontend never sends it. An API client can store it by sending it to `upsert_observations` for an existing test result |
+| `entered_in_error` | **Entered in Error** | `DELETE` on a random observation, marking the questionnaire response entered in error, or `upsert_observations` |
+
+### `QuestionType` values (`value_type`)
+
+`value_type` uses the question types of the questionnaire module.
+
+| Value | Label in the locale file |
 | --- | --- |
-| `final` | Recorded, complete and verified. The default for questionnaire-sourced observations |
-| `amended` | Was `final`, then corrected |
-| `entered_in_error` | Recorded in error; disregard it |
+| `group` | **Group** |
+| `boolean` | **Boolean** |
+| `decimal` | **Decimal** |
+| `integer` | **Integer** |
+| `string` | **String** |
+| `text` | **Text** |
+| `display` | **Display** |
+| `date` | **Date** |
+| `dateTime` | **Date Time** |
+| `time` | **Time** |
+| `choice` | **Choice** |
+| `url` | **URL** |
+| `quantity` | **Quantity** |
+| `structured` | **Structured** |
+
+- `ignore_group=true` on the list leaves out observations with `value_type` `group`.
+- For test results, the Care frontend sends the observation definition's data type as `value_type`, and `decimal` when the definition has none.
+
+### `SubjectType` values (`subject_type`)
+
+| Value |
+| --- |
+| `patient` |
+| `encounter`: the shared spec default, and the value that direct create and test results set |
+| `referral` |
+| `location` |
+| `device` |
+| `facility` |
 
 ### `PerformerType` values (`performer.type`)
 
@@ -95,175 +152,386 @@ The model is just storage; several fields are opaque `JSONField`s. Their real st
 | `related_person` |
 | `user` |
 
-### `SubjectType` values (`subject_type`)
+### Value sets
 
-| Value |
-| --- |
-| `patient` |
-| `encounter` (spec default) |
-
-### `QuestionType` values (`value_type`)
-
-From the questionnaire module. The value tells the client which key of `value` to read.
-
-| Value | Value sourced from `QuestionnaireSubmitResultValue` |
-| --- | --- |
-| `group` | grouping node (no direct value) |
-| `boolean` | `value` (`"true"`/`"false"`) |
-| `decimal` | `value` |
-| `integer` | `value` |
-| `string` | `value` |
-| `text` | `value` |
-| `display` | display-only |
-| `date` | `value` |
-| `dateTime` | `value` |
-| `time` | `value` |
-| `choice` | `coding` |
-| `url` | `value` |
-| `quantity` | `value` + `unit` |
-| `structured` | structured payload |
-
-### Bound value sets
-
-Coded fields validate against registered Care value sets. A `body_site` or `method` coding outside its value set is rejected during deserialization.
-
-| Field | Value set | Slug | System(s) |
+| Name | Slug | Content | Used by |
 | --- | --- | --- | --- |
-| `main_code` | `CARE_OBSERVATION_VALUSET` | `system-observation` | `http://loinc.org` |
-| `body_site` | `CARE_BODY_SITE_VALUESET` | `system-body-site-observation` | `http://snomed.info/sct` (curated concept list + descendants of `442083009`) |
-| `method` | `CARE_OBSERVATION_COLLECTION_METHOD` | `system-collection-method` | `http://snomed.info/sct` (descendants of `272394005`, `129264002`, `386053000`) |
+| Observation | `system-observation` | All LOINC codes (`http://loinc.org`) | The code of a questionnaire question, and so the `main_code` of questionnaire observations |
+| Body Site | `system-body-site-observation` | SNOMED CT concepts that are a `442083009` | `body_site` |
+| Observation Method | `system-collection-method` | SNOMED CT descendants of `272394005`, `129264002` and `386053000` | `method` |
+| UCUM Units | `system-ucum-units` | All UCUM units (`http://unitsofmeasure.org`) | The unit of a questionnaire question |
+| Normal Coded Value Set | `system-normal-coded-valueset` | HL7 interpretation codes `N` Normal, `ND` Not detected, `NEG` Negative | Defined in the observation module |
+| Critical Coded Value Set | `system-critical-coded-valueset` | `C` Critical, `CC` Critical high, `CL` Critical low, `CV` Critical value | Defined in the observation module |
+| Abnormal Coded Value Set | `system-abnormal-coded-valueset` | `A`, `AA`, `H`, `HH`, `L`, `LL`, `POS`, `DET` | Defined in the observation module |
 
-These interpretation value sets are registered for the frontend and observation definitions, but are not enforced on the `interpretation` dict:
+- A `body_site` or `method` code outside its value set is rejected with "Code does not exist in the valueset".
+- On direct create, `main_code` is a plain `Coding`. Care does not check it against a value set.
 
-| Value set | Slug | Concepts (system `http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation`) |
-| --- | --- | --- |
-| Normal | `system-normal-coded-valueset` | `N` Normal, `ND` Not detected, `NEG` Negative |
-| Abnormal | `system-abnormal-coded-valueset` | `A` Abnormal, `AA` Critically abnormal, `H` High, `HH` Critically high, `L` Low, `LL` Critically low, `POS` Positive, `DET` Detected |
-| Critical | `system-critical-coded-valueset` | `C` Critical, `CC` Critical high, `CL` Critical low, `CV` Critical value |
-| UCUM units | `system-ucum-units` | `http://unitsofmeasure.org` (all UCUM units) |
-
-## Nested JSON shapes (from the spec)
-
-The structures behind the model's `JSONField`s.
+## Nested JSON shapes
 
 ### `Coding`
 
+`main_code`, `category`, `body_site`, `method`, `value.unit`, `value.coding` and `component[].code` are codings. Care rejects any key that is not listed.
+
 ```text
 Coding {
-  system:  str | null      # e.g. http://loinc.org
+  system:  str | null
   version: str | null
-  code:    str             # required
+  code:    str            required
   display: str | null
-}                          # extra keys forbidden
+}
 ```
 
-### `CodeableConcept` (`alternate_coding`)
+`code` has no minimum length, so an empty code (`""`) is accepted.
+
+### `alternate_coding`: `CodeableConcept`
+
+The `text` key must be present, but it may be `null`. Care rejects any key that is not listed.
 
 ```text
 CodeableConcept {
   id:     str | null
   coding: Coding[] | null
-  text:   str | null       # field present, required key
-}                          # extra keys forbidden
-```
-
-### `QuestionnaireSubmitResultValue` (`value`)
-
-```text
-QuestionnaireSubmitResultValue {
-  value:  str | null       # raw/string value
-  unit:   Coding | null    # for quantity values
-  coding: Coding | null    # for coded values
+  text:   str | null      key required
 }
 ```
 
-### `Performer` (`performer`)
+### `value`: `QuestionnaireSubmitResultValue`
+
+All three parts are optional. `value` is text, `unit` is the coding of a quantity's unit, and `coding` is the coding of a coded answer.
+
+```text
+QuestionnaireSubmitResultValue {
+  value:  str | null
+  unit:   Coding | null
+  coding: Coding | null
+}
+```
+
+How each write path fills `value`:
+
+- Questionnaire, choice answer with a coding: `coding` holds the answer's coding.
+- Questionnaire, quantity answer with a coding: `unit` is the question's unit, `value` the entered number, and `coding` the answer's coding.
+- The Care frontend sends the unit picked in the questionnaire as the answer's coding. So the picked unit is kept only in `value.coding`, and `value.unit` is always the question's unit.
+- Questionnaire, any other answer: `value` holds the entered value, plus the question's `unit` when the question has one.
+- Questionnaire, group: an empty object.
+- Questionnaire, answer with several values: one observation, with the last value only.
+- Test results from the Care frontend: the unit is the observation definition's unit.
+
+### `performer`: `Performer`
 
 ```text
 Performer {
-  type: PerformerType      # related_person | user
+  type: PerformerType     related_person | user
   id:   str
 }
 ```
 
-### `ReferenceRange` (`reference_range[]`)
+A performer has a `type` and an `id`.
+
+### `reference_range[]`: `ReferenceRange`
+
+The spec types a reference range as follows.
 
 ```text
 ReferenceRange {
   min:            float | null
   max:            float | null
   unit:           str | null
-  interpretation: str        # required
+  interpretation: str             required
   value:          str | null
 }
 ```
 
-### `Component` (`component[]`)
+The reference ranges that Care computes for test results are the numeric ranges of the matching qualified range. Each stored entry therefore carries an interpretation object, not text.
+
+### `interpretation`: computed interpretation object
+
+The shared spec types `interpretation` as a free object. The interpretation that Care computes from an observation definition has this shape.
 
 ```text
-Component {
-  value:           QuestionnaireSubmitResultValue   # required
-  interpretation:  str | dict     = {}
-  reference_range: ReferenceRange[] = []
-  code:            Coding | null   = null
-  note:            str            = ""
+Interpretation {
+  display:   str            required
+  icon:      optional
+  color:     optional
+  highlight: bool | null    default false
+  code:      optional
 }
 ```
 
-## Resource specs (API schema)
+The built-in coded interpretations are `{"display": "Normal"}`, `{"display": "Critical"}` and `{"display": "Abnormal"}`.
 
-The Pydantic specs build on [`EMRResource`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py), which provides `serialize` / `de_serialize` and the `perform_extra_serialization` / `perform_extra_deserialization` hooks. Every concrete spec inherits from `BaseObservationSpec`.
+### `component[]`: `Component`
 
-| Spec | Role | Notes |
-| --- | --- | --- |
-| `BaseObservationSpec` | shared base | Defines the common fields: `id`, `status`, `category`, `main_code`, `alternate_coding`, `subject_type`, `encounter`, `effective_datetime`, `performer`, `value_type`, `value`, `note`, `body_site` (bound), `method` (bound), `reference_range`, `interpretation`, `parent`, `questionnaire_response`, `component` |
-| `ObservationSpec` | write · create | Adds `data_entered_by_id`, `created_by_id`, `updated_by_id` (all `int`). Used internally when materializing observations from a questionnaire submission |
-| `ObservationUpdateSpec` | write · update | The base, but `effective_datetime` and `value` relax to optional (`None`) for partial updates |
-| `ObservationReadSpec` | read · list | Swaps the user IDs for nested `created_by` / `updated_by` / `data_entered_by` `UserSpec` objects |
-| `ObservationRetrieveSpec` | read · detail | Extends `ObservationReadSpec` and additionally serializes `observation_definition` via `BaseObservationDefinitionSpec` when it is set |
+```text
+Component {
+  value:           QuestionnaireSubmitResultValue   required
+  interpretation:  str | dict                       default {}
+  reference_range: ReferenceRange[]                 default []
+  code:            Coding | null                    default null
+  note:            str                              default ""
+}
+```
 
-### Server-side behaviour
-
-- `ObservationSpec.perform_extra_deserialization` (create/update): sets `obj.external_id = self.id`, copies `data_entered_by_id`, `created_by_id`, `updated_by_id` onto the model, drops `data_entered_by_id` from `meta`, and on **create** (`is_update` is false) clears `obj.id` so a new row is inserted.
-- `ObservationReadSpec.perform_extra_serialization`: maps `id` from `external_id`; deliberately blanks `encounter`, `patient`, and `questionnaire_response` to `None` in the output to avoid extra DB queries; resolves the audit users (`created_by`, `updated_by`) and `data_entered_by` from cache (`model_from_cache`).
-- `ObservationRetrieveSpec.perform_extra_serialization`: calls the parent, then inlines the full `observation_definition` when the FK is set.
-- `body_site` / `method` are `ValueSetBoundCoding[...]`: the supplied `Coding` is validated against its bound value set during deserialization and rejected if the code is not a member.
-- `de_serialize` only writes fields present in the model's column mapping. Non-default values are persisted (`model_dump(exclude_defaults=True)`), and unknown spec-only fields would land in `meta` when `__store_metadata__` is set — which, by default, it is not for observations.
+The spec defines a component as above. A questionnaire component holds the sub-question's code, value and note.
 
 ## Related models
 
-`Observation` is self-contained; it expresses relationships through foreign keys rather than secondary tables.
+`Observation` links to other models as follows. `parent` points to another observation and is not a foreign key. Deleting the patient row deletes its observations (`CASCADE`).
 
 ```text
-patient                → FK Patient (CASCADE)
-encounter              → FK Encounter (CASCADE)
-data_entered_by        → FK users.User (CASCADE, nullable)
-questionnaire_response → FK QuestionnaireResponse (CASCADE, nullable)
-diagnostic_report      → FK DiagnosticReport (CASCADE, nullable)
-observation_definition → FK ObservationDefinition (CASCADE, nullable)
+Observation
+  patient                → FK emr.Patient                (CASCADE)
+  encounter              → FK emr.Encounter              (CASCADE, required)
+  data_entered_by        → FK users.User                 (CASCADE, nullable)
+  questionnaire_response → FK emr.QuestionnaireResponse  (CASCADE, nullable)
+  diagnostic_report      → FK emr.DiagnosticReport       (CASCADE, nullable)
+  observation_definition → FK emr.ObservationDefinition  (CASCADE, nullable)
+  parent                 → UUIDField: id of another Observation (not a foreign key)
 ```
 
-`parent` is the exception: a soft, UUID-based self-reference to another observation's `external_id`, not a Django FK. It lets observations nest without a database constraint.
+Observations about locations, devices and facilities are a separate model, `FacilityResourceObservation`, tied to a facility. This page does not cover it.
+
+## Resource specs (API schema)
+
+`ObservationCreateSpec` extends `EMRResource` directly. `ObservationUpdateSpec`, `ObservationSpec` and `ObservationReadSpec` extend the shared `BaseObservationSpec`, and `ObservationRetrieveSpec` extends `ObservationReadSpec`.
+
+| Spec | Role | Notes |
+| --- | --- | --- |
+| `BaseObservationSpec` | shared base | `status` required. `subject_type` default `encounter`. `body_site` and `method` bound to value sets. `interpretation` a free object, default `{}`. `parent` and `questionnaire_response` optional UUIDs. `component` default `[]` |
+| `ObservationCreateSpec` | write · create (`POST`) | "An observation entered independently of a questionnaire or diagnostic report". Rejects any field it does not list |
+| `ObservationUpdateSpec` | write · `upsert_observations` | The shared spec with `effective_datetime` and `value` optional. `status` stays required |
+| `ObservationSpec` | internal · questionnaire submission | Adds `data_entered_by_id`, `created_by_id` and `updated_by_id`, and keeps the observation ID generated during submission |
+| `ObservationReadSpec` | read · list | Adds `is_random`, `created_by`, `updated_by` and `data_entered_by` |
+| `ObservationRetrieveSpec` | read · detail | Extends the read spec with `observation_definition`, when one is linked |
+
+### Create: `ObservationCreateSpec`
+
+The body of `POST /api/v1/patient/{patient_id}/observation/`.
+
+```text
+{
+  "encounter":          UUID,                             required
+  "status":             "final",                          optional; default "final"; no other value
+  "main_code":          Coding,                           required; not bound to a value set
+  "effective_datetime": datetime with timezone,           required
+  "value_type":         QuestionType,                     required
+  "value":              QuestionnaireSubmitResultValue,   required
+  "category":           Coding | null,                    optional
+  "alternate_coding":   CodeableConcept,                  optional
+  "performer":          Performer,                        optional
+  "note":               str,                              optional
+  "body_site":          Coding in system-body-site-observation,   optional
+  "method":             Coding in system-collection-method,       optional
+  "component":          Component[],                      optional; default []
+}
+```
+
+- Any other field is rejected with HTTP 400. This includes `id`, `questionnaire_response`, `diagnostic_report`, `parent`, `created_by_id`, `data_entered_by_id`, `is_random` and `meta`.
+- The create spec has no `reference_range`, `interpretation` or `observation_definition`.
+- Care takes the patient from the encounter, sets `subject_type` to `encounter`, and sets `subject_id` to the encounter's ID.
+- Care sets `data_entered_by`, `created_by` and `updated_by` to the signed-in user.
+- The response is the full saved observation.
+
+### Read: `ObservationReadSpec` and `ObservationRetrieveSpec`
+
+- `id` is the observation's `external_id`.
+- `is_random` tells whether the observation was entered on its own, not through a questionnaire or a diagnostic report.
+- `created_by` and `updated_by` are user objects. `data_entered_by` is a user object when it is set.
+- `encounter` and `questionnaire_response` are always `null` in read responses, to avoid extra queries.
+- Retrieve also returns the linked observation definition as `observation_definition`.
+
+### Deserialization
+
+Generic deserialization never writes a foreign key, `id` or `external_id` from a request body. Care sets those fields itself on each path.
+
+## Methods & save behaviour
+
+### `is_random`
+
+`is_random` is a model property. It is true when the observation has neither a questionnaire response nor a diagnostic report. Only random observations can be marked entered in error with `DELETE`.
+
+### Write path 1: questionnaire submission
+
+Questionnaire answers are submitted with `POST /api/v1/questionnaire/{questionnaire_id}/submit/`. Care builds the observations with the internal `ObservationSpec`.
+
+- Observations are stored only when the submission has an encounter. A patient questionnaire saves the questionnaire response and no observations.
+- A question that is not a group produces an observation only if the question has a code.
+- Each observation has status `final` and takes `value_type` from the question type.
+- `main_code` is the question's code. A stored question has no `category` key, so questionnaire observations have no category.
+- `effective_datetime` is the moment of submission. A time taken on the answer is not stored.
+- The note of the answer is copied. Body site and method are not stored.
+- `subject_type` is the questionnaire's subject type. The submitting user is recorded as `data_entered_by`, `created_by` and `updated_by`.
+- Each observation is linked to the questionnaire response, the patient and the encounter. `subject_id` is the submission's resource ID.
+- No observation definition, reference range or interpretation is set.
+- A group question gives a group observation: `value_type` `group`, an empty `value`, and the submission time.
+- In an ordinary group, each answer inside gives a separate observation whose `parent` is the group observation's ID. Care keeps the group observation only if it has at least one child.
+- A group marked as component gives one observation, with the answers as its components. A repeating group gives one such observation per repetition.
+- Marking the questionnaire response entered in error marks every observation created from it entered in error.
+
+### Write path 2: test results on a diagnostic report (`upsert_observations`)
+
+Results are written with `POST /api/v1/patient/{patient_id}/diagnostic_report/{id}/upsert_observations/`. It creates observations from an observation definition or from scratch, or updates existing ones.
+
+Each item has an `observation` body (`ObservationUpdateSpec`, `status` required). It also names an observation definition by slug (`observation_definition`), an existing observation (`observation_id`), or neither for a new observation.
+
+- The call is refused on a final report: "Cannot update observations for a final diagnostic report".
+- After that check, Care runs the diagnostic-report write check. It does not check the encounter's status or the service request's status.
+- With a definition slug, Care looks up the definition in the report's facility and links it to the new observation. The new observation starts as `final`, with the definition's category and code.
+- With `observation_id`, the observation must belong to that report. The fields sent, `status` included, overwrite the stored ones.
+- So this path can set an existing observation to `amended` or `entered_in_error`.
+- Every observation saved here gets the report's encounter and patient, the report link, and `subject_type` `encounter`. Care sets `updated_by`; it does not set `data_entered_by`.
+- When the observation is linked to a definition, Care computes its interpretation and reference ranges before saving. See "Interpretation and reference ranges" below.
+- `ObservationUpdateSpec` makes `value` optional, but the `value` column has no default and is not nullable.
+- Opening the report returns all its observations in any status, `entered_in_error` included, each with its definition.
+
+The Care frontend sends each result with status `final`, or `entered_in_error` when the user removes it. It never sends `amended`. It sends the moment of saving as `effective_datetime`.
+
+Each **Save Results** sends every saved result of the report again, changed or not. So each one gets the new save time as its effective time.
+
+### Write path 3: direct create
+
+`POST /api/v1/patient/{patient_id}/observation/` creates an observation from `ObservationCreateSpec`. See "Create: `ObservationCreateSpec`" above for the body and the fields that Care sets.
+
+No screen of the Care frontend creates an observation directly or sends `DELETE`. Its observation API has only list, analyse and `upsert_observations`.
+
+### Interpretation and reference ranges
+
+Care computes these only for test results linked to an observation definition. Questionnaire observations and direct creates get none.
+
+- Care evaluates the definition's qualified ranges in the context of the observation's patient and encounter.
+- The result sets `interpretation` and `reference_range`. When nothing matches, Care clears both.
+- Care uses the first qualified range whose conditions all hold. Conditions can test Patient Age, Patient Gender, Patient Tag, Encounter Class and Encounter Tag.
+- Numeric value: it must be between `min` and `max`, both included; a missing bound is open. Care uses the matching range's interpretation and stores all the rule's ranges as the reference range.
+- A coded value against numeric ranges raises "Coding not supported".
+- Coded value: Care checks the coding against the rule's normal, then critical, then abnormal value set, which give "Normal", "Critical" or "Abnormal". Then it checks each custom value set interpretation.
+- If no range or value set matches, Care uses the rule's default interpretation when it has one.
+- Each component whose code matches a component of the definition gets its own interpretation and reference ranges.
+
+### Marking entered in error
+
+- `DELETE` sets `status` to `entered_in_error` and records the user as `updated_by`. It does not remove or soft-delete the observation.
+- The value, the author and the data-entry user stay. Repeating the request still returns HTTP 204.
+- Only random observations can be marked this way. Others fail with "Only random observations can be marked as entered in error".
+- Questionnaire observations: mark the questionnaire response entered in error, which marks all its observations. By default this is possible for 120 minutes after the response is created.
+- Test results: send the observation with status `entered_in_error` to `upsert_observations`.
+- The observation API has no hard delete and no update.
 
 ## API integration notes
 
-- Observations are exposed through Care's REST API and align with the FHIR `Observation` resource. FHIR field names (`effectiveDateTime`, `bodySite`, and so on) differ from the Django model names; the resource specs above are the authoritative request/response schemas.
-- Most observations are created as a side effect of submitting a questionnaire. `value` and `value_type` mirror the submission types (`QuestionnaireSubmitResultValue` / `QuestionType`), and `questionnaire_response` records provenance.
-- `effective_datetime` must be timezone-aware. Required on create, optional on update.
-- `status` is one of `final` / `amended` / `entered_in_error`; questionnaire-sourced observations are `final`.
-- `body_site` and `method` are validated against their bound value sets, and `main_code` is expected to bind to LOINC via `CARE_OBSERVATION_VALUSET`.
-- On read, the list and detail specs blank out `encounter`, `patient`, and `questionnaire_response`, so don't rely on those being populated in observation payloads.
-- Prefer structured observations. Allergy and medication checks read coded values, not free text, so unstructured data leaves them blind.
+### Routes
+
+All routes are under `/api/v1/`. Observation routes are nested under the patient. Every request needs a signed-in user.
+
+| Action | Method and path | Body | Response |
+| --- | --- | --- | --- |
+| List | `GET /api/v1/patient/{patient_id}/observation/` | None | `count` and `results` |
+| Retrieve | `GET /api/v1/patient/{patient_id}/observation/{id}/` | None | The observation, with its observation definition when one is linked |
+| Create | `POST /api/v1/patient/{patient_id}/observation/` | `ObservationCreateSpec` | The saved observation |
+| Update | `PUT` or `PATCH /api/v1/patient/{patient_id}/observation/{id}/` | None | HTTP 405 |
+| Mark entered in error | `DELETE /api/v1/patient/{patient_id}/observation/{id}/` | None | HTTP 204, no body |
+| Analyse | `POST /api/v1/patient/{patient_id}/observation/analyse/` | `codes`, `page_size` | `results`: one entry per code |
+| Test results | `POST /api/v1/patient/{patient_id}/diagnostic_report/{id}/upsert_observations/` | Items as described above | See "Write path 2" |
+| Questionnaire submission | `POST /api/v1/questionnaire/{questionnaire_id}/submit/` | The questionnaire answers | See "Write path 1" |
+
+`{id}` is the observation's `id` as read responses return it.
+
+### List filters, ordering and pages
+
+| Query parameter | Effect |
+| --- | --- |
+| `encounter` | Encounter external ID. Returns only that encounter's observations. Without patient-level access, the list needs it (see "Authorization") |
+| `codes` | Comma-separated codes. Matches the code of `main_code`, not its system. An empty value applies no filter |
+| `ignore_group` | `true` leaves out observations whose `value_type` is `group` |
+| `status` | Comma-separated statuses. Without it, the list returns every status, `entered_in_error` included |
+| `limit` | Records per page: 14 by default, at most 200 |
+| `offset` | Records to skip |
+
+- The list has no ordering parameter and no date-range filter.
+- Results are always the most recently modified first, and only for the patient in the URL.
+
+### `analyse`
+
+`analyse` returns the most recently modified observations of several codes in one call.
+
+```text
+POST /api/v1/patient/{patient_id}/observation/analyse/
+{
+  "codes":     Coding[],   1 to 20 codings
+  "page_size": int         default 10, at most 30
+}
+```
+
+- For each coding, Care returns up to `page_size` of the patient's most recently modified observations with that code and system.
+- The list's query filters apply first: `encounter`, `status`, `codes` and `ignore_group`.
+- The response has `results`, a list with one entry for each requested code. Each entry has the `code` and its `results`.
+
+### Authorization
+
+The table uses these terms.
+
+- "Closed encounter": the encounter's status is `completed`, `cancelled`, `entered_in_error` or `discontinued`.
+- "A role on the patient": a role in a facility organization of an open encounter of the patient, or of its current location. It can also come from the patient's geographic organizations, or a direct patient–user association.
+- "An organization of the encounter": one of the encounter's facility organizations (its departments), or an organization of its current location.
+- The encounter's facility organizations include the organizations it is assigned to, their parents, and the facility's root organization "Administration".
+- Where the "Held where" column names organizations, the user must hold a role that carries the permission in one of them.
+
+| Action | Permission (display name, slug) | Held where | Conditions and refusal |
+| --- | --- | --- | --- |
+| Retrieve | "Can view clinical data about patients" (`can_view_clinical_data`) | A role on the patient | Refusal: "Permission denied to user" |
+| List, analyse | "Can view clinical data about patients" (`can_view_clinical_data`) | A role on the patient | If this check fails, Care tries the next row |
+| List, analyse, with `?encounter=` | "Can Read encounter related clinical data" (`can_read_encounter_clinical_data`) | An organization of the encounter named in `encounter` | Open and closed encounters alike. Without `encounter`, a user with only this permission gets HTTP 403. Refusal: "Permission denied to user" |
+| Create | "Update Encounter related clinical data" (`can_write_encounter_clinical_data`) | An organization of the encounter in the body | Refused for a closed encounter (HTTP 403). Refusal: "You do not have permission to update encounter" |
+| Mark entered in error (`DELETE`) | "Update Encounter related clinical data" (`can_write_encounter_clinical_data`) | An organization of the observation's encounter | Refused for a closed encounter. The observation must be random and belong to the patient in the URL. No read check runs |
+| Questionnaire submission (encounter questionnaire) | "Can submit questionnaire about patient encounters" (`can_submit_encounter_questionnaire`) | An organization of the encounter | Refused for a closed encounter: "Permission Denied to submit encounter questionnaire". The encounter must belong to the patient ("Encounter is required for this questionnaire"), and to the questionnaire's facility for a facility questionnaire ("Encounter facility does not match questionnaire facility"). The questionnaire must be active ("Questionnaire is inactive") and the latest revision; an empty submission fails ("Empty Questionnaire cannot be submitted") |
+| Mark a questionnaire response entered in error | "Can submit questionnaire about patient encounters" (`can_submit_encounter_questionnaire`) | An organization of the encounter | First, the response must be readable: "Can view clinical data about patients" through a role on the patient, or "Can Read encounter related clinical data" in an organization of the encounter; else "You do not have permission to view questionnaire responses". Refused for a closed encounter: "Permission Denied to update encounter questionnaire". Refused when the response is already entered in error, or after the edit window (120 minutes by default): "Questionnaire Response cannot be edited" |
+| `upsert_observations` | "Can Create Diagnostic Report on Facility" (`can_write_diagnostic_report`) | An organization of the service request's encounter, or of one of the service request's locations | The report is not final. The encounter's status is not checked. Refusal: HTTP 403, "You do not have permission to write this diagnostic report" |
+| Read test results (open the diagnostic report) | "Can Read Diagnostic Report" (`can_read_diagnostic_report`) | The same places as the write check | Refusal: "You do not have permission to read this diagnostic report" |
+
+Default roles per permission:
+
+| Permission (display name) | Slug | Default roles |
+| --- | --- | --- |
+| Can view clinical data about patients | `can_view_clinical_data` | Staff, Doctor, Nurse, Admin, Facility Admin |
+| Can Read encounter related clinical data | `can_read_encounter_clinical_data` | Admin, Doctor, Nurse, Facility Admin |
+| Update Encounter related clinical data | `can_write_encounter_clinical_data` | Admin, Doctor, Nurse, Facility Admin |
+| Can submit questionnaire about patient encounters | `can_submit_encounter_questionnaire` | Staff, Doctor, Nurse, Admin, Facility Admin |
+| Can Create Diagnostic Report on Facility | `can_write_diagnostic_report` | Facility Admin, Admin, Doctor, Nurse |
+| Can Read Diagnostic Report | `can_read_diagnostic_report` | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer |
+
+- "Admin" is the facility role. A second role named "Admin" exists only for role organizations.
+- Staff does not hold "Can Read encounter related clinical data" or "Update Encounter related clinical data". Staff reads observations only through a role on the patient.
+- These role lists are the defaults in code. The roles of an installation can be changed.
+
+### Errors
+
+- A create body with a field that the create spec does not list: HTTP 400.
+- An encounter of another patient: "Patient external ID mismatch with encounter's patient". An unknown encounter: not found.
+- A `body_site` or `method` code outside its value set: "Code does not exist in the valueset".
+- A create in a closed encounter: HTTP 403.
+- `PUT` or `PATCH` on an observation: HTTP 405.
+- A request without a signed-in user: HTTP 403.
+
+### Other places observations appear
+
+- Referrals: an observation can be attached to a referral as a resource of type `observation`.
+- Reading it there needs the patient-level read check ("Can view clinical data about patients"), or the encounter-level read check on the observation's encounter. Otherwise: "Permission denied to read this resource".
+- Report templates: a diagnostic report's template can include its observations, with title, value, components, status, effective date and time, interpretation and reference ranges.
+- Resource observations (`/api/v1/resource_observation/`) come from location, device and facility questionnaires and need "Can View Resource Responses"; no staff screen reads them.
 
 ## Related
 
+- Concept: [Observation](../../concepts/clinical/observation.mdx)
 - Reference: [Observation Definition](../definitions/observation-definition.mdx)
-- Reference: [Diagnostic Report](../clinical/diagnostic-report.mdx)
+- Reference: [Diagnostic Report](./diagnostic-report.mdx)
+- Reference: [Questionnaire Response](./questionnaire-response.mdx)
 - Reference: [Questionnaire](../definitions/questionnaire.mdx)
-- Reference: [Encounter](../clinical/encounter.mdx)
+- Reference: [Encounter](./encounter.mdx)
 - Reference: [Patient](../clinical/patient)
-- Reference: [Base Model](../foundation/base-model.mdx)
-- Source: [observation.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/observation.py)
-- Source: [observation/spec.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/observation/spec.py)
-- Source: [observation/valueset.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/observation/valueset.py)
-- Source: [resources/base.py on GitHub](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/base.py)
+- Reference: [Value Set](../definitions/valueset.mdx)
+- Reference: [Permission](../access-governance/permission.mdx)
+- Reference: [Role](../access-governance/role.mdx)
+- Flow: [Mark a response as entered in error](../../flows/clinical/questionnaire-response/mark-a-response-as-entered-in-error.mdx)
+- Flow: [Enter diagnostic report results](../../flows/clinical/diagnostic-report/enter-diagnostic-report-results.mdx)
+- Base: [Base model](../foundation/base-model.mdx)
+- Source: [observation.py (model)](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/observation.py) · [observation/spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/observation/spec.py) · [observation/valueset.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/observation/valueset.py) · [viewsets/observation.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/observation.py)

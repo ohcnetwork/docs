@@ -6,64 +6,94 @@ sidebar_position: 3
 
 ## Overview
 
-This flow describes how to change the details of a [diagnostic report](../../../concepts/clinical/diagnostic-report.mdx) in Care. You update the report from its detail view.
+This flow describes how to change the details of a [diagnostic report](../../../concepts/clinical/diagnostic-report.mdx) in Care before its results are approved. You update the report from its card on the service request page.
 
 ## Pre-requisites
 
 - A user entered the diagnostic report in Care, and you update that report.
+- The results are not approved yet: the report card shows the status **Preliminary**.
+- The status of the service request is **Draft** or **Active**.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create Diagnostic Report on Facility | Lets you create and update diagnostic reports at the facility. Facility Admin, Admin, Doctor, and Nurse users have this permission. |
+| Can Create Diagnostic Report on Facility | Lets you save changes to the report and its results, and upload a result file. You must hold it in a department of the encounter of the service request, or of that encounter's current location. A department of one of the locations of the service request also counts. By default, Facility Admin, Admin, Doctor and Nurse hold it. |
+| Can Read Service Request | Lets you open the service request page. You must hold it in the same departments as "Can Create Diagnostic Report on Facility". By default, Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it. |
+| Can Read Activity Definition | Lets the service request page load the activity definition of the service request. You can hold it in any department of the facility. By default, Facility Admin, Administrator, Admin, Staff, Doctor, Nurse and Volunteer hold it. |
+| Can Read Diagnostic Report | Lets you open the report card and its results. You must hold it in the same departments as "Can Read Service Request". By default, Facility Admin, Administrator, Admin, Staff, Doctor, Nurse and Volunteer hold it. |
+| Can Read Observation Definition | Lets you add a test with **Add observation**. You can hold it in any department of the facility. By default, Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer and Pharmacist hold it. |
+
+Admin and Administrator are two different default roles.
+
+While the report is **Preliminary**, Care shows **Save Results** to every user who can open the report card. If you do not hold "Can Create Diagnostic Report on Facility" in one of those departments, Care refuses the save. Care then shows the message "You do not have permission to write this diagnostic report".
+
+By default, this happens to Staff, Administrator and Volunteer: they can open the report but cannot save changes.
 
 ## Steps
 
 ### 1. Open the diagnostic report
 
-Open the detail view of the diagnostic report that you want to update.
+Open the service request page of the report. See [View service requests](../service-request/view-service-requests.mdx).
+
+Under **Test Result Entries**, find the card of the report.
+
+If the card is collapsed, select its title to expand it.
 
 ### 2. Change the report details
 
-Change the fields that you want to update.
+Change the conclusion of the report.
 
 | Components | What it captures |
 | --- | --- |
-| Status | The progress of the report: Registered, Preliminary, Partial, or Final. |
-| Category | The clinical service that produced the report. |
-| Code | The test or panel that the report covers. |
-| Note | Extra remarks about the report. |
-| Conclusion | The interpretation of the results. |
+| **Conclusion** | A summary of the findings and of anything the requesting doctor should act on. |
 
-You can change these fields at any time. Care does not enforce an order of status changes. If you have the permission, you can set the status directly to Registered, Preliminary, Partial, or Final.
+You cannot change the status, the category, the code or the note on screen. Care keeps them as they are when you save.
+
+On screen, the status changes only when a user selects **Approve Results**. Care then sets it to Final, and this cannot be undone on screen.
 
 Note: You cannot change the service request that the report links to. Care sets this link when you create the report.
 
-### 3. Change the observation results
+### 3. Change the test results
 
-If the status of the report is not Final, add or change the observation results.
+If the report is **Preliminary**, you can add, correct or remove its test results.
 
-If the status of the report is Final, Care locks the results. Care rejects every change to the results of a Final report.
+- To correct or remove a result, see [Correct or remove a test result](../observation/correct-or-remove-a-test-result.mdx).
+- To add a result, see [Enter diagnostic report results](./enter-diagnostic-report-results.mdx).
+
+After a user selects **Approve Results**, the report is Final. Care removes it from the result editor, so you cannot change its results on screen. Care refuses to save results for a Final report.
 
 ### 4. Save the report
 
-Save your changes.
+Select **Save Results**.
+
+Care shows **Test results saved successfully** and collapses the report card.
+
+If the service request asks for tests and no result has a value, Care checks the conclusion.
+
+- If the report has a conclusion, Care shows **Cannot add conclusion without results** and does not save.
+- If it has no conclusion and no result is marked for deletion, Care shows **Please fill all results** and does not save.
+
+Otherwise, if Care has no result to send, it shows **Diagnostic report saved successfully** instead.
 
 ## Expected Outcome
 
-- Care stores the new details of the diagnostic report.
-- The detail view shows the updated status, category, code, note, and conclusion.
+- Care stores the new conclusion and the test results of the report.
+- Each time a user selects **Save Results**, Care sets the time of every saved result that has a value to the moment of the save. This applies even when only the conclusion changed.
+- On screen, the report stays **Preliminary** until a user selects **Approve Results**.
+- In **Review Test Results**, the report shows the saved results and the conclusion.
 
 ## Related
 
 Concepts:
 
 - [Diagnostic Report](../../../concepts/clinical/diagnostic-report.mdx)
+- [Observation](../../../concepts/clinical/observation.mdx)
 
 Flows:
 
 - [Enter diagnostic report results](./enter-diagnostic-report-results.mdx)
+- [Correct or remove a test result](../observation/correct-or-remove-a-test-result.mdx)
 - [View a diagnostic report](./view-a-diagnostic-report.mdx)
 - [Print a diagnostic report](./print-a-diagnostic-report.mdx)

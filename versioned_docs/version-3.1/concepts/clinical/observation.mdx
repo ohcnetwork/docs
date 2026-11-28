@@ -4,64 +4,177 @@ sidebar_position: 5
 
 # Observation
 
-An **observation** is a single recorded fact about a patient — a blood pressure of 120/80, a body temperature, a coded answer to a screening question. It is the smallest unit of clinical data in Care: the structured building block that, gathered over time, becomes a patient's chart.
+## Definition
 
-## What it represents
+An [observation](https://build.fhir.org/observation.html) in Care is one recorded result about a patient: a value or a coded answer for one code, at one point in time.
 
-In Care's FHIR-aligned model, an observation maps to the **Observation** resource. Each one captures:
+Each observation belongs to one patient and one encounter. Care records observations from the answers to questionnaires and from the test results of diagnostic reports.
 
-- **What was observed** — a coded concept, typically a LOINC code, that names the thing, such as "systolic blood pressure" or "body temperature"
-- **The result** — the value itself: a number, a piece of text, a yes/no, or a coded answer, with a unit where one applies
-- **Context** — the patient it belongs to, the encounter it was recorded in, when it was effective, and who recorded it
-- **Clinical qualifiers** — optional detail such as the body site, the collection method, a reference range, and an interpretation of high, low, or normal
+A trend, such as a temperature chart, is many observations of one code read together.
 
-An observation is a snapshot, not a running tally. It records one fact at one point in time. A trend — a patient's temperature over a week — is many observations read together, never a single record that gets updated in place.
+## Key Attributes
 
-## How it is captured
+| Components | What it captures |
+| --- | --- |
+| Code | What was observed. Screens show the display name of the code as the name of the observation. |
+| Value | The result: a number, a quantity, text, a date or a time, a yes or no answer, or a choice from a list. |
+| Unit | The unit of the value. For an answer to a questionnaire, it is the unit set on the question. Care keeps that unit even if you pick another one in the questionnaire. For a test result, it is the unit of the observation definition. |
+| Components | The parts of a result that has several parts, each with its own code and value. |
+| Note | A note. Care copies it from the answer to the questionnaire. You cannot enter a note with a test result. |
+| Time | The time Care records for the observation: the moment the questionnaire was submitted, or the moment the results of the report were last saved. |
+| Entered by | The user who submitted the questionnaire. Care does not record this user for a test result. |
+| Status | Final or Entered in Error. |
+| Patient and encounter | The patient and the encounter that the observation belongs to. |
+| Reference range and interpretation | For a test result that is linked to an observation definition, the reference range and an interpretation such as Normal or Abnormal. |
 
-Observations are rarely entered field by field. Most are produced as a side effect of submitting a [questionnaire](../definitions/questionnaire.mdx): each answer on the form becomes an observation, and that observation keeps a link back to the questionnaire response that produced it. This is also why every observation carries both a *value* and a *value type* — the value type tells any reader how to interpret what the form captured, whether it was a number, a date, a yes/no, or a coded choice.
+### Codes
 
-Care strongly prefers **structured, coded** observations over free text. Downstream safety logic — allergy checks, medication interactions, alerting — reads coded values, so a temperature stored as a number with a LOINC code is far more useful than the same reading typed into a note.
+Each observation has a code that names what was observed.
 
-## Status lifecycle
+For a question on a questionnaire, the code comes from the Observation value set, which holds all LOINC codes. A test result takes the code of its observation definition.
 
-An observation's `status` signals how much to trust the record:
+### Observations from a questionnaire
 
-```text
-final → amended
-final → entered_in_error
-```
+When you submit a questionnaire on an encounter, each answered question that has an observation code becomes an observation. The code is bound to the question when the questionnaire is designed, with **Search for observation codes**.
 
-- **final** — recorded, complete, and verified. Observations created from a questionnaire start here.
-- **amended** — was final, then corrected. The earlier value is superseded, but the change stays auditable.
-- **entered_in_error** — recorded by mistake; readers should disregard it. Care keeps the row rather than deleting it, so the audit trail stays intact.
+A question without a code, other than a group, does not become an observation. A questionnaire that is filled in for the patient, outside an encounter, records no observations: Care saves only its questionnaire response.
 
-## How it connects
+Each observation from a questionnaire starts as Final. Its time is the moment of the submission, and the user who submitted the questionnaire is recorded as the user who entered it.
 
-An observation rarely stands alone. It links to the primitives around it:
+Care copies the note of the answer into the observation. It does not store a body site, a method or a time taken for the answer.
 
-- **Patient** — every observation belongs to one [patient](../clinical/patient); this anchor is what makes it part of a chart.
-- **Encounter** — it is normally recorded within an [encounter](../clinical/encounter.mdx), tying the fact to a specific visit or admission.
-- **Observation definition** — an [observation definition](../definitions/observation-definition.mdx) can act as the template, supplying expected codes, units, and reference ranges.
-- **Diagnostic report** — lab and imaging results are observations grouped under a [diagnostic report](../clinical/diagnostic-report.mdx).
-- **Other observations** — observations can nest. A panel such as a blood-pressure reading is a grouping observation whose components each carry their own code and value.
+If an answer holds more than one value, the observation keeps only the last value.
+
+You open a questionnaire from **Forms** on the **Overview** tab of the encounter, or from the **Questionnaire** group of **Encounter Actions**.
+
+### Test results
+
+You enter test results on the page of a service request, in a diagnostic report for that request. Each result is a value for one observation definition, and Care saves it as one observation.
+
+The observation takes its code and its unit from the observation definition. You enter only the value, or one value for each component.
+
+Test results are the only observations that Care links to an observation definition. They are also the only observations that get a reference range and an interpretation.
+
+You can change the test results of a report until you select **Approve Results**, which sets the report to Final. The service request must be **Draft** or **Active**.
+
+Care can also store an observation that is recorded on its own, without a questionnaire or a diagnostic report. No screen in Care records an observation this way.
+
+### Groups and components
+
+For an ordinary group of questions, each answered question in the group that has a code becomes its own observation. Care also records an observation for the group, with no value, and links the observations of the questions to it.
+
+Care keeps the observation for the group only if at least one question in the group became an observation.
+
+For a group that is set up as components, Care records one observation for the group, with no value of its own. The answers with a code are stored as components inside it, not as separate observations. A blood pressure panel is an example.
+
+An observation definition can have components too. A test result for that definition then has one value for each component. Each component whose code matches a component of the definition gets its own reference range and interpretation.
+
+### Reference range and interpretation
+
+Care works out the reference range and the interpretation of a test result from the ranges set on its observation definition. These ranges can depend on the age, gender or tags of the patient, and on the class or tags of the encounter.
+
+The reference range holds all the ranges of the matching rule, each with its own interpretation. The interpretation of the result comes from the range that the value falls in, or from the coded value, for example Normal, Critical or Abnormal.
+
+Observations from a questionnaire never get a reference range or an interpretation. So the **Vitals** panel shows a normal range, and flags such as **Above normal range**, only for vital signs entered as test results.
+
+A diagnostic report shows its results in a table with a **Reference Range** column and, when a result has one, an **Interpretation** column.
+
+### How it connects
+
+- Patient: every observation belongs to one [patient](./patient).
+- Encounter: every observation belongs to one [encounter](./encounter.mdx).
+- Questionnaire response: an observation from a [questionnaire](../definitions/questionnaire.mdx) links to the [questionnaire response](./questionnaire-response.mdx) of that submission. When the response is marked entered in error, its observations are marked too.
+- Diagnostic report: a test result belongs to one [diagnostic report](./diagnostic-report.mdx), and the report answers one [service request](./service-request.mdx).
+- Observation definition: a test result links to its [observation definition](../definitions/observation-definition.mdx), which gives it its code, its unit and the ranges for its reference range.
+
+### Where Care shows observations
+
+Care shows the observations of an encounter in these places:
+
+- The **Vitals** panel on the **Overview** tab shows the standard vital signs recorded at the latest four times, newest first. It appears once the encounter has a vital sign observation.
+- The **Observations** tab lists the observations of the encounter by date, newest first. Each entry shows the value, the note and, except for a test result, the user who filed it.
+- The **Observations** tab leaves out the observations for groups, so a component group and the answers inside it are not listed there. For a choice answer, or a test result made of components, the tab shows no value.
+- The **Plots** tab draws charts, grouped in chart sets. Each chart has the tabs **Graph**, **Recent Data** and **Full History**.
+
+On a default installation, the chart sets are Primary Parameters, ABG Analysis, Respiratory Support, Nutrition and Dialysis. The team that runs your deployment can set its own chart configuration, so your chart sets can be different.
+
+The **Vitals** panel takes the names of its rows from the Primary Parameters chart set. It leaves out a vital sign that this chart set does not chart.
+
+The history panel shows the observations of one code, or of a group of codes, over time, in the tabs **Plots** and **Table**. It opens from the **Observations** tab, the **Plots** tab, the **Vitals** panel and the **Diagnostic Reports** tab.
+
+The history panel can show the current encounter only, or all encounters of the patient. All encounters need "Can view clinical data about patients" through a role on the patient. See [Chart observations over time](../../flows/clinical/observation/chart-observations-over-time.mdx).
+
+### Status
+
+| Status | Description |
+| --- | --- |
+| Final | The observation is recorded. Observations from a questionnaire and test results start as Final, and a corrected test result stays Final. |
+| Entered in Error | The observation is marked as recorded in error. Care keeps the observation and its value. |
+
+The list of statuses in Care also has amended, but nothing in Care sets an observation to amended.
+
+The **Vitals** panel, the **Graph** and **Recent Data** tabs of a chart, and the history panel leave out observations that are entered in error. Diagnostic reports leave them out of their results too. The **Observations** tab and the **Full History** tab of a chart still list them, with no marker.
+
+You cannot change an observation from a questionnaire. You can only mark the whole questionnaire response as entered in error. Care then marks every observation from that response as entered in error.
+
+By default, you can mark a response as entered in error for 120 minutes after its submission. The team that runs your deployment can change this time limit. The encounter must be open. See [Mark a response as entered in error](../../flows/clinical/questionnaire-response/mark-a-response-as-entered-in-error.mdx).
+
+Only test results can be corrected, and only until **Approve Results**. You can change the value of a test result, or remove it. Care marks a removed test result as entered in error, and **View Observation History** on the report lists it. See [Correct or remove a test result](../../flows/clinical/observation/correct-or-remove-a-test-result.mdx).
 
 ## Permissions
 
-Observations are exposed through a read-only API, so the viewset only gates reading. Access is governed by clinical-data permissions: a reader is allowed if they hold the patient-level `can_view_clinical_data` permission, or, when querying a specific encounter, the encounter-level `can_read_encounter_clinical_data` permission. Observations are recorded as a side effect of submitting questionnaires, so creating them is gated by those questionnaire flows rather than by this viewset.
+When you work with observations, Care checks permissions for patients, encounters, questionnaires and diagnostic reports, and for the records that a diagnostic report uses. What you can do also depends on where you hold the role that gives each permission.
+
+A permission that you hold in the encounter is one that you hold in any of these places:
+
+- A department of the encounter, or a parent department of one.
+- The facility's root department "Administration", which Care creates with every facility.
+- A department of the current location of the encounter.
+
+A role on the patient is a role that you hold in any of these places:
+
+- A department of an open encounter of the patient, or of the current location of that encounter.
+- A geographic organization of the patient.
+- A direct link between you and the patient.
+
+An encounter is closed when its status is **Completed**, **Cancelled**, **Discontinued** or **Entered in error**.
 
 | Permission | Description | System Roles |
 | --- | --- | --- |
-| `can_view_clinical_data` | View clinical data about a patient, including their observations | Staff, Doctor, Nurse, Admin, Facility Admin |
-| `can_read_encounter_clinical_data` | Read clinical data recorded within a specific encounter; used as the encounter-scoped fallback when reading observations | Admin, Doctor, Nurse, Facility Admin |
+| Can view clinical data about patients | See the observations of the patient: the **Vitals** panel, the **Observations** and **Plots** tabs, and the history panel. Hold it through a role on the patient. With it, the history panel also shows the other encounters of the patient, and an open encounter shows **Forms**. | Staff, Doctor, Nurse, Admin, Facility Admin |
+| Can Read encounter related clinical data | See the observations of one encounter in the same places. Hold it in the encounter. This permission does not depend on the status of the encounter. If this is your only view permission, the history panel shows only that encounter. With it, an open encounter also shows **Forms**. | Admin, Doctor, Nurse, Facility Admin |
+| Can Read Questionnaires | See a questionnaire in the **Forms** list and open it. Hold it in a department that the questionnaire is shared with, or in a parent department of one. The facility's root department "Administration" also counts, and so does an organization that the questionnaire is shared with. | Admin, Doctor, Nurse, Administrator, Staff, Facility Admin, Volunteer, Pharmacist. In an organization that is not a department: the Admin, Manager and Member roles of that organization. |
+| Can submit questionnaire about patient encounters | Submit a questionnaire on an encounter, which records its observations. Also mark a questionnaire response of the encounter as entered in error, which marks its observations too, within the time limit. Hold it in the encounter. The encounter must be open. To open a response, you also need one of the two view permissions above. | Staff, Doctor, Nurse, Admin, Facility Admin |
+| Can Create Diagnostic Report on Facility | Create a diagnostic report, enter, correct and remove its test results, and approve them with **Approve Results**. Hold it in the encounter of the service request, or in a department of one of the locations of the service request. The status of the encounter does not matter. | Facility Admin, Admin, Doctor, Nurse |
+| Can Read Service Request | Open the page of the service request where you enter the test results. Hold it in the same places as "Can Create Diagnostic Report on Facility". | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Read Diagnostic Report | Open the diagnostic report with its test results, and use **View Observation History**. Hold it in the same places as "Can Create Diagnostic Report on Facility". | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer |
+| Can Read Activity Definition | Load the activity definition of the service request, which sets the test results that the report asks for. Hold it in any department of the facility. | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer |
+| Can Read Observation Definition | Look up the observation definition when you add a new test result, and search for one with **Add observation**. Hold it in any department of the facility. | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
 
-Roles are granted through a user's organization, facility, or patient memberships, and permissions cascade down the organization tree — so access to a patient's observations follows from access to the patient.
+The System Roles column lists the default roles. Your deployment can change which roles hold each permission.
+
+Admin in this table is the Admin role of a facility, not the Admin role of another kind of organization, unless the row says so.
+
+Staff does not hold "Can Read encounter related clinical data", so a Staff user sees observations only through a role on the patient.
+
+If that role comes from a department, it ends when every encounter of the patient in that department is closed. Then the Staff user no longer sees the observations. A role from a geographic organization of the patient, or from a direct link, does not depend on encounters.
+
+The page of the service request does not check your permission before it shows **Save Results** and **Approve Results**. Without "Can Create Diagnostic Report on Facility", Care refuses the save with "You do not have permission to write this diagnostic report".
 
 ## Related
 
-- Reference: [Observation (technical)](../../references/clinical/observation.mdx)
-- Concept: [Observation Definition](../definitions/observation-definition.mdx)
-- Concept: [Diagnostic Report](../clinical/diagnostic-report.mdx)
+- Flow: [Record observations with a form](../../flows/clinical/observation/record-observations-with-a-form.mdx)
+- Flow: [Check a patient's vital signs](../../flows/clinical/observation/check-vital-signs.mdx)
+- Flow: [View the observations of an encounter](../../flows/clinical/observation/view-encounter-observations.mdx)
+- Flow: [Chart observations over time](../../flows/clinical/observation/chart-observations-over-time.mdx)
+- Flow: [Correct or remove a test result](../../flows/clinical/observation/correct-or-remove-a-test-result.mdx)
+- Flow: [Mark a response as entered in error](../../flows/clinical/questionnaire-response/mark-a-response-as-entered-in-error.mdx)
+- Flow: [Enter diagnostic report results](../../flows/clinical/diagnostic-report/enter-diagnostic-report-results.mdx)
 - Concept: [Questionnaire](../definitions/questionnaire.mdx)
-- Concept: [Encounter](../clinical/encounter.mdx)
-- Concept: [Patient](../clinical/patient)
+- Concept: [Questionnaire Response](./questionnaire-response.mdx)
+- Concept: [Observation Definition](../definitions/observation-definition.mdx)
+- Concept: [Diagnostic Report](./diagnostic-report.mdx)
+- Concept: [Service Request](./service-request.mdx)
+- Concept: [Encounter](./encounter.mdx)
+- Concept: [Patient](./patient)
+- Reference: [Observation (technical)](../../references/clinical/observation.mdx)
