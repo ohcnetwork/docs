@@ -6,57 +6,159 @@ sidebar_position: 7
 
 ## Overview
 
-This flow describes how to record that a [patient](../../../concepts/clinical/patient) is deceased. You record the status and the date and time of death from the patient's profile.
+This flow describes how to record in Care that a [patient](../../../concepts/clinical/patient) has died. You tick **Mark as deceased** on the **Update Patient Details** form, and enter the date and time of death. You can also record the death with a form that has a **Time of Death** question, about an encounter or about the patient.
+
+<video src="/media/clinical/patient/mark-patient-deceased.mp4" poster="/media/clinical/patient/mark-patient-deceased.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/patient/mark-patient-deceased.vtt" srcLang="en" label="English" default />
+</video>
 
 ## Pre-requisites
 
 - The patient is registered in Care.
-- You can open the patient's profile.
-- You have the permission listed below.
+- You can update the patient's details. [Update a patient's details](./update-patient-details.mdx) describes how you get access to the patient.
+- You know the date and time of death.
+- If you use a form about an encounter, the patient has an open encounter. Its **Forms** list offers a form with a **Time of Death** question.
+- If you use a form about the patient, **Add Forms** offers a form with a **Time of Death** question.
+- You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Update a Patient's data | Lets you change the patient's details, and mark the patient as deceased. |
+| Can Update a Patient's data | Save the time of death and mark the patient as deceased, in every way. On the update form, Care shows **Edit** in **General Info** only if you hold it. You need it through a role on the patient. By default, the Staff, Doctor, Nurse, Administrator and Facility Admin roles hold it. |
+| Can submit questionnaire about patient encounters | Form about an encounter: save the form. You need it in a department of the encounter, or in one above it. A department of the encounter's current location and the facility's Administration department also count. The encounter must be open. By default, the Staff, Doctor, Nurse and Facility Admin roles hold it. |
+| Can submit questionnaire about patients | Form about the patient: Care shows **Add Patient Updates** only if you hold it, and you need it to save the form. You need it through a role on the patient. By default, the Staff, Doctor, Nurse, Administrator, Facility Admin and Volunteer roles hold it. |
+| Can view questionnaire responses on patient | Form about the patient: see the **Updates** tab. You need it through a role on the patient. By default, the Staff, Doctor, Nurse, Administrator, Facility Admin, Volunteer and Pharmacist roles hold it. |
+| Can Read Questionnaires | Either kind of form: see the form in the **Forms** or **Add Forms** list. For this, you need it in an organization or department that the form is shared with, or in one above it. For a form of your facility, its Administration department also counts. To open a form of your facility, you need it in that facility. The facility's Administration department counts, and so does a department that the form belongs to or is shared with, or one above it. A role in a government organization does not count for this. A form that belongs to no facility opens without this permission. By default, the Staff, Doctor, Nurse, Administrator, Facility Admin, Volunteer and Pharmacist roles hold it. The Admin, Manager and Member roles of a responsibility hold it too. |
+| Can view clinical data about patients | Open the patient's profile, in every way. You need it through a role on the patient. For a form about an encounter, Care also shows **Forms** only if you hold it, or Can Read encounter related clinical data. By default, the Staff, Doctor, Nurse and Facility Admin roles hold it. |
+| Can Read encounter related clinical data | Form about an encounter: Care shows **Forms**, in place of Can view clinical data about patients. You need it in a department of the encounter, or in one above it. A department of its current location and the facility's Administration department also count. By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can list patients | Open the patient's profile, in place of Can view clinical data about patients. For this, a role in a facility does not count: you need it in a government organization that covers the patient. If you are assigned to the patient on the **Users** tab, you need neither of these two permissions. For a form about an encounter, you also need it through a role on the patient. Then you see the **Encounters** tab and can open the encounter. By default, the Staff, Doctor, Nurse, Volunteer and Administrator roles hold it. The Pharmacist and Facility Admin roles hold it too, but Care does not offer them for a government organization. |
+| Can Read Tag Config | Open the profile inside a facility. Hold it in the facility's Administration department or in one of its departments or teams. A role in a government organization does not count. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
 
 ## Steps
 
-### 1. Open the patient's profile
+### 1. Open the update form
 
-Open the profile of the patient. See [View a patient's profile](./view-patient-profile.mdx).
+Open the patient's profile inside the facility. See [View a patient's profile](./view-patient-profile.mdx).
 
-### 2. Edit the additional details
+On the **Demography** tab, go to the **General Info** section.
 
-Find the **Additional Details** section. Select **Edit**.
+Select **Edit**. Care opens the **Update Patient Details** form.
+
+![The General Info section of the patient's profile with the Edit button outlined](/media/clinical/patient/mark-patient-deceased-1.png)
+
+### 2. Find the Deceased Status box
+
+Go to the **Additional Details** section of the form.
+
+If the section is closed, open it. On some deployments, the section is closed when the form opens.
+
+Find the **Deceased Status** box.
+
+![The Additional Details section of the Update Patient Details form, with the Deceased Status box outlined and Mark as deceased not ticked](/media/clinical/patient/mark-patient-deceased-2.png)
 
 ### 3. Mark the patient as deceased
 
-Select the **Patient is deceased** checkbox. Care shows a field for the date and time of death.
+Tick **Mark as deceased**.
+
+Below **Mark as deceased**, Care shows the text "Use only if the patient has passed away before registration."
+
+The **Register New Patient** form has the same **Deceased Status** box. See [Register a patient](./register-patient.mdx).
+
+Care shows the **Date and Time of Death** field.
+
+![The Deceased Status box outlined, with Mark as deceased ticked and the empty Date and Time of Death field](/media/clinical/patient/mark-patient-deceased-3.png)
 
 ### 4. Enter the date and time of death
 
-Enter the date and time of death.
+Enter the date and time of death in **Date and Time of Death**.
 
-Note: The date and time of death must not be in the future.
+Care marks the patient as deceased only when this field has a value.
 
-Note: The date and time of death must not be earlier than the patient's date of birth. If the patient has an age instead of a date of birth, Care compares the date of death with the birth year that it calculates from the age.
+Keep these rules in mind:
+
+- The picker does not offer a time later than now.
+- The time of death must be after the date of birth.
+- If the form has an age instead of a date of birth, Care uses today minus the age.
+- If the time of death is too early, Care shows "Death date must be after date of birth".
+
+:::warning
+Check the date and time of death before you select **Update**. If you later untick **Mark as deceased** and save, the patient stays deceased.
+:::
+
+![The Date and Time of Death field outlined, with a date and time entered](/media/clinical/patient/mark-patient-deceased-4.png)
 
 ### 5. Save the change
 
-Save the **Additional Details** section. See [Update patient details](./update-patient-details.mdx).
+Select **Update**. You can also press Shift+Enter.
+
+When you save, Care checks the time of death again. Care does not save a time of death in the future.
+
+Care also does not save a time of death before the date of birth. If the patient has an age instead, the year of death cannot be before the year of birth.
+
+![The Update button outlined at the end of the form, with Mark as deceased ticked and the time of death entered](/media/clinical/patient/mark-patient-deceased-5.png)
+
+![The profile after saving, with the red banner outlined, showing the Deceased badge and the date and time of death](/media/clinical/patient/mark-patient-deceased-6.png)
+
+### Another way: record the death with a form
+
+Use this way instead of steps 1 to 5.
+
+Use this way if one of your forms has a **Time of Death** question. Care records the death when you answer that question and save the form.
+
+The form can be about an encounter or about the patient. Each kind opens from a different place.
+
+Note: In the form editor, the author sets the question's **Answer type** to **Structured**, and then selects **Time of Death**.
+
+For a form about an encounter:
+
+1. Open the patient's profile inside the facility. See [View a patient's profile](./view-patient-profile.mdx).
+2. Select the **Encounters** tab.
+3. On the card of the open encounter, select **View Encounter**. Care opens the **Overview** tab of the encounter.
+4. On the **Overview** tab, select **Forms**. Care shows **Forms** only for an open encounter.
+5. Select the form with the **Time of Death** question. Care opens the form.
+6. Find the question. Its text is the text that the author of the form wrote. A required question has a red asterisk.
+7. Enter the date and time of death. The picker does not offer a time later than now.
+8. Select **Save Changes**.
+
+The **Forms** list shows up to 15 active forms about an encounter, from your facility or from no facility. It shows only the forms for which you hold Can Read Questionnaires.
+
+For a form about the patient:
+
+1. Open the patient's profile. See [View a patient's profile](./view-patient-profile.mdx).
+2. Select the **Updates** tab.
+3. Select **Add Patient Updates**. Care opens a page for forms about the patient.
+4. Use **Add Forms** to select the form with the **Time of Death** question.
+5. Answer the question as in steps 6 and 7 above. Then select **Save Changes**.
+
+**Add Forms** offers only active forms about a patient. It shows only the forms for which you hold Can Read Questionnaires.
+
+If you leave a required question empty, Care shows "This field is required".
+
+If the question is not required and you leave it empty, Care does not record the death.
+
+When you save, Care saves the time of death and marks the patient as deceased.
+
+Care saves the time of death and the other answers together. If Care refuses the time of death, it saves none of the answers.
 
 ## Expected Outcome
 
-- The patient's profile shows the deceased status as "Passed away on `{date}`, at `{time}`".
+- If you used the update form, Care shows "Patient Updated Successfully", and returns you to the previous page.
+- The header of the patient's profile shows a red banner with the **Deceased** badge.
+- The banner shows "Passed away on", then the date and the time of death. The date shows the month, the day and the year. The time shows hours and minutes, with AM or PM.
+- When you open the update form again, **Mark as deceased** is ticked.
 
 ## Related
 
 Concepts:
 
 - [Patient](../../../concepts/clinical/patient)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
+- [Questionnaire](../../../concepts/definitions/questionnaire.mdx)
 
 Flows:
 
+- [Update a patient's details](./update-patient-details.mdx)
 - [View a patient's profile](./view-patient-profile.mdx)
-- [Update patient details](./update-patient-details.mdx)
+- [Register a patient](./register-patient.mdx)
+- [Add and edit questions](../../definitions/questionnaire/add-and-edit-questions.mdx)

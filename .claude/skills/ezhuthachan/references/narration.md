@@ -40,6 +40,8 @@ cd "$S/media/narration"
 python3 make_plan.py --draft          # script/<slug>.txt for each flow: one caption-only line per caption
 ```
 
+The scripts read `../out/<slug>.mp4` and `.vtt`. When the recorders wrote to their own folders (`EZ_OUT=out/<slug>`), point them at a folder of links instead of moving the recordings: `mkdir rec && for s in <slugs>; do ln -s ../../out/$s/$s.mp4 ../../out/$s/$s.vtt rec/; done`, and set `SRC` to `rec` in the session's copies of `make_plan.py` and `stitch.py`. A re-recording is then picked up with no copying.
+
 Write the script of each flow in `script/<slug>.txt`: extend each line with its context, as "What the voice says" describes, and keep one line per caption, in order. Send the scripts to the user before you make any speech: a changed line costs a new clip. Then make the plan:
 
 ```bash

@@ -6,107 +6,193 @@ sidebar_position: 1
 
 ## Definition
 
-A **[Patient](https://build.fhir.org/patient.html)** in Care is a person who receives care
-through your facility or program. The patient record holds the demographic and contact
-details of that person. Care ties every encounter, condition, note, appointment, and
-clinical record to a patient record.
+A **[patient](https://build.fhir.org/patient.html)** in Care is a person who is registered to receive care. Care keeps the person's details and contact information in one place, and links the person's encounters, appointments, notes, files and clinical history to them.
+
+A patient is not the same as an encounter. One patient can have many encounters and appointments, at different facilities, and they all belong to the same patient.
 
 ## Key Attributes
 
 | Components | What it captures |
 | --- | --- |
-| Name | The full name of the person. Care stores the name as a single free-text entry. |
-| Gender | The gender of the person: Male, Female, Non-binary, or Transgender. |
-| Phone Number | The primary contact number of the person. |
-| Emergency Phone Number | The number to call in an emergency. |
-| Date of Birth | The date the person was born. |
-| Age | The age of the person in years. Care converts the age to a year of birth. |
-| Address | The current address of the person, as free text. |
-| Permanent Address | The permanent address of the person. You can mark it the same as the current address. |
-| PIN Code | The postal code of the address. |
-| Blood Group | The blood group of the person. Staff collect this value at registration. |
-| Geo Organization | The government administrative area that the person belongs to. |
-| Patient Identifiers | The identifiers that your deployment configures, for example a national ID or a facility ID. |
-| Patient Tags | The labels that administrators attach to the patient record. |
-| Deceased Status | Whether the person is deceased, with the date and time of death. |
-| Volunteer Contact | The users that a facility assigns to the patient for field support. |
+| Name | The patient's full name, in one field. It is required. The profile shows it as **Full Name**. |
+| Phone Number | The patient's main phone number. It is required. Patient Home, the facility page for one patient, uses it to find the patient. You can search for a patient by it only if your deployment keeps the phone number as an identifier, which is off by default. If you register a phone number that another patient already has, Care shows **Patient Records Found** with the patients who have it. |
+| Emergency Phone Number | A number to call in an emergency. If you do not give a different number, Care saves the phone number as the emergency number. The profile shows it as **Emergency Contact**. |
+| Sex | **Male**, **Female**, **Transgender** or **Non-binary**. It is required. |
+| Date of birth or year of birth | The exact date of birth, or only a year of birth when you enter an age. See "Date of birth and year of birth" below. |
+| Blood Group | Optional. Unknown, A+, A-, B+, B-, AB+, AB-, O+ or O-. |
+| Address | The patient's current address, as free text. The profile shows it as **Current Address and Route to Home**. |
+| Permanent Address | The patient's permanent address. If you do not give a different one, Care saves the address as the permanent address. |
+| PIN Code | Optional. It has 6 digits. |
+| Geo organization | The government organization that the patient belongs to. It is required. See "Geo organization" below. |
+| Identifiers | IDs that your deployment sets up for patients. See "Identifiers" below. |
+| Tags | Tags applied to the patient. See "Tags" below. |
+| Assigned users | Users who have a role on this one patient. See "Assigned users" below. |
+| Deceased status | Whether the patient has died, with the date and time of death. See "Deceased" below. |
+| Additional fields | Extra fields that your deployment adds to patients. The profile shows them under **Additional Details**. |
 
-Note: You enter either a date of birth or an age, not both.
+### Date of birth and year of birth
 
-{/*
-### Blood Group
+On the registration form, **Date of Birth/Age** has two tabs: **Date** for the exact date of birth, and **Age** for an age in years.
 
-Care offers these blood group values: A Positive, A Negative, B Positive, B Negative,
-AB Positive, AB Negative, O Positive, O Negative, and Unknown.
+Care does not keep the age. When you enter an age, Care saves a year of birth, which is the current year minus the age, and clears any date of birth. When you enter a date of birth, Care sets the year of birth from that date.
 
-### Patient Identifiers
+The profile shows **Date of Birth** with the age, or **Year of Birth** when the patient has no date of birth.
 
-Your deployment configures the identifier types that Care shows. A facility can define
-its own identifier types, or the instance can define identifier types for all facilities.
-Each identifier type is required or optional. An identifier type can also check the
-format of the value that you enter.
+The year of birth matters even when you know the date of birth. Patient Home opens a patient only when the phone number and the year of birth match that patient.
 
-### Patient Tags
+### Geo organization
 
-Administrators attach tags to a patient record. Tags are labels that help you group and
-find patient records.
+Each patient belongs to one government organization, the patient's geo organization. On the registration form, you choose it one level at a time, from the top level down. By default, you must choose every level, down to the lowest one. The profile shows one row for each level.
 
-### Volunteer Contact
+The patient also belongs to every government organization above the geo organization. A government organization covers a patient when it is the patient's geo organization or one above it. A role in a government organization that covers the patient is a role on the patient.
 
-A facility assigns specific users, for example volunteers, to a patient. These users
-give field support to the patient. Care shows these users in the Volunteer Contact
-section of the patient profile.
+Each government organization has a **Patients** tab that lists the patients it covers. You see this tab when you hold Can list patients in that government organization or one above it. See [View an organization's patients](../../flows/clinical/patient/view-organization-patients.mdx).
 
-### Profile Sections
+### Identifiers
 
-The patient profile holds these sections:
+An identifier is an ID that your deployment sets up for patients, with a name that your deployment chooses. The registration and update forms show each active deployment-wide identifier, except the ones that Care keeps by itself.
 
-- General Info
-- Additional Details
-- Identifiers
-- Patient Tags
-- Insurance Details
-- Social Profile
-- Volunteer Contact
+An identifier can be required, can need a value that no other patient has, and can check the format of the value.
 
-The profile also holds tabs for Encounters, Clinical History, Appointments, and
-Questionnaire Updates. Your permissions control which of these tabs you see.
-*/}
+Some identifiers are auto-generated. The registration form shows "Auto-generated on Save" for them, and Care fills in the value when you register the patient.
 
-## Patient Identifiers
-Your deployment configures the identifier types that Care shows. A facility can define its own identifier types, or the instance can define identifier types for all facilities. Each identifier type is required or optional. An identifier type can also check the format of the value that you enter.
+Care does not fill in an auto-generated identifier when you update a patient. So a patient who was registered before the identifier was set up stays without a value for it.
+
+The profile lists the patient's identifiers in the **Identifiers** section of the **Demography** tab. To change them, you use **Edit** in **General Info**. See [Manage a patient's identifiers](../../flows/clinical/patient/manage-patient-identifiers.mdx).
+
+A facility can also set up identifiers of its own. Search offers them, but the registration and update forms do not show them. Care fills in an auto-generated facility identifier when an encounter is created at that facility.
+
+Care can also keep some identifiers by itself. By default, it keeps the patient's name in each facility where the patient has an encounter. Two more are off by default, and your deployment can turn them on: a deployment-wide phone-number identifier and a deployment-wide name identifier. Search offers these identifiers, but the forms and the profile do not show them.
+
+### Tags
+
+You apply tags to a patient from the tags that are set up for patients. See [Tag](../platform/tagging.mdx).
+
+A tag is either a deployment-wide tag or a facility tag. Inside a facility, you can apply that facility's tags and the deployment-wide tags. At registration and outside a facility, you can apply only deployment-wide tags.
+
+A patient can have only one tag from each tag group. If you choose a second tag from the same group, it replaces the first one.
+
+A tag can have an expiry. Care removes an expired tag from the patient later.
+
+You apply and remove tags with **Edit** in **Patient Tags** on the profile, with **Add Tags** or **Manage Tags** on Patient Home, or on the registration form. On the profile and on Patient Home, each change is saved at once. On the registration form, the tags are saved with the new patient. See [Manage patient tags](../../flows/clinical/patient/manage-patient-tags.mdx).
+
+### Assigned users
+
+The **Users** tab of the profile lists the users assigned to the patient. With **Assign User**, you choose a user and a role, and Care gives that user the role on this patient only. The role picker offers the roles meant for facilities.
+
+An assigned user can open the patient and has the permissions of their role on this patient. This does not need an encounter or a role in a government organization. You can assign any user in Care, not only the users of your facility.
+
+The **Users** tab shows each user's details, but not the role that the user has on the patient. See [Manage the users assigned to a patient](../../flows/clinical/patient/manage-patient-users.mdx).
+
+### Deceased
+
+To record that a patient has died, you use the **Additional Details** section of the registration or update form. Under **Deceased Status**, you select **Mark as deceased** and enter the **Date and Time of Death**. The time cannot be in the future, or before the patient's date of birth or year of birth.
+
+The text under **Mark as deceased** says "Use only if the patient has passed away before registration." The other way works if one of your forms has a **Time of Death** question. Such a form can be about the patient or about an encounter. When someone answers the question and saves the form, Care records the death. If the question is left empty, Care does not record it.
+
+The profile then shows a red banner with a **Deceased** badge and the date and time of death. See [Mark a patient as deceased](../../flows/clinical/patient/mark-patient-deceased.mdx).
+
+Unticking **Mark as deceased** later does not remove the deceased status.
 
 ## Permissions
 
-| Permission | What it allows |
-| --- | --- |
-| Can Create Patient | Register a new patient. |
-| Can Update a Patient's data | Edit the details of an existing patient. |
-| Can list patients | See patients in search results and lists. |
-| Can view clinical data about patients | View the clinical information of a patient. |
-| Can view questionnaire responses on patient | View the questionnaire responses of a patient. |
-| Can submit questionnaire about patients | Submit a questionnaire about a patient. |
+Care checks two things: the permission that your role holds, and where you hold that role. You can hold a role in a department of a facility, in a government organization, in a responsibility, or directly on one patient.
 
-Note: Only a system administrator can permanently delete a patient record. Regular staff
-roles cannot delete a patient record.
+By default, who can open a patient depends on the patient's open encounters, the patient's geo organization and the users assigned to the patient.
 
-{/*
-## Configuration
+The roles named on this page hold each permission by default. Your deployment can also have other roles.
 
-Note: The fields that are mandatory at registration depend on your deployment's
-configuration. The number of geo-organization levels that you must select also depends
-on your deployment's configuration. Some deployments use a minimal registration form
-that asks only for the core fields.
-*/}
+### Role on the patient
+
+Most patient permissions count only when you hold them through a role on the patient. You have a role on the patient when you hold a role in one of these places:
+
+- A department or team linked to an open encounter of the patient, or a department above it.
+- Administration, the department that Care creates with every facility, when the patient has an open encounter at that facility.
+- A department linked to the current location of an open encounter of the patient.
+- A government organization that covers the patient.
+- The patient's **Users** tab, when you are assigned to the patient. Your role is the role that you were given there.
+
+An open encounter is an encounter whose status is not **Completed**, **Cancelled**, **Discontinued** or **Entered in error**. A **Discharged** encounter is still open. An encounter with one of these four statuses gives no role on the patient.
+
+So a role in the facility's Administration department is a role on every patient who has an open encounter at that facility. Registering a patient does not by itself give you a role on the patient.
+
+### Opening a patient
+
+To open a patient's profile, one of these must be true:
+
+- You hold Can view clinical data about patients through a role on the patient.
+- You hold Can list patients in a government organization that covers the patient. A role in a department does not count for this.
+- You are assigned to the patient, with any role.
+
+If none of these is true, the profile shows **Patient Not Found**, and Care shows the message "Not Found".
+
+When you open the profile inside a facility, you also need Can Read Tag Config in the facility's Administration department or in one of its departments or teams. A role in a government organization does not count for this.
+
+Without Can Read Tag Config, the profile inside the facility shows **Patient Not Found**, with the message "Cannot view facility tags".
+
+So if your only role is in a government organization, you open the patient's profile from that organization's **Patients** tab, without a facility. That profile has no **Edit** in **General Info**, so you cannot change the patient's details from it.
+
+By default, the Administrator, Volunteer and Pharmacist roles do not hold Can view clinical data about patients. With only these roles, a role in a department of a facility does not let you open a patient.
+
+Your deployment can turn on a setting that widens access to patients. It is off by default. When it is on, any signed-in user can open any patient, and Can Update a Patient's data held in any department or organization is enough to change a patient. Inside a facility, you still need Can Read Tag Config in the facility's Administration department or in one of its departments or teams.
+
+Care's screens have a matching option, which is also off by default. When it is on, **Edit** in **General Info** shows to every user who opens the profile inside a facility.
+
+### Searching for a patient and Patient Home
+
+Searching by a deployment-wide identifier needs no permission: any signed-in user who can open the facility can do it. See [Search for a patient](../../flows/clinical/patient/search-patient.mdx).
+
+To search by an identifier that a facility set up, you need Can Read Patient Identifier Config in that facility's Administration department or in one of its departments or teams.
+
+When you select a patient in the results, Care opens Patient Home, the facility page for that patient. Patient Home needs no patient permission either. Care opens it only when the phone number, the year of birth and the first five characters of the patient's ID in Care match. You must also hold Can Read Tag Config in the facility's Administration department or in one of its departments or teams. See [Open Patient Home](../../flows/clinical/patient/open-patient-home.mdx).
+
+If your deployment keeps the phone number as an identifier, a search by it shows only the name, sex and phone number of each patient. **Verify Patient Identity** then asks for the patient's year of birth before Patient Home opens.
+
+The buttons on Patient Home, such as **Create Encounter** and **Schedule Appointment**, depend on your permissions in the facility, not on the patient.
+
+From Patient Home, you can open the patient's profile, titled **Patient Details**. The profile needs one of the ways to open a patient that are listed above. See [View a patient's profile](../../flows/clinical/patient/view-patient-profile.mdx).
+
+So a user who can open Patient Home cannot always open the profile. For example, a Doctor whose only role is in a department unrelated to the patient's open encounters sees **Patient Not Found** on the profile.
+
+### Who can do what
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Create Patient | Register a patient. You can hold it in a department of any facility, or in any organization. **Add New Patient** at the top of **Search patients** shows only when you hold it in that facility. See [Register a patient](../../flows/clinical/patient/register-patient.mdx). | Staff, Doctor, Nurse, Administrator, Facility Admin, and Admin in a responsibility |
+| Can list patients | Open a patient, when you hold it in a government organization that covers the patient. See the **Patients** tab of a government organization, when you hold it in that organization or one above it. A responsibility also has a **Patients** tab, which shows when you hold it in that responsibility. A role in a department does not count for these. Through a role on the patient, it is also needed to list the patient's encounters on the **Encounters** tab of the profile and on Patient Home. | Staff, Doctor, Nurse, Administrator, Facility Admin, Volunteer, Pharmacist, and Admin in a responsibility. Facility Admin and Pharmacist are roles for facilities: the screens do not offer them in a government organization. |
+| Can view clinical data about patients | Open a patient through a role on the patient. It also shows the **Files** and **Clinical History** tabs of the profile. | Staff, Doctor, Nurse, Facility Admin |
+| Can Read Tag Config | Open a patient inside a facility, on Patient Home and on the profile. Hold it in the facility's Administration department or in one of its departments or teams. A role in a government organization does not count for this. | Staff, Doctor, Nurse, Administrator, Facility Admin, Volunteer, Pharmacist |
+| Can Read Patient Identifier Config | Search for a patient by an identifier that a facility set up. Hold it in that facility's Administration department or in one of its departments or teams. | Staff, Doctor, Nurse, Administrator, Facility Admin, Volunteer, Pharmacist |
+| Can Update a Patient's data | Change the patient's details, identifiers and deceased status, apply and remove tags, and assign and remove users. Hold it through a role on the patient. You must also be able to open the patient. **Edit** in **General Info** shows only when you open the profile inside a facility. See [Update a patient's details](../../flows/clinical/patient/update-patient-details.mdx). | Staff, Doctor, Nurse, Administrator, Facility Admin |
+| Can Apply Tag Config to Resources | Apply or remove a tag, checked for each tag, also at registration. Hold it in the department or organization that manages the tag, or one above it. If no department or organization manages the tag: for a facility tag, hold it in a department of that facility; for a deployment-wide tag, in a department of any facility. On a registered patient, you also need Can Update a Patient's data. | Staff, Doctor, Nurse, Facility Admin, Pharmacist |
+| Can view questionnaire responses on patient | See the **Updates** tab: the questionnaire responses about the patient. Hold it through a role on the patient. | Staff, Doctor, Nurse, Administrator, Facility Admin, Volunteer, Pharmacist |
+| Can submit questionnaire about patients | Use **Add Patient Updates** to fill in a form about the patient outside an encounter. Hold it through a role on the patient. | Staff, Doctor, Nurse, Administrator, Facility Admin, Volunteer |
+| Can list bookings on Object | See the patient's appointments. Through a role on the patient, it shows the **Appointments** tab of the profile. On Patient Home, hold it in the facility's Administration department or in one of its departments or teams to see **Upcoming Appointment**. See [View a patient's appointments and tokens](../../flows/clinical/patient/view-patient-appointments.mdx). | Staff, Doctor, Nurse, Administrator, Facility Admin |
+| Can list token on Object | See the patient's tokens on Patient Home. Hold it in the facility's Administration department or in one of its departments or teams. | Staff, Doctor, Nurse, Administrator, Facility Admin |
+
+So by default, a Staff, Doctor, Nurse or Facility Admin role lets you open the patient inside the facility and change the patient's details. You can hold that role in the facility's Administration department while the patient has an open encounter at that facility. You can also hold it in a department linked to that encounter, or in one above it.
+
+The **Referrals** tab of the profile and the other buttons on Patient Home depend on permissions from other parts of Care. See [View a patient's appointments and tokens](../../flows/clinical/patient/view-patient-appointments.mdx).
+
+Care's screens have no way to delete a patient.
 
 ## Related
 
 - Flow: [Search for a patient](../../flows/clinical/patient/search-patient.mdx)
 - Flow: [Register a patient](../../flows/clinical/patient/register-patient.mdx)
+- Flow: [Open Patient Home](../../flows/clinical/patient/open-patient-home.mdx)
 - Flow: [View a patient's profile](../../flows/clinical/patient/view-patient-profile.mdx)
-- Flow: [Update patient details](../../flows/clinical/patient/update-patient-details.mdx)
-- Flow: [Manage patient identifiers](../../flows/clinical/patient/manage-patient-identifiers.mdx)
-- Flow: [Manage patient tags](../../flows/clinical/patient/manage-patient-tags.mdx)
+- Flow: [Update a patient's details](../../flows/clinical/patient/update-patient-details.mdx)
 - Flow: [Mark a patient as deceased](../../flows/clinical/patient/mark-patient-deceased.mdx)
-- Flow: [Manage patient users](../../flows/clinical/patient/manage-patient-users.mdx)
+- Flow: [Manage a patient's identifiers](../../flows/clinical/patient/manage-patient-identifiers.mdx)
+- Flow: [Manage patient tags](../../flows/clinical/patient/manage-patient-tags.mdx)
+- Flow: [Manage the users assigned to a patient](../../flows/clinical/patient/manage-patient-users.mdx)
 - Flow: [View a patient's appointments and tokens](../../flows/clinical/patient/view-patient-appointments.mdx)
+- Flow: [View an organization's patients](../../flows/clinical/patient/view-organization-patients.mdx)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Department](../facility/department.mdx)
+- Concept: [Facility](../facility/facility.mdx)
+- Concept: [Organisation](../access-governance/organization.mdx)
+- Concept: [Roles and Permission](../access-governance/access-control.mdx)
+- Concept: [Tag](../platform/tagging.mdx)
+- Reference: [Patient](../../references/clinical/patient)

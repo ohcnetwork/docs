@@ -2,15 +2,20 @@
 sidebar_position: 8
 ---
 
-# Manage patient users
+# Manage the users assigned to a patient
 
 ## Overview
 
-This flow describes how to assign a user to a [patient](../../../concepts/clinical/patient) in Care. The assigned user supports the patient in the field, separate from the patient's clinical encounters.
+This flow describes how to assign a user to a [patient](../../../concepts/clinical/patient) on the patient's **Users** tab, and how to remove an assigned user. Assigning a user gives that user access to this patient, with the role that you choose.
+
+<video src="/media/clinical/patient/manage-patient-users.mp4" poster="/media/clinical/patient/manage-patient-users.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/patient/manage-patient-users.vtt" srcLang="en" label="English" default />
+</video>
 
 ## Pre-requisites
 
 - The patient is registered in Care.
+- You can open the patient's profile. See [View a patient's profile](./view-patient-profile.mdx).
 - The user that you want to assign has an account in Care.
 - You have the permissions listed below.
 
@@ -18,45 +23,105 @@ This flow describes how to assign a user to a [patient](../../../concepts/clinic
 
 | Permission | Access |
 | --- | --- |
-| Can Update a Patient's data | Lets you assign a user to the patient and remove an assigned user. |
+| Can Update a Patient's data | Assign and remove users. Care shows **Assign User** and the trash button on each card only if you hold it. You need it through a [role on the patient](../../../concepts/clinical/patient). By default, the Staff, Doctor, Nurse, Administrator and Facility Admin roles hold it. |
+| Can view clinical data about patients | Open the patient's profile and its **Users** tab, and again when you assign or remove a user. You need it through a role on the patient. By default, the Staff, Doctor, Nurse and Facility Admin roles hold it. |
+| Can list patients | Open the patient, in place of Can view clinical data about patients. You need it in a government organization that covers the patient. If you are assigned to the patient yourself, you need neither of these two permissions to open the patient. By default, the Staff, Doctor, Nurse, Volunteer and Administrator roles hold it. The Pharmacist and Facility Admin roles hold it too, but Care does not offer them for a government organization. |
+| Can Read Tag Config | Open the profile inside a facility. Hold it in the facility's Administration department or in one of its departments or teams. A role in a government organization does not count. By default, the Staff, Doctor, Nurse, Pharmacist, Volunteer, Administrator and Facility Admin roles hold it. |
+
+Any signed-in user can search for a user and see the list of roles.
+
+By default, a Staff, Doctor, Nurse or Facility Admin role gives every permission above.
+
+The role can be in a department of the patient's open encounter, or in one above it. A department of the encounter's current location also counts. So does the facility's Administration department, while the patient has an open encounter at the facility.
 
 ## Steps
 
-### 1. Open the patient's profile
+### 1. Open the Users tab
 
-Open the profile of the patient that you want to manage. For the full steps, see [View a patient's profile](./view-patient-profile.mdx).
+Open the patient's profile. See [View a patient's profile](./view-patient-profile.mdx).
 
-### 2. Open the User section
+Select the **Users** tab.
 
-On the patient's profile, go to the **Users** section. This section lists the users that are assigned to the patient.
+The tab lists the users assigned to the patient. Each card shows the user's name, username and **Phone Number**.
 
-### 3. Search for the user that you want to assign
+The card does not show the role that the user has on this patient.
 
-Enter the name or the username of the user in the search box. Care shows the helper text "Search for a user and assign a role to add them to the patient."
+If no user is assigned, the tab shows "No User Assigned to this patient".
 
-### 4. Select the user and assign a role
+![The Users tab of the profile, with No User Assigned to this patient outlined below the Assign User button](/media/clinical/patient/manage-patient-users-1.png)
 
-Select the user from the search results. Assign a role to the user. Care adds the user to the patient with that role.
+### 2. Open the Assign User panel
 
-### 5. Remove an assigned user
+Select **Assign User**.
 
-Note: Do this step only when you want to remove access.
+Care opens the **Assign User to Patient** panel. The panel says "Search for a user and assign a role to add them to the patient."
 
-Select an assigned user in the **Users** section. Remove the access of that user from the patient.
+![The Assign User to Patient panel outlined, with the Search User box and the Assign to Patient button](/media/clinical/patient/manage-patient-users-2.png)
+
+### 3. Select the user
+
+In **Search User**, type the first name, the last name or the username of the user.
+
+The search covers all users in Care, not only the users of this facility.
+
+Select the user in the results. If no user matches, Care shows "No Users Found".
+
+The panel shows the name, **Username** and **Phone Number** of the user.
+
+You cannot assign a user who is already assigned to this patient.
+
+![The details of the selected user outlined in the panel: name, Username and Phone Number](/media/clinical/patient/manage-patient-users-3.png)
+
+### 4. Select the role
+
+In **Select Role**, select the role that the user gets on this patient.
+
+The list offers the roles that are meant for facilities.
+
+The user gets the permissions of this role for this patient only.
+
+![The Select Role dropdown outlined, set to Staff](/media/clinical/patient/manage-patient-users-4.png)
+
+### 5. Assign the user
+
+Select **Assign to Patient**.
+
+**Assign to Patient** stays disabled until you select a user and a role.
+
+Care shows "User added to patient successfully" and closes the panel.
+
+![The Users tab with the card of the assigned user outlined and the message User added to patient successfully](/media/clinical/patient/manage-patient-users-5.png)
+
+### 6. Remove an assigned user
+
+Do this step only when you want to remove a user from the patient.
+
+On the card of the user, select the trash button.
+
+Care opens the **Remove User** dialog. The dialog names the user whose card you selected. Check the name before you continue.
+
+Select **Remove**.
+
+Care shows "User removed successfully".
+
+![The Remove User dialog outlined, naming the user, with the Cancel and Remove buttons](/media/clinical/patient/manage-patient-users-6.png)
 
 ## Expected Outcome
 
-- The **Users** section shows the assigned user together with the role that you gave.
-- The assigned user can support the patient in the field.
-- When you remove a user, the **Users** section no longer shows that user.
+- The **Users** tab lists the user that you assigned.
+- The assigned user has access to this patient. Their role on this patient is the role that you selected.
+- When you remove a user, the **Users** tab no longer lists that user.
+- A removed user can still have a role on the patient in other ways. One example is a role in a department of the patient's open encounter.
 
 ## Related
 
 Concepts:
 
 - [Patient](../../../concepts/clinical/patient)
+- [User](../../../concepts/access-governance/user.mdx)
+- [Roles and Permission](../../../concepts/access-governance/access-control.mdx)
 
 Flows:
 
 - [View a patient's profile](./view-patient-profile.mdx)
-- [Update patient details](./update-patient-details.mdx)
+- [Update a patient's details](./update-patient-details.mdx)

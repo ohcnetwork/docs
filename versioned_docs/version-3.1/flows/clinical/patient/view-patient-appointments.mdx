@@ -6,67 +6,116 @@ sidebar_position: 9
 
 ## Overview
 
-This flow describes how to open Patient Home and view the appointments and queue
-tokens of a [patient](../../../concepts/clinical/patient) in Care.
+This flow describes how to see the appointments and tokens of a [patient](../../../concepts/clinical/patient). The **Appointments** tab of the patient's profile shows appointments at every facility. Patient Home shows the appointments and tokens at the facility that you are in.
+
+<video src="/media/clinical/patient/view-patient-appointments.mp4" poster="/media/clinical/patient/view-patient-appointments.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/patient/view-patient-appointments.vtt" srcLang="en" label="English" default />
+</video>
 
 ## Pre-requisites
 
 - The patient is registered in Care.
-- You verified the patient's identity from search, or you opened the patient's profile.
+- If you use the profile, you can open the patient's profile. See [View a patient's profile](./view-patient-profile.mdx).
+- If you use Patient Home, you opened Patient Home for the patient. See [Open Patient Home](./open-patient-home.mdx).
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| List appointments at the facility | Lets you view the patient's appointments. |
-| List tokens at the facility | Lets you view the patient's queue tokens. |
-| Write appointments | Lets you book an appointment for the patient. |
-| Create encounters | Lets you create an encounter for the patient. |
+| Can list bookings on Object | On the profile: see the **Appointments** tab. You need it through a [role on the patient](../../../concepts/clinical/patient). On Patient Home: see the **Upcoming Appointment** card, and load the appointments of this facility. Hold it in the facility's Administration department or in one of its departments or teams. By default, the Staff, Doctor, Nurse, Administrator and Facility Admin roles hold it. |
+| Can update bookings on Object | On Patient Home: see the **Appointments** tab. Hold it in the facility's Administration department or in one of its departments or teams. By default, the Staff, Doctor, Nurse and Facility Admin roles hold it. The Administrator role does not. |
+| Can list token on Object | On Patient Home: see the tokens. Hold it in the facility's Administration department or in one of its departments or teams. By default, the Staff, Doctor, Nurse, Administrator and Facility Admin roles hold it. |
+| Can view clinical data about patients | Open the patient's profile. You need it through a role on the patient. By default, the Staff, Doctor, Nurse and Facility Admin roles hold it. |
+| Can list patients | Open the patient's profile, in place of Can view clinical data about patients. You need it in a government organization that covers the patient. If you are assigned to the patient on the **Users** tab, you need neither of these two permissions. By default, the Staff, Doctor, Nurse, Volunteer and Administrator roles hold it. The Pharmacist and Facility Admin roles hold it too, but Care does not offer them for a government organization. |
+| Can Read Tag Config | Open the profile inside a facility, and open Patient Home. Hold it in the facility's Administration department or in one of its departments or teams. A role in a government organization does not count. By default, the Staff, Doctor, Nurse, Pharmacist, Volunteer, Administrator and Facility Admin roles hold it. |
+
+By default, a Staff, Doctor, Nurse or Facility Admin role gives the permissions for the Patient Home steps of this flow. The role can be in the facility's Administration department or in one of its departments or teams.
+
+For the profile, the role must also be a role on the patient. A role in the facility's Administration department counts while the patient has an open encounter at the facility.
 
 ## Steps
 
-### 1. Open Patient Home
+### 1. View the appointments on the profile
 
-Verify the patient's identity from search, or open the patient's profile.
-Care shows Patient Home for that patient.
-Patient Home shows the patient's basic information and a set of tabs.
-The Encounters tab opens first.
+Open the patient's profile. See [View a patient's profile](./view-patient-profile.mdx).
 
-### 2. Use the quick actions
+Select the **Appointments** tab.
 
-Patient Home offers quick actions for the patient. Your permissions control which
-quick actions appear.
+The tab lists the appointments of the patient at every facility. Each appointment shows the name of its facility.
 
-- Book an appointment for the patient.
-- Create an encounter for the patient.
-- Generate a queue token for the patient.
+The list has three tabs.
 
-Note: Whether the "Generate Token" quick action appears on Patient Home can also
-depend on your deployment's configuration.
+| Tab | What it shows |
+| --- | --- |
+| **Upcoming** | Appointments from today on with one of these statuses: Proposed, Pending, Booked, Arrived, Checked-In, Waitlist or In-Consultation. |
+| **Past** | Appointments before today with one of the **Upcoming** statuses, or with the status Fulfilled or No-show. |
+| **Cancelled** | Appointments on any date that are Cancelled, Entered in Error, Rescheduled or No-show. A No-show appointment shows in both **Past** and **Cancelled**. |
 
-### 3. View the patient's appointments
+On a wide screen, each tab is a table with **Date**, **Time**, **Resource** and **Status**. On a phone, each appointment is a card with **See Details**.
 
-Open the appointments view on Patient Home.
-Care shows the patient's existing appointments.
+To open an appointment, select it. Care opens the appointment at its own facility.
 
-### 4. View the patient's tokens
+If a tab has no appointments, it shows "No appointments found".
 
-Token view on Patient's Home displays all the existing tokens for the patients 
+![The Appointments tab of the profile, with Upcoming selected and the table of appointments outlined](/media/clinical/patient/view-patient-appointments-1.png)
+
+### 2. View today's appointment on Patient Home
+
+Open Patient Home for the patient. See [Open Patient Home](./open-patient-home.mdx).
+
+The **Upcoming Appointment** card shows the patient's appointment today at this facility. It shows only an appointment with one of the **Upcoming** statuses.
+
+The card shows the resource, the time and date, the schedule name and the status.
+
+To open the appointment, select the card.
+
+If the patient has more than one appointment today, the card shows "View all appointments" with the number. Select it to open the **Appointments** tab of Patient Home.
+
+![Patient Home with the Upcoming Appointment card outlined, showing the doctor, the time and date, the schedule and the Booked status](/media/clinical/patient/view-patient-appointments-2.png)
+
+### 3. View the appointments at this facility
+
+On Patient Home, select the **Appointments** tab.
+
+The tab lists the appointments of the patient at this facility only.
+
+It has the same **Upcoming**, **Past** and **Cancelled** tabs as the profile.
+
+Note: Care shows this tab only if you hold Can update bookings on Object at this facility. By default, the Administrator role does not hold it.
+
+![The Appointments tab of Patient Home, with the table of appointments at this facility outlined](/media/clinical/patient/view-patient-appointments-3.png)
+
+### 4. View the tokens
+
+On a large screen, the tokens show in a panel at the side of Patient Home. On a smaller screen, select the **Tokens** tab.
+
+The list has the heading **Tokens** and the number of tokens.
+
+The list shows up to 50 tokens of the patient at this facility, for one date. By default, the date is today.
+
+To see the details of a token, select it. The token expands to show its token card.
+
+If the patient has no tokens for that date, Care shows "No tokens available".
+
+![The Tokens panel outlined, with one token expanded to show its token card](/media/clinical/patient/view-patient-appointments-4.png)
 
 ## Expected Outcome
 
-- You see the patient's basic information on Patient Home.
-- You see the patient's existing appointments, for all facilities or for one facility.
-- You see the patient's queue tokens, for all facilities or for one facility.
+- On the profile, you see the appointments of the patient at every facility.
+- On Patient Home, you see the appointments and tokens of the patient at this facility.
 
 ## Related
 
 Concepts:
 
 - [Patient](../../../concepts/clinical/patient)
+- [Appointment Booking](../../../concepts/scheduling/booking.mdx)
+- [Token](../../../concepts/scheduling/token.mdx)
 
 Flows:
 
-- [Search for a patient](./search-patient.mdx)
+- [Open Patient Home](./open-patient-home.mdx)
 - [View a patient's profile](./view-patient-profile.mdx)
+- [Search for a patient](./search-patient.mdx)
+- [Create a token](../../scheduling/token/create-token.mdx)

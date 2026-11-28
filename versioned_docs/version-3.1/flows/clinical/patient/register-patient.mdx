@@ -6,85 +6,160 @@ sidebar_position: 2
 
 ## Overview
 
-This flow describes how to register a new [patient](../../../concepts/clinical/patient) in Care. Use it when a person comes to your facility and Care holds no record for that person.
+This flow describes how to register a new [patient](../../../concepts/clinical/patient) in Care, from inside a facility. When you save the form, Care opens Patient Home for the new patient.
+
+Search for the patient first, so that the same person is not registered twice. See [Search for a patient](./search-patient.mdx).
+
+<video src="/media/clinical/patient/register-patient.mp4" poster="/media/clinical/patient/register-patient.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/patient/register-patient.vtt" srcLang="en" label="English" default />
+</video>
 
 ## Pre-requisites
 
-- You are signed in to Care.
-- You searched for the patient first, and Care found no existing record. See [Search for a patient](./search-patient.mdx).
-- You have the patient's personal details, contact number, and identity documents.
+- You sign in to Care with a staff account.
+- You have a role in the facility: in its Administration department, in one of its departments or teams, or in a government organization that contains the facility.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can Create Patient | Lets you register a new patient in Care. |
+| Can Create Patient | Register the patient. Care accepts this permission from a role in any facility, in a government organization or in a responsibility. To see **Add New Patient** at the top of **Search patients**, you need it in the facility's Administration department or in one of its departments or teams. By default, the Staff, Doctor, Nurse, Administrator and Facility Admin roles hold it, and so does the Admin role of a responsibility. |
+| Can Apply Tag Config to Resources | Apply tags in **Patient Tags**. You need it for each tag that you choose, or Care does not register the patient. For a tag that no department or organization manages, a role in any facility is enough. For a managed tag, you need it in the managing department or organization, or in one above it. By default, the Facility Admin, Staff, Doctor, Nurse and Pharmacist roles hold it. |
+| Can Read Tag Config | Open Patient Home after you save. You need it in the facility's Administration department or in one of its departments or teams. A role in a government organization does not count. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can update bookings on Object, Can list encounters or Can Create encounter | See **Search patients** in the facility sidebar, as described in [Search for a patient](./search-patient.mdx). By default, the Staff, Doctor, Nurse and Facility Admin roles hold at least one of them. |
 
 ## Steps
 
 ### 1. Open the registration form
 
-Open the Patient Registration page.
+On the **Search patients** page, select **Add New Patient**.
 
-You can also open the form from the search results. If the search finds no record, Care offers to register a new patient.
+If you have Can Create Patient in this facility, the button is at the top of the page. If your search finds no patient, the button also shows below the message.
 
-### 2. Enter the personal details
+If you searched by phone number, Care fills that phone number in the form. **Search patients** offers a phone search only if your deployment keeps the phone number as an identifier.
 
-Complete the fields in the table below.
+Care opens **Register New Patient** with the text "Please provide the required details to create a new patient record."
 
-| Component | What it captures |
+The pharmacy dispense sheet can also open this form.
+
+Note: To leave the form, select **Back**. If you changed something, Care asks "You have unsaved changes. Are you sure you want to leave?"
+
+![The Search patients page with the Add New Patient button outlined at the top right](/media/clinical/patient/register-patient-1.png)
+
+### 2. Enter the patient basics
+
+Complete the fields in **Patient Basics**.
+
+| Components | What it captures |
 | --- | --- |
-| Name | The full name of the patient. This field is required. |
-| Phone Number | The primary contact number of the patient. This field is required. Care validates the format. |
-| Emergency Phone Number | The contact number for emergencies. This field is optional. |
-| Same as phone number | Copies the phone number into the emergency number. Care turns this toggle on by default. |
-| Gender | The gender of the patient. This field is required. Select Male, Female, Non-binary, or Transgender. |
-| Date of birth or Age | The age details of the patient. This field is required. |
-| Select Blood Group | The blood group of the patient. This field is optional. |
-| Patient Tags | Labels that group the patient. This field is optional. |
-| Address | The current address of the patient. |
-| Permanent Address | The permanent address of the patient. |
-| Same as address | Copies the current address into the permanent address. Care turns this toggle on by default. |
-| PIN Code | The postal code of the address. This field is optional. |
-| Geo Organization | The government administrative area of the patient. This field is required. |
+| **Name** | The patient's full name. This field is required. By default, use 75 characters or fewer. |
+| **Phone Number** | The patient's phone number. This field is required. If the number is not valid, Care shows "Entered phone number is not valid". |
+| **Use a different emergency contact number** | Tick this box if the patient has a different number for emergencies. Care shows **Emergency Phone Number**, which is required and starts with the phone number above. Replace it with the emergency number. The box is unticked when the form opens. |
+| **Sex** | Select **Male**, **Female**, **Transgender** or **Non-binary**. This field is required. |
+| **Date of Birth/Age** | Select the **Date** tab and enter the date of birth. Or select the **Age** tab and enter the age in years. This field is required. |
+| **Blood Group** | The patient's blood group: Unknown, A+, A-, B+, B-, AB+, AB-, O+ or O-. This field is optional. |
+| Required identifiers | One field for each required identifier that your deployment sets up for every facility. The field has the identifier's name and description. |
+| **Patient Tags** | Tags for the patient. This field is optional. It offers only deployment-wide tags. |
 
-Use the toggle to choose between Date of birth and Age.
+If you leave **Use a different emergency contact number** unticked, Care saves the phone number as the emergency phone number.
 
-If you enter the date of birth, do not enter a future date.
+If you tick the box and leave **Emergency Phone Number** empty, Care shows an error when you save. The form stays open.
 
-If you enter the age, Care calculates the year of birth.
+If you enter a date of birth, do not use a future date. Otherwise, Care shows "Date cannot be in the future".
 
-For Geo Organization, select each level in order.
+If you enter an age, use a number from 1 to 120. Care shows the year of birth that it calculates.
 
-Note: Deployment can configure fields which are mandatory and non mandatory. Deceased status should be marked only for patients who are brought dead.
+Care saves a year of birth from the age, not the age itself. It does not save a date of birth.
 
-### 4. Enter the patient identifiers
+If you leave a required identifier empty, Care shows "This field is required".
 
-Enter the identifiers that your facility configures, for example a national identity number.
+![The Patient Basics section of the Register New Patient form outlined, with the name, phone number, sex, date of birth and blood group filled in](/media/clinical/patient/register-patient-2.png)
 
-Identifiers that are configured as auto generated gets generated once patient registration is completed 
+### 3. Enter the additional details
 
-For more details, see [Manage patient identifiers](./manage-patient-identifiers.mdx).
+Complete the fields in **Additional Details**.
 
-### 5. Save the patient
+| Components | What it captures |
+| --- | --- |
+| **Address** | The patient's current address. This field is required. |
+| **Permanent address is different from current address** | Tick this box if the patient's permanent address is different. Then enter it in **Permanent Address**. If you leave the box unticked, Care saves the address as the permanent address. |
+| **PIN Code** | The PIN code of the address. This field is optional. If you enter a PIN code, use 6 digits. Otherwise, Care shows "Pincode must be 6 digits". |
+| Area dropdowns, starting with **State** | The government area that the patient belongs to. Select one level at a time. |
+| Optional identifiers | One field for each optional identifier that your deployment sets up for every facility. |
+| **Deceased Status** | Tick **Mark as deceased** only if the patient died before registration. Then enter the **Date and Time of Death**. See [Mark a patient as deceased](./mark-patient-deceased.mdx). |
+| Auto-generated identifiers | Fields that show "Auto-generated on Save". You cannot type in them. Care fills them when you save. |
+| Deployment fields | If your deployment adds its own patient fields, they show at the end of this section. |
 
-Save the form.
+Note: If your deployment allows a shorter registration, the section heading adds "(Optional)" and the section starts closed. Then **Address** is not required.
+
+The first area dropdown is **State** by default. Each next dropdown has the name of its level, such as **District** or **Ward**.
+
+When the area that you select has smaller areas, Care adds a dropdown for the next level.
+
+Select an area at the last level. Otherwise, Care shows an error message.
+
+Your deployment can require fewer levels. Then select at least the number of levels that the message shows.
+
+Your deployment can also fill in a default area when the form opens.
+
+![The Additional Details section with an address and a PIN code entered, and the State and District dropdowns outlined](/media/clinical/patient/register-patient-3.png)
+
+### 4. Review a possible duplicate
+
+After you enter a valid phone number, Care looks for patients with the same phone number.
+
+If Care finds any, it opens **Patient Records Found** with the text "It appears that there are patient records that contain the same phone number as the one you just entered."
+
+The dialog lists the patients with that phone number. Select one option.
+
+| Option | When to use it |
+| --- | --- |
+| **Admit the patient record to your facility by adding the year of birth** | The patient is on the list. Care opens the **Search patients** page with this phone number. Open the patient from there. |
+| **I confirm that the patient I want to create is not on the list.** | The patient is not on the list. Care closes the dialog, and you continue the registration. Care does not show the dialog again for this form. |
+
+Select **Continue**. You can select it only after you select an option.
+
+The dialog does not close when you press Escape or select outside it.
+
+The dialog also has a note for when you are not sure of the year of birth. It asks you to contact your district care coordinator, the shifting facility or the patient.
+
+### 5. Register the patient
+
+Select **Register Patient**, or press `Shift+Enter`.
+
+You can select **Register Patient** only after you change something on the form.
+
+If you leave **Name**, **Sex**, **Date of Birth/Age** or **Address** empty, Care shows "This field is required".
+
+If you do not have Can Create Patient, Care shows "Cannot Create Patient" and does not register the patient.
+
+If you chose a tag that you may not apply, Care does not register the patient.
+
+![The end of the registration form with the Register Patient button outlined, below the Deceased Status box](/media/clinical/patient/register-patient-4.png)
+
+![Patient Home for the new patient, with the patient card outlined and the message Patient Registered Successfully](/media/clinical/patient/register-patient-5.png)
 
 ## Expected Outcome
 
-- Care creates the patient record with the details you entered.
-- Care opens the profile of the new patient. See [View a patient's profile](./view-patient-profile.mdx).
-- You can now search for the patient by name or phone number.
+- Care shows "Patient Registered Successfully".
+- Care opens Patient Home for the new patient, also when you start from the pharmacy dispense sheet. See [Open Patient Home](./open-patient-home.mdx).
+- If you do not have Can Read Tag Config in the facility, Patient Home shows **Verification Failed**. The patient is still registered.
+- If your deployment turns on scheduling after registration, Patient Home opens **Book Appointment** for the patient. This setting is off by default.
+- If you started from the dispense sheet, creating an encounter from Patient Home can open the dispense page. Care does this if you opened a pharmacy service's prescriptions at this facility before.
+- Care fills the values of the auto-generated identifiers.
 
 ## Related
 
 Concepts:
 
 - [Patient](../../../concepts/clinical/patient)
+- [Tag](../../../concepts/platform/tagging.mdx)
 
 Flows:
 
 - [Search for a patient](./search-patient.mdx)
-- [View a patient's profile](./view-patient-profile.mdx)
-- [Manage patient identifiers](./manage-patient-identifiers.mdx)
+- [Open Patient Home](./open-patient-home.mdx)
+- [Manage a patient's identifiers](./manage-patient-identifiers.mdx)
+- [Manage patient tags](./manage-patient-tags.mdx)
+- [Mark a patient as deceased](./mark-patient-deceased.mdx)

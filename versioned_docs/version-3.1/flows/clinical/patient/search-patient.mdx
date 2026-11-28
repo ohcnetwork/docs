@@ -6,81 +6,164 @@ sidebar_position: 1
 
 ## Overview
 
-This flow describes how to search for an existing [patient](../../../concepts/clinical/patient) in Care. Search for the patient first, before you register a new patient. This prevents duplicate patient records.
+This flow describes how to find a [patient](../../../concepts/clinical/patient) who is already registered in Care, from inside a facility. You search by one of the patient's identifiers, or by the patient's encounters at the facility. When you select the patient, Care opens Patient Home.
+
+Search before you register a patient, so that the same person is not registered twice.
+
+<video src="/media/clinical/patient/search-patient.mp4" poster="/media/clinical/patient/search-patient.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/patient/search-patient.vtt" srcLang="en" label="English" default />
+</video>
 
 ## Pre-requisites
 
-- You are a member of the facility where you search for the patient.
+- You sign in to Care with a staff account.
+- You have a role in the facility: in its Administration department, in one of its departments or teams, or in a government organization that contains the facility.
+- You know one of the patient's identifiers. Or, if the patient has an encounter at this facility, you know the patient's name or the encounter's external ID.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| Can list patients | Lets you search for patients and see the search results. |
+| Can Read Patient Identifier Config | Search by an identifier set up for your facility, such as **Patient Name**, which Care keeps by default. You need it in the facility's Administration department or in one of its departments or teams. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can list encounters | Search on the **Encounters** tab. Care finds only encounters of a department where you hold this permission, or of a department below it. A department of the encounter's current location also counts. A role in the facility's Administration department finds every encounter of the facility. By default, the Doctor, Nurse and Facility Admin roles hold it. |
+| Can Read Tag Config | Open Patient Home from a result. You need it in the facility's Administration department or in one of its departments or teams. A role in a government organization does not count. By default, the Facility Admin, Administrator, Staff, Doctor, Nurse, Volunteer and Pharmacist roles hold it. |
+| Can update bookings on Object, Can list encounters or Can Create encounter | See **Search patients** in the facility sidebar. You need one of the three in the facility's Administration department or in one of its departments or teams. By default, the Staff, Doctor, Nurse and Facility Admin roles hold at least one of them. The Administrator, Volunteer and Pharmacist roles do not. |
+| Can Create Patient | See **Add New Patient** at the top of the page. You need it in the facility's Administration department or in one of its departments or teams. By default, the Staff, Doctor, Nurse, Administrator and Facility Admin roles hold it. |
+
+Note: Care checks no permission for a search by a deployment-wide identifier. Any signed-in user with the role in the facility from the pre-requisites can run it.
+
+If your deployment keeps the phone number as an identifier, a search by phone number is such a search. This setting is off by default.
 
 ## Steps
 
-### 1. Open the search page
+### 1. Open Search patients
 
-1. Open the facility.
-2. Select **Patients**.
-3. Select **Search patients**.
+Open the facility.
 
-The page shows the helper text "Search for existing patients using their phone number or create a new patient record". If you can only search for patients, the page shows the helper text "Search for existing patients using their phone number".
+In the facility sidebar, under **Patient Management**, select **Search patients**.
 
-### 2. Enter the search details
+Note: Without one of the sidebar permissions listed above, **Search patients** is not in the sidebar.
 
-Search by one of these methods:
+Care shows the **Search patients** page with the text "Search for existing patients using their phone number or create a new patient record".
 
-| Search method | What it captures |
-| --- | --- |
-| Identifier | The patient's phone number, or another identifier type that your deployment configures. |
-| Encounter details | The patient name, or another identifier that belongs to an encounter. |
+If you do not have Can Create Patient in this facility, the text is "Search for existing patients using their phone number".
 
-Note: Which identifier types you can search on depends on your deployment's configuration.
+![The facility sidebar with Search patients outlined, under Patient Management](/media/clinical/patient/search-patient-1.png)
 
-### 3. Read the results
+### 2. Search by an identifier
 
-The results show in a table with these columns:
+On the **Patient Identifiers** tab, select an identifier with the buttons below the search box. **Patient Identifiers** is the first tab.
+
+Each button shows the name of one identifier. Care offers the deployment-wide identifiers and the identifiers set up for your facility.
+
+If your deployment keeps the phone number as an identifier, **Patient Phone Number** is the first button.
+
+By default, Care fills the **Patient Name** identifier when an encounter for the patient is saved at your facility.
+
+If the name changes, a **Patient Name** search finds the new name only after the next encounter at your facility.
+
+Type the value in the search box. The box shows "Search by" and the name of the identifier you selected.
+
+If you search by phone number, Care searches when the number is a valid phone number.
+
+For other identifiers, Care searches as you type.
+
+If the identifier does not allow partial search, the value must match exactly.
+
+By default, **Patient Name** allows partial search. Each word you type must be in the value, and upper and lower case do not matter.
+
+Care shows up to 20 patients.
+
+![The Search patients page with a phone number typed in the outlined search box, Patient Phone Number selected below it, and one matching patient](/media/clinical/patient/search-patient-2.png)
+
+### 3. Search by an encounter instead
+
+To find the patient through an encounter at this facility, select the **Encounters** tab.
+
+Select **Patient Name** or **External ID**.
+
+Type the text. Care finds the encounters whose patient name or external ID contains the text. Upper and lower case do not matter.
+
+Care finds only the encounters that you can list. See the Permissions section.
+
+If the encounter has an external ID, the result shows it in brackets after the patient's name.
+
+### 4. Read the results
+
+The results of an identifier search show in a table with these columns.
 
 | Column | What it shows |
 | --- | --- |
-| Name | The patient's name. |
-| Phone number | The patient's phone number. |
-| Gender | The patient's gender. |
-| Actions | The actions that you can do on the result. |
+| **Patient Name** | The patient's name. For a full result, Care also shows the patient's address below the name. |
+| **Phone Number** | The patient's phone number. |
+| **Gender** | The patient's sex. |
+| **Actions** | A **Schedule Appointment** button and a **More Actions** menu. The menu has **Schedule Appointment**, **Create Encounter** and **Patient Home**. |
 
-Care shows limited information for a partial match. This protects the patient's privacy.
+Some identifiers ask for the year of birth before Care opens the patient. A search by **Patient Phone Number** always does.
 
-### 4. Verify 
+For these identifiers, the results do not show the address.
 
-If date of birth validation is added to verify patient's identity. The page shows the message "Please enter the patient's year of birth to verify their identity."
+![The results table outlined, with the columns Patient Name, Phone Number, Gender and Actions, and one patient row](/media/clinical/patient/search-patient-3.png)
 
-1. Enter the patient's year of birth.
-2.Verify
+### 5. Open the patient
 
-If no additiona verification is configured, the select the patient to access Patients Home page 
+Select the patient's row.
 
-### 5. Continue when there is no result
+If you searched on the **Encounters** tab, Care opens Patient Home for the encounter's patient.
 
-If Care finds no patient, the page shows a "no patient found" message. If you have the permission to register patients, the page offers an option to register a new patient. See [Register a patient](./register-patient.mdx).
+If the identifier does not ask for the year of birth, Care opens Patient Home for the patient.
 
-Note: If you register a patient with a phone number that Care already holds, Care shows the message "Patient Records Found" with the text "It appears that there are patient records that contain the same phone number as the one you just entered." Read this warning before you create a duplicate record.
+If the identifier asks for the year of birth, Care opens **Verify Patient Identity**.
+
+The dialog shows "Please enter the patient's year of birth to verify their identity".
+
+Enter the patient's year of birth in "Year of Birth (YYYY)". Use four digits.
+
+Select **Verify**, or press Enter.
+
+If the year does not have four digits, Care shows "Please enter a valid year of birth (YYYY)".
+
+If the year is correct, Care opens Patient Home for the patient.
+
+If the year is wrong, Patient Home shows **Verification Failed** and "Please enter the correct birth year to verify the patient details."
+
+Select **Go Back** to return to the previous page, **Search patients**.
+
+To close the dialog without opening the patient, select **Cancel**.
+
+![The Verify Patient Identity dialog outlined, with a year of birth entered and the Cancel and Verify buttons](/media/clinical/patient/search-patient-4.png)
+
+![Patient Home for the patient, with the patient card outlined, showing the name, age and sex](/media/clinical/patient/search-patient-5.png)
+
+### 6. Continue when Care finds no patient
+
+If an identifier search finds nothing, Care shows **No Patient Records Found**. It asks if you want to register a new patient.
+
+To register the patient, select **Add New Patient** below the message. See [Register a patient](./register-patient.mdx).
+
+Care shows this button to every user. If you do not have Can Create Patient, Care does not save the new patient, and shows "Cannot Create Patient".
+
+If you searched by phone number, Care fills that phone number in the registration form.
+
+On this page, `Shift+Enter` selects **Add New Patient**.
+
+If an encounter search finds nothing, Care shows "Try adjusting your filters or create a new encounter".
 
 ## Expected Outcome
 
-- Care shows the patients that match your search.
-- You open the patient's record from the results. See [View a patient's profile](./view-patient-profile.mdx).
-- If Care finds no patient, you can register a new patient.
+- Care opens Patient Home for the patient that you selected. See [Open Patient Home](./open-patient-home.mdx).
+- If Care finds no patient, you can register the patient from the search page.
 
 ## Related
 
 Concepts:
 
 - [Patient](../../../concepts/clinical/patient)
+- [Encounter](../../../concepts/clinical/encounter.mdx)
 
 Flows:
 
 - [Register a patient](./register-patient.mdx)
+- [Open Patient Home](./open-patient-home.mdx)
 - [View a patient's profile](./view-patient-profile.mdx)
