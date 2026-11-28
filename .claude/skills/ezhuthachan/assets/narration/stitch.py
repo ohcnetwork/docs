@@ -39,6 +39,7 @@ CHECK = os.path.join(HERE, "check")
 LEAD = 0.25   # silence before the voice, from the start of the caption
 GAP = 0.5     # silence after the voice, before the next caption may start
 MAX_CUE = 84  # characters in one subtitle: two lines of about 42
+GAIN_DB = -1.0  # on the mixed voice: some clips come at -0.9 dB and AAC lifts them past check.py's -1 dB peak
 PLAN = json.load(open(os.path.join(HERE, "plan.json"), encoding="utf-8"))
 FRAME = 1 / 30
 
@@ -220,7 +221,7 @@ def encode(slug, plan, vlen, shift):
     for i, p in enumerate(plan):
         parts.append(f"[{i + 1}:a]adelay={int(round(p['voice_at'] * 1000))}:all=1[a{i}]")
     parts.append("".join(f"[a{i}]" for i in range(n))
-                 + f"amix=inputs={n}:normalize=0:dropout_transition=0,apad,atrim=end={total:.3f}[a]")
+                 + f"amix=inputs={n}:normalize=0:dropout_transition=0,volume={GAIN_DB}dB,apad,atrim=end={total:.3f}[a]")
     os.makedirs(OUT, exist_ok=True)
     mp4 = os.path.join(OUT, f"{slug}.mp4")
     run(args + ["-filter_complex", ";".join(parts), "-map", "[v]", "-map", "[a]",
