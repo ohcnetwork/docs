@@ -1,0 +1,127 @@
+---
+sidebar_position: 4
+---
+
+# Record audio and upload it
+
+## Overview
+
+<video src="/media/clinical/files/record-audio.mp4" poster="/media/clinical/files/record-audio.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/files/record-audio.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to record audio with the microphone of your device and upload the recording as a [file](../../../concepts/clinical/files.mdx) to a patient or to an encounter in Care.
+
+After you keep the recording, Care opens the same upload dialog as in [Upload a file](./upload-a-file.mdx).
+
+## Pre-requisites
+
+- Your device has a microphone, and you can let your browser use it.
+- The patient is registered in Care, and you can open the patient's page or the encounter.
+- If you upload to an encounter, you opened the encounter from a facility. Outside a facility, for example from an organization, the encounter's **Files** tab is read-only.
+- If you upload to an encounter, you look at the encounter that you opened, not another encounter of the patient.
+- If you upload to an encounter, its status is not Completed, Cancelled, Entered in error or Discontinued.
+- If you upload to an encounter, the encounter workspace layout does not hide the **Files** tab.
+- You have the permissions listed below.
+
+## Permissions
+
+| Permission | Access |
+| --- | --- |
+| Can Update a Patient's data | Upload a recording to the patient. Care shows **Add Files** on the patient's **Files** tab only with this permission. Hold it through [a role on the patient](../../../concepts/clinical/files.mdx#permissions). By default, Staff, Doctor, Nurse, Administrator, Admin and Facility Admin hold it. |
+| Update Encounter related clinical data | Upload a recording to an encounter. Hold it in a [department](../../../concepts/facility/department.mdx) of the encounter or of its current location. Nobody can upload files to a closed encounter. By default, Admin, Doctor, Nurse and Facility Admin hold it. |
+| Update Encounter non clinical | Care shows **Add Files** on the encounter's **Files** tab only with this permission. Hold it through a role on the encounter. By default, Admin, Doctor, Nurse and Facility Admin hold it. |
+| Can view clinical data about patients | Shows the patient's **Files** tab and lists the patient files. Also shows the encounter's **Files** tab. Hold it through [a role on the patient](../../../concepts/clinical/files.mdx#permissions). By default, Staff, Doctor, Nurse, Admin and Facility Admin hold it. |
+| Can Read encounter related clinical data | Shows the encounter's **Files** tab and lists the encounter files. Hold it in a department of the encounter or of its current location. By default, Admin, Doctor, Nurse and Facility Admin hold it. |
+
+Note: By default, the Administrator role holds "Can Update a Patient's data" but not "Can view clinical data about patients". So a user who has only the Administrator role cannot open the patient's **Files** tab, and cannot upload files there.
+
+## Steps
+
+### 1. Open the Files tab
+
+To upload to the patient, open the patient's page. Select the **Files** tab.
+
+To upload to an encounter, open the encounter. Select the **Files** tab, or press `g` and then `f`.
+
+Care opens the **Files** sub-tab.
+
+![The Files tab of the Patient Details page, with Add Files](/media/clinical/files/record-audio-1.png)
+
+### 2. Open the recorder
+
+Select **Add Files**. Select **Record Audio**.
+
+Care opens the recorder. It shows **Record Audio**, **Click the button to start recording**, and a microphone button.
+
+![Record Audio in the Add Files menu](/media/clinical/files/record-audio-2.png)
+
+### 3. Start the recording
+
+Select the microphone button. Care starts to record only when you select this button.
+
+If the browser asks for access to the microphone, allow it.
+
+If access is refused, Care shows **Please grant microphone permission to record audio.**
+
+The recorder then shows **Please allow microphone permission in site settings**. Allow the microphone in the site settings of your browser.
+
+For help, select **Click here to know how to allow**.
+
+![The Record Audio screen with Click the button to start recording and the microphone button](/media/clinical/files/record-audio-3.png)
+
+### 4. Stop the recording
+
+Speak into the microphone. The recorder shows **Recording** and the time that has passed.
+
+To stop, select the button that shows the time. Screen readers name this button **Stop Recording**.
+
+![The Recording screen with the time on the button that stops the recording](/media/clinical/files/record-audio-4.png)
+
+### 5. Listen to the recording
+
+The recorder shows **Audio Recorded** and plays the recording.
+
+Use the player to listen to the recording again.
+
+![The Audio Recorded screen with the audio player](/media/clinical/files/record-audio-5.png)
+
+### 6. Keep the recording or record again
+
+To keep the recording, select **Done**. Care opens the upload dialog with the recording.
+
+If you want a new recording, select **Start Again**.
+
+![The Done and Start Again buttons under the audio player](/media/clinical/files/record-audio-6.png)
+
+### 7. Name and upload the recording
+
+Enter a name in the **File Name** field. The field is required, and it starts empty.
+
+Select **Upload**.
+
+For the other options in the dialog and for the messages that Care can show, see [Upload a file](./upload-a-file.mdx).
+
+![The Upload File dialog with the recording and Voice note in the File Name field](/media/clinical/files/record-audio-7.png)
+
+![The message File Uploaded Successfully, and Voice note.mp3 at the top of the Files list with a Play button](/media/clinical/files/record-audio-8.png)
+
+## Expected Outcome
+
+- Care shows **File Uploaded Successfully**.
+- The recording shows in the **Files** list of the patient or of the encounter, with the name that you entered.
+- The recording is at the top of the list, unless a search or a filter hides it.
+- In the list, the **File Type** of the recording is Audio, and its row has a **Play** button. To listen, see [View or preview a file](./view-or-preview-a-file.mdx).
+
+## Related
+
+Concepts:
+
+- [Files](../../../concepts/clinical/files.mdx)
+
+Flows:
+
+- [Upload a file](./upload-a-file.mdx)
+- [Take a photo and upload it](./take-a-photo.mdx)
+- [Find a file](./find-a-file.mdx)
+- [View or preview a file](./view-or-preview-a-file.mdx)

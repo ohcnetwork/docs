@@ -1,44 +1,76 @@
 ---
-sidebar_position: 5
+sidebar_position: 6
 ---
 
 # Download a file
 
 ## Overview
 
-This flow describes how to download a [file](../../../concepts/clinical/files.mdx) from Care to your device.
+<video src="/media/clinical/files/download-a-file.mp4" poster="/media/clinical/files/download-a-file.poster.png" controls width="720">
+  <track kind="captions" src="/media/clinical/files/download-a-file.vtt" srcLang="en" label="English" default />
+</video>
+
+This flow describes how to save a copy of a [file](../../../concepts/clinical/files.mdx) from Care on your device. You can download the file from the list in the **Files** tab, or from the **File Preview**.
 
 ## Pre-requisites
 
-- The file is uploaded to the patient or the encounter that you work with.
+- The file is uploaded to the patient or to the encounter that you work with.
+- The file is not archived. Care does not offer **Download** for an archived file.
 - You have the permissions listed below.
 
 ## Permissions
 
 | Permission | Access |
 | --- | --- |
-| The permission to view clinical data for the patient or the encounter that the file belongs to | Lets you view and download the file. |
+| Can view clinical data about patients | Download the patient files. With Can Read encounter, also download the encounter files. Hold it through [a role on the patient](../../../concepts/clinical/files.mdx#permissions). By default, Staff, Doctor, Nurse, Admin and Facility Admin hold it. |
+| Can Read encounter related clinical data | Download the encounter files, also after the encounter is closed. Hold it in a [department](../../../concepts/facility/department.mdx) of the encounter or of its current location. By default, Admin, Doctor, Nurse and Facility Admin hold it. |
+| Can Read encounter | Lists the encounter files, together with Can view clinical data about patients. Hold it through a role on the encounter. By default, Admin, Doctor, Nurse and Facility Admin hold it. |
 
-Note: Download is available to every user who can view the file. Unlike **Rename** and **Archive**, download does not need write access to the patient or the encounter.
+To download a file from the list, you must first see it in the list. For the rules of the list, see [Find a file](./find-a-file.mdx).
+
+Note: Download needs only read access. For an active file, Care shows **Download** to every user who can see the file in the list. This includes a user who cannot upload, rename or archive files.
 
 ## Steps
 
-### 1. Open the file action menu
+### 1. Find the file
 
-Find the file in the **Files** tab. Click the **...** menu for the file.
+Open the **Files** tab of the patient or of the encounter.
 
-### 2. Select Download
+Find the file in the list. For the full steps, see [Find a file](./find-a-file.mdx).
 
-Select **Download**. Care fetches the file. Care saves the file to your device.
+![The row of Blood test report.pdf in the Files list](/media/clinical/files/download-a-file-1.png)
 
-### 3. Follow the progress messages
+### 2. Open the actions menu
 
-Care shows a message when the download starts. Care shows a second message when the download completes. If the download does not succeed, Care shows a failure message.
+Select **More Actions** in the row of the file. The button shows three vertical dots.
+
+![The More Actions menu of a file with Download, Rename and Archive](/media/clinical/files/download-a-file-2.png)
+
+### 3. Select Download
+
+Select **Download**.
+
+Care shows **Downloading file...** when the download starts.
+
+Care saves the file on your device, and shows **File download completed**.
+
+Care names the download after the file, without its extension, and the browser can add the extension. For example, Chromium on macOS saved "Blood test report" as "Blood test report.pdf".
+
+If the saved file has no extension, add the extension that the **Files** list shows after its name, such as .pdf.
+
+If the download fails, Care shows **Failed to download file**.
+
+![The messages Downloading file... and File download completed](/media/clinical/files/download-a-file-3.png)
+
+Note: Care cannot preview some types of file, such as .doc, .xls and .xlsx files. These files have no **View** button, so you download them from **More Actions**.
+
+Note: You can also download a file that is open in the **File Preview**. Select **Download** in the preview. This download keeps the extension of the file. To open the preview, see [View or preview a file](./view-or-preview-a-file.mdx).
 
 ## Expected Outcome
 
-- Care saves the file to your device.
-- Care shows a download completed message.
+- Care saves a copy of the file on your device.
+- After a download from the list, Care shows **File download completed**.
+- A file that you download from the **File Preview** keeps its extension.
 
 ## Related
 
@@ -48,7 +80,8 @@ Concepts:
 
 Flows:
 
-- [Upload a file](./upload-a-file.mdx)
+- [Find a file](./find-a-file.mdx)
 - [View or preview a file](./view-or-preview-a-file.mdx)
+- [Upload a file](./upload-a-file.mdx)
 - [Rename a file](./rename-a-file.mdx)
 - [Archive a file](./archive-a-file.mdx)

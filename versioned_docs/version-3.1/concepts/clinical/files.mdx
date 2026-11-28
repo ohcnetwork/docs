@@ -2,76 +2,191 @@
 sidebar_position: 9
 ---
 
-# Clinical - Files
+# Files
 
 ## Definition
 
-A **file** in Care is an attachment that you upload and link to another record. You can
-attach a file to a Patient, an Encounter, a Consent, a Diagnostic Report, or a Service
-Request. Files keep scans, photos, recordings, and documents together with the record
-they belong to. Care shows the attachments in a **Files** tab on the Patient page and on
-the Encounter page.
-
-Note: Care stores files as generic attachments. This module has no formal FHIR R5
-resource mapping in Care.
+A file in Care is a document, an image, a video or an audio recording that you upload to Care. Each file belongs to one record, such as a patient or an encounter, and cannot move to another record. You can rename and archive a file, but Care has no way to delete a file.
 
 ## Key Attributes
 
 | Components | What it captures |
 | --- | --- |
-| File Name | The name that Care shows for the attachment. You can change this name. |
-| Attached to | The record that the file belongs to: a Patient, an Encounter, a Consent, a Diagnostic Report, or a Service Request. |
-| Category | An internal classification of the file. |
-| Upload status | Whether the upload of the file is complete. |
-| Archived | Whether you removed the file from active use. Care shows this only after the upload is complete. |
+| File Name | The name that you give the file when you upload it. The list shows the name followed by the file extension, such as .pdf. |
+| File Type | The kind of content: Audio, Document, Image, Presentation, Video or Other. Care sets it from the file extension. |
+| Shared By | The user who uploaded the file. |
+| Date | The date when the file was uploaded. |
+| Archived reason | For an archived file, the reason that the user gave. |
+| Archived by | For an archived file, the user who archived it. |
+| Archived at | For an archived file, the date and time of the archive. |
 
-### Category
+### File Name
 
-Category is an internal classification. You cannot select a category when you add a file.
-Most category values have no visible label in the Care screens today.
+You type a name for each file when you upload it. Care does not take the name from the file on your device.
 
-### How you add a file
+If you combine several images into one PDF file, you type one name for the combined file. Care can combine only .jpg, .jpeg and .png images.
 
-You can add a file in three ways:
+You can rename an active file. A rename changes only the name. The content and the extension of the file stay the same.
 
-- Choose a file from your device.
-- Capture a photo with the camera.
-- Record audio in the browser.
+### File Type
 
-The maximum size of one file is 100 MB. Care accepts common image, video, and audio
-types. Care also accepts text documents, office documents, and PDF files.
+Care sets the **File Type** from the extension of the file. With the default settings, Care accepts files with these extensions on the **Files** tab:
 
-### How you open a file
+| File Type | Extensions |
+| --- | --- |
+| Image | .jpg, .jpeg, .png, .gif, .bmp |
+| Video | .mp4, .mov, .avi, .wmv, .ogg |
+| Audio | .mp3, .wav |
+| Document | .pdf |
+| Other | .txt, .csv, .rtf, .doc, .odt, .xls, .xlsx, .ods |
 
-Care shows a preview in the browser for images, PDF files, video files, and HTML files.
-For an audio file, Care shows a separate playback control. Care shows no preview for
-other file types. To open a file of another type, download it.
+Care also checks the file type that the browser reports, and some browsers report a type that Care refuses. For example, in Chromium on macOS, .rtf and .avi files are refused for this reason.
 
-### What you can do with a file
+Care does not accept Word files in the .docx format or PowerPoint files in the .pptx format. Care accepts Word files in the older .doc format.
 
-You can rename a file, archive a file, or download a file. To archive a file, you must
-give a reason. You cannot undo an archive action. Care has no permanent delete action.
-Archiving is the only way to remove a file from active use.
+Care shows a preview of .jpg, .jpeg, .png and .gif images and of .pdf files. Care opens a video file in the preview, in the video player of your browser. Outside the Safari browser, Care does not play a .mov video.
+
+An .mp3 or .wav file has a **Play** button instead of a preview.
+
+Other files have no preview, such as .bmp images and documents that are not .pdf files. You download these files to open them.
+
+You can download an active file from its row in the list or from the preview. See [Download a file](../../flows/clinical/files/download-a-file.mdx).
+
+### Files tab
+
+On this page, a file of a patient is a patient file, and a file of an encounter is an encounter file.
+
+The **Files** tab of the patient page lists the patient files. The **Files** tab of an encounter lists only the files of that encounter. So the patient's **Files** tab does not show the files of the patient's encounters.
+
+If a questionnaire asks for files, the files that you upload as answers are encounter files. They appear on the **Files** tab of the encounter.
+
+By default, Care limits each questionnaire file to 5 MB.
+
+The files of a consent, a diagnostic report, a service request or a referral do not show on the **Files** tab. You upload the files of a consent, a diagnostic report or a referral from that record.
+
+The **Files** tab has two sub-tabs: **Files** and **Reports**. Your deployment can add more sub-tabs with plugins.
+
+The **Files** sub-tab lists the files, the newest first, 15 on each page. You can search the list by file name and filter it by status.
+
+The **Add Files** menu of the **Files** sub-tab offers three ways to upload a file:
+
+- **Upload From Device**: one or more files from your device.
+- **Open Camera**: a photo from the camera of your device.
+- **Record Audio**: a recording from the microphone of your device.
+
+The **Files** tab does not upload a file larger than 100 MB.
+
+The **Reports** sub-tab lists the reports that Care generates from report templates. It shows **Patient Summary** reports on the patient page and **Discharge Summary** reports on the encounter page.
+
+These reports are not files that you upload. See [Report Template](../platform/report-template.mdx) and [Generate and view a report](../../flows/platform/report-template/generate-and-view-a-report.mdx).
+
+### Status
+
+A file is active or archived.
+
+By default, no status is selected in the **Status** filter, so the list shows active and archived files together. **All** in the filter does the same. The filter also offers **Active** and **Archived**.
+
+| Status | Description |
+| --- | --- |
+| Active | The file is in use. Depending on the file type and on their permissions, users can view, play, download, rename and archive the file. |
+| Archived | The file is out of use. It stays in the list with an **Archived** badge. You can see the archive details, but you cannot open or download the file from the **Files** tab. |
+
+A file appears in the list only after its upload is complete.
+
+If an upload does not complete, the file never appears in the list. With the default settings, Care deletes the unfinished upload between 24 and 48 hours after it started.
+
+To archive a file, you must give a reason. You cannot undo an archive, and Care has no way to restore an archived file.
+
+Note: If you need the content of a file later, download a copy before you archive the file.
 
 ## Permissions
 
-| Action | Permission |
-| --- | --- |
-| View a file | The same permission that lets you view clinical data for the Patient or the Encounter. |
-| Upload, rename, or archive a file | The same permission that lets you write to the Patient or the Encounter. |
+A file has no permissions of its own. Care uses the permissions of the record that the file belongs to.
 
-For a file that belongs to an Encounter, the Encounter must not be inactive. If the
-Encounter is inactive, you cannot upload, rename, or archive its files.
+To see, open or download a file, you need read access to that record. To upload, rename or archive a file, you need write access to that record.
+
+The roles in the tables below hold each permission by default. Your deployment can have other roles.
+
+Several permissions below must be held through a role on the patient. You have a role on a patient when one of these is true:
+
+- You hold the role in a [department](../facility/department.mdx) of an encounter of the patient, or of that encounter's current location, and the encounter is not closed.
+- You hold the role in the patient's [geo organization](../access-governance/organization.mdx), or in one of its parent organizations.
+- You hold the role in a parent organization of another organization that is linked to the patient.
+- You have the role directly on the patient.
+
+An encounter is closed when its status is Completed, Cancelled, Entered in error or Discontinued.
+
+### Patient files and encounter files
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can view clinical data about patients | See, open and download patient files. Care shows the **Files** tab of the patient page only with this permission. With Can Read encounter, also see, open and download the encounter files of the patient. Hold it through a role on the patient. | Staff, Doctor, Nurse, Admin, Facility Admin |
+| Can Read encounter related clinical data | See, open and download encounter files, also after the encounter is closed. Hold it in a department of the encounter or of the encounter's current location. | Admin, Doctor, Nurse, Facility Admin |
+| Can Read encounter | On the encounter page, Care lists the files only with this permission or Can Read encounter related clinical data. Hold it through a role on the encounter. | Admin, Doctor, Nurse, Facility Admin |
+| Can Update a Patient's data | Upload, rename and archive patient files. Hold it through a role on the patient. | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
+| Update Encounter related clinical data | Upload, rename and archive encounter files while the encounter is not closed. Hold it in a department of the encounter or of the encounter's current location. | Admin, Doctor, Nurse, Facility Admin |
+| Update Encounter non clinical | On the encounter page, Care shows **Add Files**, **Rename** and **Archive** only with this permission. Hold it through a role on the encounter. | Admin, Doctor, Nurse, Facility Admin |
+
+While an encounter is closed, nobody can upload, rename or archive its files.
+
+On the encounter page, the **Files** tab shows **Add Files**, **Rename** and **Archive** only when all of these are true:
+
+- You opened the encounter inside a facility.
+- The encounter is the one that you opened, not another encounter that you selected on the same page.
+- The encounter is not closed.
+- You hold "Update Encounter non clinical" through a role on the encounter.
+
+By default, the Staff role can upload, rename and archive patient files, but not encounter files.
+
+By default, the Staff role holds neither "Can Read encounter related clinical data" nor "Can Read encounter". So Care does not list the files of an encounter for a user who has only the Staff role.
+
+By default, the Administrator role holds "Can Update a Patient's data" but not "Can view clinical data about patients". Care shows the **Files** tab of the patient page only with "Can view clinical data about patients". So by default, a user who has only the Administrator role cannot use the **Files** tab of the patient page.
+
+Administrator is a different role from Admin.
+
+Your deployment can turn on a setting that widens write access to patients. The setting is off by default. When it is on, Care also accepts "Can Update a Patient's data" held in any department or organization. This applies when Care saves an upload, a rename or an archive of a patient file.
+
+The setting does not change the **Files** tab. The tab still shows **Add Files**, **Rename** and **Archive** only to users who hold "Can Update a Patient's data" through a role on the patient.
+
+### Files of other records
+
+A consent file follows the rules for the files of the consent's encounter. So nobody can upload, rename or archive a consent file while that encounter is closed.
+
+The files of a diagnostic report, a service request or a referral use the permissions of that record. For diagnostic report and service request files, the encounter status does not matter.
+
+| Permission | Description | System Roles |
+| --- | --- | --- |
+| Can Read Diagnostic Report | See, open and download the files of a diagnostic report. Hold it in a department listed below the table. | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer |
+| Can Create Diagnostic Report on Facility | Upload, rename and archive the files of a diagnostic report. Hold it in a department listed below the table. | Facility Admin, Admin, Doctor, Nurse |
+| Can Read Service Request | See, open and download the files of a service request. Hold it in a department listed below the table. | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| Can Write Service Request on Facility | Upload, rename and archive the files of a service request. Hold it in a department listed below the table. | Facility Admin, Admin, Doctor, Nurse |
+| Can Read Referrals | See, open and download the files of a referral. Hold it on the side that sends the referral or on the side that receives it. | Admin, Administrator, Doctor, Facility Admin, Nurse, Staff, and the Admin, Manager and Member roles of a role organization |
+| Can Update Referrals | Upload, rename and archive the files of a referral. Hold it as for Can Read Referrals. | The same roles as Can Read Referrals |
+
+Hold the diagnostic report and service request permissions in one of these departments:
+
+- A department of the service request's encounter, or of that encounter's current location.
+- A department of a location of the service request.
+
+For a diagnostic report, the service request is the one that the report belongs to.
 
 ## Related
 
+- Flow: [Find a file](../../flows/clinical/files/find-a-file.mdx)
 - Flow: [Upload a file](../../flows/clinical/files/upload-a-file.mdx)
+- Flow: [Take a photo and upload it](../../flows/clinical/files/take-a-photo.mdx)
+- Flow: [Record audio and upload it](../../flows/clinical/files/record-audio.mdx)
 - Flow: [View or preview a file](../../flows/clinical/files/view-or-preview-a-file.mdx)
+- Flow: [Download a file](../../flows/clinical/files/download-a-file.mdx)
 - Flow: [Rename a file](../../flows/clinical/files/rename-a-file.mdx)
 - Flow: [Archive a file](../../flows/clinical/files/archive-a-file.mdx)
-- Flow: [Download a file](../../flows/clinical/files/download-a-file.mdx)
-- Concept: [Patient](../../concepts/clinical/patient)
-- Concept: [Encounter](../../concepts/clinical/encounter.mdx)
-- Concept: [Consent](../../concepts/clinical/consent.mdx)
-- Concept: [Diagnostic Report](../../concepts/clinical/diagnostic-report.mdx)
-- Concept: [Service Request](../../concepts/clinical/service-request.mdx)
+- Flow: [Generate and view a report](../../flows/platform/report-template/generate-and-view-a-report.mdx)
+- Concept: [Patient](./patient)
+- Concept: [Encounter](../clinical/encounter.mdx)
+- Concept: [Consent](../clinical/consent.mdx)
+- Concept: [Diagnostic Report](../clinical/diagnostic-report.mdx)
+- Concept: [Service Request](../clinical/service-request.mdx)
+- Concept: [Report Template](../platform/report-template.mdx)
+- Concept: [Department](../facility/department.mdx)
+- Concept: [Organisation](../access-governance/organization.mdx)
+- Reference: [File Upload](../../references/platform/file-upload.mdx)

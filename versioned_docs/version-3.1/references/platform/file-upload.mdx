@@ -4,22 +4,39 @@ sidebar_position: 1
 
 # File Upload
 
-A `FileUpload` is the metadata record for a file living in S3-compatible object storage. You touch it whenever a Care resource needs an attachment — a patient document, an X-ray on an encounter, a signed consent form.
-
-Two layers split the work. The Django model is storage: it persists the row and an opaque `meta` JSON column, nothing more. The Pydantic resource specs in `care/emr/resources/file_upload/spec.py` are the API — they define the `file_type` / `file_category` enums, validate the upload, decide what goes into `meta` (`mime_type`), and shape every read/write payload, including `extension`, `signed_url`, and `read_signed_url`, which are computed on the fly and have no backing columns.
+Technical reference for the `FileUpload` module in Care EMR. For what a file is in Care and how people work with files, read the [Files concept](../../concepts/clinical/files.mdx).
 
 **Source:**
+
 - Model: [`care/emr/models/file_upload.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/file_upload.py)
 - Specs: [`care/emr/resources/file_upload/spec.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/file_upload/spec.py)
 - Viewset: [`care/emr/api/viewsets/file_upload.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/file_upload.py)
+- Authorization: [`care/security/authorization/file_upload.py`](https://github.com/ohcnetwork/care/blob/develop/care/security/authorization/file_upload.py)
+- Signed URLs: [`care/emr/utils/file_manager.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/utils/file_manager.py)
+- Cleanup task: [`care/emr/tasks/cleanup_incomplete_file_uploads.py`](https://github.com/ohcnetwork/care/blob/develop/care/emr/tasks/cleanup_incomplete_file_uploads.py)
+- Settings: [`config/settings/base.py`](https://github.com/ohcnetwork/care/blob/develop/config/settings/base.py) · [`config/settings/config.py`](https://github.com/ohcnetwork/care/blob/develop/config/settings/config.py)
+- File name validator: [`care/utils/models/validators.py`](https://github.com/ohcnetwork/care/blob/develop/care/utils/models/validators.py)
+- Bucket configuration: [`care/utils/csp/config.py`](https://github.com/ohcnetwork/care/blob/develop/care/utils/csp/config.py)
+
+A `FileUpload` record holds the metadata of one file. The content of the file is in object storage, in the patient-files bucket, not in the database.
+
+Each record links to one patient, encounter, consent, diagnostic report, service request or referral through `file_type` and `associating_id`. There is no database foreign key to that record.
+
+The Django model is the storage layer. It stores the row and the `meta` JSON column that it gets from its base model.
+
+The Pydantic resource specs are the API layer. They define the `file_type` and `file_category` enums, validate a create, put `mime_type` into `meta`, and shape every response.
+
+`extension`, `signed_url` and `read_signed_url` are computed when a record is serialized. They have no columns.
 
 ## Models
 
 | Model | Purpose |
 | --- | --- |
-| `FileUpload` | Metadata record for a file stored in object storage (S3), associated with another Care resource by `file_type` + `associating_id` |
+| `FileUpload` | Metadata record for one file in object storage, linked to another Care record by `file_type` and `associating_id` |
 
-`FileUpload` extends [`EMRBaseModel`](../foundation/base-model.mdx) (shared Care EMR base with `external_id`, `meta` JSON, audit fields, and soft-delete semantics).
+`FileUpload` extends [`EMRBaseModel`](../foundation/base-model.mdx), which adds `history`, `meta`, `created_by` and `updated_by`.
+
+`EMRBaseModel` extends `BaseModel`, which adds `external_id`, `created_date`, `modified_date` and the soft-delete flag `deleted`. Care sets the two dates automatically.
 
 ## `FileUpload` fields
 
@@ -27,92 +44,114 @@ Two layers split the work. The Django model is storage: it persists the row and 
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `name` | `CharField(2000)` | User-facing file name. Required on the API (`FileUploadBaseSpec.name`) |
-| `internal_name` | `CharField(2000)` | Storage object key. Set server-side from `original_name` on create, then a random key is generated on `save()`. Never set by clients |
-| `associating_id` | `CharField(100)` | The `external_id` of the owning resource. Required (`blank=False, null=False`). There's no DB `ForeignKey` — integrity is enforced in the app layer |
-| `file_type` | `CharField(100)` | Domain of the owning resource. API-constrained to [`FileTypeChoices`](#filetypechoices-values) |
-| `file_category` | `CharField(100)` | API-constrained to [`FileCategoryChoices`](#filecategorychoices-values) |
-| `upload_completed` | `BooleanField` | Default `False`. Flips to `True` once the client finishes the direct-to-S3 upload — or immediately, on the inline `upload-file` path |
-
-### `meta` JSON contents
-
-`meta` is the opaque `JSONField` inherited from `EMRBaseModel`. The specs put exactly one structured key in it:
-
-| Key | Type | Shape / Notes |
-| --- | --- | --- |
-| `mime_type` | `str` | MIME type of the file. Written in `FileUploadCreateSpec.perform_extra_deserialization` (`obj.meta["mime_type"] = self.mime_type`); read back during serialization via `obj.meta.get("mime_type")`. Validated against `settings.ALLOWED_MIME_TYPES` |
+| `name` | `CharField(2000)` | Display name. Required in the API (`FileUploadBaseSpec.name`). The only field that an update can change |
+| `internal_name` | `CharField(2000)` | Storage object name. Create copies `original_name` into it, then `save()` replaces it with a random name plus the last extension. Not in the create or update schema |
+| `associating_id` | `CharField(100)`, `blank=False`, `null=False` | The `external_id` of the linked record. No database `ForeignKey`: the authorization check looks the record up |
+| `file_type` | `CharField(100)` | Kind of linked record. The API limits it to [`FileTypeChoices`](#filetypechoices-values) |
+| `file_category` | `CharField(100)` | The API limits it to [`FileCategoryChoices`](#filecategorychoices-values) |
+| `upload_completed` | `BooleanField`, default `False` | Set to `True` by `mark_upload_completed`, or at once by `upload-file`. The list returns only rows where it is `True` |
 
 ### Archival
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `is_archived` | `BooleanField` | Default `False` |
-| `archive_reason` | `TextField` | Blank-able; set when archiving (required in the `archive` action body) |
-| `archived_datetime` | `DateTimeField` | Nullable; set to `timezone.now()` when archived |
-| `archived_by` | `FK → User` (PROTECT) | Nullable; `related_name="archived_files"` |
+| `is_archived` | `BooleanField`, default `False` | Set to `True` by the `archive` action. A separate field from the soft-delete flag `deleted` |
+| `archive_reason` | `TextField`, `blank=True` | Set from the `archive` request body |
+| `archived_datetime` | `DateTimeField`, nullable | Set to the current date and time when the file is archived |
+| `archived_by` | `ForeignKey` to `User` (`PROTECT`), nullable, `related_name="archived_files"` | The user who archived the file |
+
+### `meta` JSON contents
+
+`meta` is the `JSONField` from `EMRBaseModel`. The file specs store one key in it.
+
+| Key | Type | Notes |
+| --- | --- | --- |
+| `mime_type` | `str` | Written on create from the request's `mime_type`. Read back into the `mime_type` response field. On `upload-file`, Care detects it from the content |
+
+Responses never include `meta` itself, because `EMRResource.to_json()` drops it.
 
 ### Storage manager
 
-`FileUpload` declares a class-level `files_manager = S3FilesManager(BucketType.PATIENT)`. It's not a database field — it's the object-storage helper that mints signed write/read URLs and runs `put_object`, all against the `PATIENT` bucket.
+`FileUpload` declares a class-level `files_manager = S3FilesManager(BucketType.PATIENT)`. It is not a database field. It creates the signed URLs and runs `put_object` against the patient-files bucket.
 
-## Enums
+## Enum values
 
 ### `FileTypeChoices` values
 
-The owning-resource domain (`spec.py`). String enum.
+String enum in `spec.py`. The value decides which authorization check runs. See [Authorization](#authorization).
 
-| Value | Links a file to |
-| --- | --- |
-| `patient` | A [patient](../clinical/patient) |
-| `encounter` | An [encounter](../clinical/encounter.mdx) |
-| `consent` | A [consent](../clinical/consent.mdx) |
-| `diagnostic_report` | A [diagnostic report](../clinical/diagnostic-report.mdx) |
-| `service_request` | A [service request](../clinical/service-request.mdx) |
+| Value | Links a file to | Notes |
+| --- | --- | --- |
+| `patient` | A [patient](../clinical/patient) | care_fe lists these files in the patient Files tab |
+| `encounter` | An [encounter](../clinical/encounter.mdx) | care_fe lists these files in the encounter Files tab. care_fe questionnaire file answers also use this type |
+| `consent` | A [consent](../clinical/consent.mdx) | care_fe consent uploads use this type with the category `consent_attachment` |
+| `diagnostic_report` | A [diagnostic report](../clinical/diagnostic-report.mdx) | care_fe diagnostic report attachments use this type |
+| `service_request` | A [service request](../clinical/service-request.mdx) | Checked with the service request permissions |
+| `referral` | A referral | care_fe referral uploads use this type |
+
+The care_fe Files tab supports only the `patient` and `encounter` types.
 
 ### `FileCategoryChoices` values
 
-File category (`spec.py`). String enum.
+String enum in `spec.py`.
 
-| Value |
-| --- |
-| `audio` |
-| `xray` |
-| `identity_proof` |
-| `unspecified` |
-| `discharge_summary` |
-| `consent_attachment` |
+| Value | Notes |
+| --- | --- |
+| `audio` | — |
+| `xray` | — |
+| `identity_proof` | — |
+| `unspecified` | care_fe Files tab uploads and questionnaire file answers use this category |
+| `discharge_summary` | — |
+| `consent_attachment` | The consent read schemas embed the `consent` files that have this category |
+
+## Related models
+
+`FileUpload` links to `User` through these foreign keys.
+
+| Field | Related model | Notes |
+| --- | --- | --- |
+| `archived_by` | `User` | `PROTECT`, nullable, `related_name="archived_files"` |
+| `created_by` | `User` | From `EMRBaseModel`. The `uploaded_by` response field shows this user |
+| `updated_by` | `User` | From `EMRBaseModel` |
 
 ## Resource specs (API schema)
 
-Every spec extends `EMRResource` (`care/emr/resources/base.py`), which supplies `serialize` (DB → Pydantic) and `de_serialize` (Pydantic → DB) plus the `perform_extra_serialization` / `perform_extra_deserialization` hooks. `FileUpload` deliberately omits `__store_metadata__`, so its hooks move `mime_type` in and out of `meta` by hand instead of leaning on the generic meta machinery.
+Every spec extends `EMRResource`, which sets `__store_metadata__ = False` by default. The file specs write and read `meta["mime_type"]` in their own hooks.
 
-| Spec | Role | Exposes / behaviour |
+| Spec | Role | Fields and behaviour |
 | --- | --- | --- |
 | `FileUploadBaseSpec` | shared base | `id: UUID4 \| None`, `name: str` (required) |
-| `FileUploadCreateSpec` | write · create | Adds `original_name`, `file_type`, `file_category`, `associating_id`, `mime_type`. Validates `mime_type` and `original_name`; on deserialize sets `_just_created=True`, `internal_name = original_name`, and `meta["mime_type"]` |
-| `FileUploadUpdateSpec` | write · update | Same fields as base (`id`, `name`) — the display name is the only thing you can edit |
-| `FileUploadListSpec` | read · list | Read view (fields below); resolves `extension`, `mime_type`, audit users, `uploaded_by`, `archived_by` |
-| `FileUploadRetrieveSpec` | read · detail | Extends `FileUploadListSpec` with `signed_url`, `read_signed_url`, `internal_name`; emits a write URL for just-created rows, otherwise a read URL |
-| `ConsentFileUploadCreateSpec` | write · create (consent) | `original_name` + `associating_id: UUID4`; forces `file_type=consent`, `file_category=consent_attachment` server-side |
+| `FileUploadCreateSpec` | write · create | Adds required `original_name`, `file_type`, `file_category`, `associating_id: str` and `mime_type: str`. Validates `mime_type` and `original_name`. On deserialize, sets `_just_created=True`, copies `original_name` into `internal_name`, and stores `meta["mime_type"]` |
+| `FileUploadUpdateSpec` | write · update | Adds nothing to the base, so an update can change only `name` |
+| `FileUploadListSpec` | read · list | See [read fields](#fileuploadlistspec-read-fields). Also the response of `mark_upload_completed` and `archive` |
+| `FileUploadRetrieveSpec` | read · detail | Adds `signed_url`, `read_signed_url` and `internal_name`. Returns a write URL when `_just_created` is set, else a read URL |
+| `ConsentFileUploadCreateSpec` | not used | Defined, but no endpoint uses it. It takes `original_name` and `associating_id: UUID4`, sets `file_type=consent` and `file_category=consent_attachment`, and does not set `meta["mime_type"]` |
 
-Nothing here binds to a value set or uses `CodeableConcept` / `Period` / other `common` types — `file_type` and `file_category` are plain string enums.
+Consent files are created like every other file, with `FileUploadCreateSpec`. care_fe consent uploads use the signed-URL flow with `file_type=consent` and `file_category=consent_attachment`.
 
 ### `FileUploadCreateSpec` validation
 
-| Field | Rule |
+| Field | Rule and error message |
 | --- | --- |
-| `name` | Required (inherited from base) |
-| `original_name` | Non-empty; run through `file_name_validator` (`care/utils/models/validators.py`): ≤ 255 chars, must not start with `.`, must have an extension, extension must be in `ALLOWED_FILE_EXTENSIONS` and not in `BLOCKED_FILE_EXTENSIONS` |
-| `mime_type` | Must be in `settings.ALLOWED_MIME_TYPES`, else `"Invalid mime type"` |
-| `file_type` | Must be a `FileTypeChoices` member |
-| `file_category` | Must be a `FileCategoryChoices` member |
-| `associating_id` | Required `str` |
+| `name` | Required, from the base spec |
+| `original_name` | Must not be empty: `File name cannot be empty` |
+| `original_name` | At most 255 characters: `File name cannot exceed 255 characters.` |
+| `original_name` | Must not start with a dot: `File name cannot start with a dot.` |
+| `original_name` | Must have an extension: `Invalid file extension.` |
+| `original_name` | The last extension must not be in `BLOCKED_FILE_EXTENSIONS`: `File extension not allowed. Blocked extensions are:` followed by the list |
+| `original_name` | The last extension must be in `ALLOWED_FILE_EXTENSIONS`: `File extension not allowed. Allowed extensions are:` followed by the list |
+| `mime_type` | Must be in `ALLOWED_MIME_TYPES`: `Invalid mime type` |
+| `file_type` | Must be a `FileTypeChoices` value |
+| `file_category` | Must be a `FileCategoryChoices` value |
+| `associating_id` | Required `str`. The authorization check looks up the record by this `external_id` |
+
+The extension checks look only at the last extension. For `scan.tar.gz`, they check `gz`.
 
 ### `FileUploadListSpec` read fields
 
 | Field | Type | Source |
 | --- | --- | --- |
-| `id` | `UUID4` | `obj.external_id` (set in `perform_extra_serialization`) |
+| `id` | `UUID4` | `obj.external_id` |
 | `name` | `str` | column |
 | `file_type` | `FileTypeChoices` | column |
 | `file_category` | `FileCategoryChoices` | column |
@@ -122,55 +161,209 @@ Nothing here binds to a value set or uses `CodeableConcept` / `Period` / other `
 | `archive_reason` | `str \| None` | column |
 | `archived_datetime` | `datetime \| None` | column |
 | `created_date` | `datetime` | column |
-| `extension` | `str` | derived via `obj.get_extension()` |
+| `extension` | `str` | `obj.get_extension()` |
 | `mime_type` | `str` | `obj.meta.get("mime_type")` |
-| `uploaded_by` | `dict \| None` | `UserSpec` from cache (`obj.created_by_id`) |
-| `archived_by` | `UserSpec \| None` | `UserSpec` from cache (`obj.archived_by_id`) |
-| `created_by` / `updated_by` | `dict \| None` | `serialize_audit_users` |
+| `uploaded_by` | `dict \| None` | `UserSpec` from cache, for `obj.created_by_id` |
+| `archived_by` | `UserSpec \| None` | `UserSpec` from cache, for `obj.archived_by_id` |
+| `created_by`, `updated_by` | `dict \| None` | Audit users |
 
 ### `FileUploadRetrieveSpec` extra fields
 
-| Field | Type | When populated |
+| Field | Type | When set |
 | --- | --- | --- |
-| `signed_url` | `str \| None` | When `obj._just_created` is truthy — a write (PUT) URL from `files_manager.signed_url(obj)`. The upload target handed back at create time |
-| `read_signed_url` | `str \| None` | Otherwise — a read (GET) URL from `files_manager.read_signed_url(obj)` |
-| `internal_name` | `str` | The storage object key (flagged in source as possibly not needing to be returned) |
+| `signed_url` | `str \| None` | When `_just_created` is set, which is the create response. A write (`PUT`) URL from `files_manager.signed_url(obj)` |
+| `read_signed_url` | `str \| None` | In every other `FileUploadRetrieveSpec` response. A read (`GET`) URL from `files_manager.read_signed_url(obj)` |
+| `internal_name` | `str` | The storage object name |
+
+### Server-maintained behaviour
+
+- Clients cannot set `internal_name`. The create and update schemas do not have it, and `save()` generates it.
+- On create, Care stores the declared `mime_type` as the client sends it. On `upload-file`, Care detects it from the content.
+- `uploaded_by` is the user who created the record. Any user who passes the write check can call `mark_upload_completed`, not only the uploader.
+- The `archive` action sets `is_archived`, `archive_reason`, `archived_datetime` and `archived_by`.
+- The `archive` action accepts any `archive_reason` string, also an empty one.
+- The `archive` action does not check `is_archived` or `upload_completed`. Archiving an archived file again overwrites `archive_reason`, `archived_datetime` and `archived_by`.
+- The update endpoint does not check `is_archived`, so the API accepts a new name for an archived file.
+- Validation errors return HTTP 400 with an `errors` list. Each item has a `msg`.
 
 ## Methods & save behaviour
 
 ### `get_extension()`
 
-Derives the file extension from `internal_name` via `parse_file_extension`, formatted as `.ext` (or a multi-part form like `.tar.gz`), or `""` when there's none. This is what surfaces to clients as the `extension` read field.
+Returns the last extension of `internal_name` with a leading dot, such as `.pdf`, or `""` when there is none.
+
+It calls `parse_file_extension` with the default `max_extensions=1`, so a name that ends in `.tar.gz` gives `.gz`.
+
+The `extension` response field and the file name in the read URL use it.
 
 ### `save()` side effects
 
-On save, a random `internal_name` is generated when `internal_name` is empty or the row is new (`not self.id`) and the caller has not passed `skip_internal_name=True`:
+`save()` sets a random `internal_name` when the row is new or `internal_name` is empty, unless the caller passes `skip_internal_name=True`.
 
-1. A random `internal_name` is generated as `uuid4() + int(time.time())`.
-2. If an extension can be derived, it is appended to that random name.
-3. `internal_name` is set before the row is persisted.
+1. Care builds a random name: `uuid4()` followed by the current Unix time.
+2. If `get_extension()` finds an extension on the current `internal_name`, Care appends it. On create, that is the last extension of `original_name`.
+3. Care stores the result in `internal_name` before it saves the row.
 
-Keeping the user-supplied `name` out of the storage key limits PII leakage if the bucket is compromised. The inline `upload-file` path calls `save(skip_internal_name=True)` after uploading, so the generated key survives.
+The `save()` docstring says that the random name avoids leaking PII if data leaks. No field keeps the original file name.
+
+`upload-file` saves the record a second time with `skip_internal_name=True`, so the random name from the first save stays.
 
 ## API integration notes
 
-### Two upload flows
+Every request needs a signed-in user.
 
-1. **Signed-URL (direct-to-S3), default:** `POST` a `FileUploadCreateSpec`. The server validates, deserializes (`_just_created=True`), and returns `FileUploadRetrieveSpec` carrying a write `signed_url`. The client `PUT`s the bytes straight to S3, then calls `POST .../{external_id}/mark_upload_completed/` to flip `upload_completed=True`.
-2. **Inline base64 (`POST .../upload-file/`):** the client sends `original_name` + base64 `file_data`. The server decodes it, enforces `settings.MAX_FILE_UPLOAD_SIZE` (MB), sniffs the real MIME type with `python-magic`, re-checks `ALLOWED_MIME_TYPES`, builds a `FileUploadCreateSpec`, sets `_just_created=False`, uploads via `files_manager.put_object`, sets `upload_completed=True`, and returns `FileUploadRetrieveSpec` — so the response carries `read_signed_url`, not a write URL.
+### Endpoints
 
-### Server-maintained behaviour
+The base path is `/api/v1/files/`. In each path, `{id}` is the `id` that the API returns for the file, which is its `external_id`.
 
-- `internal_name` is platform-maintained — never set it from a client; the model generates a random PII-free key.
-- `mime_type` lives in `meta`, not a column. `FileUploadCreateSpec` writes it and serialization reads it back. On the inline path it is re-derived from file content (`magic.from_buffer`) rather than trusted from the client.
-- `associating_id` + `file_type` together link a file to its owning resource. `list` requires both as query params and returns only `upload_completed=True` rows.
-- Every action runs `file_authorizer(user, file_type, associating_id, "read"|"write")`.
-- Archival (`POST .../{external_id}/archive/`, body `{ archive_reason }`) sets `is_archived`, `archive_reason`, `archived_datetime`, `archived_by` server-side and returns `FileUploadListSpec`. This soft state is separate from the `EMRBaseModel` soft-delete (`deleted`).
-- `mark_upload_completed` and `archive` both return `FileUploadListSpec` (no signed URL).
+| Action | Method and path | Check | Body | Response |
+| --- | --- | --- | --- | --- |
+| `list` | `GET /api/v1/files/` | `read` on the query's `file_type` and `associating_id` | None. Query parameters, see [List](#list) | Paged `FileUploadListSpec` items. Only rows with `upload_completed=True` |
+| `create` | `POST /api/v1/files/` | `write` on the body's `file_type` and `associating_id` | `FileUploadCreateSpec` | `FileUploadRetrieveSpec` with `signed_url` |
+| `retrieve` | `GET /api/v1/files/{id}/` | `read` | None | `FileUploadRetrieveSpec` with `read_signed_url` |
+| `update` | `PUT /api/v1/files/{id}/` | `write` | `FileUploadUpdateSpec` (`name`) | `FileUploadRetrieveSpec` with `read_signed_url` |
+| `mark_upload_completed` | `POST /api/v1/files/{id}/mark_upload_completed/` | `write` | None | `FileUploadListSpec` |
+| `archive` | `POST /api/v1/files/{id}/archive/` | `write` | `archive_reason: str`, required | `FileUploadListSpec` |
+| `upload-file` | `POST /api/v1/files/upload-file/` | `write`, as for create | `original_name`, base64 `file_data`, `name`, `file_type`, `file_category`, `associating_id` | `FileUploadRetrieveSpec` with `read_signed_url` |
+
+There is no `DELETE` route and no action to unarchive a file. The viewset has only the create, retrieve, update and list mixins, plus three extra actions.
+
+Retrieve, update, `mark_upload_completed` and `archive` look the file up among all records. So they also find uploads that are not complete.
+
+### List
+
+A list request names one record with the `file_type` and `associating_id` query parameters.
+
+A request with neither parameter fails with `Cannot filter files`. With only one, the authorization check runs with the other value empty, and the request fails with `Cannot View File` or as not found.
+
+| Parameter | Behaviour |
+| --- | --- |
+| `file_type` | Exact match. Also selects the authorization check |
+| `associating_id` | Exact match on the linked record's `external_id` |
+| `is_archived` | Boolean. Without it, the list returns archived and active files together |
+| `file_category` | One or more categories, separated by commas |
+| `name` | Case-insensitive match on any part of `name` |
+| `ordering` | `created_date` or `modified_date`. A leading `-` reverses the order: care_fe sends `-created_date` for newest first. Without the parameter, the newest records come first |
+
+The list uses limit and offset pagination, 14 items per page by default.
+
+### Upload flows
+
+Signed-URL upload. The care_fe Files tab uses this flow.
+
+1. Send `POST /api/v1/files/` with a `FileUploadCreateSpec`. The response carries `signed_url`, a write URL.
+2. Send the file content with `PUT` to `signed_url` within one hour, with the content type that you declared in `mime_type`. The server does not check the size of this upload.
+3. Send `POST /api/v1/files/{id}/mark_upload_completed/`. The file then appears in the list.
+
+If step 3 does not happen, the file stays out of the list. The cleanup task deletes it later, unless `FILE_UPLOAD_EXPIRY_HOURS` is `0`. See [Incomplete-upload cleanup](#incomplete-upload-cleanup).
+
+Inline upload. `POST /api/v1/files/upload-file/` sends the file content in one request. care_fe sends answers to a questionnaire "files" question this way, as `encounter` files with the category `unspecified`.
+
+1. The server decodes the base64 `file_data` and checks its size against `MAX_FILE_UPLOAD_SIZE`.
+2. The server detects the MIME type from the first 2048 bytes and checks it against `ALLOWED_MIME_TYPES`.
+3. The server builds a `FileUploadCreateSpec` from the body and the detected `mime_type`, so the `original_name` checks of create also apply.
+4. In one transaction, the server runs the create check, saves the record, puts the object in storage and sets `upload_completed=True`.
+5. If the storage write fails, nothing is saved.
+
+The response is a `FileUploadRetrieveSpec` with `read_signed_url`, because `upload-file` sets `_just_created=False`.
+
+| `upload-file` error | Message |
+| --- | --- |
+| `original_name` or `file_data` is missing | `Missing required fields: 'original_name' or 'file_data'` |
+| `file_data` is not valid base64 | `Invalid base64-encoded file data` |
+| The content is larger than `MAX_FILE_UPLOAD_SIZE` megabytes | `File size exceeds the limit of 5.0MB` with the default. The number follows the setting |
+| MIME type detection fails | `Error detecting file type.` |
+| The detected MIME type is not allowed | `File type '<type>' is not allowed` |
+| The storage write fails | `Failed to upload file to storage` |
+
+### Authorization
+
+Every endpoint calls `file_authorizer(user, file_type, associating_id, action)`, where the action is `"read"` or `"write"`. The [Endpoints](#endpoints) table shows which.
+
+The check that runs depends on `file_type`. Roles and their permissions are stored in the database, so the role lists below are defaults.
+
+| `file_type` | Check | Passes when | Default roles |
+| --- | --- | --- | --- |
+| `patient` | read | Handler `can_view_clinical_data` on the patient. The user holds `can_view_clinical_data` ("Can view clinical data about patients") in one of their roles on the patient | Staff, Doctor, Nurse, Admin, Facility Admin |
+| `patient` | write | Handler `can_write_patient_obj` on the patient. The user holds `can_write_patient` ("Can Update a Patient's data") in one of their roles on the patient. If `PATIENT_GLOBAL_EDIT_ACCESS_ENABLED` is on, a role with that permission in any facility organization or organization also counts | Staff, Doctor, Nurse, Administrator, Admin, Facility Admin |
+| `encounter` | read | Either the `patient` read check, on the encounter's patient, or handler `can_view_encounter_clinical_data` on the encounter. The second passes when the user holds `can_read_encounter_clinical_data` ("Can Read encounter related clinical data") in the encounter's facility organizations or its current location's organizations. The second check does not look at the encounter status. The first check takes roles only from encounters that are not closed, so it can stop passing when this encounter closes | Patient check: as for `patient`. Encounter check: Admin, Doctor, Nurse, Facility Admin |
+| `encounter` | write | Handler `can_update_encounter_clinical_data` on the encounter. Refused for every user when the encounter is closed. Otherwise, the user holds `can_write_encounter_clinical_data` ("Update Encounter related clinical data") in the encounter's facility organizations or its current location's organizations | Admin, Doctor, Nurse, Facility Admin |
+| `consent` | read, write | The `encounter` checks, run on the consent's encounter, with the same status rules. A closed encounter blocks writes | As for `encounter` |
+| `diagnostic_report` | read | Handler `can_read_diagnostic_report` on the report's service request. The user holds `can_read_diagnostic_report` ("Can Read Diagnostic Report") in a facility organization of the service request's encounter or its current location, or of the service request's locations. No encounter status check | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer |
+| `diagnostic_report` | write | Handler `can_write_diagnostic_report` on the report's service request. The user holds `can_write_diagnostic_report` ("Can Create Diagnostic Report on Facility") in the same places as for read. No encounter status check | Facility Admin, Admin, Doctor, Nurse |
+| `service_request` | read | Handler `can_read_service_request`. The user holds `can_read_service_request` ("Can Read Service Request") in the same places as for `diagnostic_report`. No encounter status check | Facility Admin, Administrator, Admin, Staff, Doctor, Nurse, Volunteer, Pharmacist |
+| `service_request` | write | Handler `can_write_service_request`. The user holds `can_write_service_request` ("Can Write Service Request on Facility") in the same places. No encounter status check | Facility Admin, Admin, Doctor, Nurse |
+| `referral` | read | Handler `can_read_referral`. The user holds `can_read_referral` ("Can Read Referrals") at the referral's origin or at its destination | Admin, Administrator, Doctor, Facility Admin, Nurse, Staff, and the role-organization roles Admin, Manager and Member |
+| `referral` | write | Handler `can_write_referral`. The user holds `can_write_referral` ("Can Update Referrals") at the referral's origin or at its destination | As for read |
+
+Where the roles must be held:
+
+- A user's roles on a patient include their roles in the facility organizations of each encounter of the patient that is not closed. This includes the organizations of that encounter's current location.
+- They also include the user's roles in the organizations whose ids are in the patient's organization cache, and a role given to the user directly on the patient.
+- The cache holds the patient's geographic organization and its parents. For each organization linked to the patient, it also holds that organization's parents and the id of the link row.
+- So a closed encounter no longer gives the user roles on the patient.
+- An encounter is closed when its status is `completed`, `cancelled`, `entered_in_error` or `discontinued` (`COMPLETED_CHOICES`). The labels are "Completed", "Cancelled", "Entered in error" and "Discontinued".
+- Other statuses, such as Discharged, On Hold and In Progress, are not closed.
+- A permission checked in a set of organizations passes only when the user holds a role with that permission in one of them.
+- At the referral's origin, the permission must be held in a facility organization of the referral's encounter or its current location. If the referral has no encounter, it must be in one of the user's roles on the patient.
+- At the referral's destination, if the destination is an organization, the permission must be held in that organization or one of its parents.
+- If the destination is a facility, the permission must be held in that facility's root organization.
+- The `patient` checks do not look at the patient's own status, such as deceased.
+
+When a check fails:
+
+- When no check passes, or `file_type` is not a known value, the request fails with `PermissionDenied` and the message `Cannot View File`. The same message applies to read and write checks.
+- When the linked record does not exist, the request fails with HTTP 404 and `No <Model> matches the given query.`
+
+Role notes:
+
+- Two default roles are named Admin. The table means the facility and government organization Admin, except where it names the role-organization Admin for `referral`.
+- By default, Administrator holds `can_write_patient` but not `can_view_clinical_data`. So it passes the write check for `patient` files and fails the read check.
+- By default, Staff passes the write check for `patient` files but not for `encounter` or `consent` files.
+
+### Signed URLs and storage
+
+- The object key is `{file_type}/{internal_name}`, in the bucket that `FILE_UPLOAD_BUCKET` names.
+- The write URL (`signed_url`) is a `PUT` URL. It expires after 3600 seconds and carries the stored `mime_type` as `ContentType`, so storage accepts the upload only with that content type.
+- The read URL (`read_signed_url`) is a `GET` URL. It expires after 3600 seconds.
+- The read URL sets `Content-Disposition` to `inline` for the types in `SAFE_INLINE_FORMATS` and to `attachment` for every other type. The file name is `name` followed by `extension`.
+- `SAFE_INLINE_FORMATS` are `image/jpeg`, `image/png`, `image/gif`, `image/webp`, `image/tiff`, `image/bmp`, `image/x-icon` and `application/pdf`.
+- The patient-files bucket client uses the `FACILITY_S3_KEY`, `FACILITY_S3_SECRET` and `FACILITY_S3_REGION` settings. It does not read `FILE_UPLOAD_KEY`, `FILE_UPLOAD_SECRET` or `FILE_UPLOAD_REGION`, which are also defined.
+
+### Settings
+
+A deployment can change each of these settings.
+
+| Setting | Default | Used by |
+| --- | --- | --- |
+| `ALLOWED_FILE_EXTENSIONS` | `jpg`, `jpeg`, `png`, `gif`, `bmp`, `webp`, `svg`, `mp4`, `mpeg`, `avi`, `mov`, `wmv`, `flv`, `webm`, `mp3`, `wav`, `aac`, `ogg`, `midi`, `mid`, `m4a`, `txt`, `csv`, `rtf`, `doc`, `odt`, `pdf`, `xls`, `xlsx`, `ods` | The `original_name` check on create and on `upload-file` |
+| `BLOCKED_FILE_EXTENSIONS` | `exe`, `dll`, `msi`, `msp`, `mst`, `com`, `scr`, `sys`, `pif`, `reg`, `bat`, `cmd`, `wsf`, `sh` | The `original_name` check on create and on `upload-file` |
+| `ALLOWED_MIME_TYPES` | `image/jpeg`, `image/png`, `image/gif`, `image/bmp`, `image/webp`, `image/svg+xml`, `video/mp4`, `video/mpeg`, `video/x-msvideo`, `video/quicktime`, `video/x-ms-wmv`, `video/x-flv`, `video/webm`, `audio/mpeg`, `audio/wav`, `audio/aac`, `audio/ogg`, `audio/midi`, `audio/x-midi`, `audio/webm`, `audio/mp4`, `text/plain`, `text/csv`, `application/rtf`, `application/msword`, `application/vnd.oasis.opendocument.text`, `application/pdf`, `application/vnd.ms-excel`, `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`, `application/vnd.oasis.opendocument.spreadsheet` | The `mime_type` check on create, and the detected type on `upload-file` |
+| `MAX_FILE_UPLOAD_SIZE` | `5` (megabytes) | The size check in `upload-file`, and nowhere else. The signed-URL upload has no server-side size check |
+| `FILE_UPLOAD_EXPIRY_HOURS` | `24`. `0` turns the cleanup off | The age limit and the run interval of the cleanup task |
+| `PATIENT_GLOBAL_EDIT_ACCESS_ENABLED` | `False` | The `patient` write check |
+
+The default lists accept the Word `doc` format (`application/msword`) but not `docx`.
+
+### Incomplete-upload cleanup
+
+- The task `cleanup_incomplete_file_uploads` hard-deletes every `FileUpload` with `upload_completed=False` that was created more than `FILE_UPLOAD_EXPIRY_HOURS` hours ago.
+- It deletes the storage object first, then the database rows.
+- It runs every `FILE_UPLOAD_EXPIRY_HOURS` hours when that setting is not `0`. So an incomplete upload can stay for up to about twice that time.
+
+### Use by other modules
+
+- Consent: the consent read schemas embed `source_attachments`. These are the files with `file_type=consent`, `file_category=consent_attachment` and the consent's `external_id` as `associating_id`. This query does not filter on `is_archived` or `upload_completed`.
+- Referral: an existing file can be attached to a referral only if it belongs to the referral's patient. Its upload must be complete, and it must not be archived. Otherwise the error is `File is not an available file for this patient`.
+- Resource references: another resource can reference a file with the resource type `file_upload`. Reading such a reference runs the `read` check.
+- Diagnostic report templates list the report's files that are not archived.
+- User profile pictures and facility cover images do not use `FileUpload`. They are stored directly in the facility bucket.
 
 ## Related
 
-- Base model: [EMRBaseModel](../foundation/base-model.mdx)
-- Owning resources: [patient](../clinical/patient), [encounter](../clinical/encounter.mdx), [consent](../clinical/consent.mdx), [diagnostic-report](../clinical/diagnostic-report.mdx), [service-request](../clinical/service-request.mdx)
-- User (audit / `uploaded_by` / `archived_by`): [user](../access-governance/user.mdx)
-- Source: [file_upload.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/file_upload.py), [spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/file_upload/spec.py)
+- Concept: [Files](../../concepts/clinical/files.mdx)
+- Flows: [Upload a file](../../flows/clinical/files/upload-a-file.mdx), [Rename a file](../../flows/clinical/files/rename-a-file.mdx), [Archive a file](../../flows/clinical/files/archive-a-file.mdx), [Download a file](../../flows/clinical/files/download-a-file.mdx)
+- Reference: [Base model](../foundation/base-model.mdx)
+- Linked records: [Patient](../clinical/patient), [Encounter](../clinical/encounter.mdx), [Consent](../clinical/consent.mdx), [Diagnostic report](../clinical/diagnostic-report.mdx), [Service request](../clinical/service-request.mdx)
+- Access: [User](../access-governance/user.mdx), [Role](../access-governance/role.mdx), [Permission](../access-governance/permission.mdx)
+- Source: [file_upload.py (model)](https://github.com/ohcnetwork/care/blob/develop/care/emr/models/file_upload.py), [spec.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/resources/file_upload/spec.py), [file_upload.py (viewset)](https://github.com/ohcnetwork/care/blob/develop/care/emr/api/viewsets/file_upload.py), [file_upload.py (authorization)](https://github.com/ohcnetwork/care/blob/develop/care/security/authorization/file_upload.py), [file_manager.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/utils/file_manager.py), [cleanup_incomplete_file_uploads.py](https://github.com/ohcnetwork/care/blob/develop/care/emr/tasks/cleanup_incomplete_file_uploads.py)
